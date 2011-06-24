@@ -1,0 +1,3 @@
+[submodule "vendor/ZendFramework"]
+	path = vendor/ZendFramework
+	url = https://github.com/svenax/ZendFramework.git
