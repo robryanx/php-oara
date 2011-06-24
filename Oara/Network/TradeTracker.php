@@ -1,0 +1,194 @@
+<?php
+/**
+ * Api Class  
+ * 
+ * @author     Carlos Morillo Merino
+ * @category   Oara_Network_Tt
+ * @copyright  Fubra Limited
+ * @version    Release: 01.00
+ * 
+ */
+class Oara_Network_TradeTracker extends Oara_Network{
+    /**
+     * Soap client.
+     */
+	private $_apiClient = null;
+    /**
+     * Constructor.
+     * @param $affiliateWindow
+     * @return Oara_Network_Aw_Api
+     */
+	public function __construct($credentials)
+	{
+        $user = $credentials['user'];
+        $password = $credentials['password'];
+       
+        
+        $wsdlUrl = 'http://ws.tradetracker.com/soap/affiliate?wsdl';
+        //Setting the client.
+		$this->_apiClient = new Oara_Import_Soap_Client($wsdlUrl, array('encoding' => 'UTF-8',
+				                                                        'compression'=> SOAP_COMPRESSION_ACCEPT | SOAP_COMPRESSION_GZIP | SOAP_COMPRESSION_DEFLATE,
+				                                                        'soap_version' => SOAP_1_1));
+		
+		$this->_apiClient->authenticate($user, $password, false, 'en_GB');
+	}
+	/**
+	 * Check the connection
+	 */
+	public function checkConnection(){
+		$connection = true;
+		return $connection;
+	}
+	/**
+	 * (non-PHPdoc)
+	 * @see library/Oara/Network/Oara_Network_Base#getMerchantList()
+	 */
+	public function getMerchantList($merchantMap = array()){
+		$merchants = array();
+		
+		$merchantsAux = array();
+		$options = array('assignmentStatus' => 'accepted');
+		$affiliateSitesList = $this->_apiClient->getAffiliateSites();
+		foreach ($affiliateSitesList as $affiliateSite){
+			$campaignsList = $this->_apiClient->getCampaigns($affiliateSite->ID, $options);
+			foreach ($campaignsList as $campaign){
+				if (!isset($merchantsAux[$campaign->name])){
+					$obj = Array();
+			        $obj['cid'] = $campaign->ID;
+			        $obj['name'] = $campaign->name;
+			        $obj['url'] = $campaign->URL;
+			        $merchantsAux[$campaign->name] = $obj;
+				}
+			}
+		}
+		foreach ($merchantsAux as $merchantAux){
+			$merchants[] = $merchantAux;
+		}
+		
+		return $merchants;
+	}
+   
+    /**
+     * (non-PHPdoc)
+     * @see library/Oara/Network/Oara_Network_Base#getTransactionList($merchantId,$dStartDate,$dEndDate)
+     */
+	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null)
+	{	
+		$totalTransactions = array();
+		
+		$options = array('registrationDateFrom' => $dStartDate->toString('yyyy-MM-dd'),
+						 'registrationDateTo' => $dEndDate->toString('yyyy-MM-dd'),
+						);
+		$affiliateSitesList = $this->_apiClient->getAffiliateSites();
+		foreach ($affiliateSitesList as $affiliateSite){
+			foreach ($this->_apiClient->getConversionTransactions($affiliateSite->ID, $options) as $transaction) {
+				if (in_array((int)$transaction->campaign->ID,$merchantList)){
+					$transaction = array();
+	                $transaction['merchantId'] = $transaction->campaign->ID;
+	                $transactionDate =  new Zend_Date($transaction->registrationDate, "dd/MM/YY HH:mm:ss");
+	                $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+	                
+	                if ($transaction->transactionStatus == 'accepted'){
+	                	$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
+	                } else if ($transaction->transactionStatus == 'pending'){
+	                    $transaction['status'] = Oara_Utilities::STATUS_PENDING;
+	                } else if ($transaction->transactionStatus == 'rejected'){
+	                    $transaction['status'] = Oara_Utilities::STATUS_DECLINED;
+	                }
+	                
+	                $transaction['amount'] = Oara_Utilities::parseDouble($transaction->orderAmount);
+	                $transaction['commission'] = Oara_Utilities::parseDouble($transaction->commission);
+	                $totalTransactions[] = $transaction;
+				}
+			}
+		}
+		
+		return $totalTransactions;
+	}
+	/**
+     * (non-PHPdoc)
+     * @see library/Oara/Network/Oara_Network_Base#getOverviewList($merchantId,$dStartDate,$dEndDate)
+     */
+	public function getOverviewList ($transactionList = null, $merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null)
+	{
+		$totalOverview = Array();
+		
+		$transactionList = Oara_Utilities::transactionMapPerDay($transactionList);
+		
+		$dateArray = Oara_Utilities::daysOfDifference($dStartDate, $dEndDate);
+		$affiliateSitesList = $this->_apiClient->getAffiliateSites();
+        for ($i = 0; $i < sizeof($dateArray); $i++){
+        	$auxStartDate = $dateArray[$i];
+	        $options = array('dateFrom' => $auxStartDate->toString("yyyy-MM-dd"),
+							 'dateTo' => $auxStartDate->toString("yyyy-MM-dd"),
+							);
+			foreach ($affiliateSitesList as $affiliateSite){
+				foreach ($this->_apiClient->getReportCampaign($affiliateSite->ID, $options) as $report) {
+					
+					if (in_array((int)$report->campaign->ID,$merchantList)){
+						
+						$overview = Array();
+	                    
+	                    $overview['merchantId'] = $report->campaign->ID;
+	                    $overview['date'] = $auxStartDate->toString("yyyy-MM-dd");
+	                    
+	                    
+	                    $overview['click_number'] = (int)$report->reportData->overallClickCount;
+	                   	$overview['impression_number'] = (int)$report->reportData->overallImpressionCount;
+	                    $overview['transaction_number'] = 0;
+	                    $overview['transaction_confirmed_value'] = 0;
+	                    $overview['transaction_confirmed_commission']= 0;
+	                    $overview['transaction_pending_value']= 0;
+	                    $overview['transaction_pending_commission']= 0;
+	                    $overview['transaction_declined_value']= 0;
+	                    $overview['transaction_declined_commission']= 0;
+	                    $transactionDateArray = Oara_Utilities::getDayFromArray($report->campaign->ID,$transactionList, $auxStartDate);
+	                    foreach ($transactionDateArray as $transaction){
+	                       $overview['transaction_number'] ++;
+	                       if ($transaction['status'] == Oara_Utilities::STATUS_CONFIRMED){
+	                       	   $overview['transaction_confirmed_value'] += $transaction['amount'];
+	                           $overview['transaction_confirmed_commission'] += $transaction['commission'];
+	                       } else if ($transaction['status'] == Oara_Utilities::STATUS_PENDING){
+	                           $overview['transaction_pending_value'] += $transaction['amount'];
+	                           $overview['transaction_pending_commission'] += $transaction['commission'];
+	                       } else if ($transaction['status'] == Oara_Utilities::STATUS_DECLINED){
+	                           $overview['transaction_declined_value'] += $transaction['amount'];
+	                           $overview['transaction_declined_commission'] += $transaction['commission'];
+	                       }
+	                   }
+	                   if (Oara_Utilities::checkRegister($overview)){
+	                       $totalOverviews[] = $overview;
+	                   }
+					}
+				}
+			}
+        }
+		
+	    return $totalOverview;
+	}
+
+ 
+	/**
+	 * (non-PHPdoc)
+	 * @see Oara/Network/Oara_Network_Base#getPaymentHistory()
+	 */
+	public function getPaymentHistory(){
+    	$paymentHistory = array();
+    	$options = array();
+		//$options = array('billDateFrom' => '2009-01-01',
+		//				   'billDateTo' => '2009-02-01',
+		//				  );
+
+		foreach ($this->_apiClient->getPayments($options) as $payment) {
+			$obj = array();
+			$date = new Zend_Date($payment->billDate, "dd/MM/yy");
+			$obj['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
+			$obj['pid'] = $payment->invoiceNumber;
+			$obj['method'] = 'BACS';
+			$obj['value'] = Oara_Utilities::parseDouble($payment->endTotal);
+			$paymentHistory[] = $obj;
+		}
+    	return $paymentHistory;
+    }
+	
+}
