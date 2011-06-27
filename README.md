@@ -93,10 +93,12 @@ for the different networks.
 	git submodule update
 	
 	5. Credentials.ini.sample
+	
+	In the example folder a "credentials.ini.sample" has been provided. 
+	Please rename it to "credentials.ini" and follow the intructions
+	in order to fill your crendentials.
 
-In the example folder a "credentials.ini.sample" has been provided. 
-Please rename it to "credentials.ini" and follow the intructions
-in order to fill your crendentials.
+
 
 
 
