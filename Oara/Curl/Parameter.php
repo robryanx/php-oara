@@ -10,12 +10,12 @@
  */
 class Oara_Curl_Parameter{
 	/**
-	 * Parameter큦 key.
+	 * Parameter's key.
 	 * @var string
 	 */
 	private $_key;
 	/**
-     * Parameter큦 value
+     * Parameter's value
      * @var string
      */
 	private $_value;
@@ -30,28 +30,28 @@ class Oara_Curl_Parameter{
 		$this->_value = $value;
 	}
 	/**
-	 * key큦 Getter.
+	 * key's Getter.
 	 * @return unknown_type
 	 */
 	public function getKey(){
 		return $this->_key;
 	}
 	/**
-     * value큦 Getter.
+     * value's Getter.
      * @return unknown_type
      */
 	public function getValue(){
 		return $this->_value;
 	}
 	/**
-     * key큦 Setter.
+     * key's Setter.
      * @return unknown_type
      */
 	public function setKey($key){
 		$this->_key = $key;
 	}
 	/**
-     * value큦 Setter.
+     * value's Setter.
      * @return unknown_type
      */
 	public function setValue($value){

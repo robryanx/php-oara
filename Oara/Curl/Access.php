@@ -102,7 +102,7 @@ class Oara_Curl_Access{
 			$options[CURLOPT_HEADER] = true;
 		}
 		curl_setopt_array($ch, $options);
-
+		
 		$result = curl_exec($ch);
 		$err = curl_errno($ch);
 		$errmsg = curl_error($ch);
@@ -172,6 +172,7 @@ class Oara_Curl_Access{
 				$arg = self::getPostFields($request->getParameters());
 				$options[CURLOPT_POSTFIELDS] = $arg;
 				curl_setopt_array($ch, $options);
+				
 				curl_multi_add_handle($mcurl, $ch);
 				$urls_id++;
 				$threadsRunning++;
@@ -253,6 +254,7 @@ class Oara_Curl_Access{
 				$options[CURLOPT_RETURNTRANSFER] = true;
 				$options[CURLOPT_FOLLOWLOCATION] = true;
 				curl_setopt_array($ch, $options);
+				
 				curl_multi_add_handle($mcurl, $ch);
 				$urls_id++;
 				$threadsRunning++;
