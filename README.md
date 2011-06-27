@@ -12,7 +12,7 @@ This project is being used as part of [AffJet](http://www.affjet.com/),
 which offers a hosted Affiliate Aggregator service, with a web interface 
 and additional analysis tools. 
 
-Development is sponsored by [AffJet](http://www.affjet.com) but welcome 
+Development is sponsored by [AffJet](http://www.affjet.com) but we welcome 
 code contributions from anyone. 
 
 Networks Supported
