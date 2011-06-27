@@ -272,7 +272,7 @@ It's an array with the next keys:
 Contact
 ------------
 
-If you have any question, go to the project's [website](http://blogs.fubra.com/php-oara/) or
+If you have any question, go to the project's [website](http://php-oara.affjet.com/) or
 send an email to carlos@affjet.com
 	
 
