@@ -109,14 +109,14 @@ If you want to contribute, you are welcome, please follow the next steps:
 
 ### Create your own fork
 
-	1. Follow the next [instructions](http://help.github.com/fork-a-repo/) to fork your own copy of php-oara.
-	Please read it carefully, as you can also follow the main branch in order to request the last changes in the code.
-	
-	2. Work on your own repository.
-	Once all the code is in place you are free to add as many networks and improve the code as much as you can.
-	
-	3. Send a pull request [instructions](http://help.github.com/send-pull-requests/)
-	When you think that your code is finished, send us a pull request and we will do the rest!
+1. Follow the next [instructions](http://help.github.com/fork-a-repo/) to fork your own copy of php-oara.
+Please read it carefully, as you can also follow the main branch in order to request the last changes in the code.
+
+2. Work on your own repository.
+Once all the code is in place you are free to add as many networks and improve the code as much as you can.
+
+3. Send a pull request [instructions](http://help.github.com/send-pull-requests/)
+When you think that your code is finished, send us a pull request and we will do the rest!
 
 
 ### Follow the structure
