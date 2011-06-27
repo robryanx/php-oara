@@ -5,11 +5,15 @@ The goal of the Open Affiliate Report Aggregator (OARA) is to develop
 a set of PHP classes that can download affiliate reports from a number
 of affiliate networks, and store the data in a common format.
 
-Providing an easy structure and making it easy to extend any network using
+We provide a simple structure and make it easy to add new networks using
 the tools available.
 
 This project is being used as part of [AffJet](http://www.affjet.com/),
-where an interface and analysis tools are provided.
+which offers a hosted Affiliate Aggregator service, with a web interface 
+and additional analysis tools. 
+
+Development is sponsored by [AffJet](http://www.affjet.com) but welcome 
+code contributions from anyone. 
 
 Networks Supported
 -------
@@ -59,14 +63,12 @@ We are planning to add more, this is the to-do list:
 * Publicidees.com
 * Effiliation.com
 
-
 System Requirements
 -------------------
 
 To run php-oara you will need to use PHP 5.3, and enable the CURL extension in your php.ini.
 
 Also you will need to have GIT installed in your computer.
-
 
 Getting Started
 -----------
@@ -189,7 +191,7 @@ Get the Payments already done for this network
 Merchant 
 ------------
 
-It's an array with the next keys:
+It's an array with the following keys:
 
 * name (not null) - Merchant's name 
 
@@ -202,7 +204,7 @@ It's an array with the next keys:
 Transaction 
 ------------
 
-It's an array with the next keys:
+It's an array with the following keys:
 
 * merchantId (not null) - Merchant's unique id
 
@@ -224,7 +226,7 @@ It's an array with the next keys:
 Overview 
 ------------
 
-It's an array with the next keys:
+It's an array with the following keys:
 
 * merchantId (not null) - Merchant's unique id
 
