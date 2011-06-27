@@ -76,23 +76,23 @@ for the different networks.
 
 ### Follow the steps
 
-1. Create the folder with the clone of the code.
-
-git clone git://github.com/paulmaunders/php-oara.git php-oara
-
-2. Change the directory to the root of the project
-
-cd php-oara
-
-3. Initialise the submodules (ZendFramework)
-
-git submodule init
-
-4. Update the submodules (ZendFramework)
-
-git submodule update
-
-5. Credentials.ini.sample
+	1. Create the folder with the clone of the code.
+	
+	git clone git://github.com/paulmaunders/php-oara.git php-oara
+	
+	2. Change the directory to the root of the project
+	
+	cd php-oara
+	
+	3. Initialise the submodules (ZendFramework)
+	
+	git submodule init
+	
+	4. Update the submodules (ZendFramework)
+	
+	git submodule update
+	
+	5. Credentials.ini.sample
 
 In the example folder a "credentials.ini.sample" has been provided. 
 Please rename it to "credentials.ini" and follow the intructions
@@ -109,14 +109,14 @@ If you want to contribute, you are welcome, please follow the next steps:
 
 ### Create your own fork
 
-1. Follow the next [instructions](http://help.github.com/fork-a-repo/) to fork your own copy of php-oara.
-Please read it carefully, as you can also follow the main branch in order to request the last changes in the code.
-
-2. Work on your own repository.
-Once all the code is in place you are free to add as many networks and improve the code as much as you can.
-
-3. Send a pull request [instructions](http://help.github.com/send-pull-requests/)
-When you think that your code is finished, send us a pull request and we will do the rest!
+	1. Follow the next [instructions](http://help.github.com/fork-a-repo/) to fork your own copy of php-oara.
+	Please read it carefully, as you can also follow the main branch in order to request the last changes in the code.
+	
+	2. Work on your own repository.
+	Once all the code is in place you are free to add as many networks and improve the code as much as you can.
+	
+	3. Send a pull request [instructions](http://help.github.com/send-pull-requests/)
+	When you think that your code is finished, send us a pull request and we will do the rest!
 
 
 ### Follow the structure
@@ -194,7 +194,7 @@ It's an array with the next keys:
 * status (not null) - Three different statuses :
 	* Oara_Utilities::STATUS_CONFIRMED
 	* Oara_Utilities::STATUS_PENDING
-	*Oara_Utilities::STATUS_DECLINED
+	* Oara_Utilities::STATUS_DECLINED
 * link - Link where the transaction comes from
 * website - Website where the transaction comes from
 
