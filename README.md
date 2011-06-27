@@ -71,6 +71,11 @@ Also you will need to have GIT installed in your computer.
 Getting Started
 -----------
 
+Once you have finished these steps you will be able to run the examples
+for the different networks.
+
+### Follow the steps
+
 1. Create the folder with the clone of the code.
 
 git clone git://github.com/paulmaunders/php-oara.git php-oara
@@ -93,8 +98,6 @@ In the example folder a "credentials.ini.sample" has been provided.
 Please rename it to "credentials.ini" and follow the intructions
 in order to fill your crendentials.
 
-Once you have finished these steps you will be able to run the examples
-for the different networks.
 
 
 
@@ -124,11 +127,11 @@ please pay attention to the next rules:
 * Create a class in the Oara/Network folder with the name of the network. This class must implement the Oara_Network Interface
 
 * Implement the methods needed:
-	-checkConnection
-	-getMerchantList
-	-getTransactionList
-	-getOverviewList
-	-getPaymentHistory
+	* checkConnection
+	* getMerchantList
+	* getTransactionList
+	* getOverviewList
+	* getPaymentHistory
 	
 * Add the credentials to the credentials.ini.sample. (Please add also information about how to find your credentials)
 
@@ -147,27 +150,27 @@ return boolean (true is connected successfully)
 
 ### getMerchantList($merchantMap)
 Get the merchants joined for the network
-@param array $merchantMap - An array with the merchants already joined (Array of merchants unique ids), empty array by default
-return Array ( Array of Merchants )
+* @param array $merchantMap - An array with the merchants already joined (Array of merchants unique ids), empty array by default
+* return Array ( Array of Merchants )
 
 ### getTransactionList($merchantList, Zend_Date $dStartDate, Zend_Date $dEndDate)
 Get the transactions for the network, from the "dStartDate" until "dEndDate" for the merchants provided
-@param array $merchantList - array with the merchants unique id we want to retrieve the data from
-@param Zend_Date $dStartDate - start date (included)
-@param Zend_Date $dEndDate - end date (included)
-return Array ( Array of Transactions )
+* @param array $merchantList - array with the merchants unique id we want to retrieve the data from
+* @param Zend_Date $dStartDate - start date (included)
+* @param Zend_Date $dEndDate - end date (included)
+* return Array ( Array of Transactions )
 
 ### getOverviewList($transactionList, $merchantList, Zend_Date $dStartDate, Zend_Date $dEndDate)
 Get the overview (a daily summary  of our statistics) for the network and the merchants selected for the date given
-@param array $transactionList - Transaction List
-@param array $merchantList - array with the merchants we want to retrieve the data from
-@param Zend_Date $dStartDate - start date (included)
-@param Zend_Date $dEndDate - end date (included)
-return Array ( Array of Overview )
+* @param array $transactionList - Transaction List
+* @param array $merchantList - array with the merchants we want to retrieve the data from
+* @param Zend_Date $dStartDate - start date (included)
+* @param Zend_Date $dEndDate - end date (included)
+* return Array ( Array of Overview )
 
 ### getPaymentHistory()
-Get the Payments already done for this network
-return Array ( Array of Payments )
+* Get the Payments already done for this network
+* return Array ( Array of Payments )
 
 Merchant 
 ------------
@@ -188,7 +191,10 @@ It's an array with the next keys:
 * date (not null) - Transaction date format, "2011-06-26 18:10:10"
 * amount (not null) - Tranasction value  (double)
 * commission (not null) - Transaction commission (double)
-* status (not null) - Three different statuses (Oara_Utilities::STATUS_CONFIRMED, Oara_Utilities::STATUS_PENDING, Oara_Utilities::STATUS_DECLINED)
+* status (not null) - Three different statuses :
+	* Oara_Utilities::STATUS_CONFIRMED
+	* Oara_Utilities::STATUS_PENDING
+	*Oara_Utilities::STATUS_DECLINED
 * link - Link where the transaction comes from
 * website - Website where the transaction comes from
 
