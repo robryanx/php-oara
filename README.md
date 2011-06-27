@@ -150,26 +150,38 @@ return boolean (true is connected successfully)
 
 ### getMerchantList($merchantMap)
 Get the merchants joined for the network
+
 * @param array $merchantMap - An array with the merchants already joined (Array of merchants unique ids), empty array by default
+
 * return Array ( Array of Merchants )
 
 ### getTransactionList($merchantList, Zend_Date $dStartDate, Zend_Date $dEndDate)
 Get the transactions for the network, from the "dStartDate" until "dEndDate" for the merchants provided
+
 * @param array $merchantList - array with the merchants unique id we want to retrieve the data from
+
 * @param Zend_Date $dStartDate - start date (included)
+
 * @param Zend_Date $dEndDate - end date (included)
+
 * return Array ( Array of Transactions )
 
 ### getOverviewList($transactionList, $merchantList, Zend_Date $dStartDate, Zend_Date $dEndDate)
 Get the overview (a daily summary  of our statistics) for the network and the merchants selected for the date given
+
 * @param array $transactionList - Transaction List
+
 * @param array $merchantList - array with the merchants we want to retrieve the data from
+
 * @param Zend_Date $dStartDate - start date (included)
+
 * @param Zend_Date $dEndDate - end date (included)
+
 * return Array ( Array of Overview )
 
 ### getPaymentHistory()
-* Get the Payments already done for this network
+Get the Payments already done for this network
+
 * return Array ( Array of Payments )
 
 Merchant 
@@ -178,8 +190,11 @@ Merchant
 It's an array with the next keys:
 
 * name (not null) - Merchant's name 
+
 * cid (not null) - Merchant's unique id 
+
 * description - Merchant's description 
+
 * url - Merchant's url 
 
 Transaction 
@@ -188,14 +203,20 @@ Transaction
 It's an array with the next keys:
 
 * merchantId (not null) - Merchant's unique id
+
 * date (not null) - Transaction date format, "2011-06-26 18:10:10"
+
 * amount (not null) - Tranasction value  (double)
+
 * commission (not null) - Transaction commission (double)
+
 * status (not null) - Three different statuses :
 	* Oara_Utilities::STATUS_CONFIRMED
 	* Oara_Utilities::STATUS_PENDING
 	* Oara_Utilities::STATUS_DECLINED
+	
 * link - Link where the transaction comes from
+
 * website - Website where the transaction comes from
 
 Overview 
@@ -204,17 +225,29 @@ Overview
 It's an array with the next keys:
 
 * merchantId (not null) - Merchant's unique id
+
 * date (not null) - Transaction date format, "2011-06-26 18:10:10"
+
 * click_number (not null) - The number (int) of clicks for this date for this merchant, link and website 
+
 * impression_number (not null) - The number (int) of impressions for this date for this merchant, link and website 
+
 * transaction_number (not null) - The number (int) of transactions for this date for this merchant, link and website 
+
 * transaction_confirmed_value (not null) -  Transaction value  (double) with status confirmed 
+
 * transaction_confirmed_commission (not null) -  Transaction commission  (double) with status confirmed 
+
 * transaction_pending_value (not null) - Transaction value  (double) with status pending 
+
 * transaction_pending_commission (not null) -  Transaction commission  (double) with status pending 
+
 * transaction_declined_value (not null) -  Transaction value  (double) with status declined 
+
 * transaction_declined_commission (not null) -  Transaction commission  (double) with status declined 
+
 * link - Link where the transaction comes from
+
 * website - Website where the transaction comes from
 
 
@@ -224,8 +257,11 @@ Payment
 It's an array with the next keys:
 
 * pid (not null) - Payment's unique id
+
 * date (not null) - Payment date format, "2011-06-26 18:10:10"
+
 * value (not null) - Payment value
+
 * method (not null) - Payment method (BACS, CHEQUE, ...)
 
 
