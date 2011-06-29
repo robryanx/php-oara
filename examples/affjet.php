@@ -47,7 +47,7 @@ if (isset($argumentsMap['startDate']) && isset($argumentsMap['endDate']) && isse
 
 	Oara_Test::affjetCli($argumentsMap, $network);
 } else {
-	echo "\n Parameters needed, please check the info in the examples/affjet.php file";
+	echo "\n Parameters needed, please check the info in the examples/affjet.php file\n\n";
 
 }
 
