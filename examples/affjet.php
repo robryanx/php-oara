@@ -1,3 +1,4 @@
+#!/usr/bin/php
 <?php
 /**
  * Affjet Cli, you can send different options via console and it will give you the output required.
@@ -47,8 +48,24 @@ if (isset($argumentsMap['startDate']) && isset($argumentsMap['endDate']) && isse
 
 	Oara_Test::affjetCli($argumentsMap, $network);
 } else {
-	echo "\n Parameters needed, please check the info in the examples/affjet.php file\n\n";
-
+	fwrite(STDERR, 
+		"Usage: affjet [-s startDate] [-e endDate] [-t type] [-n network]\n".
+		"\n".
+		" 	NB: Please check you have entered your credentials in your credential.ini before you run this script.".
+		"\n".
+	 	" 	Parameters:\n".
+	 	"\n".
+	 	" 		-s 	startDate with format dd/MM/yyyy (11/06/2011)\n".
+	 	" 		-e 	endDate with format dd/MM/yyyy (11/06/2011)\n".
+	 	"		-n 	network name of the Oara_Network class for the network (AffiliateWindow, BuyAt, Dgm, WebGains......)\n".
+	 	"		-t 	type this param is not compulsory, choose which report we want, by default it will show us all of them (payment, merchant, transaction, overview)\n".
+	 	"\n".
+	 	"	Examples from command line:\n".
+	 	"\n".
+	 	"		php affjet.php --startDate=12/02/2010 --endDate=15/06/2011 --network=TradeDoubler\n".
+	 	"		php affjet.php --startDate=12/02/2010 --endDate=15/06/2011 --network=TradeDoubler --type=merchant\n".
+	 	"		php affjet.php --startDate=12/02/2010 --endDate=15/06/2011 --network=AffiliateWindow --type=payment\n"	
+	);
 }
 
 
