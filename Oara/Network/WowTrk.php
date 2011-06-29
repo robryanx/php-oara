@@ -137,7 +137,8 @@ class Oara_Network_WowTrk extends Oara_Network{
 																			      $auxStartDate->toString("yyyy-MM-dd"));
 									      
 			if (!preg_match("/No Results found/", $transactionList, $matches)){
-				$xmlObj = simplexml_load_string(html_entity_decode($transactionList));
+				$transactionList = str_replace(array("&pound;"), array("£"), $transactionList);
+				$xmlObj = simplexml_load_string($transactionList);
 				foreach ($xmlObj->children() as $transaction) {
 					$merchantId = (string)$transaction->campaign_id;
 					if (in_array($merchantId, $merchantList)){
@@ -204,7 +205,8 @@ class Oara_Network_WowTrk extends Oara_Network{
 																			      $auxStartDate->toString("yyyy-MM-dd"));
 									      
 			if (!preg_match("/No Results found/", $overviewList, $matches)){
-				$xmlObj = simplexml_load_string(html_entity_decode($overviewList));
+				$overviewList = str_replace(array("&pound;"), array("£"), $overviewList);
+				$xmlObj = simplexml_load_string($overviewList);
 				foreach ($xmlObj->children() as $overview) {
 					$merchantId = (string)$overview->campaign_id;
 					if (in_array($merchantId, $merchantList)){

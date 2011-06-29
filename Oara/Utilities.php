@@ -70,7 +70,7 @@ class Oara_Utilities
 						}
 					}
 				}
-				
+
 			}
 			$convertion[] = $objectValue;
 		}
@@ -211,7 +211,7 @@ class Oara_Utilities
 		return $returnArray;
 	}
 	/**
-	 * 
+	 *
 	 * Compare date by strings
 	 * @param unknown_type $a
 	 * @param unknown_type $b
@@ -322,16 +322,16 @@ class Oara_Utilities
 	public static function parseDouble($data){
 		$double = 0;
 		if($data != null){
-			
+				
 			$bits = explode(",",trim($data)); // split input value up to allow checking
-       
-        	$last = strlen($bits[count($bits) -1]); // gets part after first comma (thousands (or decimals if incorrectly used by user)
-	        if ($last <3){ // checks for comma being used as decimal place
-	            $convertnum = str_replace(",",".",trim($data));
-	        } else {
-	        	$convertnum = str_replace(",","",trim($data));
-	        }
-	        $double = number_format((float)$convertnum, 2, '.', '');
+			 
+			$last = strlen($bits[count($bits) -1]); // gets part after first comma (thousands (or decimals if incorrectly used by user)
+			if ($last <3){ // checks for comma being used as decimal place
+				$convertnum = str_replace(",",".",trim($data));
+			} else {
+				$convertnum = str_replace(",","",trim($data));
+			}
+			$double = number_format((float)$convertnum, 2, '.', '');
 		}
 		return $double;
 	}
@@ -347,51 +347,51 @@ class Oara_Utilities
 		if (is_dir($dir) || mkdir($dir,$mode,true)){
 			$return = true;
 		}
-		
+
 		return $return;
 	}
 
 	/**
-	 * 
+	 *
 	 * Glue the parsed url and returns the string
 	 * @param string $parsed
 	 */
 	public static function glue_url($parsed)
-    {
-	    if (! is_array($parsed)) return false;
-	    $uri = isset($parsed['scheme']) ? $parsed['scheme'].':'.((strtolower($parsed['scheme']) == 'mailto') ? '':'//'): '';
-	    $uri .= isset($parsed['user']) ? $parsed['user'].($parsed['pass']? ':'.$parsed['pass']:'').'@':'';
-	    $uri .= isset($parsed['host']) ? $parsed['host'] : '';
-	    $uri .= isset($parsed['port']) ? ':'.$parsed['port'] : '';
-	    if(isset($parsed['path']))
-	        {
-	        $uri .= (substr($parsed['path'],0,1) == '/')?$parsed['path']:'/'.$parsed['path'];
-	        }
-	    $uri .= isset($parsed['query']) ? '?'.$parsed['query'] : '';
-	    $uri .= isset($parsed['fragment']) ? '#'.$parsed['fragment'] : '';
-	    return $uri;
-    }
-    /**
-     * 
-     * Get the query and builds an array.
-     * @param array $op
-     */
-    public static function parseUrlQuery($str) {
-	    $op = array();
-	    $str = str_replace("&amp", "&", $str);
-	    $pairs = explode("&", $str);
-	    foreach ($pairs as $pair) {
-	        list($k, $v) = array_map("urldecode", explode("=", $pair));
-	        $op[$k] = $v;
-	    }
-	    return $op;
+	{
+		if (! is_array($parsed)) return false;
+		$uri = isset($parsed['scheme']) ? $parsed['scheme'].':'.((strtolower($parsed['scheme']) == 'mailto') ? '':'//'): '';
+		$uri .= isset($parsed['user']) ? $parsed['user'].($parsed['pass']? ':'.$parsed['pass']:'').'@':'';
+		$uri .= isset($parsed['host']) ? $parsed['host'] : '';
+		$uri .= isset($parsed['port']) ? ':'.$parsed['port'] : '';
+		if(isset($parsed['path']))
+		{
+			$uri .= (substr($parsed['path'],0,1) == '/')?$parsed['path']:'/'.$parsed['path'];
+		}
+		$uri .= isset($parsed['query']) ? '?'.$parsed['query'] : '';
+		$uri .= isset($parsed['fragment']) ? '#'.$parsed['fragment'] : '';
+		return $uri;
 	}
-	
 	/**
-     * Calculate the number of iterations needed
-     * @param $rowAvailable
-     * @param $rowsReturned
-     */
+	 *
+	 * Get the query and builds an array.
+	 * @param array $op
+	 */
+	public static function parseUrlQuery($str) {
+		$op = array();
+		$str = str_replace("&amp", "&", $str);
+		$pairs = explode("&", $str);
+		foreach ($pairs as $pair) {
+			list($k, $v) = array_map("urldecode", explode("=", $pair));
+			$op[$k] = $v;
+		}
+		return $op;
+	}
+
+	/**
+	 * Calculate the number of iterations needed
+	 * @param $rowAvailable
+	 * @param $rowsReturned
+	 */
 	public static function calculeIterationNumber($rowAvailable, $rowsReturned){
 		$iterationDouble = (double)($rowAvailable/$rowsReturned);
 		$iterationInt = (int)($rowAvailable/$rowsReturned);
@@ -399,6 +399,49 @@ class Oara_Utilities
 			$iterationInt++;
 		}
 		return $iterationInt;
+	}
+	/**
+	 * 
+	 * Clasify the arguments given to the command line
+	 * @param array $args
+	 */
+	public static function arguments($args) {
+		$ret = array(
+        'exec'      => '',
+        'options'   => array(),
+        'flags'     => array(),
+        'arguments' => array(),
+		);
+
+		$ret['exec'] = array_shift( $args );
+
+		while (($arg = array_shift($args)) != NULL) {
+			// Is it a option? (prefixed with --)
+			if ( substr($arg, 0, 2) === '--' ) {
+				$option = substr($arg, 2);
+
+				// is it the syntax '--option=argument'?
+				if (strpos($option,'=') !== FALSE)
+				array_push( $ret['options'], explode('=', $option, 2) );
+				else
+				array_push( $ret['options'], $option );
+				 
+				continue;
+			}
+
+			// Is it a flag or a serial of flags? (prefixed with -)
+			if ( substr( $arg, 0, 1 ) === '-' ) {
+				for ($i = 1; isset($arg[$i]) ; $i++)
+				$ret['flags'][] = $arg[$i];
+
+				continue;
+			}
+
+			// finally, it is not option, nor flag
+			$ret['arguments'][] = $arg;
+			continue;
+		}
+		return $ret;
 	}
 
 }

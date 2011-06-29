@@ -60,13 +60,18 @@ class Oara_Network_PaidOnResults extends Oara_Network{
 	                              new Oara_Curl_Parameter('password', $password)
 	                             );
 	                             
-       	$urls = array();
+		$urls = array();
         $urls[] = new Oara_Curl_Request($loginUrl, $valuesFormExport);
         $exportReport = $this->_client->post($urls);
         if (!preg_match("/session=(.*)\"/", $exportReport[0], $matches)){
         	throw new Exception("No session found");
         }
         $this->_sessionId = $matches[1];
+		if (preg_match("/URL=(.*)\"/", $exportReport[0], $matches)){
+	        $urls = array();
+	        $urls[] = new Oara_Curl_Request($matches[1], array());
+	    	$exportReport = $this->_client->get($urls);
+        }
         
         $this->_exportMerchantParameters = array(new Oara_Curl_Parameter('apikey', $this->_apiPassword),
 												 new Oara_Curl_Parameter('Format', 'CSV'),
@@ -217,6 +222,35 @@ class Oara_Network_PaidOnResults extends Oara_Network{
 	public function getPaymentHistory(){
     	$paymentHistory = array();
     	
+    	$paymentExport = array();
+    	$paymentExport[] = new Oara_Curl_Parameter('session', $this->_sessionId);
+    	
+    	$urls = array();
+        $urls[] = new Oara_Curl_Request('http://affiliate.paidonresults.com/cgi-bin/invoice-status.pl?', $paymentExport);
+        $exportReport = $this->_client->get($urls);
+        
+        $dom = new Zend_Dom_Query($exportReport[0]);
+        $results = $dom->query('#tableID1 tr');
+		foreach ($results as $result) {
+			$childrenList = $result->childNodes;
+			$numberChildren = $childrenList->length;
+			if ($numberChildren == 18){
+				
+				$value = $childrenList->item(14)->nodeValue;
+				if (preg_match( '/[0-9]+(,[0-9]{3})*(\.[0-9]{2})?$/', $value, $matches)){
+					$obj = array();
+					$obj['pid'] = $childrenList->item(4)->nodeValue;
+					$date = new Zend_Date($childrenList->item(0)->nodeValue, "dd/MMM/yyyy");
+					$obj['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
+					$obj['value'] = Oara_Utilities::parseDouble($matches[0]);
+					$obj['method'] = 'BACS';
+					$paymentHistory[] = $obj;
+							
+				}
+			}
+		    
+		}
+        
     	return $paymentHistory;
     }
 }
