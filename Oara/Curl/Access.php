@@ -107,6 +107,8 @@ class Oara_Curl_Access{
 		$err = curl_errno($ch);
 		$errmsg = curl_error($ch);
 		$info = curl_getinfo($ch);
+		
+	
 
 		//Close curl session
 		curl_close($ch);

@@ -59,6 +59,8 @@ class Oara_Network_LinkShare extends Oara_Network{
         	$this->_nid = '3';
         } else if ($credentials['network'] == 'us'){
         	$this->_nid = '1';
+        } else if ($credentials['network'] == 'ue'){
+        	$this->_nid = '31';
         }
         
         
@@ -117,9 +119,21 @@ class Oara_Network_LinkShare extends Oara_Network{
 	 */
 	private function formatCsv($csv){
 		//$csv = preg_replace('/(?<!,)"(?!,)/', '', $csv); 
-		$csv = preg_replace('/(?<!"),/', '', $csv);
-		$csv = preg_replace('/(?<!")\n/', '', $csv); 
+		//$csv = preg_replace('/(?<!"),/', '', $csv);
+		//$csv = preg_replace('/(?<!")\n/', '', $csv); 
 		
+		preg_match_all("/\"([^\"]+?)\",/", $csv, $matches);
+        foreach ($matches[1] as $match){
+        	if (preg_match("/,/", $match)){
+        		$rep = preg_replace("/,/","", $match);
+        		$csv = str_replace($match, $rep, $csv);
+        		$match = $rep;
+        	}
+        	if (preg_match("/\n/", $match)){
+        		$rep = preg_replace("/\n/","", $match);
+        		$csv = str_replace($match, $rep, $csv);
+        	}
+        }
 		return $csv;
 	}
 	/**
@@ -161,7 +175,7 @@ class Oara_Network_LinkShare extends Oara_Network{
 	            $obj = Array();
 	            
 	            if (!isset($merchantArray[2])){
-	            	echo "asdf";
+	            	throw new Exception("Error getting merchants");
 	            }
 	            
 				$obj['cid'] = $merchantArray[2];		

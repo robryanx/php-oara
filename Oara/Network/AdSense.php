@@ -35,10 +35,12 @@ class Oara_Network_AdSense extends Oara_Network{
 
 		$user = $credentials['user'];
         $password = $credentials['password'];
+        $emailChallenge = $credentials['emailChallenge'];
+        $phoneChallenge = $credentials['phoneChallenge'];
 
 		// /adsense/
 		$this->_client = new Oara_Curl_Access('https://www.google.com/adsense/', array(), $credentials);
-
+		
 
 		$urls = array();
 		$urls[] = new Oara_Curl_Request('https://www.google.com/adsense/signout', array());
@@ -88,15 +90,55 @@ class Oara_Network_AdSense extends Oara_Network{
 		$valuesLogin[] = new Oara_Curl_Parameter('signIn' , 'Sign in');
 
 		
-		
 		$urls = array();
 		$urls[] = new Oara_Curl_Request('https://www.google.com/accounts/ServiceLoginAuth', $valuesLogin);
 		$content = $this->_client->post($urls);
-		
-		$urls = array();
-		$urls[] = new Oara_Curl_Request('https://www.google.com/adsense/v3/disablebeta', array());
-		$content = $this->_client->get($urls);
 
+		if (!preg_match("/href=\"\/adsense\/signout\"/", $content[0], $matches)) {
+			$urls = array();
+			$urls[] = new Oara_Curl_Request('https://www.google.com/adsense/v3/disablebeta', array());
+			$content = $this->_client->get($urls);
+			
+			$urls = array();
+			$urls[] = new Oara_Curl_Request('https://www.google.com/accounts/ServiceLoginAuth', $valuesLogin);
+			$content = $this->_client->post($urls);
+			
+		}
+		
+		
+		$dom = new Zend_Dom_Query(current($content));
+		$results = $dom->query('#challengeform');
+		//We have to provide the challenge
+		$count = count($results);
+		if ($count > 0){
+			var_dump(current($content));
+			$challenge = array();
+			$challenge[] = new Oara_Curl_Parameter('continue', 'https://www.google.com/adsense/gaiaauth2?destination=/adsense/home');
+			$challenge[] = new Oara_Curl_Parameter('jsenabled' , 'true');
+			
+			
+			$results = $dom->query('#PhoneVerificationChallengeInput');
+			$count = count($results);
+			if ($count > 0){
+				$challenge[] = new Oara_Curl_Parameter('phoneNumber' , $phoneChallenge);
+				$challenge[] = new Oara_Curl_Parameter('challengetype' , 'PhoneVerificationChallenge');
+			}
+			
+			$results = $dom->query('#EmailVerificationChallengeInput');
+			$count = count($results);
+			if ($count > 0){
+				$challenge[] = new Oara_Curl_Parameter('emailAnswer' , $emailChallenge);
+				$challenge[] = new Oara_Curl_Parameter('challengetype' , 'RecoveryEmailChallenge');
+			}
+			
+			$challenge[] = new Oara_Curl_Parameter('answer' , '');
+			$challenge[] = new Oara_Curl_Parameter('address' , '');
+			$challenge[] = new Oara_Curl_Parameter('submitChallenge' , '');
+			
+			$urls = array();
+			$urls[] = new Oara_Curl_Request('https://www.google.com/accounts/LoginVerification?Email='.$user.'&continue=https://www.google.com/adsense/gaiaauth2?destination=/adsense/home&service=adsense', $valuesLogin);
+			$content = $this->_client->post($urls);	
+		}
 
 		if (!preg_match("/href=\"\/adsense\/signout\"/", $content[0], $matches)) {
 			preg_match('/location\.replace\("(.+?)"\)/', $content[0], $match);
