@@ -41,6 +41,7 @@ The list of supported networks so far is:
 * [Wow Trk](http://www.wowtrk.com/)
 * [Zanox](http://www.zanox.com)
 
+
 We are planning to add more, this is the to-do list:
 
 * ClickBank
@@ -62,6 +63,7 @@ We are planning to add more, this is the to-do list:
 * Netaffiliation
 * Publicidees.com
 * Effiliation.com
+* FluxAds
 
 System Requirements
 -------------------
