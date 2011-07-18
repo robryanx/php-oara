@@ -4,10 +4,10 @@
  * Affjet Cli, you can send different options via console and it will give you the output required.
  * Please check you have entered your crendentials in your credential.ini before you run this script
  *
- * Paramters:
+ * Parameters:
  * 
- * 	-s 	startDate with format dd/MM/yyyy (11/06/2011)\n".
- *  -e 	endDate with format dd/MM/yyyy (11/06/2011)\n".
+ * 	-s 	startDate with format dd/MM/yyyy (11/06/2011)
+ *  -e 	endDate with format dd/MM/yyyy (11/06/2011)
  *	-n 	network name of the Oara_Network class for the network (AffiliateWindow, BuyAt, Dgm, WebGains......)
  *	-t 	type this param is not compulsory, choose which report we want, by default it will show us all of them (payment, merchant, transaction, overview)
  *
