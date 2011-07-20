@@ -59,7 +59,7 @@ class Oara_Network_LinkShare extends Oara_Network{
         	$this->_nid = '3';
         } else if ($credentials['network'] == 'us'){
         	$this->_nid = '1';
-        } else if ($credentials['network'] == 'ue'){
+        } else if ($credentials['network'] == 'eu'){
         	$this->_nid = '31';
         }
         
