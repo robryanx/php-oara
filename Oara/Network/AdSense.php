@@ -36,11 +36,11 @@ class Oara_Network_AdSense extends Oara_Network{
 		$user = $credentials['user'];
         $password = $credentials['password'];
         $emailChallenge = null;
-        if (isset($credentials['emailChallenge'])){
+        if (isset($credentials['emailChallenge']) && $credentials['emailChallenge'] != null){
         	$emailChallenge = $credentials['emailChallenge'];
         }
 		$phoneChallenge = null;
-        if (isset($credentials['phoneChallenge'])){
+        if (isset($credentials['phoneChallenge']) && $credentials['phoneChallenge'] != null){
         	$phoneChallenge = $credentials['phoneChallenge'];
         }
        
@@ -118,12 +118,12 @@ class Oara_Network_AdSense extends Oara_Network{
 		//We have to provide the challenge
 		$count = count($results);
 		if ($count > 0){
-			var_dump(current($content));
+			
 			$challenge = array();
 			$challenge[] = new Oara_Curl_Parameter('continue', 'https://www.google.com/adsense/gaiaauth2?destination=/adsense/home');
 			$challenge[] = new Oara_Curl_Parameter('jsenabled' , 'true');
 			
-			$results = $dom->query('#EmailVerificationChallengeInput');
+			$results = $dom->query('#RecoveryEmailChallengeInput');
 			$count = count($results);
 			if ($count > 0 && $emailChallenge != null ){
 				$challenge[] = new Oara_Curl_Parameter('emailAnswer' , $emailChallenge);
