@@ -143,7 +143,7 @@ class Oara_Network_AdSense extends Oara_Network{
 			
 			if ($emailChallenge != null || $phoneChallenge != null){
 				$urls = array();
-				$urls[] = new Oara_Curl_Request('https://www.google.com/accounts/LoginVerification?Email='.$user.'&continue=https://www.google.com/adsense/gaiaauth2?destination=/adsense/home&service=adsense', $valuesLogin);
+				$urls[] = new Oara_Curl_Request('https://www.google.com/accounts/LoginVerification?Email='.$user.'&continue=https://www.google.com/adsense/gaiaauth2?destination=/adsense/home&service=adsense', $challenge);
 				$content = $this->_client->post($urls);	
 			}
 			
