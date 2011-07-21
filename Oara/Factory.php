@@ -22,7 +22,7 @@ class Oara_Factory{
 	        $networkClassName = 'Oara_Network_'.$networkName;
 	    	$affiliate = new $networkClassName($credentials);
     	} catch (Exception $e){
-    		throw new Exception ('No Network Aviable '. $networkName);
+    		throw new Exception ('No Network Available '. $networkName);
     	}
         return $affiliate;  
         
