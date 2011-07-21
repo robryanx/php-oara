@@ -43,6 +43,11 @@ class Oara_Network_TradeDoubler extends Oara_Network{
      * @var array
      */
     private $_marchantMap = array();
+    /**
+     * Date Format, it's different in some accounts
+     * @var string
+     */
+    private $_dateFormat = null;
 	/**
 	 * Constructor and Login
 	 * @param $tradeDoubler
@@ -175,65 +180,48 @@ class Oara_Network_TradeDoubler extends Oara_Network{
 													new Oara_Curl_Parameter('format', 'CSV')
 			                                        );
 			                                        
-	    $this->_exportOverviewParameters = array(new Oara_Curl_Parameter('reportName', 'aAffiliateGraphicalElementReport'),
-	                                               new Oara_Curl_Parameter('columns', 'graphicalElementName'),
-	                                               new Oara_Curl_Parameter('columns', 'graphicalElementId'),
-	                                               new Oara_Curl_Parameter('columns', 'graphicalElementSize'),
-	                                               new Oara_Curl_Parameter('columns', 'graphicalElementType'),
-	                                               new Oara_Curl_Parameter('columns', 'impNrOf'),
-	                                               new Oara_Curl_Parameter('columns', 'clickNrOf'),
-	                                               new Oara_Curl_Parameter('columns', 'clickRate'),
-	                                               new Oara_Curl_Parameter('columns', 'uvNrOf'),
-	                                               new Oara_Curl_Parameter('columns', 'uvRate'),
-	                                               new Oara_Curl_Parameter('columns', 'leadNrOf'),
-	                                               new Oara_Curl_Parameter('columns', 'leadCommission'),
-	                                               new Oara_Curl_Parameter('columns', 'leadRate'),
-	                                               new Oara_Curl_Parameter('columns', 'saleNrOf'),
-	                                               new Oara_Curl_Parameter('columns', 'saleCommission'),
-	                                               new Oara_Curl_Parameter('columns', 'conversionRate'),
-	                                               new Oara_Curl_Parameter('columns', 'totalOrderValue'),
-	                                               new Oara_Curl_Parameter('columns', 'keyMetricECPM'),
-	                                               new Oara_Curl_Parameter('columns', 'cpo'),
-	                                               new Oara_Curl_Parameter('columns', 'affiliateCommission'),
-	                                               new Oara_Curl_Parameter('columns', 'link'),
-	                                               new Oara_Curl_Parameter('columns', 'programName'),
-	                                               new Oara_Curl_Parameter('isPostBack', ''),
-	                                               new Oara_Curl_Parameter('metric1.lastOperator', '/'),
-	                                               new Oara_Curl_Parameter('interval', 'MONTHS'),
-	                                               new Oara_Curl_Parameter('favoriteDescription', ''),
-	                                               new Oara_Curl_Parameter('currencyId', 'GBP'),
-	                                               new Oara_Curl_Parameter('run_as_organization_id', ''),
-	                                               new Oara_Curl_Parameter('minRelativeIntervalStartTime', '0'),
-	                                               new Oara_Curl_Parameter('metric1.summaryType', 'NONE'),
-	                                               new Oara_Curl_Parameter('metric1.operator1e', '/'),
-	                                               new Oara_Curl_Parameter('latestDayToExecute', '0'),
-	                                               new Oara_Curl_Parameter('showAdvanced', 'false'),
-	                                               new Oara_Curl_Parameter('adType', ''),
-	                                               new Oara_Curl_Parameter('eventTypeId', '0'),
-	                                               new Oara_Curl_Parameter('metric1.midFactor', ''),
-	                                               new Oara_Curl_Parameter('reportTitleTextKey', 'REPORT3_SERVICE_REPORTS_AAFFILIATEGRAPHICALELEMENTREPORT_TITLE'),
-	                                               new Oara_Curl_Parameter('setColumns', 'true'),
-	                                               new Oara_Curl_Parameter('metric1.columnName1', 'graphicalElementId'),
-	                                               new Oara_Curl_Parameter('metric1.columnName2', 'graphicalElementId'),
-	                                               new Oara_Curl_Parameter('reportPrograms', ''),
-	                                               new Oara_Curl_Parameter('adServeing', ''),
-	                                               new Oara_Curl_Parameter('metric1.midOperator', '/'),
-	                                               new Oara_Curl_Parameter('favoriteName', ''),
-	                                               new Oara_Curl_Parameter('dateType', '1'),
-	                                               new Oara_Curl_Parameter('period', 'custom_period'),
-	                                               new Oara_Curl_Parameter('tabMenuName', ''),
-	                                               new Oara_Curl_Parameter('dateType', '1'),
-	                                               new Oara_Curl_Parameter('maxIntervalSize', '12'),
-	                                               new Oara_Curl_Parameter('favoriteId', ''),
-	                                               new Oara_Curl_Parameter('metric1.name', ''),
-	                                               new Oara_Curl_Parameter('geStatus', 'all'),
-	                                               new Oara_Curl_Parameter('customKeyMetricCount', '0'),
-	                                               new Oara_Curl_Parameter('metric1.factor', ''),
-	                                               new Oara_Curl_Parameter('showFavorite', 'false'),
-	                                               new Oara_Curl_Parameter('separator', ''),
-	                                               new Oara_Curl_Parameter('programTypeId', ''),
-	                                               new Oara_Curl_Parameter('format', 'CSV'),
-	                                               );
+
+			                                        
+	    $this->_exportOverviewParameters = array(new Oara_Curl_Parameter('reportName','aAffiliateProgramOverviewReport'),
+													new Oara_Curl_Parameter('tabMenuName',''),
+													new Oara_Curl_Parameter('isPostBack',''),
+													new Oara_Curl_Parameter('showAdvanced','true'),
+													new Oara_Curl_Parameter('showFavorite','false'),
+													new Oara_Curl_Parameter('run_as_organization_id',''),
+													new Oara_Curl_Parameter('minRelativeIntervalStartTime','0'),
+													new Oara_Curl_Parameter('maxIntervalSize','12'),
+													new Oara_Curl_Parameter('interval','MONTHS'),
+													new Oara_Curl_Parameter('reportPrograms',''),
+													new Oara_Curl_Parameter('reportTitleTextKey','REPORT3_SERVICE_REPORTS_AAFFILIATEPROGRAMOVERVIEWREPORT_TITLE'),
+													new Oara_Curl_Parameter('setColumns','true'),
+													new Oara_Curl_Parameter('latestDayToExecute','0'),
+													new Oara_Curl_Parameter('programTypeId',''),
+													new Oara_Curl_Parameter('currencyId','GBP'),
+													new Oara_Curl_Parameter('includeWarningColumn','true'),
+													new Oara_Curl_Parameter('programId',''),
+													new Oara_Curl_Parameter('period','custom_period'),
+													new Oara_Curl_Parameter('columns','programId'),
+													new Oara_Curl_Parameter('columns','impNrOf'),
+													new Oara_Curl_Parameter('columns','clickNrOf'),
+													new Oara_Curl_Parameter('autoCheckbox','columns'),
+													new Oara_Curl_Parameter('autoCheckbox','useMetricColumn'),
+													new Oara_Curl_Parameter('customKeyMetricCount','0'),
+													new Oara_Curl_Parameter('metric1.name',''),
+													new Oara_Curl_Parameter('metric1.midFactor',''),
+													new Oara_Curl_Parameter('metric1.midOperator','/'),
+													new Oara_Curl_Parameter('metric1.columnName1','programId'),
+													new Oara_Curl_Parameter('metric1.operator1','/'),
+													new Oara_Curl_Parameter('metric1.columnName2','programId'),
+													new Oara_Curl_Parameter('metric1.lastOperator','/'),
+													new Oara_Curl_Parameter('metric1.factor',''),
+													new Oara_Curl_Parameter('metric1.summaryType','NONE'),
+													new Oara_Curl_Parameter('format','CSV'),
+													new Oara_Curl_Parameter('separator',';'),
+													new Oara_Curl_Parameter('dateType','1'),
+													new Oara_Curl_Parameter('favoriteId',''),
+													new Oara_Curl_Parameter('favoriteName',''),
+													new Oara_Curl_Parameter('favoriteDescription','')
+													);
 	                                               
 		$this->_exportCreativeParameters = array(new Oara_Curl_Parameter('programGEListParameterTransport.currentPage', '1'),
 	                                               new Oara_Curl_Parameter('searchPerformed', 'true'),
@@ -260,13 +248,24 @@ class Oara_Network_TradeDoubler extends Oara_Network{
 	                                               new Oara_Curl_Parameter('programAdvancedListParameterTransport.pfTemplateTableHeight', ''),
 	                                               new Oara_Curl_Parameter('programAdvancedListParameterTransport.pfAdToolContentUnitRule', '')
 												   );
+												   
+												   
+			
+		$urls = array();
+        $urls[] = new Oara_Curl_Request('http://www.tradedoubler.com/pan/aReport3Selection.action?reportName=aAffiliateProgramOverviewReport', array());
+        $exportReport = $this->_client->get($urls);
+		if (preg_match("/\((.{0,2}\/.{0,2}\/.{0,2})\)/", $exportReport[0], $match)){
+			$this->_dateFormat = $match[1];
+		}
+        
+        
 	}
 	/**
 	 * Check the connection
 	 */
 	public function checkConnection(){
 		$connection = false;
-		if (!preg_match("/Session timed out/", self::getExportMerchantReport(), $matches)){
+		if ($this->_dateFormat != null){
 			$connection = true;
 		}
 		return $connection;
@@ -408,8 +407,15 @@ class Oara_Network_TradeDoubler extends Oara_Network{
 	public function getTransactionList($merchantList = null , Zend_Date $dStartDate = null , Zend_Date $dEndDate = null)
 	{
 		$totalTransactions = Array();
-        $startDate = $dStartDate->toString('dd/MM/yyyy');
-        $endDate = $dEndDate->toString('dd/MM/yyyy');
+		if ($this->_dateFormat == 'dd/MM/yy'){
+	        $startDate = $dStartDate->toString('dd/MM/yyyy');
+	        $endDate = $dEndDate->toString('dd/MM/yyyy');
+		} else if ($this->_dateFormat == 'M/d/yy') {
+			$startDate = $dStartDate->toString('M/d/yy');
+	        $endDate = $dEndDate->toString('M/d/yy');
+		} else {
+			throw new Exception ("\n Date Format not supported ".$this->_dateFormat."\n");
+		}
 
         $valuesFormExport = Oara_Utilities::cloneArray($this->_exportTransactionParameters);
         $valuesFormExport[] = new Oara_Curl_Parameter('startDate', $startDate);
@@ -440,11 +446,19 @@ class Oara_Network_TradeDoubler extends Oara_Network{
                 $transaction = Array();
                 $transaction['merchantId'] = $transactionExportArray[2];
                 $transaction['website'] = $transactionExportArray[13];
-                $transactionDate =  new Zend_Date(substr($transactionExportArray[4],0,-4), "dd/MM/YY HH:mm:ss");
+                
+            	if ($this->_dateFormat == 'dd/MM/yy'){
+			       $transactionDate =  new Zend_Date(substr($transactionExportArray[4],0,-4), "dd/MM/yy HH:mm:ss");
+				} else if ($this->_dateFormat == 'M/d/yy') {
+					$transactionDate =  new Zend_Date(substr($transactionExportArray[4],0,-8), "M/d/yy HH:mm:ss");
+				} else {
+					throw new Exception ("\n Date Format not supported ".$this->_dateFormat."\n");
+				}
+                
                 $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
                 $transaction['program'] = $transactionExportArray[10];
-                $transaction['link'] = $transactionExportArray[14];
-                $transaction['linkId'] = $transactionExportArray[15];
+                //$transaction['link'] = $transactionExportArray[14];
+                //$transaction['linkId'] = $transactionExportArray[15];
                 if ($transactionExportArray[11] == 'A'){
                 	$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
                 } else if ($transactionExportArray[11] == 'P'){
@@ -474,16 +488,30 @@ class Oara_Network_TradeDoubler extends Oara_Network{
         $totalOverviews = Array();
         $transactionArray = self::transactionMapPerDay($transactionList);
         
-        $mothOverviewUrls = array();
+        
         $sites = self::getSitesFromMerchant($merchantList);
         foreach ($sites as $key => $value){
+        	$mothOverviewUrls = array();
+        	
+        	
         	$valuesFormExport = Oara_Utilities::cloneArray($this->_exportOverviewParameters);
-        	$valuesFormExport[] = new Oara_Curl_Parameter('startDate', $dStartDate->toString('dd/MM/yy'));
-        	$valuesFormExport[] = new Oara_Curl_Parameter('endDate', $dEndDate->toString('dd/MM/yy'));
+        	
+       		if ($this->_dateFormat == 'dd/MM/yy'){
+		    	$valuesFormExport[] = new Oara_Curl_Parameter('startDate', $dStartDate->toString('dd/MM/yy'));
+        		$valuesFormExport[] = new Oara_Curl_Parameter('endDate', $dEndDate->toString('dd/MM/yy'));
+			} else if ($this->_dateFormat == 'M/d/yy') {
+				$valuesFormExport[] = new Oara_Curl_Parameter('startDate', $dStartDate->toString('M/d/yy'));
+        		$valuesFormExport[] = new Oara_Curl_Parameter('endDate', $dEndDate->toString('M/d/yy'));
+			} else {
+				throw new Exception ("\n Date Format not supported ".$this->_dateFormat."\n");
+			}
+				
+        	
         	$valuesFormExport[] = new Oara_Curl_Parameter('affiliateId', $key);
         	$urls = array();
-        	$urls[] = new Oara_Curl_Request('http://www.tradedoubler.com/pan/aReport3.action?', $valuesFormExport);
+        	$urls[] = new Oara_Curl_Request('http://www.tradedoubler.com/pan/aReport3Internal.action?', $valuesFormExport);
         	$exportReport = $this->_client->get($urls);
+        	
         	$exportData = array();
         	if (!preg_match("/error/", $exportReport[0], $matches)){
             	$exportData = str_getcsv($exportReport[0],"\r\n");
@@ -495,74 +523,87 @@ class Oara_Network_TradeDoubler extends Oara_Network{
            		
             	for ($i = 0; $i < $dateArraySize; $i++){
                 	$valuesFormExport = Oara_Utilities::cloneArray($this->_exportOverviewParameters);
-                	$valuesFormExport[] = new Oara_Curl_Parameter('startDate', $dateArray[$i]->toString('dd/MM/yy'));
-                	$valuesFormExport[] = new Oara_Curl_Parameter('endDate', $dateArray[$i]->toString('dd/MM/yy'));
+                	
+	            	if ($this->_dateFormat == 'dd/MM/yy'){
+				    	$valuesFormExport[] = new Oara_Curl_Parameter('startDate', $dStartDate->toString('dd/MM/yy'));
+		        		$valuesFormExport[] = new Oara_Curl_Parameter('endDate', $dEndDate->toString('dd/MM/yy'));
+					} else if ($this->_dateFormat == 'M/d/yy') {
+						$valuesFormExport[] = new Oara_Curl_Parameter('startDate', $dStartDate->toString('M/d/yy'));
+		        		$valuesFormExport[] = new Oara_Curl_Parameter('endDate', $dEndDate->toString('M/d/yy'));
+					} else {
+						throw new Exception ("\n Date Format not supported ".$this->_dateFormat."\n");
+					}
+
                 	$valuesFormExport[] = new Oara_Curl_Parameter('affiliateId', $key);
-                	$mothOverviewUrls[] = new Oara_Curl_Request('http://www.tradedoubler.com/pan/aReport3.action?', $valuesFormExport);
+                	$mothOverviewUrls[] = new Oara_Curl_Request('http://www.tradedoubler.com/pan/aReport3Internal.action?', $valuesFormExport);
                 }                                     
             }
-        }
         
-    	$exportReport = $this->_client->get($mothOverviewUrls);
-        $exportReportNumber = count($exportReport);
-	    for ($i = 0; $i < $exportReportNumber; $i++){
-        	$exportData = str_getcsv($exportReport[$i],"\r\n");
-        	$num = count($exportData); 
-        	for ($j = 2; $j < $num-1; $j++) {
-             	$overviewExportArray = str_getcsv($exportData[$j],";");
-	    		$parameter = $mothOverviewUrls[$i]->getParameter(58);
-	    		$overviewDate = $parameter->getValue();
-                $overviewDate = new Zend_Date($overviewDate, "dd/MM/yy");
-                if (!isset($overviewExportArray[4])){
-                	throw new Exception ("Problem getting the overview");
-                }
-                $merchantName = preg_replace("/,/","", $overviewExportArray[4]);
-                if(!isset($this->_merchantMap[$merchantName])){
-                	echo 'not found the merchant '.$merchantName."\n\n";
-                }
-                
-            	if ($overviewDate->compare($dStartDate) >= 0 && $overviewDate->compare($dEndDate) <= 0 
-            		&& isset($this->_merchantMap[$merchantName]) && in_array((int)$this->_merchantMap[$merchantName],$merchantList)){
-                	
-            		$overview = Array();
-                    
-                    $overview['merchantId'] = (int)$this->_merchantMap[$merchantName];
-                    $overview['date'] = $overviewDate->toString("yyyy-MM-dd HH:mm:ss");
-                    $overview['link'] = $overviewExportArray[0];
-                    $parameter = $mothOverviewUrls[$i]->getParameter(60);
-	    			$parameterWebsite = $parameter->getValue();
-                    $overview['website'] = $sites[$parameterWebsite];
-                    $overview['click_number'] = (int)$overviewExportArray[6];
-                   	$overview['impression_number'] = (int)$overviewExportArray[5];
-                    $overview['transaction_number'] = 0;
-                    $overview['transaction_confirmed_value'] = 0;
-                    $overview['transaction_confirmed_commission']= 0;
-                    $overview['transaction_pending_value']= 0;
-                    $overview['transaction_pending_commission']= 0;
-                    $overview['transaction_declined_value']= 0;
-                    $overview['transaction_declined_commission']= 0;
-                    $transactionDateArray = self::getDayFromArray($overview['merchantId'],$overviewExportArray[1],$overview['website'], $transactionArray, $overviewDate);
-                    foreach ($transactionDateArray as $transaction){
-                       $overview['link'] = $transaction['link'];
-                       $overview['transaction_number'] ++;
-                       if ($transaction['status'] == Oara_Utilities::STATUS_CONFIRMED){
-                       	   $overview['transaction_confirmed_value'] += $transaction['amount'];
-                           $overview['transaction_confirmed_commission'] += $transaction['commission'];
-                       } else if ($transaction['status'] == Oara_Utilities::STATUS_PENDING){
-                           $overview['transaction_pending_value'] += $transaction['amount'];
-                           $overview['transaction_pending_commission'] += $transaction['commission'];
-                       } else if ($transaction['status'] == Oara_Utilities::STATUS_DECLINED){
-                           $overview['transaction_declined_value'] += $transaction['amount'];
-                           $overview['transaction_declined_commission'] += $transaction['commission'];
-                       }
-                   }
-                   if (Oara_Utilities::checkRegister($overview)){
-                       $totalOverviews[] = $overview;
-                   }
-               }
-           }
-        }
         
+	    	$exportReport = $this->_client->get($mothOverviewUrls);
+	        $exportReportNumber = count($exportReport);
+		    for ($i = 0; $i < $exportReportNumber; $i++){
+	        	$exportData = str_getcsv($exportReport[$i],"\r\n");
+	        	$num = count($exportData); 
+	        	for ($j = 2; $j < $num-1; $j++) {
+	             	$overviewExportArray = str_getcsv($exportData[$j],";");
+		    		$parameter = $mothOverviewUrls[$i]->getParameter(39);
+		    		$overviewDate = $parameter->getValue();
+		    		
+		        	if ($this->_dateFormat == 'dd/MM/yy'){
+				    	$overviewDate = new Zend_Date($overviewDate, "dd/MM/yy");
+					} else if ($this->_dateFormat == 'M/d/yy') {
+						$overviewDate = new Zend_Date($overviewDate, "M/d/yy");
+					} else {
+						throw new Exception ("\n Date Format not supported ".$this->_dateFormat."\n");
+					}
+	                
+	                if (!isset($overviewExportArray[2])){
+	                	throw new Exception ("Problem getting the overview");
+	                }
+	                
+	                
+	            	if ($overviewDate->compare($dStartDate) >= 0 && $overviewDate->compare($dEndDate) <= 0 
+	            		&& isset($overviewExportArray[2]) && in_array((int)$overviewExportArray[2],$merchantList)){
+	                	
+	            		$overview = Array();
+	                    
+	                    $overview['merchantId'] = (int)$overviewExportArray[2];
+	                    $overview['date'] = $overviewDate->toString("yyyy-MM-dd HH:mm:ss");
+	                    //$overview['link'] = $overviewExportArray[0];
+	                    $parameter = $mothOverviewUrls[$i]->getParameter(41);
+		    			$parameterWebsite = $parameter->getValue();
+	                    $overview['website'] = $sites[$parameterWebsite];
+	                    $overview['click_number'] = (int)$overviewExportArray[4];
+	                   	$overview['impression_number'] = (int)$overviewExportArray[3];
+	                    $overview['transaction_number'] = 0;
+	                    $overview['transaction_confirmed_value'] = 0;
+	                    $overview['transaction_confirmed_commission']= 0;
+	                    $overview['transaction_pending_value']= 0;
+	                    $overview['transaction_pending_commission']= 0;
+	                    $overview['transaction_declined_value']= 0;
+	                    $overview['transaction_declined_commission']= 0;
+	                    $transactionDateArray = self::getDayFromArray($overview['merchantId'],$overview['website'], $transactionArray, $overviewDate);
+	                    foreach ($transactionDateArray as $transaction){
+	                       $overview['transaction_number'] ++;
+	                       if ($transaction['status'] == Oara_Utilities::STATUS_CONFIRMED){
+	                       	   $overview['transaction_confirmed_value'] += $transaction['amount'];
+	                           $overview['transaction_confirmed_commission'] += $transaction['commission'];
+	                       } else if ($transaction['status'] == Oara_Utilities::STATUS_PENDING){
+	                           $overview['transaction_pending_value'] += $transaction['amount'];
+	                           $overview['transaction_pending_commission'] += $transaction['commission'];
+	                       } else if ($transaction['status'] == Oara_Utilities::STATUS_DECLINED){
+	                           $overview['transaction_declined_value'] += $transaction['amount'];
+	                           $overview['transaction_declined_commission'] += $transaction['commission'];
+	                       }
+	                   }
+	                   if (Oara_Utilities::checkRegister($overview)){
+	                       $totalOverviews[] = $overview;
+	                   }
+	               }
+	           }
+	        }
+        }
         return $totalOverviews;                                 	
     }
     
@@ -588,7 +629,15 @@ class Oara_Network_TradeDoubler extends Oara_Network{
 				$pid = $paymentLines->item($i)->attributes->getNamedItem("value")->nodeValue;
 				if (is_numeric($pid)){
 					$obj = array();
-					$date = new Zend_Date(substr($paymentLines->item($i)->nodeValue,0,10), "dd/MM/yy");
+					
+					if ($this->_dateFormat == 'dd/MM/yy'){
+				    	$date = new Zend_Date(substr($paymentLines->item($i)->nodeValue,0,10), "dd/MM/yy");
+					} else if ($this->_dateFormat == 'M/d/yy') {
+						$date = new Zend_Date(substr($paymentLines->item($i)->nodeValue,0,10), "M/d/yy");
+					} else {
+						throw new Exception ("\n Date Format not supported ".$this->_dateFormat."\n");
+					}
+					
 					$obj['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
 					$obj['pid'] = $pid;
 					$obj['method'] = 'BACS';
@@ -613,11 +662,11 @@ class Oara_Network_TradeDoubler extends Oara_Network{
     	$transactionMap = array();
     	foreach ($transactionList as $transaction){
     		$dateString = substr($transaction['date'], 0, 10);
-    		if (!isset($transactionMap[$transaction['merchantId']][$transaction['linkId']][$transaction['website']][$dateString])){
-    			$transactionMap[$transaction['merchantId']][$transaction['linkId']][$transaction['website']][$dateString] = array();
+    		if (!isset($transactionMap[$transaction['merchantId']][$transaction['website']][$dateString])){
+    			$transactionMap[$transaction['merchantId']][$transaction['website']][$dateString] = array();
     		}
             
-    		$transactionMap[$transaction['merchantId']][$transaction['linkId']][$transaction['website']][$dateString][] = $transaction;
+    		$transactionMap[$transaction['merchantId']][$transaction['website']][$dateString][] = $transaction;
     	}
     	
     	return $transactionMap;
@@ -628,12 +677,12 @@ class Oara_Network_TradeDoubler extends Oara_Network{
 	 * @param Zend_Date $date
 	 * @return array
 	 */
-	public function getDayFromArray($merchantId, $linkId, $website, $dateArray, Zend_Date $date){
+	public function getDayFromArray($merchantId, $website, $dateArray, Zend_Date $date){
 		$resultArray = array();
-		if (isset($dateArray[$merchantId][$linkId][$website])){
+		if (isset($dateArray[$merchantId][$website])){
 			$dateString = $date->toString("yyyy-MM-dd");
-			if (isset($dateArray[$merchantId][$linkId][$website][$dateString])){
-				$resultArray = $dateArray[$merchantId][$linkId][$website][$dateString];
+			if (isset($dateArray[$merchantId][$website][$dateString])){
+				$resultArray = $dateArray[$merchantId][$website][$dateString];
 			}
 		}
 		return $resultArray;
