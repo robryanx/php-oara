@@ -274,14 +274,26 @@ class Oara_Network_TradeDoubler extends Oara_Network{
      * It returns the Merchant CVS report.
      * @return $exportReport
      */
-	private function getExportMerchantReport(){
-		$valuesFormExport = $this->_exportMerchantParameters;
-		$valuesFormExport[] = new Oara_Curl_Parameter('programAffiliateStatusId', '3');
-				                                
-        $urls = array();
-        $urls[] = new Oara_Curl_Request('http://www.tradedoubler.com/pan/aReport3Internal.action?', $valuesFormExport);
-        $exportReport = $this->_client->post($urls);
-        return self::formatCsv($exportReport[0]);
+	private function getExportMerchantReport($content){
+		$merchantReport = self::formatCsv($content);
+		
+        $exportData = str_getcsv($merchantReport, "\r\n");
+        $merchantReportList = Array();
+        $num = count($exportData);
+        for ($i = 3; $i < $num; $i++) {
+            $merchantExportArray = str_getcsv($exportData[$i], ",");
+            
+            if ($merchantExportArray[2] != '' && $merchantExportArray[4] != ''){
+                $merchantReportList[$merchantExportArray[4]] = $merchantExportArray[2];
+                
+                //Fill the website list
+	            if(!isset($this->_websitesList[$merchantExportArray[4]])){
+	            	$this->_websitesList[$merchantExportArray[4]] = array();
+	            }
+	            $this->_websitesList[$merchantExportArray[4]][$merchantExportArray[1]] = $merchantExportArray[0];
+            }
+        }
+        return $merchantReportList;
 	}
 	/**
 	 * 
@@ -329,28 +341,15 @@ class Oara_Network_TradeDoubler extends Oara_Network{
 	 * @return array
 	 */
 	private function getMerchantReportList(){
-		
-		$merchantReport = self::getExportMerchantReport();
-		
-        $exportData = str_getcsv($merchantReport, "\r\n");
-        $merchantReportList = Array();
-        $num = count($exportData);
-        for ($i = 3; $i < $num; $i++) {
-            $merchantExportArray = str_getcsv($exportData[$i], ",");
-            if (count($merchantExportArray) < 5){
-            	throw new Exception ("Problem getting the merchant ");
-            }
-            
-            if ($merchantExportArray[2] != '' && $merchantExportArray[4] != ''){
-                $merchantReportList[$merchantExportArray[4]] = $merchantExportArray[2];
-                
-                //Fill the website list
-	            if(!isset($this->_websitesList[$merchantExportArray[4]])){
-	            	$this->_websitesList[$merchantExportArray[4]] = array();
-	            }
-	            $this->_websitesList[$merchantExportArray[4]][$merchantExportArray[1]] = $merchantExportArray[0];
-            }
-        }
+		$merchantReportList = Array();
+		$valuesFormExport = $this->_exportMerchantParameters;
+		$valuesFormExport[] = new Oara_Curl_Parameter('programAffiliateStatusId', '3');
+				                                
+        $urls = array();
+        $urls[] = new Oara_Curl_Request('http://www.tradedoubler.com/pan/aReport3Internal.action?', $valuesFormExport);
+        $exportReport = $this->_client->post($urls);
+        $exportReport[0] = self::checkReportError($exportReport[0], $urls[0]);
+        $merchantReportList = self::getExportMerchantReport($exportReport[0]);
         
         $valuesFormExport = $this->_exportMerchantParameters;
 		$valuesFormExport[] = new Oara_Curl_Parameter('programAffiliateStatusId', '4');
@@ -358,20 +357,10 @@ class Oara_Network_TradeDoubler extends Oara_Network{
         $urls = array();
         $urls[] = new Oara_Curl_Request('http://www.tradedoubler.com/pan/aReport3Internal.action?', $valuesFormExport);
         $exportReport = $this->_client->post($urls);
-        $exportData = str_getcsv(self::formatCsv($exportReport[0]), "\r\n");
-		$num = count($exportData);
-        for ($i = 3; $i < $num; $i++) {
-            $merchantExportArray = str_getcsv($exportData[$i], ",");
-            if (!isset($merchantExportArray[2])){
-            	throw new Exception ('Error getting merchant report');
-            }
-            if ($merchantExportArray[2] != '' && $merchantExportArray[4] != ''){
-                //Fill the website list
-	            if(!isset($this->_websitesList[$merchantExportArray[4]])){
-	            	$this->_websitesList[$merchantExportArray[4]] = array();
-	            }
-	            $this->_websitesList[$merchantExportArray[4]][$merchantExportArray[1]] = $merchantExportArray[0];
-            }
+        $exportReport[0] = self::checkReportError($exportReport[0], $urls[0]);
+        $merchantReportListAux = self::getExportMerchantReport($exportReport[0]);
+        foreach ($merchantReportListAux as $key => $value){
+        	$merchantReportList[$key] = $value;
         }
         
         return $merchantReportList;
@@ -424,6 +413,9 @@ class Oara_Network_TradeDoubler extends Oara_Network{
         $urls[] = new Oara_Curl_Request('http://www.tradedoubler.com/pan/aReport3Internal.action?', $valuesFormExport);
         $exportReport = $this->_client->get($urls);
         
+        $exportReport[0] = self::checkReportError($exportReport[0], $urls[0]);
+		
+        
         preg_match_all("/,\"([^\"]+?)\",/", $exportReport[0], $matches);
         foreach ($matches[1] as $match){
         	if (preg_match("/\r\n/", $match)){
@@ -434,14 +426,10 @@ class Oara_Network_TradeDoubler extends Oara_Network{
         
         $exportData = str_getcsv($exportReport[0],"\r\n");
         $num = count($exportData);
-        if ($num < 3){
-         	throw new Exception ('Error getting transaction report');
-        }
+        
         for ($i = 2; $i < $num-1; $i++) {
             $transactionExportArray = str_getcsv($exportData[$i],",");
-        	if (!isset($transactionExportArray[2])){
-                throw new Exception ("Problem getting the transactions");
-            }
+        	
             if ($transactionExportArray[0] !== '' && in_array((int)$transactionExportArray[2],$merchantList)){
                 $transaction = Array();
                 $transaction['merchantId'] = $transactionExportArray[2];
@@ -512,10 +500,11 @@ class Oara_Network_TradeDoubler extends Oara_Network{
         	$urls[] = new Oara_Curl_Request('http://www.tradedoubler.com/pan/aReport3Internal.action?', $valuesFormExport);
         	$exportReport = $this->_client->get($urls);
         	
-        	$exportData = array();
-        	if (!preg_match("/error/", $exportReport[0], $matches)){
-            	$exportData = str_getcsv($exportReport[0],"\r\n");
-            }
+        	
+        	$exportReport[0] = self::checkReportError($exportReport[0], $urls[0]);
+        	
+            $exportData = str_getcsv($exportReport[0],"\r\n");
+            
             $num = count($exportData);
             if ($num > 3){
             	$dateArray = Oara_Utilities::daysOfDifference($dStartDate, $dEndDate);
@@ -525,11 +514,11 @@ class Oara_Network_TradeDoubler extends Oara_Network{
                 	$valuesFormExport = Oara_Utilities::cloneArray($this->_exportOverviewParameters);
                 	
 	            	if ($this->_dateFormat == 'dd/MM/yy'){
-				    	$valuesFormExport[] = new Oara_Curl_Parameter('startDate', $dStartDate->toString('dd/MM/yy'));
-		        		$valuesFormExport[] = new Oara_Curl_Parameter('endDate', $dEndDate->toString('dd/MM/yy'));
+				    	$valuesFormExport[] = new Oara_Curl_Parameter('startDate', $dateArray[$i]->toString('dd/MM/yy'));
+		        		$valuesFormExport[] = new Oara_Curl_Parameter('endDate', $dateArray[$i]->toString('dd/MM/yy'));
 					} else if ($this->_dateFormat == 'M/d/yy') {
-						$valuesFormExport[] = new Oara_Curl_Parameter('startDate', $dStartDate->toString('M/d/yy'));
-		        		$valuesFormExport[] = new Oara_Curl_Parameter('endDate', $dEndDate->toString('M/d/yy'));
+						$valuesFormExport[] = new Oara_Curl_Parameter('startDate', $dateArray[$i]->toString('M/d/yy'));
+		        		$valuesFormExport[] = new Oara_Curl_Parameter('endDate', $dateArray[$i]->toString('M/d/yy'));
 					} else {
 						throw new Exception ("\n Date Format not supported ".$this->_dateFormat."\n");
 					}
@@ -543,6 +532,7 @@ class Oara_Network_TradeDoubler extends Oara_Network{
 	    	$exportReport = $this->_client->get($mothOverviewUrls);
 	        $exportReportNumber = count($exportReport);
 		    for ($i = 0; $i < $exportReportNumber; $i++){
+		    	$exportReport[$i] = self::checkReportError($exportReport[$i], $mothOverviewUrls[$i]);
 	        	$exportData = str_getcsv($exportReport[$i],"\r\n");
 	        	$num = count($exportData); 
 	        	for ($j = 2; $j < $num-1; $j++) {
@@ -557,10 +547,10 @@ class Oara_Network_TradeDoubler extends Oara_Network{
 					} else {
 						throw new Exception ("\n Date Format not supported ".$this->_dateFormat."\n");
 					}
-	                
-	                if (!isset($overviewExportArray[2])){
-	                	throw new Exception ("Problem getting the overview");
-	                }
+					
+					if (!isset($overviewExportArray[2])){
+						var_dump($exportReport[$i]);
+					}
 	                
 	                
 	            	if ($overviewDate->compare($dStartDate) >= 0 && $overviewDate->compare($dEndDate) <= 0 
@@ -605,6 +595,26 @@ class Oara_Network_TradeDoubler extends Oara_Network{
 	        }
         }
         return $totalOverviews;                                 	
+    }
+    
+    public function checkReportError($content, $request, $try = 0){
+
+    	if (preg_match("/error/", $content, $matches)){
+    		var_dump($content);
+            $urls = array();
+	        $urls[] = $request;   
+		    $exportReport = $this->_client->get($urls);
+		    $try ++;
+		    if ($try < 5){
+		    	return self::checkReportError($exportReport[0], $request, $try);
+		    } else {
+		    	throw new Exception('Problem checking report');
+		    }
+		    
+        } else {
+        	return $content;
+        }
+    	
     }
     
 	/**
