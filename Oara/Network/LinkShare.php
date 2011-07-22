@@ -122,7 +122,8 @@ class Oara_Network_LinkShare extends Oara_Network{
 		//$csv = preg_replace('/(?<!"),/', '', $csv);
 		//$csv = preg_replace('/(?<!")\n/', '', $csv); 
 		
-		preg_match_all("/\"([^\"]+?)\",/", $csv, $matches);
+		$csv = preg_replace("/\"\"/","", $csv);
+		preg_match_all("/,\"([^\"]+?)\"/", $csv, $matches);
         foreach ($matches[1] as $match){
         	if (preg_match("/,/", $match)){
         		$rep = preg_replace("/,/","", $match);
@@ -178,7 +179,7 @@ class Oara_Network_LinkShare extends Oara_Network{
 	            	throw new Exception("Error getting merchants");
 	            }
 	            
-				$obj['cid'] = $merchantArray[2];		
+				$obj['cid'] = (int)$merchantArray[2];		
 				$obj['name'] = $merchantArray[0];
 				$obj['description'] = $merchantArray[3];
 				$obj['url'] = $merchantArray[1];
