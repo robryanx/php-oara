@@ -549,7 +549,7 @@ class Oara_Network_TradeDoubler extends Oara_Network{
 					}
 					
 					if (!isset($overviewExportArray[2])){
-						var_dump($exportReport[$i]);
+						throw new Exception('Problem getting overview\n\n'.$exportReport[$i]);
 					}
 	                
 	                
@@ -608,7 +608,7 @@ class Oara_Network_TradeDoubler extends Oara_Network{
 		    if ($try < 5){
 		    	return self::checkReportError($exportReport[0], $request, $try);
 		    } else {
-		    	throw new Exception('Problem checking report');
+		    	throw new Exception('Problem checking report\n\n'.$content);
 		    }
 		    
         } else {
