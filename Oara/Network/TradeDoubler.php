@@ -254,7 +254,7 @@ class Oara_Network_TradeDoubler extends Oara_Network{
 		$urls = array();
         $urls[] = new Oara_Curl_Request('http://www.tradedoubler.com/pan/aReport3Selection.action?reportName=aAffiliateProgramOverviewReport', array());
         $exportReport = $this->_client->get($urls);
-		if (preg_match("/\((.{0,2}\/.{0,2}\/.{0,2})\)/", $exportReport[0], $match)){
+		if (preg_match("/\(([a-zA-Z]{0,2}\/[a-zA-Z]{0,2}\/[a-zA-Z]{0,2})\)/", $exportReport[0], $match)){
 			$this->_dateFormat = $match[1];
 		}
         
