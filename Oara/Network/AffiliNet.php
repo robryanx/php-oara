@@ -138,31 +138,23 @@ class Oara_Network_AffiliNet extends Oara_Network{
 				           );
 				           
 			$transactionList = self::affilinetCall('transaction', $publisherStatisticsService, $params);
-				           
-			
-	        if (isset($transactionList->SalesLeadsStatisticsRecords->SalesLeadsStatisticsRecords->SalesLeadsStatisticsRecord)){
-				$transactionList = $transactionList->SalesLeadsStatisticsRecords->SalesLeadsStatisticsRecords->SalesLeadsStatisticsRecord;		
-				if (gettype($transactionList) != 'array'){
-					$transactionAuxList = array();
-					$transactionAuxList[] = $transactionList;
-					$transactionList = $transactionAuxList;
-				}
-				if($transactionList != null){
-			        $transactionList = Oara_Utilities::soapConverter($transactionList, $this->_transactionConverterConfiguration);
-			        foreach ($transactionList as $transaction){
-			        	//$transaction['merchantId'] = 3901;
-			        	if ($transaction['status'] == 'Confirmed'){
-			        		$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
-			        	} else if ($transaction['status'] == 'Open'){
-			        		$transaction['status'] = Oara_Utilities::STATUS_PENDING;
-			        	} else if ($transaction['status'] == 'Cancelled'){
-			        		$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
-			        	}
-			        	$totalTransactions[] = $transaction;
-			        }
-				}
-			}
-		
+			$transactionList = $transactionList->SalesLeadsStatisticsRecords->SalesLeadsStatisticsRecords->SalesLeadsStatisticsRecord;	
+	        if ($transactionList != null && !is_array($transactionList)){
+		        $transactionList = array($transactionList);
+	        }	           
+			$transactionList = Oara_Utilities::soapConverter($transactionList, $this->_transactionConverterConfiguration);
+
+	        foreach ($transactionList as $transaction){
+	        	//$transaction['merchantId'] = 3901;
+	        	if ($transaction['status'] == 'Confirmed'){
+	        		$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
+	        	} else if ($transaction['status'] == 'Open'){
+	        		$transaction['status'] = Oara_Utilities::STATUS_PENDING;
+	        	} else if ($transaction['status'] == 'Cancelled'){
+	        		$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
+	        	}
+	        	$totalTransactions[] = $transaction;
+	        }
         }
 		
 		return $totalTransactions;
@@ -208,7 +200,7 @@ class Oara_Network_AffiliNet extends Oara_Network{
 														          				 
         	
         	$overviewList = $overviewList->DailyStatisticsRecords->DailyStatisticRecords->DailyStatisticsRecord;
-	        if (!is_array($overviewList)){
+	        if ($overviewList != null && !is_array($overviewList)){
 	        	$overviewList = array($overviewList);
 	        }
         	foreach ($overviewList as $overviewDay){
@@ -299,6 +291,10 @@ class Oara_Network_AffiliNet extends Oara_Network{
 		                                     				  			 'soap_version' => SOAP_1_1));
     	
     	$paymentList = self::affilinetCall('payment', $accountService, $params);
+    	
+		if (!is_array($paymentList->PaymentInformationCollection)){
+	        $paymentList->PaymentInformationCollection = array($paymentList->PaymentInformationCollection);
+        }
     	if (isset($paymentList->PaymentInformationCollection)){
     		foreach ($paymentList->PaymentInformationCollection as $payment){
     			$obj = array();

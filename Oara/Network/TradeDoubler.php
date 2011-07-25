@@ -395,6 +395,7 @@ class Oara_Network_TradeDoubler extends Oara_Network{
      */
 	public function getTransactionList($merchantList = null , Zend_Date $dStartDate = null , Zend_Date $dEndDate = null)
 	{
+
 		$totalTransactions = Array();
 		if ($this->_dateFormat == 'dd/MM/yy'){
 	        $startDate = $dStartDate->toString('dd/MM/yyyy');
@@ -402,6 +403,9 @@ class Oara_Network_TradeDoubler extends Oara_Network{
 		} else if ($this->_dateFormat == 'M/d/yy') {
 			$startDate = $dStartDate->toString('M/d/yy');
 	        $endDate = $dEndDate->toString('M/d/yy');
+		} else if ($this->_dateFormat == 'd/MM/yy') {
+			$startDate = $dStartDate->toString('d/MM/yy');
+	        $endDate = $dEndDate->toString('d/MM/yy');
 		} else {
 			throw new Exception ("\n Date Format not supported ".$this->_dateFormat."\n");
 		}
@@ -429,6 +433,11 @@ class Oara_Network_TradeDoubler extends Oara_Network{
         
         for ($i = 2; $i < $num-1; $i++) {
             $transactionExportArray = str_getcsv($exportData[$i],",");
+            
+        	if (!isset($transactionExportArray[2])){
+        		
+				throw new Exception('Problem getting transaction\n\n'.$exportReport[0]);
+			}
         	
             if ($transactionExportArray[0] !== '' && in_array((int)$transactionExportArray[2],$merchantList)){
                 $transaction = Array();
@@ -439,6 +448,8 @@ class Oara_Network_TradeDoubler extends Oara_Network{
 			       $transactionDate =  new Zend_Date(substr($transactionExportArray[4],0,-4), "dd/MM/yy HH:mm:ss");
 				} else if ($this->_dateFormat == 'M/d/yy') {
 					$transactionDate =  new Zend_Date(substr($transactionExportArray[4],0,-8), "M/d/yy HH:mm:ss");
+				} else if ($this->_dateFormat == 'd/MM/yy') {
+					$transactionDate =  new Zend_Date(substr($transactionExportArray[4],0,-4), "d/MM/yy HH:mm:ss");
 				} else {
 					throw new Exception ("\n Date Format not supported ".$this->_dateFormat."\n");
 				}
@@ -490,6 +501,9 @@ class Oara_Network_TradeDoubler extends Oara_Network{
 			} else if ($this->_dateFormat == 'M/d/yy') {
 				$valuesFormExport[] = new Oara_Curl_Parameter('startDate', $dStartDate->toString('M/d/yy'));
         		$valuesFormExport[] = new Oara_Curl_Parameter('endDate', $dEndDate->toString('M/d/yy'));
+			} else if ($this->_dateFormat == 'd/MM/yy') {
+				$valuesFormExport[] = new Oara_Curl_Parameter('startDate', $dStartDate->toString('d/MM/yy'));
+        		$valuesFormExport[] = new Oara_Curl_Parameter('endDate', $dEndDate->toString('d/MM/yy'));
 			} else {
 				throw new Exception ("\n Date Format not supported ".$this->_dateFormat."\n");
 			}
@@ -519,7 +533,10 @@ class Oara_Network_TradeDoubler extends Oara_Network{
 					} else if ($this->_dateFormat == 'M/d/yy') {
 						$valuesFormExport[] = new Oara_Curl_Parameter('startDate', $dateArray[$i]->toString('M/d/yy'));
 		        		$valuesFormExport[] = new Oara_Curl_Parameter('endDate', $dateArray[$i]->toString('M/d/yy'));
-					} else {
+					} else if ($this->_dateFormat == 'd/MM/yy') {
+						$valuesFormExport[] = new Oara_Curl_Parameter('startDate', $dateArray[$i]->toString('d/MM/yy'));
+		        		$valuesFormExport[] = new Oara_Curl_Parameter('endDate', $dateArray[$i]->toString('d/MM/yy'));
+					}  else {
 						throw new Exception ("\n Date Format not supported ".$this->_dateFormat."\n");
 					}
 
@@ -544,6 +561,8 @@ class Oara_Network_TradeDoubler extends Oara_Network{
 				    	$overviewDate = new Zend_Date($overviewDate, "dd/MM/yy");
 					} else if ($this->_dateFormat == 'M/d/yy') {
 						$overviewDate = new Zend_Date($overviewDate, "M/d/yy");
+					} else if ($this->_dateFormat == 'd/MM/yy') {
+						$overviewDate = new Zend_Date($overviewDate, "d/MM/yy");
 					} else {
 						throw new Exception ("\n Date Format not supported ".$this->_dateFormat."\n");
 					}
@@ -599,7 +618,33 @@ class Oara_Network_TradeDoubler extends Oara_Network{
     
     public function checkReportError($content, $request, $try = 0){
 
-    	if (preg_match("/error/", $content, $matches)){
+    	if (preg_match("/\/report\/published\/aAffiliateEventBreakdownReport/", $content, $matches)){
+        	//report too big, we have to download it and read it
+        	if (preg_match("/(\/report\/published\/(aAffiliateEventBreakdownReport(.*))\.zip)/", $content, $matches)){
+        		
+        		$file = "http://www.tradedoubler.com".$matches[0];
+				$newfile = realpath(dirname(__FILE__)).'/../data/pdf/'.$matches[2].'.zip';
+				
+				if (!copy($file, $newfile)) {
+				    throw new Exception('Failing copying the zip file \n\n');
+				}
+				$zip = new ZipArchive();
+				if ($zip->open($newfile, ZIPARCHIVE::CREATE)!==TRUE) {
+					throw new Exception('Cannot open zip file \n\n');
+				}
+				$zip->extractTo(realpath(dirname(__FILE__)).'/../data/pdf');
+		        $zip->close();
+        		
+		        $unzipFilePath = realpath(dirname(__FILE__)).'/../data/pdf/'.$matches[2];
+		        $fileContent = file_get_contents($unzipFilePath);
+		        unlink($newfile);
+		        unlink($unzipFilePath);
+		        return $fileContent;
+        	}
+        	
+        	throw new Exception('Report too big \n\n'.$content);
+        	
+        } else if (preg_match("/error/", $content, $matches)){
     		var_dump($content);
             $urls = array();
 	        $urls[] = $request;   
@@ -644,7 +689,9 @@ class Oara_Network_TradeDoubler extends Oara_Network{
 				    	$date = new Zend_Date(substr($paymentLines->item($i)->nodeValue,0,10), "dd/MM/yy");
 					} else if ($this->_dateFormat == 'M/d/yy') {
 						$date = new Zend_Date(substr($paymentLines->item($i)->nodeValue,0,10), "M/d/yy");
-					} else {
+					} else if ($this->_dateFormat == 'd/MM/yy') {
+						$date = new Zend_Date(substr($paymentLines->item($i)->nodeValue,0,10), "d/MM/yy");
+					}  else {
 						throw new Exception ("\n Date Format not supported ".$this->_dateFormat."\n");
 					}
 					

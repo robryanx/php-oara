@@ -43,7 +43,7 @@ class Oara_Network_WowTrk extends Oara_Network{
 	public function __construct($credentials)
 	{
         $client = $credentials['client'];
-        $addCode = $credentials['addCode'];
+        $addCode = $credentials['addcode'];
         $password = $credentials['password'];
         
 		//login through wow website
