@@ -100,7 +100,6 @@ class Oara_Network_AdSense extends Oara_Network{
 		$urls = array();
 		$urls[] = new Oara_Curl_Request('https://www.google.com/accounts/ServiceLoginAuth', $valuesLogin);
 		$content = $this->_client->post($urls);
-
 		if (!preg_match("/href=\"\/adsense\/signout\"/", $content[0], $matches)) {
 			$urls = array();
 			$urls[] = new Oara_Curl_Request('https://www.google.com/adsense/v3/disablebeta', array());
@@ -109,7 +108,6 @@ class Oara_Network_AdSense extends Oara_Network{
 			$urls = array();
 			$urls[] = new Oara_Curl_Request('https://www.google.com/accounts/ServiceLoginAuth', $valuesLogin);
 			$content = $this->_client->post($urls);
-			
 		}
 		
 		

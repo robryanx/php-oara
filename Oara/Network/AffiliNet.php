@@ -138,23 +138,29 @@ class Oara_Network_AffiliNet extends Oara_Network{
 				           );
 				           
 			$transactionList = self::affilinetCall('transaction', $publisherStatisticsService, $params);
-			$transactionList = $transactionList->SalesLeadsStatisticsRecords->SalesLeadsStatisticsRecords->SalesLeadsStatisticsRecord;	
-	        if ($transactionList != null && !is_array($transactionList)){
-		        $transactionList = array($transactionList);
-	        }	           
-			$transactionList = Oara_Utilities::soapConverter($transactionList, $this->_transactionConverterConfiguration);
+			
+			
+			
+			if (isset($transactionList->SalesLeadsStatisticsRecords->SalesLeadsStatisticsRecords->SalesLeadsStatisticsRecord) && !is_array($transactionList->SalesLeadsStatisticsRecords->SalesLeadsStatisticsRecords->SalesLeadsStatisticsRecord)){
+	        	$transactionList->SalesLeadsStatisticsRecords->SalesLeadsStatisticsRecords->SalesLeadsStatisticsRecord = array($transactionList->SalesLeadsStatisticsRecords->SalesLeadsStatisticsRecords->SalesLeadsStatisticsRecord);
+       	 	}
+       	 	
+    		if (isset($transactionList->SalesLeadsStatisticsRecords->SalesLeadsStatisticsRecords->SalesLeadsStatisticsRecord)){
+			
+				$transactionList = Oara_Utilities::soapConverter($transactionList->SalesLeadsStatisticsRecords->SalesLeadsStatisticsRecords->SalesLeadsStatisticsRecord, $this->_transactionConverterConfiguration);
 
-	        foreach ($transactionList as $transaction){
-	        	//$transaction['merchantId'] = 3901;
-	        	if ($transaction['status'] == 'Confirmed'){
-	        		$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
-	        	} else if ($transaction['status'] == 'Open'){
-	        		$transaction['status'] = Oara_Utilities::STATUS_PENDING;
-	        	} else if ($transaction['status'] == 'Cancelled'){
-	        		$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
-	        	}
-	        	$totalTransactions[] = $transaction;
-	        }
+		        foreach ($transactionList as $transaction){
+		        	//$transaction['merchantId'] = 3901;
+		        	if ($transaction['status'] == 'Confirmed'){
+		        		$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
+		        	} else if ($transaction['status'] == 'Open'){
+		        		$transaction['status'] = Oara_Utilities::STATUS_PENDING;
+		        	} else if ($transaction['status'] == 'Cancelled'){
+		        		$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
+		        	}
+		        	$totalTransactions[] = $transaction;
+		        }
+        	}
         }
 		
 		return $totalTransactions;
@@ -198,50 +204,51 @@ class Oara_Network_AffiliNet extends Oara_Network{
 			$overviewList = self::affilinetCall('overview', $publisherStatisticsService, $params);		        
 			
 														          				 
-        	
-        	$overviewList = $overviewList->DailyStatisticsRecords->DailyStatisticRecords->DailyStatisticsRecord;
-	        if ($overviewList != null && !is_array($overviewList)){
-	        	$overviewList = array($overviewList);
-	        }
-        	foreach ($overviewList as $overviewDay){
-				$overview = array();
-				$overview['date'] = $overviewDay->Date;
-				$overview['merchantId'] = $merchantId;
-				
-				$overview['click_number'] = $overviewDay->PayPerClick->Clicks + $overviewDay->PayPerSaleLead->Clicks + $overviewDay->CombinedPrograms->Clicks;
-				$overview['impression_number'] = $overviewDay->PayPerClick->Views + $overviewDay->PayPerSaleLead->Views + $overviewDay->CombinedPrograms->Views;
-				
-				
-				
-				$overview['transaction_confirmed_value'] = 0;
-        		$overview['transaction_pending_value'] = 0;
-        		$overview['transaction_declined_value'] = 0;
-        		$overview['transaction_confirmed_commission'] = 0;
-                $overview['transaction_pending_commission'] = 0;
-                $overview['transaction_declined_commission'] = 0;
-                
-                $overviewDate = new Zend_Date($overviewDay->Date, "dd-MM-yyyy HH:mm:ss");
-				$transactionArray = Oara_Utilities::getDayFromArray($merchantId, $transactionList, $overviewDate);
-				$overview['transaction_number'] = count($transactionArray);
-				foreach ($transactionArray as $transaction){
-				
-					if ($transaction['status'] == Oara_Utilities::STATUS_CONFIRMED){
-						$overview['transaction_confirmed_value'] += $transaction['amount'];
-						$overview['transaction_confirmed_commission'] += $transaction['commission'];
-					} else if ($transaction['status'] == Oara_Utilities::STATUS_PENDING){
-						$overview['transaction_pending_value'] += $transaction['amount'];
-						$overview['transaction_pending_commission'] += $transaction['commission'];
-					} else if ($transaction['status'] == Oara_Utilities::STATUS_DECLINED){
-						$overview['transaction_declined_value'] += $transaction['amount'];
-						$overview['transaction_declined_commission'] += $transaction['commission'];
+        	if (isset($overviewList->DailyStatisticsRecords->DailyStatisticRecords->DailyStatisticsRecord) && !is_array($overviewList->DailyStatisticsRecords->DailyStatisticRecords->DailyStatisticsRecord)){
+	        	$overviewList->DailyStatisticsRecords->DailyStatisticRecords->DailyStatisticsRecord = array($overviewList->DailyStatisticsRecords->DailyStatisticRecords->DailyStatisticsRecord);
+       	 	}
+       	 	if (isset($overviewList->DailyStatisticsRecords->DailyStatisticRecords->DailyStatisticsRecord)){
+
+	        	foreach ($overviewList->DailyStatisticsRecords->DailyStatisticRecords->DailyStatisticsRecord as $overviewDay){
+					$overview = array();
+					$overview['date'] = $overviewDay->Date;
+					$overview['merchantId'] = $merchantId;
+					
+					$overview['click_number'] = $overviewDay->PayPerClick->Clicks + $overviewDay->PayPerSaleLead->Clicks + $overviewDay->CombinedPrograms->Clicks;
+					$overview['impression_number'] = $overviewDay->PayPerClick->Views + $overviewDay->PayPerSaleLead->Views + $overviewDay->CombinedPrograms->Views;
+					
+					
+					
+					$overview['transaction_confirmed_value'] = 0;
+	        		$overview['transaction_pending_value'] = 0;
+	        		$overview['transaction_declined_value'] = 0;
+	        		$overview['transaction_confirmed_commission'] = 0;
+	                $overview['transaction_pending_commission'] = 0;
+	                $overview['transaction_declined_commission'] = 0;
+	                
+	                $overviewDate = new Zend_Date($overviewDay->Date, "dd-MM-yyyy HH:mm:ss");
+					$transactionArray = Oara_Utilities::getDayFromArray($merchantId, $transactionList, $overviewDate);
+					$overview['transaction_number'] = count($transactionArray);
+					foreach ($transactionArray as $transaction){
+					
+						if ($transaction['status'] == Oara_Utilities::STATUS_CONFIRMED){
+							$overview['transaction_confirmed_value'] += $transaction['amount'];
+							$overview['transaction_confirmed_commission'] += $transaction['commission'];
+						} else if ($transaction['status'] == Oara_Utilities::STATUS_PENDING){
+							$overview['transaction_pending_value'] += $transaction['amount'];
+							$overview['transaction_pending_commission'] += $transaction['commission'];
+						} else if ($transaction['status'] == Oara_Utilities::STATUS_DECLINED){
+							$overview['transaction_declined_value'] += $transaction['amount'];
+							$overview['transaction_declined_commission'] += $transaction['commission'];
+						}
+						
 					}
 					
+		        	if (Oara_Utilities::checkRegister($overview)){
+				    	$totalOverview[] = $overview;
+	            	}
 				}
-				
-	        	if (Oara_Utilities::checkRegister($overview)){
-			    	$totalOverview[] = $overview;
-            	}
-			}
+       	 	}
         	
         }
 	    return $totalOverview;
@@ -292,7 +299,7 @@ class Oara_Network_AffiliNet extends Oara_Network{
     	
     	$paymentList = self::affilinetCall('payment', $accountService, $params);
     	
-		if (!is_array($paymentList->PaymentInformationCollection)){
+		if (isset($paymentList->PaymentInformationCollection) && !is_array($paymentList->PaymentInformationCollection)){
 	        $paymentList->PaymentInformationCollection = array($paymentList->PaymentInformationCollection);
         }
     	if (isset($paymentList->PaymentInformationCollection)){
