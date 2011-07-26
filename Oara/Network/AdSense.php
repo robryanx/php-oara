@@ -111,6 +111,7 @@ class Oara_Network_AdSense extends Oara_Network{
 		}
 		
 		
+		
 		$dom = new Zend_Dom_Query(current($content));
 		$results = $dom->query('#challengeform');
 		//We have to provide the challenge
@@ -146,7 +147,7 @@ class Oara_Network_AdSense extends Oara_Network{
 			}
 			
 		}
-
+		
 		if (!preg_match("/href=\"\/adsense\/signout\"/", $content[0], $matches)) {
 			preg_match('/location\.replace\("(.+?)"\)/', $content[0], $match);
 			if (!isset($match[1])){

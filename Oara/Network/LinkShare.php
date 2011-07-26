@@ -204,6 +204,7 @@ class Oara_Network_LinkShare extends Oara_Network{
         $urls = array();
         $urls[] = new Oara_Curl_Request('https://cli.linksynergy.com/cli/publisher/reports/advancedReports.php?', $valuesFromExport);
         $exportReport = $this->_client->post($urls);
+        
    		$exportReportNumber = count($exportReport);
 	    for ($i = 0; $i < $exportReportNumber; $i++){
 	        $doc = new DOMDocument();
@@ -223,20 +224,21 @@ class Oara_Network_LinkShare extends Oara_Network{
 		 		$urls = array();
 		        $urls[] = new Oara_Curl_Request($frameUrl, array());
 		        $exportReport = $this->_client->get($urls);
-		    	if (preg_match("/<a class=\"NQWMenuItem\" name=\"SectionElements\" href=\"javascript:void\(null\);\" onclick=\"NQWClearActiveMenu\(\);Download\('([^<]*)'\); return false\">Download Data<\/a>/", $exportReport[0], $matches)){
-		    		$totalTransactions = self::getTransactions($matches, $totalTransactions, $merchantList);
-				} else {
-					if (preg_match("/result=\"searching\"/", $exportReport[0], $matches)){
-						$urls = array();
-				        $urls[] = new Oara_Curl_Request($frameUrl, array());
-				        $exportReport = $this->_client->get($urls);
-				    	if (preg_match("/<a class=\"NQWMenuItem\" name=\"SectionElements\" href=\"javascript:void\(null\);\" onclick=\"NQWClearActiveMenu\(\);Download\('([^<]*)'\); return false\">Download Data<\/a>/", $exportReport[0], $matches)){
-				    		$totalTransactions = self::getTransactions($matches, $totalTransactions, $merchantList);
-				    	}
-					} else if (preg_match("/No Results/", $exportReport[0], $matches)){
-						//echo "There is no transactions \n\n";
+		 		while (!preg_match("/No Results/", $exportReport[0], $matches)){
+			 		if (preg_match("/<a class=\"NQWMenuItem\" name=\"SectionElements\" href=\"javascript:void\(null\);\" onclick=\"NQWClearActiveMenu\(\);Download\('([^<]*)'\); return false\">Download Data<\/a>/", $exportReport[0], $matches)){
+			    		$totalTransactions = self::getTransactions($matches, $totalTransactions, $merchantList);
+			    		break;
+					} else {
+						if (preg_match("/result=\"searching\"/", $exportReport[0], $matches)){
+							$urls = array();
+					        $urls[] = new Oara_Curl_Request($frameUrl, array());
+					        $exportReport = $this->_client->get($urls);
+						} else {
+							throw new Exception("Error getting transactions");
+						}
 					}
-				}
+		 		}
+		 		
 			}
 			
 	    }
@@ -271,6 +273,7 @@ class Oara_Network_LinkShare extends Oara_Network{
 		 			}
 		 		}
 		 		
+				
 		 		$urls = array();
 		        $urls[] = new Oara_Curl_Request($frameUrl, array());
 		        $exportReport = $this->_client->get($urls);
@@ -317,26 +320,23 @@ class Oara_Network_LinkShare extends Oara_Network{
 		 			}
 		 		}
 		 		
-		 		$urls = array();
+				$urls = array();
 		        $urls[] = new Oara_Curl_Request($frameUrl, array());
 		        $exportReport = $this->_client->get($urls);
-		    	if (preg_match("/<a class=\"NQWMenuItem\" name=\"SectionElements\" href=\"javascript:void\(null\);\" onclick=\"NQWClearActiveMenu\(\);Download\('([^<]*)'\); return false\">Download Data<\/a>/", $exportReport[0], $matches)){
-		    		$totalOverview = self::getOverview($matches, $totalOverview, $merchantList, $mothOverviewUrls[$i]->getParameter(9), $transactionArray);
-				} else {
-					
-					if (preg_match("/result=\"searching\"/", $exportReport[0], $matches)){
-	
-						$urls = array();
-				        $urls[] = new Oara_Curl_Request($frameUrl, array());
-				        $exportReport = $this->_client->get($urls);
-				    	if (preg_match("/<a class=\"NQWMenuItem\" name=\"SectionElements\" href=\"javascript:void\(null\);\" onclick=\"NQWClearActiveMenu\(\);Download\('([^<]*)'\); return false\">Download Data<\/a>/", $exportReport[0], $matches)){
-				    		$totalOverview = self::getOverview($matches, $totalOverview, $merchantList, $mothOverviewUrls[$i]->getParameter(9), $transactionArray);
-				    	}
-					} else if (preg_match("/No Results/", $exportReport[0], $matches)){
-						//echo "There is no overview \n\n";
+		 		while (!preg_match("/No Results/", $exportReport[0], $matches)){
+			 		if (preg_match("/<a class=\"NQWMenuItem\" name=\"SectionElements\" href=\"javascript:void\(null\);\" onclick=\"NQWClearActiveMenu\(\);Download\('([^<]*)'\); return false\">Download Data<\/a>/", $exportReport[0], $matches)){
+			    		$totalOverview = self::getOverview($matches, $totalOverview, $merchantList, $mothOverviewUrls[$i]->getParameter(9), $transactionArray);
+			    		break;
+					} else {
+						if (preg_match("/result=\"searching\"/", $exportReport[0], $matches)){
+							$urls = array();
+					        $urls[] = new Oara_Curl_Request($frameUrl, array());
+					        $exportReport = $this->_client->get($urls);
+						} else {
+							throw new Exception("Error getting transactions");
+						}
 					}
-					
-				}
+		 		}
 			}
 			
 	    }
