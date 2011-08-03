@@ -111,7 +111,6 @@ class Oara_Network_AdSense extends Oara_Network{
 		}
 		
 		
-		
 		$dom = new Zend_Dom_Query(current($content));
 		$results = $dom->query('#challengeform');
 		//We have to provide the challenge

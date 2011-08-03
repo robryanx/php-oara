@@ -195,13 +195,22 @@ class Oara_Network_AffiliateWindow extends Oara_Network{
      */
     public function getMerchant(array $merchantIds = null)
     {
-        $params = Array();
-        if ($merchantIds != null){
-            $params['aMerchantIds'] = $merchantIds;
-        }
-        $merchantList = $this->_apiClient->getMerchant($params)->getMerchantReturn; 
-        $merchantList = Oara_Utilities::soapConverter($merchantList, $this->_merchantConverterConfiguration);
+    	$merchantList = array();
         
+        if ($merchantIds != null){
+        	$iteration = 0;
+        	$arraySlice = array_slice($merchantIds, $this->_pageSize*$iteration, $this->_pageSize);
+        	while (!empty($arraySlice)){
+        		$params = array();
+        		$params['aMerchantIds'] = $arraySlice;
+        
+		        $merchantApiList = $this->_apiClient->getMerchant($params)->getMerchantReturn; 
+		        $merchantList = array_merge($merchantList, Oara_Utilities::soapConverter($merchantApiList, $this->_merchantConverterConfiguration));
+        		$iteration ++;
+        		$arraySlice = array_slice($merchantIds, $this->_pageSize*$iteration, $this->_pageSize);
+        	}
+           
+        }
         return $merchantList;
     }
     /**
