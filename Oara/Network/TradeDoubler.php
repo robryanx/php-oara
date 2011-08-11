@@ -677,50 +677,54 @@ class Oara_Network_TradeDoubler extends Oara_Network{
 	    libxml_use_internal_errors(true);
 	    $doc->validateOnParse = true;
 	    $doc->loadHTML($exportReport[0]);
-	    $paymentSelect = $doc->getElementsByTagName('select');
-	    if ($paymentSelect->length > 0){
+	    $selectList = $doc->getElementsByTagName('select');
+	    $paymentSelect = null;
+	    if ($selectList->length > 0){
 	    	// looking for the payments select
 	    	$it = 0;
-	    	while ($it < $paymentSelect->length){
-	    		$selectName = $paymentSelect->item($it)->attributes->getNamedItem('name')->nodeValue;
+	    	while ($it < $selectList->length){
+	    		$selectName = $selectList->item($it)->attributes->getNamedItem('name')->nodeValue;
 	    		if ($selectName == 'payment_id'){
+	    			$paymentSelect = $selectName;
 	    			break;
 	    		}
 	    		$it++;
 	    	}
-		    $paymentLines = $paymentSelect->item($it)->childNodes;
-			for ($i = 0;$i < $paymentLines->length;$i++) {
-				$pid = $paymentLines->item($i)->attributes->getNamedItem("value")->nodeValue;
-				if (is_numeric($pid)){
-					$obj = array();
-					
-					$paymentLine = $paymentLines->item($i)->nodeValue;
-					$paymentLine = htmlentities($paymentLine);
-					$paymentLine = str_replace("&Acirc;&nbsp;", "", $paymentLine);
-					$paymentLine = html_entity_decode($paymentLine);
-					
-					if ($this->_dateFormat == 'dd/MM/yy'){
-				    	$date = new Zend_Date(substr($paymentLine,0,10), "dd/MM/yy");
-					} else if ($this->_dateFormat == 'M/d/yy') {
-						$date = new Zend_Date(substr($paymentLine,0,10), "M/d/yy");
-					} else if ($this->_dateFormat == 'd/MM/yy') {
-						$date = new Zend_Date(substr($paymentLine,0,10), "d/MM/yy");
-					}  else {
-						throw new Exception ("\n Date Format not supported ".$this->_dateFormat."\n");
-					}
-					
-					$obj['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
-					$obj['pid'] = $pid;
-					$obj['method'] = 'BACS';
-					if (preg_match("/[-+]?[0-9]*,?[0-9]*\.?[0-9]+/", substr($paymentLine,10), $matches)) {
-						$obj['value'] = Oara_Utilities::parseDouble($matches[0]);
-					} else {
-						throw new Exception("Problem reading payments");
-					}
-					
-					$paymentHistory[] = $obj;
-				}	
-			}
+	    	if ($paymentSelect != null){
+			    $paymentLines = $paymentSelect->item($it)->childNodes;
+				for ($i = 0;$i < $paymentLines->length;$i++) {
+					$pid = $paymentLines->item($i)->attributes->getNamedItem("value")->nodeValue;
+					if (is_numeric($pid)){
+						$obj = array();
+						
+						$paymentLine = $paymentLines->item($i)->nodeValue;
+						$paymentLine = htmlentities($paymentLine);
+						$paymentLine = str_replace("&Acirc;&nbsp;", "", $paymentLine);
+						$paymentLine = html_entity_decode($paymentLine);
+						
+						if ($this->_dateFormat == 'dd/MM/yy'){
+					    	$date = new Zend_Date(substr($paymentLine,0,10), "dd/MM/yy");
+						} else if ($this->_dateFormat == 'M/d/yy') {
+							$date = new Zend_Date(substr($paymentLine,0,10), "M/d/yy");
+						} else if ($this->_dateFormat == 'd/MM/yy') {
+							$date = new Zend_Date(substr($paymentLine,0,10), "d/MM/yy");
+						}  else {
+							throw new Exception ("\n Date Format not supported ".$this->_dateFormat."\n");
+						}
+						
+						$obj['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
+						$obj['pid'] = $pid;
+						$obj['method'] = 'BACS';
+						if (preg_match("/[-+]?[0-9]*,?[0-9]*\.?[0-9]+/", substr($paymentLine,10), $matches)) {
+							$obj['value'] = Oara_Utilities::parseDouble($matches[0]);
+						} else {
+							throw new Exception("Problem reading payments");
+						}
+						
+						$paymentHistory[] = $obj;
+					}	
+				}
+		    }
 	    }
     	return $paymentHistory;
     }

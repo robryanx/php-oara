@@ -298,9 +298,6 @@ class Oara_Network_WebGains extends Oara_Network{
 	    $exportReport = $this->_webClient->get($urls);
 	    
 		$matches = array();
-		
-		
-		$matches = array();
         if (preg_match("/<select name=\"campaignswitchid\" class=\"formelement\" style=\"width:134px\">([^\t]*)<\/select>/",
         			   $exportReport[0], $matches)){
         			   	
