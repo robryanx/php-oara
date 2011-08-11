@@ -40,6 +40,8 @@ The list of supported networks so far is:
 * [Web Gains](http://www.webgains.com/index.html)
 * [Wow Trk](http://www.wowtrk.com/)
 * [Zanox](http://www.zanox.com)
+* [Daisycon](http://www.daisycon.com)
+* [ClixGalore](http://www.clixgalore.com)
 
 
 We are planning to add more, this is the to-do list:
@@ -47,7 +49,6 @@ We are planning to add more, this is the to-do list:
 * ClickBank
 * Amazon
 * Google Adwords
-* Clixgalore
 * More Niche
 * Revenue Wire
 * Shopzilla
