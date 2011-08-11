@@ -90,9 +90,8 @@ class Oara_Network_Daisycon extends Oara_Network{
 	public function checkConnection(){
 		//If not login properly the construct launch an exception
 		$connection = true;
-		$valuesFromExport = $this->_exportMerchantParameters;
 		$urls = array();
-        $urls[] = new Oara_Curl_Request('http://publisher.daisycon.com/en/affiliatemarketing/programs/myprograms/?', $valuesFromExport);
+        $urls[] = new Oara_Curl_Request('http://publisher.daisycon.com/en/affiliatemarketing/welcome/', array());
 		$exportReport = $this->_client->get($urls);
 		
 		$dom = new Zend_Dom_Query($exportReport[0]);
@@ -164,8 +163,10 @@ class Oara_Network_Daisycon extends Oara_Network{
 	            	$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
 	            } else if ($transactionExportArray[5] == 'pending' || $transactionExportArray[5] == 'potential' || $transactionExportArray[5] == 'open'){
 	            	$transaction['status'] = Oara_Utilities::STATUS_PENDING;
-	            } else if ($transactionExportArray[5] == 'disapproved'){
+	            } else if ($transactionExportArray[5] == 'disapproved' || $transactionExportArray[5] == 'incasso'){
 	                $transaction['status'] = Oara_Utilities::STATUS_DECLINED;
+	            } else {
+	            	throw new Exception("New status $transactionExportArray[5]");
 	            }
 	            $transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[16]);
 	            $transaction['commission'] = Oara_Utilities::parseDouble($transactionExportArray[7]);
@@ -245,7 +246,97 @@ class Oara_Network_Daisycon extends Oara_Network{
 	 */
 	public function getPaymentHistory(){
     	$paymentHistory = array();
-    	
+    	$urls = array();
+        $urls[] = new Oara_Curl_Request('http://publisher.daisycon.com/en/financial/payments/', array());
+		$exportReport = $this->_client->get($urls);
+		
+    	$dom = new Zend_Dom_Query($exportReport[0]);
+      	$results = $dom->query('#filter_payments_selection_start_year_id');
+		$count = count($results);
+		$yearArray = array();
+		if ($count == 1){
+			$selectNode = $results->current();
+			$yearLines = $selectNode->childNodes;
+			for ($i = 0;$i < $yearLines->length;$i++) {
+				$yearArray[] = $yearLines->item($i)->attributes->getNamedItem("value")->nodeValue;
+			}
+			
+			foreach ($yearArray as $year){
+				$valuesFromExport = array();
+				$valuesFromExport[] = new Oara_Curl_Parameter('filter_payments[selection][start_year]', $year);
+				$urls = array();
+	        	$urls[] = new Oara_Curl_Request('http://publisher.daisycon.com/en/financial/payments/?filter_payments_posted=true', $valuesFromExport);
+				$exportReport = $this->_client->post($urls);
+				
+				$dom = new Zend_Dom_Query($exportReport[0]);
+      			$payments = $dom->query('.financialPaymentsTable');
+				foreach ($payments as $payment){
+					
+					$paymentReport = self::htmlToCsv(self::DOMinnerHTML($payment));
+					$paymentExportArray = str_getcsv($paymentReport[2],";");
+					$obj = array();
+					$paymentDate = new Zend_Date($paymentExportArray[0], "MM dd yyyy", "en");
+		    		$obj['date'] = $paymentDate->toString("yyyy-MM-dd HH:mm:ss");
+					$obj['pid'] = $paymentDate->toString("yyyyMMdd");
+					$obj['method'] = 'BACS';
+					if (preg_match("/[-+]?[0-9]*,?[0-9]*\.?[0-9]+/", $paymentExportArray[4], $matches)) {
+						$obj['value'] = Oara_Utilities::parseDouble($matches[0]);
+					} else {
+						throw new Exception("Problem reading payments");
+					}
+					
+					$paymentHistory[] = $obj;
+				}
+				
+			}
+			
+		} else {
+			throw new Exception('Problem getting the payments');
+		}
     	return $paymentHistory;
     }
+    /**
+     * 
+     * Function that Convert from a table to Csv
+     * @param unknown_type $html
+     */
+    private function htmlToCsv($html){
+    	$html = str_replace(array("\t","\r","\n"), "", $html);
+    	$csv = "";
+    	$dom = new Zend_Dom_Query($html);
+      	$results = $dom->query('tr');
+      	$count = count($results); // get number of matches: 4
+      	foreach ($results as $result){
+      		$tdList = $result->childNodes;
+      		$tdNumber = $tdList->length;
+			for ($i = 0;$i < $tdNumber;$i++) {
+				$value = $tdList->item($i)->nodeValue;
+				if ($i != $tdNumber -1){
+					$csv .= trim($value).";";
+				} else {
+					$csv .= trim($value);
+				}
+			}
+			$csv .= "\n";
+      	}
+    	$exportData = str_getcsv($csv,"\n");
+    	return $exportData;
+    }
+    /**
+     * 
+     * Function that returns the innet HTML code 
+     * @param unknown_type $element
+     */
+	private function DOMinnerHTML($element)
+	{
+	    $innerHTML = "";
+	    $children = $element->childNodes;
+	    foreach ($children as $child)
+	    {
+	        $tmp_dom = new DOMDocument();
+	        $tmp_dom->appendChild($tmp_dom->importNode($child, true));
+	        $innerHTML.=trim($tmp_dom->saveHTML());
+	    }
+	    return $innerHTML;
+	} 
 }
