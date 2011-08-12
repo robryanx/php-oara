@@ -274,20 +274,21 @@ class Oara_Network_Daisycon extends Oara_Network{
 					
 					$paymentReport = self::htmlToCsv(self::DOMinnerHTML($payment));
 					$paymentExportArray = str_getcsv($paymentReport[2],";");
-					$obj = array();
-					$paymentDate = new Zend_Date($paymentExportArray[0], "MM dd yyyy", "en");
-		    		$obj['date'] = $paymentDate->toString("yyyy-MM-dd HH:mm:ss");
-					$obj['pid'] = $paymentDate->toString("yyyyMMdd");
-					$obj['method'] = 'BACS';
-					if (preg_match("/[-+]?[0-9]*,?[0-9]*\.?[0-9]+/", $paymentExportArray[4], $matches)) {
-						$obj['value'] = Oara_Utilities::parseDouble($matches[0]);
-					} else {
-						throw new Exception("Problem reading payments");
+					if ($paymentExportArray[0] != ""){
+						$obj = array();
+						$paymentDate = new Zend_Date($paymentExportArray[0], "MM dd yyyy", "en");
+			    		$obj['date'] = $paymentDate->toString("yyyy-MM-dd HH:mm:ss");
+						$obj['pid'] = $paymentDate->toString("yyyyMMdd");
+						$obj['method'] = 'BACS';
+						if (preg_match("/[-+]?[0-9]*,?[0-9]*\.?[0-9]+/", $paymentExportArray[4], $matches)) {
+							$obj['value'] = Oara_Utilities::parseDouble($matches[0]);
+						} else {
+							throw new Exception("Problem reading payments");
+						}
+						
+						$paymentHistory[] = $obj;
 					}
-					
-					$paymentHistory[] = $obj;
 				}
-				
 			}
 			
 		} else {
