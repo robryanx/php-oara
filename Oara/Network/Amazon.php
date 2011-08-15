@@ -92,8 +92,9 @@ class Oara_Network_Amazon extends Oara_Network{
 			fclose($stdout);
 			fclose($stderr);
 		}
+		echo $error;
 		$exit_code = proc_close($metadataReader);
-		
+		echo $exit_code;
 		$valuesLogin = array(
 							 new Oara_Curl_Parameter('email', $user),
 							 new Oara_Curl_Parameter('password', $password),
