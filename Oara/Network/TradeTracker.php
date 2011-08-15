@@ -83,22 +83,22 @@ class Oara_Network_TradeTracker extends Oara_Network{
 		foreach ($affiliateSitesList as $affiliateSite){
 			foreach ($this->_apiClient->getConversionTransactions($affiliateSite->ID, $options) as $transaction) {
 				if (in_array((int)$transaction->campaign->ID,$merchantList)){
-					$transaction = array();
-	                $transaction['merchantId'] = $transaction->campaign->ID;
+					$object = array();
+	                $object['merchantId'] = $transaction->campaign->ID;
 	                $transactionDate =  new Zend_Date($transaction->registrationDate, "dd/MM/YY HH:mm:ss");
-	                $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+	                $object['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 	                
 	                if ($transaction->transactionStatus == 'accepted'){
-	                	$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
+	                	$object['status'] = Oara_Utilities::STATUS_CONFIRMED;
 	                } else if ($transaction->transactionStatus == 'pending'){
-	                    $transaction['status'] = Oara_Utilities::STATUS_PENDING;
+	                    $object['status'] = Oara_Utilities::STATUS_PENDING;
 	                } else if ($transaction->transactionStatus == 'rejected'){
-	                    $transaction['status'] = Oara_Utilities::STATUS_DECLINED;
+	                    $object['status'] = Oara_Utilities::STATUS_DECLINED;
 	                }
 	                
-	                $transaction['amount'] = Oara_Utilities::parseDouble($transaction->orderAmount);
-	                $transaction['commission'] = Oara_Utilities::parseDouble($transaction->commission);
-	                $totalTransactions[] = $transaction;
+	                $object['amount'] = Oara_Utilities::parseDouble($transaction->orderAmount);
+	                $object['commission'] = Oara_Utilities::parseDouble($transaction->commission);
+	                $totalTransactions[] = $object;
 				}
 			}
 		}
@@ -157,7 +157,7 @@ class Oara_Network_TradeTracker extends Oara_Network{
 	                       }
 	                   }
 	                   if (Oara_Utilities::checkRegister($overview)){
-	                       $totalOverviews[] = $overview;
+	                       $totalOverview[] = $overview;
 	                   }
 					}
 				}
@@ -183,7 +183,7 @@ class Oara_Network_TradeTracker extends Oara_Network{
 			$obj = array();
 			$date = new Zend_Date($payment->billDate, "dd/MM/yy");
 			$obj['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
-			$obj['pid'] = $payment->invoiceNumber;
+			$obj['pid'] = $date->toString("yyyyMMdd");
 			$obj['method'] = 'BACS';
 			$obj['value'] = Oara_Utilities::parseDouble($payment->endTotal);
 			$paymentHistory[] = $obj;
