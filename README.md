@@ -42,7 +42,7 @@ The list of supported networks so far is:
 * [Zanox](http://www.zanox.com)
 * [Daisycon](http://www.daisycon.com)
 * [ClixGalore](http://www.clixgalore.com)
-* [Amazon](https://affiliate-program.amazon.com/)
+* [Amazon UK](https://affiliate-program.amazon.co.uk/)
 
 
 We are planning to add more, this is the to-do list:
