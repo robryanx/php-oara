@@ -45,56 +45,9 @@ class Oara_Network_Amazon extends Oara_Network{
         $password = $credentials['password'];
         $network = $credentials['network'];
         
-        
-        $loginUrl = 'https://affiliate-program.amazon.co.uk/';
-		$this->_client = new Oara_Curl_Access($loginUrl, array(), $credentials);
-        
-		$cookies = self::readCookies($credentials);
-		$cookiesString = "";
-		$cookiesNumber = count($cookies);
-		$i = 0;
-		foreach ($cookies as $cookieName => $cookieValue){
-			$cookiesString .= $cookieName."=".$cookieValue;
-			if ($i != (count($cookies) - 1)){
-				$cookiesString .= "&";
-			}
-			$i++;
-		}
-
-        $descriptorspec = array(
-					            0 => array('pipe', 'r'),
-					            1 => array('pipe', 'w'),
-					            2 => array('pipe', 'w')
-					           );
-					           
-		$url = "https://affiliate-program.amazon.com/";		           
-		$jarPath = realpath(dirname(__FILE__)).'/Amazon/amazon.jar ';
-		$metadataReader = proc_open("java -jar $jarPath $url \"$cookiesString\"", $descriptorspec, $pipes, null, null);
-		$htmlAfterJs = '';
-		$error = '';
-		if (is_resource($metadataReader)) {
-			
-			$stdin = $pipes[0];
-			
-			$stdout = $pipes[1];
-			
-			$stderr = $pipes[2];
-			
-			while (! feof($stdout)) {
-				$htmlAfterJs .= fgets($stdout);
-			}
-			
-			while (! feof($stderr)) {
-				$error .= fgets($stderr);
-			}
-			
-			fclose($stdin);
-			fclose($stdout);
-			fclose($stderr);
-		}
-		echo $error;
-		$exit_code = proc_close($metadataReader);
-		echo $exit_code;
+		//Get html after Js
+		$htmlAfterJs = self::getHtmlAfterJs($credentials);
+		
 		$valuesLogin = array(
 							 new Oara_Curl_Parameter('email', $user),
 							 new Oara_Curl_Parameter('password', $password),
@@ -376,5 +329,82 @@ class Oara_Network_Amazon extends Oara_Network{
 	        $aCookies[$arr[5]] = str_replace("\n", "", $arr[6]);
 	    }
 	   	return $aCookies;
+	}
+	/**
+	 * 
+	 * Get the HTML after executing Java Script
+	 */
+	private function getHtmlAfterJs($credentials){
+		$loginUrl = 'https://affiliate-program.amazon.co.uk/';
+		$this->_client = new Oara_Curl_Access($loginUrl, array(), $credentials);
+        
+		$cookies = self::readCookies($credentials);
+		$cookiesString = "";
+		$cookiesNumber = count($cookies);
+		$i = 0;
+		foreach ($cookies as $cookieName => $cookieValue){
+			$cookiesString .= $cookieName."=".$cookieValue;
+			if ($i != (count($cookies) - 1)){
+				$cookiesString .= "&";
+			}
+			$i++;
+		}
+		//AffJet's way to call the JAR FILE, if you are a PHP-OARA user you need to use the other methong, calling java directly
+		if (isset($credentials["httpLogin"])){
+			$amazonServiceHttpLogin = $credentials["httpLogin"];
+			$amazonJavaServer = $credentials["javaServer"];
+			$amazonServiceAuthToken = $credentials["authToken"];
+			$amazonServiceParseUrl = "https://affiliate-program.amazon.com/";
+			
+			$amazonServiceUrl = "$amazonJavaServer?auth=$amazonServiceAuthToken&url=$amazonServiceParseUrl&cookie=%22$cookiesString%22";
+			$curlSession = curl_init($amazonServiceUrl);
+			curl_setopt_array($curlSession, array(
+				CURLOPT_USERAGENT => "Mozilla/5.0 (X11; U; Linux i686; es-CL; rv:1.9.2.17) Gecko/20110422 Ubuntu/10.10 (maverick) Firefox/3.6.17",
+				CURLOPT_FAILONERROR => true,
+				CURLOPT_RETURNTRANSFER => true,
+				CURLOPT_HTTPAUTH => CURLAUTH_ANY,
+				CURLOPT_AUTOREFERER => true,
+				CURLOPT_SSL_VERIFYPEER =>false,
+				CURLOPT_USERPWD => $amazonServiceHttpLogin
+			));
+				
+			$htmlAfterJs = curl_exec($curlSession);		
+			curl_close($curlSession);
+		} else {
+			$descriptorspec = array(
+					            0 => array('pipe', 'r'),
+					            1 => array('pipe', 'w'),
+					            2 => array('pipe', 'w')
+					           );
+					           
+			$url = "https://affiliate-program.amazon.com/";		           
+			$jarPath = realpath(dirname(__FILE__)).'/Amazon/amazon.jar ';
+			$metadataReader = proc_open("java -jar $jarPath $url \"$cookiesString\"", $descriptorspec, $pipes, null, null);
+			$htmlAfterJs = '';
+			$error = '';
+			if (is_resource($metadataReader)) {
+				
+				$stdin = $pipes[0];
+				
+				$stdout = $pipes[1];
+				
+				$stderr = $pipes[2];
+				
+				while (! feof($stdout)) {
+					$htmlAfterJs .= fgets($stdout);
+				}
+				
+				while (! feof($stderr)) {
+					$error .= fgets($stderr);
+				}
+				
+				fclose($stdin);
+				fclose($stdout);
+				fclose($stderr);
+			}
+			
+			$exit_code = proc_close($metadataReader);
+		}
+		return $htmlAfterJs;
 	}
 }
