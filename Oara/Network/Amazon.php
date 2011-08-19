@@ -46,7 +46,7 @@ class Oara_Network_Amazon extends Oara_Network{
         $network = $credentials['network'];
         
 		//Get html after Js
-		$htmlAfterJs = self::getHtmlAfterJs($credentials);
+		$hiddenParams = self::getHiddenParamsAfterJs($credentials);
 		
 		$valuesLogin = array(
 							 new Oara_Curl_Parameter('email', $user),
@@ -55,13 +55,8 @@ class Oara_Network_Amazon extends Oara_Network{
 							 new Oara_Curl_Parameter('y', '10')
 							 );
 		
-		$dom = new Zend_Dom_Query($htmlAfterJs);
-      	$results = $dom->query('input[type="hidden"]');
-      	$count = count($results);
-      	foreach ($results as $result){
-      		$hiddenName = $result->attributes->getNamedItem("name")->nodeValue;
-      		$hiddenValue = $result->attributes->getNamedItem("value")->nodeValue;
-      		$valuesLogin[] = new Oara_Curl_Parameter($hiddenName, $hiddenValue);
+      	foreach ($hiddenParams as $hiddenParamName => $hiddenParamValue){
+      		$valuesLogin[] = new Oara_Curl_Parameter($hiddenParamName, $hiddenParamValue);
       	}
 		
 		$urls = array();
@@ -334,7 +329,9 @@ class Oara_Network_Amazon extends Oara_Network{
 	 * 
 	 * Get the HTML after executing Java Script
 	 */
-	private function getHtmlAfterJs($credentials){
+	private function getHiddenParamsAfterJs($credentials){
+		$hiddenParams = array();
+		
 		$loginUrl = 'https://affiliate-program.amazon.co.uk/';
 		$this->_client = new Oara_Curl_Access($loginUrl, array(), $credentials);
         
@@ -367,9 +364,18 @@ class Oara_Network_Amazon extends Oara_Network{
 				CURLOPT_SSL_VERIFYPEER =>false,
 				CURLOPT_USERPWD => $amazonServiceHttpLogin
 			));
-				
 			$htmlAfterJs = curl_exec($curlSession);		
 			curl_close($curlSession);
+			
+			$hiddenParamList = explode("\n", $htmlAfterJs);
+			foreach ($hiddenParamList as $hiddenParam){
+				$characterNumber = strpos($hiddenParam,":");
+				$hiddenName = substr($hiddenParam, 0 , $characterNumber);
+				$hiddenValue = substr($hiddenParam, $characterNumber + 1);
+				$hiddenParams[$hiddenName] = $hiddenValue;
+			}
+			
+			
 		} else {
 			$descriptorspec = array(
 					            0 => array('pipe', 'r'),
@@ -404,7 +410,16 @@ class Oara_Network_Amazon extends Oara_Network{
 			}
 			
 			$exit_code = proc_close($metadataReader);
+			
+			$dom = new Zend_Dom_Query($htmlAfterJs);
+	      	$results = $dom->query('input[type="hidden"]');
+	      	$count = count($results);
+	      	foreach ($results as $result){
+	      		$hiddenName = $result->attributes->getNamedItem("name")->nodeValue;
+	      		$hiddenValue = $result->attributes->getNamedItem("value")->nodeValue;
+	      		$hiddenParams[$hiddenName] = $hiddenValue;
+	      	}
 		}
-		return $htmlAfterJs;
+		return $hiddenParams;
 	}
 }
