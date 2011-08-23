@@ -235,7 +235,7 @@ class Oara_Network_LinkShare extends Oara_Network{
 					        $urls[] = new Oara_Curl_Request($frameUrl, array());
 					        $exportReport = $this->_client->get($urls);
 						} else {
-							echo $exportReport[0];
+							//echo $exportReport[0];
 							throw new Exception("Error getting transactions");
 						}
 					}
@@ -337,7 +337,7 @@ class Oara_Network_LinkShare extends Oara_Network{
 					        $urls[] = new Oara_Curl_Request($frameUrl, array());
 					        $exportReport = $this->_client->get($urls);
 						} else {
-							echo $exportReport[0];
+							//echo $exportReport[0];
 							throw new Exception("Error getting transactions");
 						}
 					}
