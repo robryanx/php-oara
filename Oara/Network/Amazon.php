@@ -94,7 +94,7 @@ class Oara_Network_Amazon extends Oara_Network{
 		$urls = array();
         $urls[] = new Oara_Curl_Request('https://affiliate-program.amazon.co.uk/gp/associates/network/main.html', array());
 		$exportReport = $this->_client->get($urls);
-		
+		echo $exportReport[0];
 		$dom = new Zend_Dom_Query($exportReport[0]);
   
       	$results = $dom->query('#identitybox');
