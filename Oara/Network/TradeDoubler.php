@@ -685,13 +685,13 @@ class Oara_Network_TradeDoubler extends Oara_Network{
 	    	while ($it < $selectList->length){
 	    		$selectName = $selectList->item($it)->attributes->getNamedItem('name')->nodeValue;
 	    		if ($selectName == 'payment_id'){
-	    			$paymentLine = $selectList->item($it);
+	    			$paymentSelect = $selectList->item($it);
 	    			break;
 	    		}
 	    		$it++;
 	    	}
 	    	if ($paymentSelect != null){
-			    $paymentLines = $paymentLine->childNodes;
+			    $paymentLines = $paymentSelect->childNodes;
 				for ($i = 0;$i < $paymentLines->length;$i++) {
 					$pid = $paymentLines->item($i)->attributes->getNamedItem("value")->nodeValue;
 					if (is_numeric($pid)){
