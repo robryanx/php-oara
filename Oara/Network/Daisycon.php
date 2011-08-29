@@ -154,22 +154,22 @@ class Oara_Network_Daisycon extends Oara_Network{
 	            $transaction = Array();
 	            $merchantId = (int)$transactionExportArray[10];
 	            $transaction['merchantId'] = $merchantId;
-	            $transactionDate = new Zend_Date($transactionExportArray[2], 'MM-dd-yyyy HH:mm:ss');
+	            $transactionDate = new Zend_Date($transactionExportArray[3], 'MM-dd-yyyy HH:mm:ss');
 	            $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
-	            $transaction['program'] = $transactionExportArray[4];
+	            $transaction['program'] = $transactionExportArray[5];
 	            $transaction['link'] = '';
 	            $transaction['website'] = '';
-	            if ($transactionExportArray[5] == 'approved'){
+	            if ($transactionExportArray[6] == 'approved'){
 	            	$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
-	            } else if ($transactionExportArray[5] == 'pending' || $transactionExportArray[5] == 'potential' || $transactionExportArray[5] == 'open'){
+	            } else if ($transactionExportArray[6] == 'pending' || $transactionExportArray[6] == 'potential' || $transactionExportArray[6] == 'open'){
 	            	$transaction['status'] = Oara_Utilities::STATUS_PENDING;
-	            } else if ($transactionExportArray[5] == 'disapproved' || $transactionExportArray[5] == 'incasso'){
+	            } else if ($transactionExportArray[6] == 'disapproved' || $transactionExportArray[6] == 'incasso'){
 	                $transaction['status'] = Oara_Utilities::STATUS_DECLINED;
 	            } else {
-	            	throw new Exception("New status $transactionExportArray[5]");
+	            	throw new Exception("New status $transactionExportArray[6]");
 	            }
-	            $transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[16]);
-	            $transaction['commission'] = Oara_Utilities::parseDouble($transactionExportArray[7]);
+	            $transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[17]);
+	            $transaction['commission'] = Oara_Utilities::parseDouble($transactionExportArray[8]);
 	            $totalTransactions[] = $transaction;
             }
         }
