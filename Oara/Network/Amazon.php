@@ -63,6 +63,14 @@ class Oara_Network_Amazon extends Oara_Network{
 		$urls[] = new Oara_Curl_Request('https://affiliate-program.amazon.co.uk/gp/flex/sign-in/select.html?', $valuesLogin);
 		$contentList = $this->_client->post($urls);
 		
+		$valuesLogin = array(
+							 new Oara_Curl_Parameter('combinedReports', 'on'),
+							 new Oara_Curl_Parameter('refURL', '/gp/associates/network/reports/report.html?reportType=earningsReport')
+							 );
+		$urls = array();
+		$urls[] = new Oara_Curl_Request('https://affiliate-program.amazon.co.uk/gp/associates/x-site/combinedReports.html?', $valuesLogin);
+		$this->_client->get($urls);
+
         $this->_exportTransactionParameters = array(new Oara_Curl_Parameter('tag', ''),
 	                                                new Oara_Curl_Parameter('reportType', 'earningsReport'),
 	                                                new Oara_Curl_Parameter('program', 'all'),
