@@ -110,7 +110,6 @@ class Oara_Network_Zanox extends Oara_Network{
 		$dateArray = Oara_Utilities::daysOfDifference($dStartDate, $dEndDate);
 		foreach ($dateArray as $date){
 			$totalAuxTransactions = array();
-			echo round(memory_get_usage(true)/1048576,2)." megabytes 1\n\n"; 
 			$transactionList = $this->_apiClient->getSales( $date->toString("yyyy-MM-dd"), 'trackingDate', null, null, null, 0, $this->_pageSize);			
 			if ($transactionList->total > 0){
 				$iteration = self::calculeIterationNumber($transactionList->total, $this->_pageSize);
@@ -133,7 +132,6 @@ class Oara_Network_Zanox extends Oara_Network{
 				}
 			}
 			
-			echo round(memory_get_usage(true)/1048576,2)." megabytes 2\n\n"; 
 			foreach ($totalAuxTransactions as $transaction){
 				
 				if (in_array($transaction->program->id,$merchantList)){
@@ -164,7 +162,6 @@ class Oara_Network_Zanox extends Oara_Network{
 			}
 			unset($totalAuxTransactions);
 			gc_collect_cycles();
-			echo round(memory_get_usage(true)/1048576,2)." megabytes 3\n\n"; 
 		}
 		return $totalTransactions;
 	}
@@ -204,7 +201,6 @@ class Oara_Network_Zanox extends Oara_Network{
 							$adsMerchantList = $this->_apiClient->getProgramsByAdspace($ads->id, $b, $this->_pageSize);
 							foreach ($adsMerchantList->programItems->programItem as $adsMerchant){
 								if (in_array($adsMerchant->id, $merchantList)){
-									echo $auxStartDate->toString("yyyy-MM-dd")." - ".$auxEndDate->toString("yyyy-MM-dd");
 									$overviewList = $this->_apiClient->getReportBasic( $auxStartDate->toString("yyyy-MM-dd"), $auxEndDate->toString("yyyy-MM-dd"), 'trackingDate',
 						        												   						   null, $adsMerchant->id, null, null, null, $ads->id, array('day'));			   
 						        	if ($overviewList->total > 0){
@@ -251,8 +247,6 @@ class Oara_Network_Zanox extends Oara_Network{
 						        	unset($overviewList);
 									gc_collect_cycles();
 								}
-								echo count($totalOverview)."\n\n";
-								echo round(memory_get_usage(true)/1048576,2)." megabytes \n\n";
 							}
 						}
 					}
