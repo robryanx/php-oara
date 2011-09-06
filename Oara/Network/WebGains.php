@@ -105,7 +105,11 @@ class Oara_Network_WebGains extends Oara_Network{
 	 */
 	public function checkConnection(){
 		$connection = false;
-		if (self::getCampaignMap()){
+		$urls = array();
+        $urls[] = new Oara_Curl_Request('http://www.webgains.com/affiliates/index.html', array());
+	    $exportReport = $this->_webClient->get($urls);
+		
+		if (preg_match("/\/affiliates\/logout\.html/", $exportReport[0])){
 			$connection = true;
 		}
 		return $connection;
@@ -296,7 +300,6 @@ class Oara_Network_WebGains extends Oara_Network{
 		$urls = array();
         $urls[] = new Oara_Curl_Request('http://www.webgains.com/affiliates/report.html?f=0&action=sf', array());
 	    $exportReport = $this->_webClient->get($urls);
-	    
 		$matches = array();
         if (preg_match("/<select name=\"campaignswitchid\" class=\"formelement\" style=\"width:134px\">([^\t]*)<\/select>/",
         			   $exportReport[0], $matches)){

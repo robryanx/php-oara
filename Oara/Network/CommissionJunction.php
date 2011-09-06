@@ -115,26 +115,30 @@ class Oara_Network_CommissionJunction extends Oara_Network{
                                                  new Oara_Curl_Parameter('format', '6'),
                                                  new Oara_Curl_Parameter('button', 'Go')
                                                  );
-        $urls = array();
-        $urls[] = new Oara_Curl_Request('https://members.cj.com/member/publisher/home.do', array());
-        $result = $this->_client->get($urls);
-        if (preg_match("/a href=\"\/member\/(.*)?\/foundation/", $result[0], $matches)){
-            $this->_memberId = trim($matches[1]);
-        } else {
-        	throw new Exception('No member id found');
-        }
+        
     }
 	/**
 	 * Check the connection
 	 */
 	public function checkConnection(){
 		$connection = true;
+		
+		$urls = array();
+        $urls[] = new Oara_Curl_Request('https://members.cj.com/member/publisher/home.do', array());
+        $result = $this->_client->get($urls);
+        if (preg_match("/a href=\"\/member\/(.*)?\/foundation/", $result[0], $matches)){
+            $this->_memberId = trim($matches[1]);
+        } else {
+        	return false;
+        }
+        
+		
 		$restUrl = 'https://commission-detail.api.cj.com/v3/commissions?date-type=event';
 		$client = new Zend_Http_Client($restUrl);
         $client->setHeaders('Authorization',$this->_apiPassword);
 		$response = $client->request('GET');
 		if ($response->getStatus() != 200 ){
-			$connection = false;
+			return false;
 		}
 		return $connection;
 	}
