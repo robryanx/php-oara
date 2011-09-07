@@ -108,7 +108,7 @@ class Oara_Network_WebGains extends Oara_Network{
 		$urls = array();
         $urls[] = new Oara_Curl_Request('http://www.webgains.com/affiliates/index.html', array());
 	    $exportReport = $this->_webClient->get($urls);
-		
+		echo $exportReport[0];
 		if (preg_match("/\/affiliates\/logout\.html/", $exportReport[0])){
 			$connection = true;
 		}

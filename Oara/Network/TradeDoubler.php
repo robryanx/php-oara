@@ -645,7 +645,6 @@ class Oara_Network_TradeDoubler extends Oara_Network{
         	throw new Exception('Report too big \n\n'.$content);
         	
         } else if (preg_match("/error/", $content, $matches)){
-    		var_dump($content);
             $urls = array();
 	        $urls[] = $request;   
 		    $exportReport = $this->_client->get($urls);
