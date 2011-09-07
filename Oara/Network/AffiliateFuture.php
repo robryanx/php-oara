@@ -145,6 +145,10 @@ class Oara_Network_AffiliateFuture extends Oara_Network{
 						
 						$obj['amount'] = self::findAttribute($transaction, 'SaleValue');
 						$obj['commission'] = self::findAttribute($transaction, 'SaleCommission');
+						$leadCommission = self::findAttribute($transaction, 'LeadCommission');
+						if ( $leadCommission != 0 ){
+							$obj['commission'] += $leadCommission;
+						}
 						
 	
 						$transactions[] = $obj;
