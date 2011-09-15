@@ -96,9 +96,8 @@ class Oara_Network_AdSense extends Oara_Network{
 		$valuesLogin[] = new Oara_Curl_Parameter('Passwd' , $password);
 		$valuesLogin[] = new Oara_Curl_Parameter('signIn' , 'Sign in');
 
-		
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('https://www.google.com/accounts/ServiceLoginAuth', $valuesLogin);
+		$urls[] = new Oara_Curl_Request('https://accounts.google.com/ServiceLoginAuth', $valuesLogin);
 		$content = $this->_client->post($urls);
 		if (!preg_match("/href=\"\/adsense\/signout\"/", $content[0], $matches)) {
 			$urls = array();
