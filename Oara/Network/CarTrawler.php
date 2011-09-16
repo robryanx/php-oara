@@ -110,7 +110,7 @@ class Oara_Network_CarTrawler extends Oara_Network{
 			} else if ($exportTransaction[8] == 'UNCONFIRMED' || $exportTransaction[8] =='REBOOKED' || $exportTransaction[8] =='PENDING INVOICE'){
 				$transaction['status'] = Oara_Utilities::STATUS_PENDING;
 			} else{
-				$asdf = $transaction['status'];
+				throw new Exception("New status found ".$transaction['status']);
 			}
 			
 			$totalTransactions[] = $transaction;

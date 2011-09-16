@@ -29,6 +29,8 @@ class Oara_Network_Amazon extends Oara_Network{
      * @var array
      */
 	private $_exportPaymentParameters = null;
+	
+	private $_idBox = null;
     /**
      * Client 
      * @var unknown_type
@@ -91,6 +93,7 @@ class Oara_Network_Amazon extends Oara_Network{
                                                 );
                                                
        $this->_exportPaymentParameters = array(); 
+       
                                                
 	}
 	/**
@@ -109,6 +112,24 @@ class Oara_Network_Amazon extends Oara_Network{
       	$count = count($results);
 		if($count == 0){
 			$connection = false;
+		} else {
+			 $idBox = array();
+			 
+			 $results = $dom->query('select[name="idbox_store_id"]');
+			 $count = count($results);
+			 if($count == 0){
+			 	$idBox[] = "";
+			 } else {
+			  	foreach ($results as $result){
+				 	$optionList = $result->childNodes;
+		      		$optionNumber = $optionList->length;
+					for ($i = 0;$i < $optionNumber;$i++) {
+						$idBox[] = $optionList->item($i)->attributes->getNamedItem("value")->nodeValue;
+					}
+		 		}
+			 }
+			
+			 $this->_idBox = $idBox;
 		}
 		return $connection;
 	}
@@ -135,36 +156,39 @@ class Oara_Network_Amazon extends Oara_Network{
 	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null){
 		
 		$totalTransactions = array();
-		
-		$valuesFromExport = Oara_Utilities::cloneArray($this->_exportTransactionParameters);
-		$valuesFromExport[] = new Oara_Curl_Parameter('startDay', $dStartDate->toString("d"));
-		$valuesFromExport[] = new Oara_Curl_Parameter('startMonth', (int)$dStartDate->toString("M")-1);
-		$valuesFromExport[] = new Oara_Curl_Parameter('startYear', $dStartDate->toString("yyyy"));
-		$valuesFromExport[] = new Oara_Curl_Parameter('endDay', $dEndDate->toString("d"));
-		$valuesFromExport[] = new Oara_Curl_Parameter('endMonth', (int)$dEndDate->toString("M")-1);
-		$valuesFromExport[] = new Oara_Curl_Parameter('endYear', $dEndDate->toString("yyyy"));
-    
-		$urls = array();
-        $urls[] = new Oara_Curl_Request('https://affiliate-program.amazon.co.uk/gp/associates/network/reports/report.html?', $valuesFromExport);
-		$exportReport = $this->_client->get($urls);
-		
-        $exportData = str_getcsv($exportReport[0],"\n");
-        $num = count($exportData);
-        for ($i = 2; $i < $num; $i++) {
-            $transactionExportArray = str_getcsv($exportData[$i],"\t");
-            $transaction = Array();
-            $transaction['merchantId'] = 1;
-            $transactionDate = new Zend_Date($transactionExportArray[5], 'MMMM d,yyyy', 'en');
-            $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
-            $transaction['program'] = $transactionExportArray[1];
-            $transaction['link'] = "";
-            $transaction['website'] = "";
-            
-            $transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
-            $transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[9]);
-            $transaction['commission'] = Oara_Utilities::parseDouble($transactionExportArray[10]);
-            $totalTransactions[] = $transaction;
-        }
+		foreach ($this->_idBox as $id){
+			
+			$valuesFromExport = Oara_Utilities::cloneArray($this->_exportTransactionParameters);
+			$valuesFromExport[] = new Oara_Curl_Parameter('startDay', $dStartDate->toString("d"));
+			$valuesFromExport[] = new Oara_Curl_Parameter('startMonth', (int)$dStartDate->toString("M")-1);
+			$valuesFromExport[] = new Oara_Curl_Parameter('startYear', $dStartDate->toString("yyyy"));
+			$valuesFromExport[] = new Oara_Curl_Parameter('endDay', $dEndDate->toString("d"));
+			$valuesFromExport[] = new Oara_Curl_Parameter('endMonth', (int)$dEndDate->toString("M")-1);
+			$valuesFromExport[] = new Oara_Curl_Parameter('endYear', $dEndDate->toString("yyyy"));
+			$valuesFromExport[] = new Oara_Curl_Parameter('idbox_store_id', $id);
+	    
+			$urls = array();
+	        $urls[] = new Oara_Curl_Request('https://affiliate-program.amazon.co.uk/gp/associates/network/reports/report.html?', $valuesFromExport);
+			$exportReport = $this->_client->get($urls);
+			
+	        $exportData = str_getcsv($exportReport[0],"\n");
+	        $num = count($exportData);
+	        for ($i = 2; $i < $num; $i++) {
+	            $transactionExportArray = str_getcsv($exportData[$i],"\t");
+	            $transaction = Array();
+	            $transaction['merchantId'] = 1;
+	            $transactionDate = new Zend_Date($transactionExportArray[5], 'MMMM d,yyyy', 'en');
+	            $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+	            $transaction['program'] = $transactionExportArray[1];
+	            $transaction['link'] = "";
+	            $transaction['website'] = "";
+	            
+	            $transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
+	            $transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[9]);
+	            $transaction['commission'] = Oara_Utilities::parseDouble($transactionExportArray[10]);
+	            $totalTransactions[] = $transaction;
+	        }
+		}
         return $totalTransactions;
 	}
 
@@ -175,59 +199,62 @@ class Oara_Network_Amazon extends Oara_Network{
 	public function getOverviewList($transactionList = null, $merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null){
 		$overviewArray = Array();
 		$transactionArray = Oara_Utilities::transactionMapPerDay($transactionList);
-		foreach ($merchantList as $merchantId){
-
-			$overviewExport = Oara_Utilities::cloneArray($this->_exportOverviewParameters);
-			$overviewExport[] = new Oara_Curl_Parameter('startDay', $dStartDate->toString("d"));
-			$overviewExport[] = new Oara_Curl_Parameter('startMonth', (int)$dStartDate->toString("M")-1);
-			$overviewExport[] = new Oara_Curl_Parameter('startYear', $dStartDate->toString("yyyy"));
-			$overviewExport[] = new Oara_Curl_Parameter('endDay', $dEndDate->toString("d"));
-			$overviewExport[] = new Oara_Curl_Parameter('endMonth', (int)$dEndDate->toString("M")-1);
-			$overviewExport[] = new Oara_Curl_Parameter('endYear', $dEndDate->toString("yyyy"));
-			
-			$urls = array();
-	        $urls[] = new Oara_Curl_Request('https://affiliate-program.amazon.co.uk/gp/associates/network/reports/report.html?', $overviewExport);
-			$exportReport = $this->_client->get($urls);
-			$exportData = str_getcsv($exportReport[0],"\n");
-            $num = count($exportData);
-            for ($j = 2; $j < $num; $j++) {
-            	
-                $overviewExportArray = str_getcsv($exportData[$j],"\t");
-                
-                $obj = array();
-                $obj['merchantId'] = 1;
-                
-                $overviewDate = new Zend_Date($overviewExportArray[0], "yyyy/MM/dd HH:mm:ss");
-                $obj['date'] = $overviewDate->toString("yyyy-MM-dd HH:mm:ss");
-                            
-                $obj['impression_number'] = 0;
-                $obj['click_number'] = $overviewExportArray[1];
-                $obj['transaction_number'] = 0;
-                            
-                $obj['transaction_confirmed_commission'] = 0;
-                $obj['transaction_confirmed_value'] = 0;
-                $obj['transaction_pending_commission'] = 0;
-                $obj['transaction_pending_value'] = 0;
-                $obj['transaction_declined_commission'] = 0;
-                $obj['transaction_declined_value'] = 0;
-                $transactionDateArray = Oara_Utilities::getDayFromArray($obj['merchantId'], $transactionArray, $overviewDate);
-            	foreach ($transactionDateArray as $transaction){
-                    $obj['transaction_number']++;
-                    if ($transaction['status'] == Oara_Utilities::STATUS_CONFIRMED){
-                        $obj['transaction_confirmed_value'] += $transaction['amount'];
-                        $obj['transaction_confirmed_commission'] += $transaction['commission'];
-                    } else if ($transaction['status'] == Oara_Utilities::STATUS_PENDING){
-                        $obj['transaction_pending_value'] += $transaction['amount'];
-                        $obj['transaction_pending_commission'] += $transaction['commission'];
-                    } else if ($transaction['status'] == Oara_Utilities::STATUS_DECLINED){
-                        $obj['transaction_declined_value'] += $transaction['amount'];
-                        $obj['transaction_declined_commission'] += $transaction['commission'];
-                    }
-                }
-                if (Oara_Utilities::checkRegister($obj)){
-                	$overviewArray[] = $obj;
-               	}
-            }
+		foreach ($this->_idBox as $id){
+			foreach ($merchantList as $merchantId){
+	
+				$overviewExport = Oara_Utilities::cloneArray($this->_exportOverviewParameters);
+				$overviewExport[] = new Oara_Curl_Parameter('startDay', $dStartDate->toString("d"));
+				$overviewExport[] = new Oara_Curl_Parameter('startMonth', (int)$dStartDate->toString("M")-1);
+				$overviewExport[] = new Oara_Curl_Parameter('startYear', $dStartDate->toString("yyyy"));
+				$overviewExport[] = new Oara_Curl_Parameter('endDay', $dEndDate->toString("d"));
+				$overviewExport[] = new Oara_Curl_Parameter('endMonth', (int)$dEndDate->toString("M")-1);
+				$overviewExport[] = new Oara_Curl_Parameter('endYear', $dEndDate->toString("yyyy"));
+				$overviewExport[] = new Oara_Curl_Parameter('idbox_store_id', $id);
+				
+				$urls = array();
+		        $urls[] = new Oara_Curl_Request('https://affiliate-program.amazon.co.uk/gp/associates/network/reports/report.html?', $overviewExport);
+				$exportReport = $this->_client->get($urls);
+				$exportData = str_getcsv($exportReport[0],"\n");
+	            $num = count($exportData);
+	            for ($j = 2; $j < $num; $j++) {
+	            	
+	                $overviewExportArray = str_getcsv($exportData[$j],"\t");
+	                
+	                $obj = array();
+	                $obj['merchantId'] = 1;
+	                
+	                $overviewDate = new Zend_Date($overviewExportArray[0], "yyyy/MM/dd HH:mm:ss");
+	                $obj['date'] = $overviewDate->toString("yyyy-MM-dd HH:mm:ss");
+	                            
+	                $obj['impression_number'] = 0;
+	                $obj['click_number'] = $overviewExportArray[1];
+	                $obj['transaction_number'] = 0;
+	                            
+	                $obj['transaction_confirmed_commission'] = 0;
+	                $obj['transaction_confirmed_value'] = 0;
+	                $obj['transaction_pending_commission'] = 0;
+	                $obj['transaction_pending_value'] = 0;
+	                $obj['transaction_declined_commission'] = 0;
+	                $obj['transaction_declined_value'] = 0;
+	                $transactionDateArray = Oara_Utilities::getDayFromArray($obj['merchantId'], $transactionArray, $overviewDate);
+	            	foreach ($transactionDateArray as $transaction){
+	                    $obj['transaction_number']++;
+	                    if ($transaction['status'] == Oara_Utilities::STATUS_CONFIRMED){
+	                        $obj['transaction_confirmed_value'] += $transaction['amount'];
+	                        $obj['transaction_confirmed_commission'] += $transaction['commission'];
+	                    } else if ($transaction['status'] == Oara_Utilities::STATUS_PENDING){
+	                        $obj['transaction_pending_value'] += $transaction['amount'];
+	                        $obj['transaction_pending_commission'] += $transaction['commission'];
+	                    } else if ($transaction['status'] == Oara_Utilities::STATUS_DECLINED){
+	                        $obj['transaction_declined_value'] += $transaction['amount'];
+	                        $obj['transaction_declined_commission'] += $transaction['commission'];
+	                    }
+	                }
+	                if (Oara_Utilities::checkRegister($obj)){
+	                	$overviewArray[] = $obj;
+	               	}
+	            }
+			}
 		}
 		return $overviewArray;
 	}
@@ -237,34 +264,38 @@ class Oara_Network_Amazon extends Oara_Network{
 	 */
 	public function getPaymentHistory(){
     	$paymentHistory = array();
-    	$urls = array();
-        $urls[] = new Oara_Curl_Request('https://affiliate-program.amazon.co.uk/gp/associates/network/your-account/payment-history.html', array());
-		$exportReport = $this->_client->get($urls);
-		
-    	$dom = new Zend_Dom_Query($exportReport[0]);
-      	$results = $dom->query('.paymenthistory');
-		$count = count($results);
-		$yearArray = array();
-		if ($count == 1){
-			$paymentTable = $results->current();
-			$paymentReport = self::htmlToCsv(self::DOMinnerHTML($paymentTable));
-			for ($i = 2; $i < count($paymentReport) - 1; $i++){
-				$paymentExportArray = str_getcsv($paymentReport[$i],";");
-				
-				$obj = array();
-				$paymentDate = new Zend_Date($paymentExportArray[0], "M d yyyy", "en");
-	    		$obj['date'] = $paymentDate->toString("yyyy-MM-dd HH:mm:ss");
-				$obj['pid'] = $paymentDate->toString("yyyyMMdd");
-				$obj['method'] = 'BACS';
-				if (preg_match("/-/", $paymentExportArray[4]) && preg_match("/[0-9]*,?[0-9]*\.?[0-9]+/", $paymentExportArray[4], $matches)) {
-					$obj['value'] = Oara_Utilities::parseDouble($matches[0]);
-					$paymentHistory[] = $obj;
+    	foreach ($this->_idBox as $id){
+	    	$urls = array();
+	    	$paymentExport = array();
+	    	$paymentExport[] = new Oara_Curl_Parameter('idbox_store_id', $id);
+	        $urls[] = new Oara_Curl_Request('https://affiliate-program.amazon.co.uk/gp/associates/network/your-account/payment-history.html?', $paymentExport);
+			$exportReport = $this->_client->get($urls);
+			
+	    	$dom = new Zend_Dom_Query($exportReport[0]);
+	      	$results = $dom->query('.paymenthistory');
+			$count = count($results);
+			$yearArray = array();
+			if ($count == 1){
+				$paymentTable = $results->current();
+				$paymentReport = self::htmlToCsv(self::DOMinnerHTML($paymentTable));
+				for ($i = 2; $i < count($paymentReport) - 1; $i++){
+					$paymentExportArray = str_getcsv($paymentReport[$i],";");
+					
+					$obj = array();
+					$paymentDate = new Zend_Date($paymentExportArray[0], "M d yyyy", "en");
+		    		$obj['date'] = $paymentDate->toString("yyyy-MM-dd HH:mm:ss");
+					$obj['pid'] = $paymentDate->toString("yyyyMMdd").(int)substr((string)base_convert(md5($id), 16, 10),0,10);
+					$obj['method'] = 'BACS';
+					if (preg_match("/-/", $paymentExportArray[4]) && preg_match("/[0-9]*,?[0-9]*\.?[0-9]+/", $paymentExportArray[4], $matches)) {
+						$obj['value'] = Oara_Utilities::parseDouble($matches[0]);
+						$paymentHistory[] = $obj;
+					}
+					
 				}
-				
+			} else {
+				throw new Exception('Problem getting the payments');
 			}
-		} else {
-			throw new Exception('Problem getting the payments');
-		}
+    	}
     	return $paymentHistory;
     }
     /**
