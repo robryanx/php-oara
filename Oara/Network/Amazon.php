@@ -284,7 +284,7 @@ class Oara_Network_Amazon extends Oara_Network{
 					$obj = array();
 					$paymentDate = new Zend_Date($paymentExportArray[0], "M d yyyy", "en");
 		    		$obj['date'] = $paymentDate->toString("yyyy-MM-dd HH:mm:ss");
-					$obj['pid'] = $paymentDate->toString("yyyyMMdd").(int)substr((string)base_convert(md5($id), 16, 10),0,10);
+					$obj['pid'] = ($paymentDate->toString("yyyyMMdd").substr((string)base_convert(md5($id), 16, 10),0,5));
 					$obj['method'] = 'BACS';
 					if (preg_match("/-/", $paymentExportArray[4]) && preg_match("/[0-9]*,?[0-9]*\.?[0-9]+/", $paymentExportArray[4], $matches)) {
 						$obj['value'] = Oara_Utilities::parseDouble($matches[0]);
