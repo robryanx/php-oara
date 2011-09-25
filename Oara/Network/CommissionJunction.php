@@ -205,67 +205,6 @@ class Oara_Network_CommissionJunction extends Oara_Network{
 			}
 		}
         
-        /**
-        
-        $dateArray = Oara_Utilities::daysOfDifference($dStartDate, $dEndDate);
-        foreach ($dateArray as $currentStartDate){
-        	$urls = array();
-        	echo $currentStartDate->get(Zend_Date::DAY)."\n\n";
-	        $valuesFromExport = Oara_Utilities::cloneArray($this->_exportTransactionParameters);
-	        $valuesFromExport[] = new Oara_Curl_Parameter('startyear', $currentStartDate->get(Zend_Date::YEAR));
-	        $valuesFromExport[] = new Oara_Curl_Parameter('startmonth', (int)$currentStartDate->get(Zend_Date::MONTH) - 1);
-	        $valuesFromExport[] = new Oara_Curl_Parameter('startday', $currentStartDate->get(Zend_Date::DAY));
-	        
-	        $valuesFromExport[] = new Oara_Curl_Parameter('endyear', $currentStartDate->get(Zend_Date::YEAR));
-	        $valuesFromExport[] = new Oara_Curl_Parameter('endmonth', (int)$currentStartDate->get(Zend_Date::MONTH) - 1);
-	        $valuesFromExport[] = new Oara_Curl_Parameter('endday', $currentStartDate->get(Zend_Date::DAY));
-	        $valuesFromExport[] = new Oara_Curl_Parameter('cid', '');
-	        
-	        $urls[] = new Oara_Curl_Request('https://members.cj.com/member/'.$this->_memberId.'/publisher/report/transaction.do?', $valuesFromExport);
-        	$exportReport = $this->_client->get($urls);
-        }
-        
-        $numberReports = count($exportReport);
-        
-        for ($j = 0; $j < $numberReports; $j++){
-	        $exportData = str_getcsv($exportReport[$j],"\n");
-	        $num = count($exportData);
-	        for ($i = 1; $i < $num; $i++) {
-	            $transactionExportArray = str_getcsv($exportData[$i],",");
-	            if (count($transactionExportArray) <= 13){
-	            	throw new Exception ('Fail getting the transactions');
-	            }
-	   			if (in_array((int)$transactionExportArray[13],$merchantList)){
-	   				
-		            $transaction = Array();
-		            $transaction['merchantId'] = $transactionExportArray[13]; 
-		            //$transaction['website'] = trim($transactionExportArray[11]); 
-		            //$transaction['link'] = self::readLink($transactionExportArray[12]);
-		
-		            $dateString = substr($transactionExportArray[1], 0, -4);
-		            $transactionDate =  new Zend_Date($dateString,'yyyy-MMM-dd HH:mm','en_US');  
-		            $transactionDate->setSecond(00);
-		               
-		            $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
-		            $transaction['program'] = $transactionExportArray[2];
-		           
-		            if ($transactionExportArray[5] == 'closed' || $transactionExportArray[5] == 'locked'){
-		                $transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
-		            } else if ($transactionExportArray[5] == 'extended' || $transactionExportArray[5] == 'new'){
-		                $transaction['status'] = Oara_Utilities::STATUS_PENDING;
-		            } else if ($transactionExportArray[5] == 'corrected'){
-		                $transaction['status'] = Oara_Utilities::STATUS_DECLINED;
-		            }
-		                        
-		            $transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[7]);
-		            $transaction['commission'] = Oara_Utilities::parseDouble($transactionExportArray[9]);
-		            $totalTransactions[] = $transaction;
-	   			}
-	        }
-        }
-        
-        **/
-        
         return $totalTransactions;
     }
 	/**

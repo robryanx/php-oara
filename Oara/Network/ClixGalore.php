@@ -189,9 +189,6 @@ class Oara_Network_ClixGalore extends Oara_Network{
 		            $transaction['merchantId'] = $merchantId;
 		            $transactionDate = new Zend_Date($transactionExportArray[0], 'dd MMM yyyy HH:mm', 'en');
 		            $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
-		            $transaction['program'] = $transactionExportArray[3];
-		            $transaction['link'] = '';
-		            $transaction['website'] = '';
 		            
 		            if ($status == 1){
 		            	$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;

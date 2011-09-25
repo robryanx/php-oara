@@ -144,7 +144,6 @@ class Oara_Network_TravelJigsaw extends Oara_Network{
 				$transaction = array();
 				
 				$transaction['merchantId'] = 1;
-				$transaction['program'] = $exportTransaction[1];
 				$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 				$transaction['amount'] = (double) $exportTransaction[7];
 				$transaction['commission'] = (double) $exportTransaction[8];

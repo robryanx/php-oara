@@ -41,7 +41,6 @@ class Oara_Network_AffiliNet extends Oara_Network{
 	private $_transactionConverterConfiguration = Array ('TransactionStatus'=>'status',
 	                                                     'Commission'=>'commission,amount',
 	                                                     'Date'=>'date',
-														 'ProgramTitle'=>'program',
 													     'ProgramId'=>'merchantId'
 	                                                    );
     
@@ -54,7 +53,7 @@ class Oara_Network_AffiliNet extends Oara_Network{
 	{
         $this->_user = $credentials['user'];
         $this->_password = $credentials['password'];
-        self::Login();
+        
 		
 	}
 	/**
@@ -62,7 +61,7 @@ class Oara_Network_AffiliNet extends Oara_Network{
 	 */
 	public function checkConnection(){
 		$connection = true;
-		
+		self::Login();
 		return $connection;
 	}
 	/**

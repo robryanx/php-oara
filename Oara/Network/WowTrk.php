@@ -145,9 +145,7 @@ class Oara_Network_WowTrk extends Oara_Network{
 						
 						$obj = array();
 						$obj['merchantId'] = $merchantId;
-						$obj['website'] = '';
 		                $obj['date'] = $auxStartDate->toString("yyyy-MM-dd HH:mm:ss");
-		                $obj['link'] = '';
 	                	$obj['status'] = Oara_Utilities::STATUS_CONFIRMED;
 		                        
 	                    $obj['amount'] = Oara_Utilities::parseDouble((string)$transaction->sales);  
@@ -212,9 +210,7 @@ class Oara_Network_WowTrk extends Oara_Network{
 					if (in_array($merchantId, $merchantList)){
 						$obj = array();
 						$obj['merchantId'] = $merchantId;
-						$obj['website'] = '';
 		                $obj['date'] = $auxStartDate->toString("yyyy-MM-dd HH:mm:ss");
-		                $obj['link'] = '';
 	                	$obj['status'] = Oara_Utilities::STATUS_CONFIRMED;
 	                	
 	                	$obj['click_number'] = 0;

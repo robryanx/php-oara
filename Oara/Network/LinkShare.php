@@ -406,11 +406,7 @@ class Oara_Network_LinkShare extends Oara_Network{
 				
 	            $transaction['merchantId'] = (int)$transactionData[3];
 	            $transactionDate = new Zend_Date($transactionData[1]." ".$transactionData[2], "MM/dd/yyyy HH:mm:ss");
-	            $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");  
-		                
-		        $transaction['program'] = $transactionData[6];
-		        $transaction['website'] = '';
-		        $transaction['link'] = '';
+	            $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 		       
 		        $sales = Oara_Utilities::parseDouble($transactionData[7]);
 		        
@@ -472,8 +468,7 @@ class Oara_Network_LinkShare extends Oara_Network{
 	                    
 	             $overview['merchantId'] = (int)$overviewData[0];
 	             $overview['date'] = $overviewDate->toString("yyyy-MM-dd HH:mm:ss");
-	             $overview['link'] = '';
-	             $overview['website'] = '';
+	             
 	             $overview['click_number'] = (int)$overviewData[3];
 	             $overview['impression_number'] = (int)$overviewData[2];
 	             $overview['transaction_number'] = 0;

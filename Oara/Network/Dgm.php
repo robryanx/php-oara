@@ -246,12 +246,7 @@ class Oara_Network_Dgm extends Oara_Network{
 				        		$transaction['merchantId'] = $merchantList[$i];
 				                $transactionDate =  new Zend_Date($transactionExportArray[4], 'dd-MMM-yyyy HH:mm:ss', 'en_GB');
 				                $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
-				                        
-				                $transaction['program'] = $transactionExportArray[2];
-				                //$transactionExportArray[16]
-				                $transaction['website'] = ''; 
-				                //$transactionExportArray[7]
-				                $transaction['link'] = '';
+
 				                    
 				                if ($transactionExportArray[15]=='Approved'){
 				                    $transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
@@ -340,9 +335,7 @@ class Oara_Network_Dgm extends Oara_Network{
 		                $overview['merchantId'] = $merchantList[$i]; 
 			            $transactionDate =  new Zend_Date($overviewExportArray[0], 'dd-MMM-yyyy HH:mm:ss', 'en_GB');
 		                $overview['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
-		                    
-		                $overview['link'] = '';
-		                $overview['website'] = '';
+		                
 		                $overview['click_number'] = (int)$overviewExportArray[2];
 		                $overview['impression_number'] = (int)$overviewExportArray[1];
 		                $overview['transaction_number'] = 0;

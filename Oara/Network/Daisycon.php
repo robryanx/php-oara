@@ -156,9 +156,6 @@ class Oara_Network_Daisycon extends Oara_Network{
 	            $transaction['merchantId'] = $merchantId;
 	            $transactionDate = new Zend_Date($transactionExportArray[3], 'MM-dd-yyyy HH:mm:ss');
 	            $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
-	            $transaction['program'] = $transactionExportArray[5];
-	            $transaction['link'] = '';
-	            $transaction['website'] = '';
 	            if ($transactionExportArray[6] == 'approved'){
 	            	$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
 	            } else if ($transactionExportArray[6] == 'pending' || $transactionExportArray[6] == 'potential' || $transactionExportArray[6] == 'open'){

@@ -150,12 +150,7 @@ class Oara_Network_Zanox extends Oara_Network{
 					}
 					$obj['commission'] = $transaction->commission;
 					$obj['date'] = $transaction->trackingDate;
-					//$obj['link'] = $transaction->admedium->_;
-					//$obj['linkId'] = $transaction->admedium->id;
-					$obj['website'] = $transaction->adspace->_;
-					$obj['websiteId'] = $transaction->adspace->id;
 					$obj['merchantId'] = $transaction->program->id;
-					$obj['program'] = $transaction->program->_;
 					$totalTransactions[] = $obj;
 				}
 				
@@ -183,75 +178,49 @@ class Oara_Network_Zanox extends Oara_Network{
         $auxEndDate->setSecond("59");
         $auxEndDate->addDay(1);
 
-        $transactionArray = self::transactionMapPerDay($transactionList);
-        
-        $adsList = $this->_apiClient->getAdspaces(0, $this->_pageSize);
-		if ($adsList->total > 0){
-			//calculate number of iterations for the adsList
-			$aIteration = self::calculeIterationNumber($adsList->total, $this->_pageSize);
-			for($a = 0; $a < $aIteration; $a++){
-				$adsList = $this->_apiClient->getAdspaces($a, $this->_pageSize);
-				
-				foreach ($adsList->adspaceItems->adspaceItem as $ads){
-					
-					$adsMerchantList = $this->_apiClient->getProgramsByAdspace($ads->id, 0, $this->_pageSize);
-					if ($adsMerchantList->total > 0){
-						$iterationMerchantList = self::calculeIterationNumber($adsMerchantList->total, $this->_pageSize);
-						for($b = 0; $b < $iterationMerchantList; $b++){
-							$adsMerchantList = $this->_apiClient->getProgramsByAdspace($ads->id, $b, $this->_pageSize);
-							foreach ($adsMerchantList->programItems->programItem as $adsMerchant){
-								if (in_array($adsMerchant->id, $merchantList)){
-									$overviewList = $this->_apiClient->getReportBasic( $auxStartDate->toString("yyyy-MM-dd"), $auxEndDate->toString("yyyy-MM-dd"), 'trackingDate',
-						        												   						   null, $adsMerchant->id, null, null, null, $ads->id, array('day'));			   
-						        	if ($overviewList->total > 0){
-										foreach ($overviewList->reportItems->reportItem as $overview){
-											$obj = array();
-											$obj['merchantId'] = $adsMerchant->id;
-											$overviewDate = new Zend_Date($overview->day,"yyyy-MM-dd");
-											$obj['date'] = $overviewDate->toString("yyyy-MM-dd HH:mm:ss");
-											                	
-											$obj['website'] = $ads->name;
-											$obj['websiteId'] = $ads->id;
-											//$obj['link'] = $adMedia->name;
-											//$obj['linkId'] = $adMedia->id;
-											                            
-											$obj['impression_number'] = $overview->viewCount;
-											$obj['click_number'] = $overview->clickCount;
-											$obj['transaction_number'] = 0;
-											                            
-											$obj['transaction_confirmed_commission'] = 0;
-											$obj['transaction_confirmed_value'] = 0;
-											$obj['transaction_pending_commission'] = 0;
-											$obj['transaction_pending_value'] = 0;
-											$obj['transaction_declined_commission'] = 0;
-											$obj['transaction_declined_value'] = 0;
-											$transactionDateArray = self::getDayFromArray($obj['merchantId'], $obj['websiteId'], $transactionArray, $overviewDate);
-											foreach ($transactionDateArray as $transaction){
-											 	$obj['transaction_number']++;
-												if ($transaction['status'] == Oara_Utilities::STATUS_CONFIRMED){
-											    	$obj['transaction_confirmed_value'] += $transaction['amount'];
-											     	$obj['transaction_confirmed_commission'] += $transaction['commission'];
-												} else if ($transaction['status'] == Oara_Utilities::STATUS_PENDING){
-											    	$obj['transaction_pending_value'] += $transaction['amount'];
-											    	$obj['transaction_pending_commission'] += $transaction['commission'];
-												} else if ($transaction['status'] == Oara_Utilities::STATUS_DECLINED){
-											    	$obj['transaction_declined_value'] += $transaction['amount'];
-											    	$obj['transaction_declined_commission'] += $transaction['commission'];
-												}
-											}
-											if (Oara_Utilities::checkRegister($obj)){
-												$totalOverview[] = $obj;
-											}
-										}
-						        	}
-						        	unset($overviewList);
-									gc_collect_cycles();
-								}
-							}
+        $transactionArray = Oara_Utilities::transactionMapPerDay($transactionList);
+
+		foreach ($merchantList as $merchantId){
+			$overviewList = $this->_apiClient->getReportBasic( $auxStartDate->toString("yyyy-MM-dd"), $auxEndDate->toString("yyyy-MM-dd"), 'trackingDate',
+        												   						   null, $merchantId, null, null, null, null, array('day'));			   
+        	if ($overviewList->total > 0){
+				foreach ($overviewList->reportItems->reportItem as $overview){
+					$obj = array();
+					$obj['merchantId'] = $adsMerchant->id;
+					$overviewDate = new Zend_Date($overview->day,"yyyy-MM-dd");
+					$obj['date'] = $overviewDate->toString("yyyy-MM-dd HH:mm:ss");
+
+					$obj['impression_number'] = $overview->viewCount;
+					$obj['click_number'] = $overview->clickCount;
+					$obj['transaction_number'] = 0;
+					                            
+					$obj['transaction_confirmed_commission'] = 0;
+					$obj['transaction_confirmed_value'] = 0;
+					$obj['transaction_pending_commission'] = 0;
+					$obj['transaction_pending_value'] = 0;
+					$obj['transaction_declined_commission'] = 0;
+					$obj['transaction_declined_value'] = 0;
+					$transactionDateArray = Oara_Utilities::getDayFromArray($obj['merchantId'], $transactionArray, $overviewDate);
+					foreach ($transactionDateArray as $transaction){
+					 	$obj['transaction_number']++;
+						if ($transaction['status'] == Oara_Utilities::STATUS_CONFIRMED){
+					    	$obj['transaction_confirmed_value'] += $transaction['amount'];
+					     	$obj['transaction_confirmed_commission'] += $transaction['commission'];
+						} else if ($transaction['status'] == Oara_Utilities::STATUS_PENDING){
+					    	$obj['transaction_pending_value'] += $transaction['amount'];
+					    	$obj['transaction_pending_commission'] += $transaction['commission'];
+						} else if ($transaction['status'] == Oara_Utilities::STATUS_DECLINED){
+					    	$obj['transaction_declined_value'] += $transaction['amount'];
+					    	$obj['transaction_declined_commission'] += $transaction['commission'];
 						}
 					}
+					if (Oara_Utilities::checkRegister($obj)){
+						$totalOverview[] = $obj;
+					}
 				}
-			}
+        	}
+        	unset($overviewList);
+			gc_collect_cycles();
 		}
 	    return $totalOverview;
 	}
@@ -284,42 +253,6 @@ class Oara_Network_Zanox extends Oara_Network{
     	}
     	return $paymentHistory;
     }
-    
-
-	/**
-     * Filter the transactionList per day
-     * @param array $transactionList
-     * @return array
-     */
-    public function transactionMapPerDay(array $transactionList){
-    	$transactionMap = array();
-    	foreach ($transactionList as $transaction){
-    		$dateString = substr($transaction['date'], 0, 10);
-    		if (!isset($transactionMap[$transaction['merchantId']][$transaction['websiteId']][$dateString])){
-    			$transactionMap[$transaction['merchantId']][$transaction['websiteId']][$dateString] = array();
-    		}
-            
-    		$transactionMap[$transaction['merchantId']][$transaction['websiteId']][$dateString][] = $transaction;
-    	}
-    	
-    	return $transactionMap;
-    }
-	/**
-	 * Get the day for this transaction array
-	 * @param map $dateArray
-	 * @param Zend_Date $date
-	 * @return array
-	 */
-	public function getDayFromArray($merchantId, $websiteId, $dateArray, Zend_Date $date){
-		$resultArray = array();
-		if (isset($dateArray[$merchantId][$websiteId])){
-			$dateString = $date->toString("yyyy-MM-dd");
-			if (isset($dateArray[$merchantId][$websiteId][$dateString])){
-				$resultArray = $dateArray[$merchantId][$websiteId][$dateString];
-			}
-		}
-		return $resultArray;
-	}
 	
     /**
      * Calculate the number of iterations needed

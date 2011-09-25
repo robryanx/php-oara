@@ -149,10 +149,6 @@ class Oara_Network_PaidOnResults extends Oara_Network{
 			$transactionDate = new Zend_Date($transactionExportArray[1], "dd/MM/yyyy HH:mm:ss");
 			$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 			
-			//$transaction['link'] = $transactionExportArray[2];
-			//$transaction['website'] = $transactionExportArray[3];
-			$transaction['program'] = $transactionExportArray[7];
-			
 			$transaction['amount'] = (double) $transactionExportArray[4];
 			$transaction['commission'] = (double) $transactionExportArray[5];
 			

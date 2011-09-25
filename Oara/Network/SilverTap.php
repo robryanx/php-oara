@@ -145,12 +145,9 @@ class Oara_Network_SilverTap extends Oara_Network{
 			if (in_array((int)$transactionExportArray[3], $merchantList)){
 	            $transaction = Array();
 	            $transaction['merchantId'] = $transactionExportArray[3];
-	            $transaction['website'] = '';//$transactionExportArray[6]; 
-	
 	            $transactionDate = new Zend_Date($transactionExportArray[2],"dd/MM/YY HH:mm:ss"); 
 	            $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
-	            $transaction['program'] = $transactionExportArray[5];
-	            $transaction['link'] = '';
+
 	            if ($transactionExportArray[16] == 'Unpaid Confirmed' || $transactionExportArray[16] == 'Paid Confirmed'){
 	            	$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
 	            } else if ($transactionExportArray[16] == 'Unpaid Unconfirmed'){
@@ -198,8 +195,6 @@ class Oara_Network_SilverTap extends Oara_Network{
 	                $overview['merchantId'] = $merchantId;       
 	                $overviewDate = new Zend_Date($overviewExportArray[0],"dd/MM/yyyy");
 	                $overview['date'] = $overviewDate->toString("yyyy-MM-dd HH:mm:ss");
-	                $overview['link'] = '';
-	                $overview['website'] = '';
 	                $overview['click_number'] = (int)$overviewExportArray[3];
 	                $overview['impression_number'] = (int)$overviewExportArray[4];
 	                $overview['transaction_number'] = 0;

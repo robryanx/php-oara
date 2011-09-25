@@ -190,9 +190,7 @@ class Oara_Network_BuyAt extends Oara_Network{
 	            $transaction['merchantId'] = $merchantId;
 	            $transactionDate = new Zend_Date($transactionExportArray[5], 'dd-MM-yyyy HH:mm:ss');
 	            $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
-	            $transaction['program'] = $transactionExportArray[7];
-	            $transaction['link'] = '';
-	            $transaction['website'] = '';
+
 	            if ($transactionExportArray[2] == 'Approved'){
 	            	$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
 	            } else if ($transactionExportArray[2] == 'Pending'){

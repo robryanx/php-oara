@@ -179,9 +179,6 @@ class Oara_Network_Amazon extends Oara_Network{
 	            $transaction['merchantId'] = 1;
 	            $transactionDate = new Zend_Date($transactionExportArray[5], 'MMMM d,yyyy', 'en');
 	            $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
-	            $transaction['program'] = $transactionExportArray[1];
-	            $transaction['link'] = "";
-	            $transaction['website'] = "";
 	            
 	            $transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
 	            $transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[9]);

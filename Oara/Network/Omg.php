@@ -212,8 +212,7 @@ class Oara_Network_Omg extends Oara_Network{
 				    	
 				    $obj['merchantId'] = self::findAttribute($transaction, 'MID');
 					$obj['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
-					$obj['program'] = self::findAttribute($transaction, 'Product');
-					$obj['website'] = '';//self::findAttribute($transaction, 'Referrer');
+
 					$obj['amount'] = 0;
 					$obj['commission'] = 0;
 

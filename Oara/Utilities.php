@@ -443,5 +443,34 @@ class Oara_Utilities
 		}
 		return $ret;
 	}
+	/**
+	 * 
+	 * Transactions per page
+	 * @param $transactionList
+	 */
+	public static function transactionMapPerPage($transactionList){
+		$transactionMap = array();
+		foreach ($transactionList as $transaction){
+			if (!isset($transactionMap[$transaction['merchantId']])){
+				$transactionMap[$transaction['merchantId']] = array();
+			}
+			$dateString = substr($transaction['date'], 0, 10);
+			if (!isset($transactionMap[$transaction['merchantId']][$dateString])){
+				$transactionMap[$transaction['merchantId']][$dateString] = array();
+			}
+			if (!isset($transactionMap[$transaction['merchantId']][$dateString][$transaction['link']])){
+				$transactionMap[$transaction['merchantId']][$dateString][$transaction['link']] = array();
+			}
+			if (!isset($transactionMap[$transaction['merchantId']][$dateString][$transaction['link']][$transaction['website']])){
+				$transactionMap[$transaction['merchantId']][$dateString][$transaction['link']][$transaction['website']] = array();
+			}
+			if (!isset($transactionMap[$transaction['merchantId']][$dateString][$transaction['link']][$transaction['website']][$transaction['page']])){
+				$transactionMap[$transaction['merchantId']][$dateString][$transaction['link']][$transaction['website']][$transaction['page']] = array();
+			}
+			$transactionMap[$transaction['merchantId']][$dateString][$transaction['link']][$transaction['website']][$transaction['page']][] = $transaction;
+		}
+			
+		return $transactionMap;
+	}
 
 }
