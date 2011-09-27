@@ -407,6 +407,10 @@ class Oara_Network_LinkShare extends Oara_Network{
 	            $transaction['merchantId'] = (int)$transactionData[3];
 	            $transactionDate = new Zend_Date($transactionData[1]." ".$transactionData[2], "MM/dd/yyyy HH:mm:ss");
 	            $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+	            
+	            if ($transactionData[5] != null){
+	            	$transaction['customId'] = $transactionData[5];
+	            }
 		       
 		        $sales = Oara_Utilities::parseDouble($transactionData[7]);
 		        

@@ -88,6 +88,10 @@ class Oara_Network_TradeTracker extends Oara_Network{
 	                $transactionDate =  new Zend_Date($transaction->registrationDate, "dd/MM/YY HH:mm:ss");
 	                $object['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 	                
+	                if ($transaction->reference != null){
+	                	$object['customId'] = $transaction->reference;
+	                }
+	                
 	                if ($transaction->transactionStatus == 'accepted'){
 	                	$object['status'] = Oara_Utilities::STATUS_CONFIRMED;
 	                } else if ($transaction->transactionStatus == 'pending'){

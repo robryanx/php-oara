@@ -188,6 +188,12 @@ class Oara_Network_CommissionJunction extends Oara_Network{
 		            $transaction['merchantId'] = self::findAttribute($singleTransaction, 'cid');
 		            $transactionDate =  new Zend_Date(self::findAttribute($singleTransaction, 'event-date'),'yyyy-MM-ddTHH:mm:ss'); 
 		            $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+		            
+		            
+		           	if (self::findAttribute($singleTransaction, 'sid') != null){
+		           		$transaction['customId'] = self::findAttribute($singleTransaction, 'sid');
+		           	}
+		            
 		           
 		            if (self::findAttribute($singleTransaction, 'action-status') == 'closed' || self::findAttribute($singleTransaction, 'action-status') == 'locked'){
 		                $transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;

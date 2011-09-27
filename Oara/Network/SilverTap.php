@@ -147,6 +147,10 @@ class Oara_Network_SilverTap extends Oara_Network{
 	            $transaction['merchantId'] = $transactionExportArray[3];
 	            $transactionDate = new Zend_Date($transactionExportArray[2],"dd/MM/YY HH:mm:ss"); 
 	            $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+	            
+	            if ($transactionExportArray[7] != null){
+	            	$transaction['customId'] = $transactionExportArray[7];
+	            }
 
 	            if ($transactionExportArray[16] == 'Unpaid Confirmed' || $transactionExportArray[16] == 'Paid Confirmed'){
 	            	$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;

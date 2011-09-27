@@ -50,7 +50,7 @@ class Oara_Network_WebGains extends Oara_Network{
 	                                                     'commission'=>'commission',
 	                                                     'date'=>'date',
 	                                                     'merchantId'=>'merchantId',
-														 'websiteId'=>'campaignID'
+														 'customId'=>'clickRef',
 	                                                    );
 	/**
 	 * Array with the id from the campaigns
@@ -159,6 +159,7 @@ class Oara_Network_WebGains extends Oara_Network{
 																	   $this->_exportTransactionParameters['password']);
 			foreach ($transactionList as $transaction){
 				if (in_array($transaction->programID, $merchantList)){
+					
 					$transaction->merchantId = $transaction->programID;
 					if ($transaction->status == 'confirmed'){
 						$transaction->status = Oara_Utilities::STATUS_CONFIRMED;

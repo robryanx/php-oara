@@ -215,6 +215,10 @@ class Oara_Network_Omg extends Oara_Network{
 
 					$obj['amount'] = 0;
 					$obj['commission'] = 0;
+					
+					if (self::findAttribute($transaction, 'UID') == null) {
+						$obj['customId'] = self::findAttribute($transaction, 'UID');
+					}
 
 					if (self::findAttribute($transaction, 'Status') == 'Validated'){
 						$obj['status'] = Oara_Utilities::STATUS_CONFIRMED;

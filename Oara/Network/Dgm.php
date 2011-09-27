@@ -247,6 +247,9 @@ class Oara_Network_Dgm extends Oara_Network{
 				                $transactionDate =  new Zend_Date($transactionExportArray[4], 'dd-MMM-yyyy HH:mm:ss', 'en_GB');
 				                $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 
+				                if ($transactionExportArray[8] != null){
+				                	$transaction['customId'] = $transactionExportArray[8];
+				                }
 				                    
 				                if ($transactionExportArray[15]=='Approved'){
 				                    $transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;

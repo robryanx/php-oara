@@ -150,12 +150,16 @@ class Oara_Network_Daisycon extends Oara_Network{
         $num = count($exportData);
         for ($i = 1; $i < $num; $i++) {
             $transactionExportArray = str_getcsv($exportData[$i],";");
-            if (in_array((int)$transactionExportArray[10],$merchantList)){
+            if (in_array((int)$transactionExportArray[11],$merchantList)){
 	            $transaction = Array();
-	            $merchantId = (int)$transactionExportArray[10];
+	            $merchantId = (int)$transactionExportArray[11];
 	            $transaction['merchantId'] = $merchantId;
 	            $transactionDate = new Zend_Date($transactionExportArray[3], 'MM-dd-yyyy HH:mm:ss');
 	            $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+	            
+	            if ($transactionExportArray[9] != null){
+	            	$transaction['customId'] = $transactionExportArray[9];
+	            }
 	            if ($transactionExportArray[6] == 'approved'){
 	            	$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
 	            } else if ($transactionExportArray[6] == 'pending' || $transactionExportArray[6] == 'potential' || $transactionExportArray[6] == 'open'){

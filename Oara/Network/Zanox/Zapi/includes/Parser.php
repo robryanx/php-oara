@@ -5,67 +5,69 @@ require_once DIR . '/includes/ApiError.php';
 
 /**
  * Xml & Json Parser
- * 
+ *
  * Xml Parser requires PHP >= 5.0
  * Json Parser requires PHP >= 5.2.0
- * 
+ *
  * @author      Thomas Nicolai (thomas.nicolai@sociomantic.com)
  * @author      Lars Kirchhoff (lars.kirchhoff@sociomantic.com)
- * 
+ *
  * @see         http://wiki.zanox.com/en/Web_Services
  * @see         http://apps.zanox.com
  *
  * @package     ApiClient
  * @version     2009-09-01
- * @copyright   Copyright © 2007-2009 zanox.de AG
+ * @copyright   Copyright (c) 2007-2011 zanox.de AG
  */
-class Parser implements IParser 
+class Parser implements IParser
 {
-	
+
     /**
      * Contructor
      *
      * @access     public
-     * 
+     *
      * @return     void
-     */ 
+     */
     function __construct() {}
-	
-	
-	
+
+
+
     /**
      * Serializes array to json string.
      *
      * @param      string      $rootName       name of root node
      * @param      array       $itemArray      properties of item
      * @param      array       $attributes     root node attributes
-     * 
+     *
      * @access     public
      *
      * @return     string                      json string or false
-     */      
+     */
     public function serializeJson( $rootName, $itemArray, $attributes )
     {
-    	if ( !function_exists("json_encode") )
-    	{
-    		throw new ApiClientException("Json parser requires PHP >= 5.2.0");
-    	}
-    	
+        if ( !function_exists("json_encode") )
+        {
+            throw new ApiClientException("Json parser requires PHP >= 5.2.0");
+        }
+
         $json[$rootName] = $itemArray;
-        
+
         foreach ($attributes as $name => $value )
         {
-        	$json['@' . $name] = $value;
+            $json['@' . $name] = $value;
         }
-        
+
         $result = json_encode($json);
-        
+
+        $result = preg_replace("/#text/", "\$", $result);
+
         if ( $result )
-        {           
+        {
             return $result;
         }
-        
-        return false;        
+
+        return false;
     }
 
 
@@ -78,26 +80,26 @@ class Parser implements IParser
      * @access     private
      *
      * @return     array                       array or false
-     */    
+     */
     public function unserializeJson( $json )
     {
         if ( !function_exists("json_decode") )
         {
             throw new ApiClientException("Json parser requires PHP >= 5.2.0");
         }
-        
-    	$result = json_decode($json, true);
-    	
+
+        $result = json_decode($json, true);
+
         if ( $result )
         {
             return $result;
         }
-        
+
         return false;
     }
 
-    
-    
+
+
     /**
      * Serializes array to XML.
      *
@@ -111,22 +113,22 @@ class Parser implements IParser
      */
     public function serializeXml( $rootName, $itemArray, $attributes )
     {
-    	$dom = new DOMDocument('1.0', 'utf-8');
-    	
-    	$root = $dom->appendChild($dom->createElement($rootName, false));
-    	
-    	foreach ( $attributes as $name => $value )
-    	{
-    	   $root->setAttribute($name, $value);
-    	}
-    	
-    	$this->createXmlNode($dom, $root, $rootName, $itemArray);
-    	
-    	return $dom->saveXML();
+        $dom = new DOMDocument('1.0', 'utf-8');
+
+        $root = $dom->appendChild($dom->createElement($rootName, false));
+
+        foreach ( $attributes as $name => $value )
+        {
+           $root->setAttribute($name, $value);
+        }
+
+        $this->createXmlNode($dom, $root, $rootName, $itemArray);
+
+        return $dom->saveXML();
     }
 
-	
-	
+
+
     /**
      * Unserialize XML to array.
      *
@@ -148,9 +150,8 @@ class Parser implements IParser
         return false;
     }
 
-    
-    
-    
+
+
     /**
      * Transforms XML into Array Structure.
      *
@@ -162,7 +163,7 @@ class Parser implements IParser
      */
     private function parse_xml( $xml )
     {
-    	$p = xml_parser_create('UTF-8');
+        $p = xml_parser_create('UTF-8');
 
         xml_parser_set_option($p, XML_OPTION_SKIP_WHITE, 1);
 
@@ -246,9 +247,9 @@ class Parser implements IParser
 
         return false;
     }
-    
 
-    
+
+
     /**
      * Recursively creates Xml Nodes.
      *
@@ -262,11 +263,11 @@ class Parser implements IParser
      * @return     void
      */
     private function createXmlNode ( $dom, $root, $name, $array )
-    {   
-        foreach( $array as $element => $value ) 
+    {
+        foreach( $array as $element => $value )
         {
             $numeric = false;
-            
+
             if ( is_array($value) )
             {
                 foreach ( $value as $k => $v )
@@ -276,7 +277,7 @@ class Parser implements IParser
                         $numeric = true;
                     }
                 }
-                
+
                 if ( $numeric )
                 {
                     $this->createXmlNode($dom, $root, $element, $value);
@@ -284,24 +285,35 @@ class Parser implements IParser
                 else
                 {
                     $element = is_numeric( $element ) ? $name : $element;
-        
+
                     $child = $dom->createElement($element, (is_array($value) ? null : $value));
                     $root->appendChild($child);
-                    
+
                     $this->createXmlNode($dom, $child, $element, $value);
                 }
             }
-            else 
+            else
             {
-                $element = is_numeric( $element ) ? $name : $element;
-        
-                $child = $dom->createElement($element, (is_array($value) ? null : $value));
-                $root->appendChild($child);
+                if (preg_match("/^#text/", $element))
+                {
+                    $root->nodeValue = $value;
+                }
+                else if (preg_match("/^@/", $element))
+                {
+                    $root->setAttribute(str_replace("@", "", $element), $value);
+                }
+                else
+                {
+                    $element = is_numeric( $element ) ? $name : $element;
+
+                    $child = $dom->createElement($element, (is_array($value) ? null : $value));
+                    $root->appendChild($child);
+                }
             }
         }
     }
-    
-    
+
+
 }
 
 ?>

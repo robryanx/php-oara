@@ -130,6 +130,9 @@ class Oara_Network_AffiliateFuture extends Oara_Network{
 					    	
 					    $obj['merchantId'] = self::findAttribute($transaction, 'ProgrammeID');
 						$obj['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
+					    if (self::findAttribute($transaction, 'TrackingReference') != null){
+                			$obj['customId'] = self::findAttribute($transaction, 'TrackingReference');
+                		}
 	
 						if ($i == 0){
 							if (Oara_Utilities::numberOfDaysBetweenTwoDates($date, $nowDate) > 5){

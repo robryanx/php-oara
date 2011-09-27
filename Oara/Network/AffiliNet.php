@@ -41,7 +41,8 @@ class Oara_Network_AffiliNet extends Oara_Network{
 	private $_transactionConverterConfiguration = Array ('TransactionStatus'=>'status',
 	                                                     'Commission'=>'commission,amount',
 	                                                     'Date'=>'date',
-													     'ProgramId'=>'merchantId'
+													     'ProgramId'=>'merchantId',
+														 'SubId'=>'customId'
 	                                                    );
     
     /**

@@ -27,7 +27,7 @@ class Oara_Network_Zanox extends Oara_Network{
 	public function __construct($credentials)
 	{
 		
-		$api = Oara_Network_Zanox_Zapi_ApiClient::factory(PROTOCOL_SOAP, VERSION_2009_07_01);
+		$api = Oara_Network_Zanox_Zapi_ApiClient::factory(PROTOCOL_SOAP, VERSION_2011_03_01);
  		
 		$connectId = $credentials['connectId'];
         $secretKey = $credentials['secretKey'];
@@ -60,34 +60,37 @@ class Oara_Network_Zanox extends Oara_Network{
 	public function getMerchantList($merchantMap = array())
 	{
 		$merchantList = array();
-
+		/*
 		$adsList = $this->_apiClient->getAdspaces(0, $this->_pageSize);
 		if ($adsList->total > 0){
 			$iteration = self::calculeIterationNumber($adsList->total, $this->_pageSize);
 			for($i = 0; $i < $iteration; $i++){
 				$adsList = $this->_apiClient->getAdspaces($i, $this->_pageSize);
 				foreach ($adsList->adspaceItems->adspaceItem as $ads){
-					
-					$adsMerchantList = $this->_apiClient->getProgramsByAdspace($ads->id, 0, $this->_pageSize);
-					if ($adsMerchantList->total > 0){
-						$iterationMerchantList = self::calculeIterationNumber($adsMerchantList->total, $this->_pageSize);
-						for($j = 0; $j < $iterationMerchantList; $j++){
-							$adsMerchantList = $this->_apiClient->getProgramsByAdspace($ads->id, $j, $this->_pageSize);
-							foreach ($adsMerchantList->programItems->programItem as $adsMerchant){
-								if (!isset($merchantList[$adsMerchant->id])){
+					*/
+					$programApplicationList = $this->_apiClient->getProgramApplications(null,null,"confirmed",0, $this->_pageSize);
+					if ($programApplicationList->total > 0){
+						$iterationProgramApplicationList = self::calculeIterationNumber($programApplicationList->total, $this->_pageSize);
+						for($j = 0; $j < $iterationProgramApplicationList; $j++){
+						
+							
+							$programApplicationList = $this->_apiClient->getProgramApplications(null,null,"confirmed",$j, $this->_pageSize);
+							foreach ($programApplicationList->programApplicationItems->programApplicationItem as $programApplication){
+								if (!isset($merchantList[$programApplication->program->id])){
 									$obj = array();
-									$obj['cid'] = $adsMerchant->id;
-									$obj['name'] = $adsMerchant->name;
-									$obj['url'] = $adsMerchant->url;
-									$obj['description'] = $adsMerchant->descriptionLocal;
-									$merchantList[$adsMerchant->id] = $obj;
+									$obj['cid'] = $programApplication->program->id;
+									$obj['name'] = $programApplication->program->_;
+									$merchantList[$programApplication->program->id] = $obj;
 								}
 							}
+							
 						}
 					}
+					/*
 				}
 			}
 		}
+		*/
         return $merchantList;
 	}
     /**
@@ -148,6 +151,15 @@ class Oara_Network_Zanox extends Oara_Network{
 					} else {
 						$obj['amount'] = $transaction->amount;
 					}
+					
+					if (isset($transaction->gpps) && $transaction->gpps != null){
+						foreach ($transaction->gpps as $gpp){
+							if ($gpp->id == "zpar0"){
+								$obj['customId'] = $gpp->_;
+							}
+						}
+					}
+					
 					$obj['commission'] = $transaction->commission;
 					$obj['date'] = $transaction->trackingDate;
 					$obj['merchantId'] = $transaction->program->id;
@@ -186,12 +198,12 @@ class Oara_Network_Zanox extends Oara_Network{
         	if ($overviewList->total > 0){
 				foreach ($overviewList->reportItems->reportItem as $overview){
 					$obj = array();
-					$obj['merchantId'] = $adsMerchant->id;
+					$obj['merchantId'] = $merchantId;
 					$overviewDate = new Zend_Date($overview->day,"yyyy-MM-dd");
 					$obj['date'] = $overviewDate->toString("yyyy-MM-dd HH:mm:ss");
 
-					$obj['impression_number'] = $overview->viewCount;
-					$obj['click_number'] = $overview->clickCount;
+					$obj['impression_number'] = $overview->total->viewCount;
+					$obj['click_number'] = $overview->total->clickCount;
 					$obj['transaction_number'] = 0;
 					                            
 					$obj['transaction_confirmed_commission'] = 0;
