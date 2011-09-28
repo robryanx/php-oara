@@ -50,6 +50,7 @@ class Oara_Network_WebGains extends Oara_Network{
 	                                                     'commission'=>'commission',
 	                                                     'date'=>'date',
 	                                                     'merchantId'=>'merchantId',
+														 'websiteId'=>'websiteId',
 														 'customId'=>'clickRef',
 	                                                    );
 	/**
@@ -172,6 +173,7 @@ class Oara_Network_WebGains extends Oara_Network{
 					}
 					$transactionDate = new Zend_Date($transaction->date,"yyyy-MM-ddTHH:mm:ss");
 					$transaction->date = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+					$transaction->websiteId = $campaignKey;
 			    	$totalTransactions[] = $transaction;
 				}
 			}
