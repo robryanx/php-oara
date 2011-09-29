@@ -152,12 +152,14 @@ class Oara_Network_SilverTap extends Oara_Network{
 	            	$transaction['customId'] = $transactionExportArray[7];
 	            }
 
-	            if ($transactionExportArray[16] == 'Unpaid Confirmed' || $transactionExportArray[16] == 'Paid Confirmed'){
+	            if (preg_match('/Unpaid Confirmed/', $transactionExportArray[16]) || preg_match('/Paid Confirmed/', $transactionExportArray[16])){
 	            	$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
-	            } else if ($transactionExportArray[16] == 'Unpaid Unconfirmed'){
+	            } else if (preg_match('/Unpaid Unconfirmed/', $transactionExportArray[16])){
 	                $transaction['status'] = Oara_Utilities::STATUS_PENDING;
-	            } else if ($transactionExportArray[16] == 'Unpaid Rejected'){
+	            } else if (preg_match('/Unpaid Rejected/', $transactionExportArray[16])){
 	                $transaction['status'] = Oara_Utilities::STATUS_DECLINED;
+	            } else {
+	            	echo "sdf";
 	            }
 	           
 	            $transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[9]);

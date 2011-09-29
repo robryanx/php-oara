@@ -184,17 +184,17 @@ class Oara_Network_Daisycon extends Oara_Network{
 	public function getOverviewList($transactionList = null, $merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null){
 		$overviewArray = Array();
 		$transactionArray = Oara_Utilities::transactionMapPerDay($transactionList);
+		$urls = array();
 		foreach ($merchantList as $merchantId){
 
 			$overviewExport = Oara_Utilities::cloneArray($this->_exportOverviewParameters);
 			$overviewExport[] = new Oara_Curl_Parameter('program', $merchantId);
 			$overviewExport[] = new Oara_Curl_Parameter('period', $dStartDate->toString("yyyyMMdd")."-".$dEndDate->toString("yyyyMMdd"));
-	
-			$urls = array();
 	        $urls[] = new Oara_Curl_Request('http://publisher.daisycon.com/en/affiliatemarketing/stats/month/?', $overviewExport);
-			$exportReport = $this->_client->get($urls);
-			
-            $exportData = str_getcsv($exportReport[0],"\r\n");
+		}
+		$exportReport = $this->_client->get($urls);
+		for ($i = 1; $i < count($exportReport); $i++){
+            $exportData = str_getcsv($exportReport[$i],"\r\n");
             $num = count($exportData);
             $overviewDate = clone $dStartDate;
             $overviewDate->setHour(0);
@@ -205,7 +205,8 @@ class Oara_Network_Daisycon extends Oara_Network{
                 $overviewExportArray = str_getcsv($exportData[$j],";");
                 
                 $obj = array();
-                $obj['merchantId'] = $merchantId;
+                $urlParams = $urls[$i]->getParameters();
+                $obj['merchantId'] = $urlParams[6]->getValue();
                 
                 $overviewDate->setDay($overviewExportArray[0]);
                 $obj['date'] = $overviewDate->toString("yyyy-MM-dd HH:mm:ss");
@@ -239,6 +240,7 @@ class Oara_Network_Daisycon extends Oara_Network{
                	}
             }
 		}
+		
 		return $overviewArray;
 	}
 	/**
