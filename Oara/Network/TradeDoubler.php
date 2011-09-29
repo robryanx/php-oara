@@ -407,7 +407,7 @@ class Oara_Network_TradeDoubler extends Oara_Network{
             
         	if (!isset($transactionExportArray[2])){
         		
-				throw new Exception('Problem getting transaction\n\n'.$exportReport[0]);
+				throw new Exception('Problem getting transaction\n\n');
 			}
         	
             if ($transactionExportArray[0] !== '' && in_array((int)$transactionExportArray[2],$merchantList)){
@@ -531,7 +531,7 @@ class Oara_Network_TradeDoubler extends Oara_Network{
 				}
 				
 				if (!isset($overviewExportArray[2])){
-					throw new Exception('Problem getting overview\n\n'.$exportReport[$i]);
+					throw new Exception('Problem getting overview\n\n');
 				}
                 
                 
@@ -601,7 +601,7 @@ class Oara_Network_TradeDoubler extends Oara_Network{
 		        return $fileContent;
         	}
         	
-        	throw new Exception('Report too big \n\n'.$content);
+        	throw new Exception('Report too big \n\n');
         	
         } else if (preg_match("/ error/", $content, $matches)){
             $urls = array();
@@ -611,7 +611,7 @@ class Oara_Network_TradeDoubler extends Oara_Network{
 		    if ($try < 5){
 		    	return self::checkReportError($exportReport[0], $request, $try);
 		    } else {
-		    	throw new Exception('Problem checking report\n\n'.$content);
+		    	throw new Exception('Problem checking report\n\n');
 		    }
 		    
         } else {
