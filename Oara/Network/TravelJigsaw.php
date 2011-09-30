@@ -139,7 +139,7 @@ class Oara_Network_TravelJigsaw extends Oara_Network{
 		foreach ($exportTransactionList as $exportTransaction){
 			$transactionDate = new Zend_Date($exportTransaction[0], "d MMM yyyy HH:mm:ss",'en_US');
 			if ($transactionDate->compare($dStartDate) >= 0 && $transactionDate->compare($dEndDate)<=0
-				&& $exportTransaction[5] != 'Quote'){
+				&& $exportTransaction[10] != 'Quote'){
 				
 				$transaction = array();
 				
@@ -147,14 +147,14 @@ class Oara_Network_TravelJigsaw extends Oara_Network{
 				$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 				$transaction['amount'] = (double) $exportTransaction[7];
 				$transaction['commission'] = (double) $exportTransaction[8];
-				if ($exportTransaction[5] == 'Completed'){
+				if ($exportTransaction[10] == 'Completed'){
 					$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
-				} else if ($exportTransaction[5] == 'Cancelled'){
+				} else if ($exportTransaction[10] == 'Cancelled'){
 					$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
-				} else if ($exportTransaction[5] == 'Booked'){
+				} else if ($exportTransaction[10] == 'Booked'){
 					$transaction['status'] = Oara_Utilities::STATUS_PENDING;
 				} else{
-					throw new Exception('new state '. $exportTransaction[5]);
+					throw new Exception('new state '. $exportTransaction[10]);
 				}
 				
 				$totalTransactions[] = $transaction;
@@ -248,43 +248,49 @@ class Oara_Network_TravelJigsaw extends Oara_Network{
         if (count($urls) > 0) {
 	        $exportReport = $this->_client->post($urls);
 	        $num = count($exportReport);
-	        for ($i = 0; $i < $num; $i++) {
+	        for ($z = 0; $z < $num; $z++) {
 	        	$doc = new DOMDocument();
 			    libxml_use_internal_errors(true);
 			    $doc->validateOnParse = true;
-			    $doc->loadHTML($exportReport[$i]);
+			    $doc->loadHTML($exportReport[$z]);
 			    $tableList = $doc->getElementsByTagName('table');
 			    
-			    if ($tableList->item(6) != null && 
-			    	$tableList->item(6)->childNodes->item(0)!= null &&
-			    	$tableList->item(6)->childNodes->item(0)->childNodes->item(1)!= null &&
-			    	$tableList->item(8)!= null &&
-			    	$tableList->item(8)->childNodes->item(0)!= null &&
-			    	$tableList->item(8)->childNodes->item(0)->childNodes->item(1)!= null){
-			    		
-			    	$headDataTable = $tableList->item(6)->childNodes->item(0)->childNodes->item(1);
-			    	$detailDataTable = $tableList->item(8)->childNodes->item(0)->childNodes->item(1);
-			    	
-	        	} else {
-	        		throw new Exception ('Fail getting the transaction reference');
-	        	}
+			    $exportData1 = self::htmlToCsv(self::DOMinnerHTML($tableList->item(6)));
+			    $exportData3 = self::htmlToCsv(self::DOMinnerHTML($tableList->item(8)));
+			    $exportStatus = self::htmlToCsv(self::DOMinnerHTML($tableList->item(9)));
+			    
+			    
 				$obj = array();
 				
-		        $headDataLine = $headDataTable->childNodes;
-				for ($j = 0;$j < $headDataLine->length;$j++) {	
-					if ($j%2 == 0){
-						$attribute = $headDataLine->item($j);
-						$obj[] =  str_replace('&nbsp','',trim($attribute->nodeValue));
-					}
-				}
+		        $rowNum = count($exportData1);
+		        for ($i = 1; $i < $rowNum -1; $i++) {
+		        	$exportColumnData = str_getcsv($exportData1[$i], ";");
+		        	$columnNum = count($exportColumnData);
+		        	for ($j = 0; $j < $columnNum; $j++) {
+		        		$obj[] = $exportColumnData[$j];
+		        	}
+		        	
+		        }
+		        
+		        $rowNum = count($exportData3);
+		        for ($i = 1; $i < $rowNum - 1; $i++) {
+		        	$exportColumnData = str_getcsv($exportData3[$i], ";");
+		        	$columnNum = count($exportColumnData);
+		        	for ($j = 0; $j < $columnNum; $j++) {
+		        		$obj[] = $exportColumnData[$j];
+		        	}
+		        	
+		        }
 				
-		        $detailDataLine = $detailDataTable->childNodes;
-	        	for ($j = 0;$j < $detailDataLine->length;$j++) {	
-					if ($j%2 == 0){
-						$attribute = $detailDataLine->item($j);
-						$obj[] =  str_replace('&nbsp','',trim($attribute->nodeValue));
-					}
-				}
+		        $rowNum = count($exportStatus);
+		        for ($i = $rowNum-2; $i < $rowNum-1; $i++) {
+		        	$exportColumnData = str_getcsv($exportStatus[$i], ";");
+		        	$columnNum = count($exportColumnData);
+		        	for ($j = 0; $j < $columnNum; $j++) {
+		        		$obj[] = $exportColumnData[$j];
+		        	}
+		        	
+		        }
 				
 				
 		    	$transactions[] = $obj;
@@ -293,4 +299,51 @@ class Oara_Network_TravelJigsaw extends Oara_Network{
         
         return $transactions;
     }
+	/**
+     * 
+     * Function that Convert from a table to Csv
+     * @param unknown_type $html
+     */
+    private function htmlToCsv($html){
+    	$html = str_replace(array("\t","\r","\n"), "", $html);
+    	$csv = "";
+    	$dom = new Zend_Dom_Query($html);
+      	$resultsRow = $dom->query('tr');
+      	$resultsRowCount = count($resultsRow);
+      	foreach ($resultsRow as $result){
+      		$dom = new Zend_Dom_Query(self::DOMinnerHTML($result));
+      		$resultsColumn = $dom->query('td');
+      		$resultsColumnCount = count($resultsColumn);
+      		$i = 0;
+			foreach ($resultsColumn as $resultColumn) {
+				$value = $resultColumn->nodeValue;
+				if ($i != $resultsColumnCount -1){
+					$csv .= trim($value).";";
+				} else {
+					$csv .= trim($value);
+				}
+				$i++;
+			}
+			$csv .= "\n";
+      	}
+    	$exportData = str_getcsv($csv,"\n");
+    	return $exportData;
+    }
+    /**
+     * 
+     * Function that returns the innet HTML code 
+     * @param unknown_type $element
+     */
+	private function DOMinnerHTML($element)
+	{
+	    $innerHTML = "";
+	    $children = $element->childNodes;
+	    foreach ($children as $child)
+	    {
+	        $tmp_dom = new DOMDocument();
+	        $tmp_dom->appendChild($tmp_dom->importNode($child, true));
+	        $innerHTML.=trim($tmp_dom->saveHTML());
+	    }
+	    return $innerHTML;
+	} 
 }
