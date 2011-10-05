@@ -105,31 +105,29 @@ class Oara_Network_Amazon extends Oara_Network{
 		$urls = array();
         $urls[] = new Oara_Curl_Request('https://affiliate-program.amazon.co.uk/gp/associates/network/main.html', array());
 		$exportReport = $this->_client->get($urls);
-		$dom = new Zend_Dom_Query($exportReport[0]);
-  
-      	$results = $dom->query('#identitybox');
- 
-      	$count = count($results);
-		if($count == 0){
+		if(preg_match("/noAccount/", $exportReport[0])){
 			$connection = false;
 		} else {
-			 $idBox = array();
+			$dom = new Zend_Dom_Query($exportReport[0]);
+  		
+      		$results = $dom->query('#identitybox');
+			$idBox = array();
 			 
-			 $results = $dom->query('select[name="idbox_store_id"]');
-			 $count = count($results);
-			 if($count == 0){
-			 	$idBox[] = "";
-			 } else {
-			  	foreach ($results as $result){
-				 	$optionList = $result->childNodes;
+			$results = $dom->query('select[name="idbox_store_id"]');
+			$count = count($results);
+			if($count == 0){
+				$idBox[] = "";
+			} else {
+				foreach ($results as $result){
+					$optionList = $result->childNodes;
 		      		$optionNumber = $optionList->length;
 					for ($i = 0;$i < $optionNumber;$i++) {
 						$idBox[] = $optionList->item($i)->attributes->getNamedItem("value")->nodeValue;
 					}
 		 		}
-			 }
+			}
 			
-			 $this->_idBox = $idBox;
+			$this->_idBox = $idBox;
 		}
 		return $connection;
 	}
@@ -267,7 +265,6 @@ class Oara_Network_Amazon extends Oara_Network{
 	    	$paymentExport[] = new Oara_Curl_Parameter('idbox_store_id', $id);
 	        $urls[] = new Oara_Curl_Request('https://affiliate-program.amazon.co.uk/gp/associates/network/your-account/payment-history.html?', $paymentExport);
 			$exportReport = $this->_client->get($urls);
-			
 	    	$dom = new Zend_Dom_Query($exportReport[0]);
 	      	$results = $dom->query('.paymenthistory');
 			$count = count($results);
