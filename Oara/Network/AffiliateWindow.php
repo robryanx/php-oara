@@ -124,6 +124,8 @@ class Oara_Network_AffiliateWindow extends Oara_Network{
 				throw new Exception("It couldn't connect to darwin");
 			}
 	        
+		} else {
+			throw new Exception("It's not an email");
 		}
 		
 		$nameSpace = 'http://api.affiliatewindow.com/';
