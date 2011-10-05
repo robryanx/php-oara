@@ -71,7 +71,7 @@ class Oara_Curl_Access{
 		$cookies = $dir.$cookieName.'_cookies.txt';
 
 		$this->_options = array(
-			CURLOPT_USERAGENT => "Mozilla/5.0 (X11; U; Linux i686; es-CL; rv:1.9.2.17) Gecko/20110422 Ubuntu/10.10 (maverick) Firefox/3.6.17",
+			CURLOPT_USERAGENT => "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US) AppleWebKit/A.B (KHTML, like Gecko) Chrome/X.Y.Z.W Safari/A.B.",
 			CURLOPT_RETURNTRANSFER => true,
 			CURLOPT_FAILONERROR => true,
 			CURLOPT_COOKIEJAR  => $cookies,

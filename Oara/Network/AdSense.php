@@ -46,33 +46,11 @@ class Oara_Network_AdSense extends Oara_Network{
        
 
 		// /adsense/
-		$this->_client = new Oara_Curl_Access('https://www.google.com/adsense/', array(), $credentials);
+		$this->_client = new Oara_Curl_Access('https://www.google.com/adsense/v3/', array(), $credentials);
 		
-
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('https://www.google.com/adsense/signout', array());
+		$urls[] = new Oara_Curl_Request("https://www.google.com/adsense/v3/", array());
 		$contentList = $this->_client->get($urls);
-
-		$urls = array();
-		$urls[] = new Oara_Curl_Request('https://www.google.com/adsense/login-box.js', array());
-
-		$contentList = $this->_client->get($urls);
-		$content = $contentList[0];
-		$content = preg_replace(
-		array("/\\\\75/", "/\\\\42/", "/\\\\46/", "/\\\\075/"),
-		array('=', '"', '&', '='),
-		$content
-		);
-		preg_match('/src="([^"]+)"/', $content, $match);
-		$next_url = $match[1];
-		$next_url = str_replace('&amp;', '&', $next_url);
-
-		$urls = array();
-		$urls[] = new Oara_Curl_Request($next_url, array());
-		$contentList = $this->_client->get($urls);
-
-
-
 		
 		$doc = new DOMDocument();
 		libxml_use_internal_errors(true);
@@ -100,17 +78,6 @@ class Oara_Network_AdSense extends Oara_Network{
 		$urls[] = new Oara_Curl_Request('https://accounts.google.com/ServiceLoginAuth', $valuesLogin);
 		$content = $this->_client->post($urls);
 		
-		if (!preg_match("/href=\"\/adsense\/signout\"/", $content[0], $matches)) {
-			$urls = array();
-			$urls[] = new Oara_Curl_Request('https://www.google.com/adsense/v3/disablebeta', array());
-			$content = $this->_client->get($urls);
-			
-			$urls = array();
-			$urls[] = new Oara_Curl_Request('https://www.google.com/accounts/ServiceLoginAuth', $valuesLogin);
-			$content = $this->_client->post($urls);
-		}
-		
-		
 		$dom = new Zend_Dom_Query(current($content));
 		$results = $dom->query('#challengeform');
 		//We have to provide the challenge
@@ -118,7 +85,7 @@ class Oara_Network_AdSense extends Oara_Network{
 		if ($count > 0){
 			
 			$challenge = array();
-			$challenge[] = new Oara_Curl_Parameter('continue', 'https://www.google.com/adsense/gaiaauth2?destination=/adsense/home');
+			$challenge[] = new Oara_Curl_Parameter('continue', 'https://www.google.com/adsense/v3/gaiaauth2?destination=/adsense/v3/home');
 			$challenge[] = new Oara_Curl_Parameter('jsenabled' , 'true');
 			
 			$results = $dom->query('#RecoveryEmailChallengeInput');
@@ -141,36 +108,11 @@ class Oara_Network_AdSense extends Oara_Network{
 			
 			if ($emailChallenge != null || $phoneChallenge != null){
 				$urls = array();
-				$urls[] = new Oara_Curl_Request('https://www.google.com/accounts/LoginVerification?Email='.$user.'&continue=https://www.google.com/adsense/gaiaauth2?destination=/adsense/home&service=adsense', $challenge);
+				$urls[] = new Oara_Curl_Request('https://accounts.google.com/LoginVerification?Email='.$user.'&continue=https://www.google.com/adsense/v3/gaiaauth2?destination=/adsense/v3/home&service=adsense', $challenge);
 				$content = $this->_client->post($urls);	
 			}
 			
 		}
-		
-		if (!preg_match("/href=\"\/adsense\/signout\"/", $content[0], $matches)) {
-			preg_match('/location\.replace\("(.+?)"\)/', $content[0], $match);
-			if (!isset($match[1])){
-				throw new Exception('Login problem on google Ad Sense');
-			}
-			$next_url = $match[1];
-
-			$next_url = urldecode($next_url);
-			$urls = array();
-			$urls[] = new Oara_Curl_Request($next_url, array());
-			$content = $this->_client->get($urls);
-		}
-
-
-		$this->_exportOverviewParameters = array(new Oara_Curl_Parameter('sortColumn', '0'),
-		new Oara_Curl_Parameter('reverseSort', 'false'),
-		new Oara_Curl_Parameter('outputFormat', 'TSV_EXCEL'),
-		new Oara_Curl_Parameter('storedReportId', '-1'),
-		new Oara_Curl_Parameter('isOldReport', 'false'),
-		new Oara_Curl_Parameter('piStart', '-1'),
-		new Oara_Curl_Parameter('reportType', 'channel'),
-		new Oara_Curl_Parameter('searchField', '')
-		);
-			
 	}
 	/**
 	 * Check the connection
@@ -179,9 +121,9 @@ class Oara_Network_AdSense extends Oara_Network{
 		$connection = false;
 
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('https://www.google.com/adsense/report/overview', array());
+		$urls[] = new Oara_Curl_Request('https://www.google.com/adsense/v3/app#home', array());
 		$content = $this->_client->get($urls);
-		if (preg_match("/signout/", $content[0], $matches)) {
+		if (preg_match("/signout/", $content[0], $matches) || preg_match("/unsupportedBrowser/", $content[0], $matches)) {
 			$connection = true;
 		}
 		return $connection;
@@ -218,125 +160,55 @@ class Oara_Network_AdSense extends Oara_Network{
 	 */
 	public function getOverviewList($transactionList = null, $merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null){
 		$overviewArray = array();
-
-		$valuesFromExport = Oara_Utilities::cloneArray($this->_exportOverviewParameters);
-		$valuesFromExport[] = new Oara_Curl_Parameter('dateRange.simpleDate', 'today');
-		$valuesFromExport[] = new Oara_Curl_Parameter('dateRange.dateRangeType', 'custom');
-		$valuesFromExport[] = new Oara_Curl_Parameter('dateRange.customDate.start.year', $dStartDate->get(Zend_Date::YEAR));
-		$valuesFromExport[] = new Oara_Curl_Parameter('dateRange.customDate.start.month', $dStartDate->get(Zend_Date::MONTH));
-		$valuesFromExport[] = new Oara_Curl_Parameter('dateRange.customDate.start.day', $dStartDate->get(Zend_Date::DAY));
-		$valuesFromExport[] = new Oara_Curl_Parameter('dateRange.customDate.end.year', $dEndDate->get(Zend_Date::YEAR));
-		$valuesFromExport[] = new Oara_Curl_Parameter('dateRange.customDate.end.month', $dEndDate->get(Zend_Date::MONTH));
-		$valuesFromExport[] = new Oara_Curl_Parameter('dateRange.customDate.end.day', $dEndDate->get(Zend_Date::DAY));
-
-		$urls = array();
-		$urls[] = new Oara_Curl_Request('https://www.google.com/adsense/report/aggregate?', array());
-		$content = $this->_client->get($urls);
-
-		$doc = new DOMDocument();
-		libxml_use_internal_errors(true);
-		$doc->validateOnParse = true;
-		$doc->loadHTML($content[0]);
-		$productSelect = $doc->getElementsByTagName('select');
-
-		$modeList = array();
-		$children = $productSelect->item(1)->childNodes;
-		foreach ($children as $child) {
-			$attrs = $child->attributes;
-			foreach ($attrs as $attrName => $attrNode){
-				if ($attrName == 'value'){
-					$modeList[] = $attrNode->nodeValue;
-				}
-			}
-		}
-
-
-		$reportsUrls = array();
-		$requestUrl = 'https://www.google.com/adsense/report/aggregate?';
-		//$modeList = array('afd', 'aff', 'afc', 'afs', 'ref', 'afcm');
-		foreach ($modeList as $mode){
-			$request = Oara_Utilities::cloneArray($valuesFromExport);
-			$request[] = new Oara_Curl_Parameter('product', $mode);
-			if ($mode == 'afc'){
-				$request[] = new Oara_Curl_Parameter('radlinkChoice', 'COMBINED');
-				$request[] = new Oara_Curl_Parameter('unitPref', 'page');
-				$request[] = new Oara_Curl_Parameter('groupByPref', 'both');
-			} else if ($mode == 'afs'){
-				$request[] = new Oara_Curl_Parameter('reportType', 'channel');
-				$request[] = new Oara_Curl_Parameter('groupByPref', 'both');
-			} else if ($mode == 'ref'){
-				$requestUrl = 'https://www.google.com/adsense/report/referrals?';
-
-				$request[] = new Oara_Curl_Parameter('reportType', 'property');
-				$request[] = new Oara_Curl_Parameter('groupByPref', 'date');
-				$request[] = new Oara_Curl_Parameter('selection_criteria', 'specific_products');
-				$request[] = new Oara_Curl_Parameter('allProducts', 'false');
-				$request[] = new Oara_Curl_Parameter('productGroupByPref', 'date');
-			} else if ($mode == 'afcm'){
-				$request[] = new Oara_Curl_Parameter('unitPref', 'page');
-				$request[] = new Oara_Curl_Parameter('reportType', 'property');
-				$request[] = new Oara_Curl_Parameter('groupByPref', 'date');
-
-			} else if ($mode == 'afd'){
-				$request[] = new Oara_Curl_Parameter('reportType', 'domain');
-				$request[] = new Oara_Curl_Parameter('groupByPref', 'date');
-				$request[] = new Oara_Curl_Parameter('showAllDomainsOption', 'true');
-				$request[] = new Oara_Curl_Parameter('domainGroupByPref', 'both');
-				$request[] = new Oara_Curl_Parameter('pd', '-3977617293257148564');
-			} else if ($mode == 'aff'){
-				$request[] = new Oara_Curl_Parameter('reportType', 'channel');
-				$request[] = new Oara_Curl_Parameter('groupByPref', 'both');
-			}
-				
-			$modeParams = array();
-			$modeParams[] = new Oara_Curl_Parameter('product', $mode);
-			$urls = array();
-			$urls[] = new Oara_Curl_Request($requestUrl, $modeParams);
-			$content = $this->_client->get($urls);
-			$doc = new DOMDocument();
-			libxml_use_internal_errors(true);
-			$doc->validateOnParse = true;
-			$doc->loadHTML($content[0]);
-			$select = $doc->getElementsByTagName('select');
-			for ($i = 0;$i < $select->length;$i++) {
-				$selectItem = $select->item($i);
-				$selectId = $selectItem->attributes->getNamedItem("id");
-				if ($selectId != null &&
-				$selectId->nodeValue == "channels_selector-select"){
-						
-					$activeUrlChannels = $selectItem->childNodes->item(0)->childNodes;
-					for ($j = 0;$j < $activeUrlChannels->length;$j++) {
-						$channel = $activeUrlChannels->item($j);
-						$request[] =  new Oara_Curl_Parameter('c.id', $channel->attributes->getNamedItem("value")->nodeValue);
-					}
-				}
-			}
-			$reportsUrls[] = new Oara_Curl_Request($requestUrl, $request);
-		}
+		
 		$firstDayMonth = new Zend_Date();
 		$firstDayMonth->setDay(1);
 		$firstDayMonth->setHour("00");
 		$firstDayMonth->setMinute("00");
 		$firstDayMonth->setSecond("00");
-		$contentList = $this->_client->post($reportsUrls);
-		for ($i = 0;$i < count($contentList); $i++){
-			$mode = $reportsUrls[$i]->getParameter(16)->getValue();
-			$exportData = str_getcsv(@iconv('UTF-16', 'UTF-8',$contentList[$i]),"\n");
-
-			$num = count($exportData);
-			$parameterMerchantId = 1;
-			for ($j = 1; $j < $num-2; $j++) {
+		
+		$modeArray = array("AdSense for Content", "AdSense for Search", "AdSense for Feeds", "AdSense for Domains");
+		$valuesExport = array();
+		$valuesExport[] = new Oara_Curl_Parameter('d', $dStartDate->toString("yyyy/M/d")."-".$dEndDate->toString("yyyy/M/d"));
+		$valuesExportReport[] = new Oara_Curl_Parameter('ag', 'date');
+		$valuesExport[] = new Oara_Curl_Parameter('oc', 'earnings');
+		$valuesExport[] = new Oara_Curl_Parameter('oo', 'descending');
+		$valuesExport[] = new Oara_Curl_Parameter('hl', 'en_GB');
+		
+		$urls = array();
+		$valuesExportReport = Oara_Utilities::cloneArray($valuesExport);
+		
+		$valuesExportReport[] = new Oara_Curl_Parameter('dd', '1YproductY1YAFCYAdSense for Content');
+		$urls[] = new Oara_Curl_Request('https://www.google.com/adsense/v3/gwt/exportCsv?', $valuesExportReport);
+		
+		$valuesExportReport = Oara_Utilities::cloneArray($valuesExport);
+		$valuesExportReport[] = new Oara_Curl_Parameter('dd', '1YproductY1YAFSYAdSense for Search');
+		$urls[] = new Oara_Curl_Request('https://www.google.com/adsense/v3/gwt/exportCsv?', $valuesExportReport);
+		
+		$valuesExportReport = Oara_Utilities::cloneArray($valuesExport);
+		$valuesExportReport[] = new Oara_Curl_Parameter('dd', '1YproductY1YAFFYAdSense for Feeds');
+		$urls[] = new Oara_Curl_Request('https://www.google.com/adsense/v3/gwt/exportCsv?', $valuesExportReport);
+		
+		$valuesExportReport = Oara_Utilities::cloneArray($valuesExport);
+		$valuesExportReport[] = new Oara_Curl_Parameter('dd', '1YproductY1YAFDYAdSense for Domains');
+		$urls[] = new Oara_Curl_Request('https://www.google.com/adsense/v3/gwt/exportCsv?', $valuesExportReport);
+		
+		
+		$content = $this->_client->post($urls);
+		for ($i = 0; $i < count($content); $i++){
+			$exportData = str_getcsv(@iconv('UTF-16', 'UTF-8',$content[$i]),"\n");
+			for ($j = 1; $j < count($exportData); $j++) {
 				$overviewExportArray = str_getcsv($exportData[$j],"\t");
 					
 				$obj = array();
-				$obj['merchantId'] = $parameterMerchantId;
+				$obj['merchantId'] = 1;
 				$overviewDate = new Zend_Date($overviewExportArray[0],"yyyy-MM-dd");
 				$overviewDate->setHour("00");
 				$overviewDate->setMinute("00");
 				$overviewDate->setSecond("00");
 				$obj['date'] = $overviewDate->toString("yyyy-MM-dd HH:mm:ss");
 				 
-				$obj['link'] = $mode;
+				$obj['link'] = $modeArray[$i];
 				$obj['transaction_number'] = 0;
 				$obj['transaction_confirmed_commission'] =  0;
 				$obj['transaction_confirmed_value'] =  0;
@@ -344,53 +216,25 @@ class Oara_Network_AdSense extends Oara_Network{
 				$obj['transaction_pending_value'] =  0;
 				$obj['transaction_declined_commission'] = 0;
 				$obj['transaction_declined_value'] = 0;
-				 
-				 
-				if ($obj['link'] == 'ref') {
-					$obj['impression_number'] = (int)Oara_Utilities::parseDouble($overviewExportArray[1]);
-					$obj['click_number'] =  Oara_Utilities::parseDouble($overviewExportArray[2]);
-						
-					if ($firstDayMonth->compare($overviewDate) <= 0){
-						$obj['transaction_pending_commission'] = Oara_Utilities::parseDouble($overviewExportArray[6]);
-						$obj['transaction_pending_value'] = Oara_Utilities::parseDouble($overviewExportArray[6]);
-					} else {
-						$obj['transaction_confirmed_commission'] =  Oara_Utilities::parseDouble($overviewExportArray[6]);
-						$obj['transaction_confirmed_value'] =  Oara_Utilities::parseDouble($overviewExportArray[6]);
-					}
+					
+				$obj['impression_number'] = (int)Oara_Utilities::parseDouble($overviewExportArray[1]);
+				$obj['click_number'] =  Oara_Utilities::parseDouble($overviewExportArray[2]);
+				if ($firstDayMonth->compare($overviewDate) <= 0){
+					$obj['transaction_pending_commission'] = Oara_Utilities::parseDouble($overviewExportArray[6]);
+					$obj['transaction_pending_value'] = Oara_Utilities::parseDouble($overviewExportArray[6]);
 				} else {
-
-					if (!is_numeric($overviewExportArray[1])){
-						$obj['website'] = $overviewExportArray[1];
-						$obj['impression_number'] = (int)Oara_Utilities::parseDouble($overviewExportArray[2]);
-						$obj['click_number'] =  Oara_Utilities::parseDouble($overviewExportArray[3]);
-						if ($firstDayMonth->compare($overviewDate) <= 0){
-							$obj['transaction_pending_commission'] = Oara_Utilities::parseDouble($overviewExportArray[6]);
-							$obj['transaction_pending_value'] = Oara_Utilities::parseDouble($overviewExportArray[6]);
-						} else {
-							$obj['transaction_confirmed_commission'] =  Oara_Utilities::parseDouble($overviewExportArray[6]);
-							$obj['transaction_confirmed_value'] =  Oara_Utilities::parseDouble($overviewExportArray[6]);
-						}
-					} else {
-						$obj['impression_number'] = (int)Oara_Utilities::parseDouble($overviewExportArray[1]);
-						$obj['click_number'] =  Oara_Utilities::parseDouble($overviewExportArray[2]);
-						if ($firstDayMonth->compare($overviewDate) <= 0){
-							$obj['transaction_pending_commission'] = Oara_Utilities::parseDouble($overviewExportArray[5]);
-							$obj['transaction_pending_value'] = Oara_Utilities::parseDouble($overviewExportArray[5]);
-						} else {
-							$obj['transaction_confirmed_commission'] =  Oara_Utilities::parseDouble($overviewExportArray[5]);
-							$obj['transaction_confirmed_value'] =  Oara_Utilities::parseDouble($overviewExportArray[5]);
-						}
-					}
-
+					$obj['transaction_confirmed_commission'] =  Oara_Utilities::parseDouble($overviewExportArray[6]);
+					$obj['transaction_confirmed_value'] =  Oara_Utilities::parseDouble($overviewExportArray[6]);
 				}
 				
 				if (Oara_Utilities::checkRegister($obj)){
 					$overviewArray[] = $obj;
 				}
+				
 			}
+			
 		}
-		unset ($reportsUrls);
-		unset ($contentList);
+		unset ($urls);
 		return $overviewArray;
 	}
 	/**
@@ -400,7 +244,7 @@ class Oara_Network_AdSense extends Oara_Network{
 	public function getPaymentHistory(){
 		$paymentHistory = array();
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('https://www.google.com/adsense/reports-payment?csv=true&reportRange=ALL_TIME&historical=false', array());
+		$urls[] = new Oara_Curl_Request('https://www.google.com/adsense/v3/reports-payment?csv=true&historical=false&reportRange=ALL_TIME', array());
 		$content = $this->_client->get($urls);
 		$exportData = str_getcsv(@iconv('UTF-16', 'UTF-8',$content[0]),"\n");
 		$num = count($exportData);
