@@ -46,14 +46,14 @@ class Oara_Curl_Access{
 		
 		//Setting cookies
 		$isTD = $credentials['networkName'] == "TradeDoubler";
-		$isAW = $credentials['networkName'] == "AffiliateWindow";
+		//$isAW = $credentials['networkName'] == "AffiliateWindow";
 		$dir = realpath(dirname(__FILE__)).'/../data/curl/'.$credentials['cookiesDir'].'/'.$credentials['cookiesSubDir'].'/';
 			
 		if (!Oara_Utilities::mkdir_recursive($dir,0777)){
 			throw new Exception ('Problem creating folder in Access');
 		}
 		//Deleting the last cookie
-		if (!$isAW){
+		//if (!$isAW){
 			if ($handle = opendir($dir)) {
 				/* This is the correct way to loop over the directory. */
 				while (false !== ($file = readdir($handle))) {
@@ -63,7 +63,7 @@ class Oara_Curl_Access{
 				}
 				closedir($handle);
 			}
-		}
+		//}
 		
 
 		$cookieName = $credentials["cookieName"];
@@ -71,7 +71,7 @@ class Oara_Curl_Access{
 		$cookies = $dir.$cookieName.'_cookies.txt';
 
 		$this->_options = array(
-			CURLOPT_USERAGENT => "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US) AppleWebKit/A.B (KHTML, like Gecko) Chrome/X.Y.Z.W Safari/A.B.",
+			CURLOPT_USERAGENT => "Mozilla/5.0 (X11; Linux i686; rv:7.0.1) Gecko/20100101 Firefox/7.0.1",
 			CURLOPT_RETURNTRANSFER => true,
 			CURLOPT_FAILONERROR => true,
 			CURLOPT_COOKIEJAR  => $cookies,

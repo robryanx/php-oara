@@ -97,7 +97,7 @@ class Oara_Network_AffiliateWindow extends Oara_Network{
 		$validator = new Zend_Validate_EmailAddress();
 		if ($validator->isValid($user)) {
 			//login through darwin
-			$loginUrl = 'https://darwin.affiliatewindow.com/login';
+			$loginUrl = 'https://darwin.affiliatewindow.com/login?';
 			
 		    $valuesLogin = array(new Oara_Curl_Parameter('email', $user),
 								 new Oara_Curl_Parameter('password', $passwordExport),
@@ -120,25 +120,11 @@ class Oara_Network_AffiliateWindow extends Oara_Network{
 				$urls = array();
 	        	$urls[] = new Oara_Curl_Request('http://darwin.affiliatewindow.com'.$matches[1], array());
 	        	$exportReport = $this->_exportClient->get($urls);
+			} else {
+				throw new Exception("It couldn't connect to darwin");
 			}
 	        
-		} else {
-			$this->_affiliateId = $user;
-			//login through affiliate window
-		    $loginUrl = 'http://www.affiliatewindow.com/login.php?';
-		    $valuesLogin = array(new Oara_Curl_Parameter('orig_location', ''),
-								new Oara_Curl_Parameter('back', '/index.php'),
-								new Oara_Curl_Parameter('user', $user),
-								new Oara_Curl_Parameter('password', $passwordExport),
-								new Oara_Curl_Parameter('screenwidth', ''),
-								new Oara_Curl_Parameter('screenheight', ''),
-								new Oara_Curl_Parameter('colourdepth', ''),
-								new Oara_Curl_Parameter('image2.x', '15'),
-								new Oara_Curl_Parameter('image2.y', '3')
-                             );
-			$this->_exportClient = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
 		}
-		
 		
 		$nameSpace = 'http://api.affiliatewindow.com/';
         
@@ -169,7 +155,7 @@ class Oara_Network_AffiliateWindow extends Oara_Network{
 	public function checkConnection(){
 		$connection = false;
 		try{
-			self::getPaymentHistory();
+			
 			$params = Array();
 			$params['sRelationship'] = 'joined';
 			$this->_apiClient->getMerchantList($params);
@@ -470,49 +456,42 @@ class Oara_Network_AffiliateWindow extends Oara_Network{
 	 */
 	public function getPaymentHistory(){
     	$paymentHistory = array();
-    	
     	$urls = array();
-        $urls[] = new Oara_Curl_Request('http://www.affiliatewindow.com/affiliates/payment.php?', array());
+        $urls[] = new Oara_Curl_Request('https://www.affiliatewindow.com/affiliates/payment.php?', array());
         $exportReport = $this->_exportClient->get($urls);
 		/*** load the html into the object ***/
-	    $doc = new DOMDocument();
-	    libxml_use_internal_errors(true);
-	    $doc->validateOnParse = true;
-	    $doc->loadHTML($exportReport[0]);
-	    $tableList = $doc->getElementsByTagName('table');
-    	$registerTable = $tableList->item(5);
-    	if ($registerTable == null){
-			throw new Exception ('Fail getting the payment History');
-		}
+        $dom = new Zend_Dom_Query($exportReport[0]);
+        $results = $dom->query('table .reportTable');
+		foreach ($results as $result) {
 		
-		$registerLines = $registerTable->childNodes;
-		for ($i = 8;$i < $registerLines->length - 3;$i++) {
-			
-			$registerLine = $registerLines->item($i);
-			$linkList = $registerLine->getElementsByTagName('a');
-
-			$obj = array();
-			$date = new Zend_Date($linkList->item(0)->nodeValue, "dd/MM/yyyy");
-			$obj['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
-			$attrs = $linkList->item(0)->attributes;
-
- 			foreach ($attrs as $attrName => $attrNode){
- 				if ($attrName = 'href'){
-	 				$parseUrl = parse_url(trim($attrNode->nodeValue));
-			        $parameters = explode('&', $parseUrl['query']);
-			        foreach($parameters as $parameter){
-			        	$parameterValue = explode('=', $parameter);
-			            if ($parameterValue[0] == 'paymentid'){
-			            	$obj['pid'] = $parameterValue[1];
-			            }
-			        }
- 				}
- 			}
-			$obj['value'] = Oara_Utilities::parseDouble(substr($linkList->item(3)->nodeValue,2));
-			$obj['method'] = $linkList->item(2)->nodeValue;
-			$paymentHistory[] = $obj;
+			$registerLines = $result->childNodes;
+			for ($i = 1;$i < $registerLines->length;$i++) {
+				
+				$registerLine = $registerLines->item($i);
+				$linkList = $registerLine->getElementsByTagName('a');
+	
+				$obj = array();
+				$date = new Zend_Date($linkList->item(0)->nodeValue, "dd/MM/yyyy");
+				$obj['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
+				$attrs = $linkList->item(0)->attributes;
+	
+	 			foreach ($attrs as $attrName => $attrNode){
+	 				if ($attrName = 'href'){
+		 				$parseUrl = parse_url(trim($attrNode->nodeValue));
+				        $parameters = explode('&', $parseUrl['query']);
+				        foreach($parameters as $parameter){
+				        	$parameterValue = explode('=', $parameter);
+				            if ($parameterValue[0] == 'paymentid'){
+				            	$obj['pid'] = $parameterValue[1];
+				            }
+				        }
+	 				}
+	 			}
+				$obj['value'] = Oara_Utilities::parseDouble(substr($linkList->item(3)->nodeValue,2));
+				$obj['method'] = $linkList->item(2)->nodeValue;
+				$paymentHistory[] = $obj;
+			}
 		}
-    	
     	return $paymentHistory;
     }
     /**
