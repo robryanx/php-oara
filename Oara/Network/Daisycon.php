@@ -250,9 +250,11 @@ class Oara_Network_Daisycon extends Oara_Network{
 	public function getPaymentHistory(){
     	$paymentHistory = array();
     	$urls = array();
-        $urls[] = new Oara_Curl_Request('http://publisher.daisycon.com/en/financial/payments/', array());
+    	$valuesFromExport = array();
+		$valuesFromExport[] = new Oara_Curl_Parameter('fo', 'true');
+		$valuesFromExport[] = new Oara_Curl_Parameter('filter_payments_posted', 'true');
+        $urls[] = new Oara_Curl_Request('http://publisher.daisycon.com/en/financial/payments/?', $valuesFromExport);
 		$exportReport = $this->_client->get($urls);
-		
     	$dom = new Zend_Dom_Query($exportReport[0]);
       	$results = $dom->query('#filter_payments_selection_start_year_id');
 		$count = count($results);
@@ -266,11 +268,12 @@ class Oara_Network_Daisycon extends Oara_Network{
 			
 			foreach ($yearArray as $year){
 				$valuesFromExport = array();
+				$valuesFromExport[] = new Oara_Curl_Parameter('fo', 'true');
+				$valuesFromExport[] = new Oara_Curl_Parameter('filter_payments_posted', 'true');
 				$valuesFromExport[] = new Oara_Curl_Parameter('filter_payments[selection][start_year]', $year);
 				$urls = array();
-	        	$urls[] = new Oara_Curl_Request('http://publisher.daisycon.com/en/financial/payments/?filter_payments_posted=true', $valuesFromExport);
+	        	$urls[] = new Oara_Curl_Request('http://publisher.daisycon.com/en/financial/payments/?', $valuesFromExport);
 				$exportReport = $this->_client->post($urls);
-				
 				$dom = new Zend_Dom_Query($exportReport[0]);
       			$payments = $dom->query('.financialPaymentsTable');
 				foreach ($payments as $payment){
