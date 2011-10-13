@@ -136,35 +136,41 @@ class Oara_Network_PaidOnResults extends Oara_Network{
 		$totalTransactions = Array();
 		
         $valuesFormExport = Oara_Utilities::cloneArray($this->_exportTransactionParameters);
+        
        	$urls = array();
+       	$valuesFormExport[] = new Oara_Curl_Parameter('DateFrom', $dStartDate->toString("yyyy-MM-dd"));
+       	$valuesFormExport[] = new Oara_Curl_Parameter('DateTo', $dEndDate->toString("yyyy-MM-dd"));
         $urls[] = new Oara_Curl_Request('http://affiliate.paidonresults.com/api/transactions?', $valuesFormExport);
         $exportReport = $this->_client->get($urls);
+        
         $exportData = str_getcsv($exportReport[0], "\r\n");
         $num = count($exportData);
         for ($i = 1; $i < $num; $i++) {
         	$transactionExportArray = str_getcsv($exportData[$i], ",");
-			$transaction = array();
-			$transaction['merchantId'] = $transactionExportArray[0];
-			
-			$transactionDate = new Zend_Date($transactionExportArray[1], "dd/MM/yyyy HH:mm:ss");
-			$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
-			
-			if ($transactionExportArray[3] != null){
-				$transaction['customId'] = $transactionExportArray[3];
-			}
-			
-			$transaction['amount'] = (double) $transactionExportArray[4];
-			$transaction['commission'] = (double) $transactionExportArray[5];
-			
-			if ($transactionExportArray[6] == 'VALIDATED'){
-				$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
-			} else if ($transactionExportArray[6] == 'PENDING'){
-				$transaction['status'] = Oara_Utilities::STATUS_PENDING;
-			} else if ($transactionExportArray[6] == 'VOID'){
-				$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
-			}
-			
-			$totalTransactions[] = $transaction;
+        	if (in_array($transactionExportArray[0], $merchantList)){
+				$transaction = array();
+				$transaction['merchantId'] = $transactionExportArray[0];
+				
+				$transactionDate = new Zend_Date($transactionExportArray[1], "dd/MM/yyyy HH:mm:ss");
+				$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+				
+				if ($transactionExportArray[3] != null){
+					$transaction['customId'] = $transactionExportArray[3];
+				}
+				
+				$transaction['amount'] = (double) $transactionExportArray[4];
+				$transaction['commission'] = (double) $transactionExportArray[5];
+				
+				if ($transactionExportArray[6] == 'VALIDATED'){
+					$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
+				} else if ($transactionExportArray[6] == 'PENDING'){
+					$transaction['status'] = Oara_Utilities::STATUS_PENDING;
+				} else if ($transactionExportArray[6] == 'VOID'){
+					$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
+				}
+				
+				$totalTransactions[] = $transaction;
+        	}
 		}
 		
         return $totalTransactions;
