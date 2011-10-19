@@ -191,7 +191,7 @@ class Oara_Network_CommissionJunction extends Oara_Network{
 		            
 		            
 		           	if (self::findAttribute($singleTransaction, 'sid') != null){
-		           		$transaction['customId'] = self::findAttribute($singleTransaction, 'sid');
+		           		$transaction['custom_id'] = self::findAttribute($singleTransaction, 'sid');
 		           	}
 		            
 		           

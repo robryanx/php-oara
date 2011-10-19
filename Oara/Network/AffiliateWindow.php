@@ -30,7 +30,7 @@ class Oara_Network_AffiliateWindow extends Oara_Network{
 	                                                     'fSaleAmount'=>'amount',
 	                                                     'fCommissionAmount'=>'commission',
 	                                                     'dTransactionDate'=>'date',
-	                                                     'sClickref'=>'customId',
+	                                                     'sClickref'=>'custom_id',
 													     'iMerchantId'=>'merchantId'
 														);
 														

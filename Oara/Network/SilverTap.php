@@ -149,7 +149,7 @@ class Oara_Network_SilverTap extends Oara_Network{
 	            $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 	            
 	            if ($transactionExportArray[7] != null){
-	            	$transaction['customId'] = $transactionExportArray[7];
+	            	$transaction['custom_id'] = $transactionExportArray[7];
 	            }
 
 	            if (preg_match('/Unpaid Confirmed/', $transactionExportArray[16]) || preg_match('/Paid Confirmed/', $transactionExportArray[16])){

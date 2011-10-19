@@ -155,7 +155,7 @@ class Oara_Network_PaidOnResults extends Oara_Network{
 				$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 				
 				if ($transactionExportArray[3] != null){
-					$transaction['customId'] = $transactionExportArray[3];
+					$transaction['custom_id'] = $transactionExportArray[3];
 				}
 				
 				$transaction['amount'] = (double) $transactionExportArray[4];

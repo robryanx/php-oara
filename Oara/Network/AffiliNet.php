@@ -42,7 +42,7 @@ class Oara_Network_AffiliNet extends Oara_Network{
 	                                                     'Commission'=>'commission,amount',
 	                                                     'Date'=>'date',
 													     'ProgramId'=>'merchantId',
-														 'SubId'=>'customId'
+														 'SubId'=>'custom_id'
 	                                                    );
     
     /**

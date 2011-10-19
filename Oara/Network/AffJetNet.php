@@ -88,7 +88,7 @@ class Oara_Network_AffJetNet extends Oara_Network{
 			$transaction['amount'] = $row["amount"];
 			$transaction['commission'] = $row["commission"];
 			$transaction['status'] = $row["status"];
-			$transaction['customId'] = $row["custom_id"];
+			$transaction['custom_id'] = $row["custom_id"];
 			$totalTransactions[] = $transaction;
 		}
 		mysql_free_result($result);

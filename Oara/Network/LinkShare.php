@@ -409,7 +409,7 @@ class Oara_Network_LinkShare extends Oara_Network{
 	            $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 	            
 	            if ($transactionData[5] != null){
-	            	$transaction['customId'] = $transactionData[5];
+	            	$transaction['custom_id'] = $transactionData[5];
 	            }
 		       
 		        $sales = Oara_Utilities::parseDouble($transactionData[7]);

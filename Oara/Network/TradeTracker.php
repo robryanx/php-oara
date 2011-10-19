@@ -89,7 +89,7 @@ class Oara_Network_TradeTracker extends Oara_Network{
 	                $object['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 	                
 	                if ($transaction->reference != null){
-	                	$object['customId'] = $transaction->reference;
+	                	$object['custom_id'] = $transaction->reference;
 	                }
 	                
 	                if ($transaction->transactionStatus == 'accepted'){

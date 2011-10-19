@@ -51,7 +51,7 @@ class Oara_Network_WebGains extends Oara_Network{
 	                                                     'date'=>'date',
 	                                                     'merchantId'=>'merchantId',
 														 'websiteId'=>'websiteId',
-														 'customId'=>'clickRef',
+														 'custom_id'=>'clickRef',
 	                                                    );
 	/**
 	 * Array with the id from the campaigns

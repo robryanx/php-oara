@@ -191,7 +191,7 @@ class Oara_Network_ClixGalore extends Oara_Network{
 		            $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 		            
 		            if ($transactionExportArray[6] != null){
-	                	$transaction['customId'] = $transactionExportArray[6];
+	                	$transaction['custom_id'] = $transactionExportArray[6];
 	                }
 		            
 		            if ($status == 1){

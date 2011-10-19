@@ -248,7 +248,7 @@ class Oara_Network_Dgm extends Oara_Network{
 				                $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 
 				                if ($transactionExportArray[8] != null){
-				                	$transaction['customId'] = $transactionExportArray[8];
+				                	$transaction['custom_id'] = $transactionExportArray[8];
 				                }
 				                    
 				                if ($transactionExportArray[15]=='Approved'){

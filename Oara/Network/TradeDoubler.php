@@ -427,7 +427,7 @@ class Oara_Network_TradeDoubler extends Oara_Network{
                 $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
                 
                 if ($transactionExportArray[9] != ''){
-                	$transaction['customId'] = $transactionExportArray[9];
+                	$transaction['custom_id'] = $transactionExportArray[9];
                 }
 
                 if ($transactionExportArray[11] == 'A'){
