@@ -122,7 +122,11 @@ class Oara_Network_Amazon extends Oara_Network{
 					$optionList = $result->childNodes;
 		      		$optionNumber = $optionList->length;
 					for ($i = 0;$i < $optionNumber;$i++) {
-						$idBox[] = $optionList->item($i)->attributes->getNamedItem("value")->nodeValue;
+						$idBoxName = $optionList->item($i)->attributes->getNamedItem("value")->nodeValue;
+						if (!in_array($idBoxName, $idBox)){
+							$idBox[] = $idBoxName;
+						}
+						
 					}
 		 		}
 			}
