@@ -89,6 +89,8 @@ class Oara_Network_AffiliNet extends Oara_Network{
 				$merchantList = $merchantList->Programs->ProgramSummary;
 				$merchantList = Oara_Utilities::soapConverter($merchantList, $this->_merchantConverterConfiguration);
 			}
+		} else {
+			$merchantList = array();
 		}
 		
 		return $merchantList;
