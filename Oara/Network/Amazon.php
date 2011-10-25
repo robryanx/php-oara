@@ -101,7 +101,7 @@ class Oara_Network_Amazon extends Oara_Network{
 	 */
 	public function checkConnection(){
 		//If not login properly the construct launch an exception
-		$connection = true;
+ 		$connection = true;
 		$urls = array();
         $urls[] = new Oara_Curl_Request('https://affiliate-program.amazon.co.uk/gp/associates/network/main.html', array());
 		$exportReport = $this->_client->get($urls);
@@ -181,6 +181,9 @@ class Oara_Network_Amazon extends Oara_Network{
 	            $transaction['merchantId'] = 1;
 	            $transactionDate = new Zend_Date($transactionExportArray[5], 'MMMM d,yyyy', 'en');
 	            $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+	            if ($transactionExportArray[4] != null){
+	            	$transaction['custom_id'] = $transactionExportArray[4];
+	            }
 	            
 	            $transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
 	            $transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[9]);
