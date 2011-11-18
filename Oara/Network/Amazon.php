@@ -23,6 +23,7 @@ class Oara_Network_Amazon extends Oara_Network{
      * Export Overview Parameters
      * @var array
      */
+	
 	private $_exportOverviewParameters = null;
 	/**
      * Export Payment Parameters
