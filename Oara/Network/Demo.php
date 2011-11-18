@@ -27,7 +27,7 @@ class Oara_Network_Demo extends Oara_Network{
 	/**
 	 * Constructor and Login
 	 * @param $cartrawler
-	 * @return Oara_Network_Ct_Export
+	 * @return Oara_Network_Demo_Export
 	 */
 	public function __construct($credentials)
 	{

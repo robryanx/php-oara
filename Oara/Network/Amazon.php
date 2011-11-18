@@ -23,7 +23,6 @@ class Oara_Network_Amazon extends Oara_Network{
      * Export Overview Parameters
      * @var array
      */
-	
 	private $_exportOverviewParameters = null;
 	/**
      * Export Payment Parameters
@@ -38,6 +37,10 @@ class Oara_Network_Amazon extends Oara_Network{
      */
 	private $_client = null;
 	/**
+	 * Server Url for the Network Selected
+	 */
+	private $_networkServer = null;
+	/**
 	 * Constructor and Login
 	 * @param $credentials
 	 * @return Oara_Network_Daisycon
@@ -47,6 +50,37 @@ class Oara_Network_Amazon extends Oara_Network{
 		$user = $credentials['user'];
         $password = $credentials['password'];
         $network = $credentials['network'];
+        
+		$this->_networkServer = "";
+      	switch ($network){
+      		case "uk":
+      			$this->_networkServer = "https://affiliate-program.amazon.co.uk";
+      			break;
+      		case "es":
+      			$this->_networkServer = "https://afiliados.amazon.es";
+      			break;
+      		case "us":
+      			$this->_networkServer = "https://affiliate-program.amazon.com";
+      			break;
+      		case "ca":
+      			$this->_networkServer = "https://associates.amazon.ca";
+      			break;
+      		case "de":
+      			$this->_networkServer = "https://partnernet.amazon.de";
+      			break;
+      		case "fr":
+      			$this->_networkServer = "https://partenaires.amazon.fr";
+      			break;
+      		case "it":
+      			$this->_networkServer = "https://programma-affiliazione.amazon.it/";
+      			break;
+      		case "jp":
+      			$this->_networkServer = "https://affiliate.amazon.co.jp/";
+      			break;
+      		case "cn":
+      			$this->_networkServer = "https://associates.amazon.cn/";
+      			break;
+      	}
         
 		//Get html after Js
 		$hiddenParams = self::getHiddenParamsAfterJs($credentials);
@@ -61,9 +95,11 @@ class Oara_Network_Amazon extends Oara_Network{
       	foreach ($hiddenParams as $hiddenParamName => $hiddenParamValue){
       		$valuesLogin[] = new Oara_Curl_Parameter($hiddenParamName, $hiddenParamValue);
       	}
+      	
+      	
 		
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('https://affiliate-program.amazon.co.uk/gp/flex/sign-in/select.html?', $valuesLogin);
+		$urls[] = new Oara_Curl_Request($this->_networkServer."/gp/flex/sign-in/select.html?", $valuesLogin);
 		$contentList = $this->_client->post($urls);
 		
 		$valuesLogin = array(
@@ -71,7 +107,7 @@ class Oara_Network_Amazon extends Oara_Network{
 							 new Oara_Curl_Parameter('refURL', '/gp/associates/network/reports/report.html?reportType=earningsReport')
 							 );
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('https://affiliate-program.amazon.co.uk/gp/associates/x-site/combinedReports.html?', $valuesLogin);
+		$urls[] = new Oara_Curl_Request($this->_networkServer."/gp/associates/x-site/combinedReports.html?", $valuesLogin);
 		$this->_client->get($urls);
 
         $this->_exportTransactionParameters = array(new Oara_Curl_Parameter('tag', ''),
@@ -104,7 +140,7 @@ class Oara_Network_Amazon extends Oara_Network{
 		//If not login properly the construct launch an exception
  		$connection = true;
 		$urls = array();
-        $urls[] = new Oara_Curl_Request('https://affiliate-program.amazon.co.uk/gp/associates/network/main.html', array());
+        $urls[] = new Oara_Curl_Request($this->_networkServer."/gp/associates/network/main.html", array());
 		$exportReport = $this->_client->get($urls);
 		if(preg_match("/noAccount/", $exportReport[0])){
 			$connection = false;
@@ -171,7 +207,7 @@ class Oara_Network_Amazon extends Oara_Network{
 			$valuesFromExport[] = new Oara_Curl_Parameter('idbox_store_id', $id);
 	    
 			$urls = array();
-	        $urls[] = new Oara_Curl_Request('https://affiliate-program.amazon.co.uk/gp/associates/network/reports/report.html?', $valuesFromExport);
+	        $urls[] = new Oara_Curl_Request($this->_networkServer."/gp/associates/network/reports/report.html?", $valuesFromExport);
 			$exportReport = $this->_client->get($urls);
 			
 	        $exportData = str_getcsv($exportReport[0],"\n");
@@ -215,7 +251,7 @@ class Oara_Network_Amazon extends Oara_Network{
 				$overviewExport[] = new Oara_Curl_Parameter('idbox_store_id', $id);
 				
 				$urls = array();
-		        $urls[] = new Oara_Curl_Request('https://affiliate-program.amazon.co.uk/gp/associates/network/reports/report.html?', $overviewExport);
+		        $urls[] = new Oara_Curl_Request($this->_networkServer."/gp/associates/network/reports/report.html?", $overviewExport);
 				$exportReport = $this->_client->get($urls);
 				$exportData = str_getcsv($exportReport[0],"\n");
 	            $num = count($exportData);
@@ -271,7 +307,7 @@ class Oara_Network_Amazon extends Oara_Network{
 	    	$urls = array();
 	    	$paymentExport = array();
 	    	$paymentExport[] = new Oara_Curl_Parameter('idbox_store_id', $id);
-	        $urls[] = new Oara_Curl_Request('https://affiliate-program.amazon.co.uk/gp/associates/network/your-account/payment-history.html?', $paymentExport);
+	        $urls[] = new Oara_Curl_Request($this->_networkServer."/gp/associates/network/your-account/payment-history.html?", $paymentExport);
 			$exportReport = $this->_client->get($urls);
 	    	$dom = new Zend_Dom_Query($exportReport[0]);
 	      	$results = $dom->query('.paymenthistory');
@@ -372,7 +408,7 @@ class Oara_Network_Amazon extends Oara_Network{
 	private function getHiddenParamsAfterJs($credentials){
 		$hiddenParams = array();
 		
-		$loginUrl = 'https://affiliate-program.amazon.co.uk/';
+		$loginUrl = $this->_networkServer;
 		$this->_client = new Oara_Curl_Access($loginUrl, array(), $credentials);
         
 		$cookies = self::readCookies($credentials);
