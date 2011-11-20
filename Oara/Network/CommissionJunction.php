@@ -398,9 +398,8 @@ class Oara_Network_CommissionJunction extends Oara_Network{
 	 */
 	public function getPaymentHistory(){
     	$paymentHistory = array();
-    	
     	$urls = array();
-    	$urls[] = new Oara_Curl_Request('https://members.cj.com/member/'.$this->_memberId.'/publisher/displaypublisherpaymentstatus.do?ispopup=true', array());   
+    	$urls[] = new Oara_Curl_Request('https://members.cj.com/member/cj/publisher/paymentStatus', array());   
     	$exportReport = $this->_client->get($urls);
         if (preg_match("/\/publisher\/getpublisherpaymenthistory\.do/", $exportReport[0], $matches)){
 	    	$urls = array();
