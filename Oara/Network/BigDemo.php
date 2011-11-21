@@ -581,9 +581,6 @@ class Oara_Network_BigDemo extends Oara_Network{
 				$overview['date'] = $overviewDate->toString("yyyy-MM-dd HH:mm:ss");
 				$clickNumber = rand(1, 3000);
 				$overview['click_number'] = $clickNumber;
-				$overview['link'] = $link;
-				$overview['website'] = $website;
-				$overview['page'] = $page;
 				$impressionNumber = rand(1, 6000);
 				$overview['impression_number'] = $impressionNumber;
 				$overview['transaction_number'] = 0;
