@@ -399,5 +399,5 @@ class Oara_Network_ClixGalore extends Oara_Network{
 	        $innerHTML.=trim($tmp_dom->saveHTML());
 	    }
 	    return $innerHTML;
-	} 
+	}
 }
