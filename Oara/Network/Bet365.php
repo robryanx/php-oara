@@ -29,10 +29,6 @@ class Oara_Network_Bet365 extends Oara_Network{
      * @var array
      */
 	private $_exportPaymentParameters = null;
-	/**
-	 * Merchants by name
-	 */
-	private $_merchantMap = array();
     /**
      * Client 
      * @var unknown_type
