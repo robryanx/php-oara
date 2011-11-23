@@ -36,6 +36,11 @@ class Oara_Network_SilverTap extends Oara_Network{
      */
 	private $_client = null;
 	/**
+     * Server Url 
+     * @var unknown_type
+     */
+	private $_serverUrl = null;
+	/**
 	 * Constructor and Login
 	 * @param $silvertap
 	 * @return Oara_Network_St_Export
@@ -45,9 +50,16 @@ class Oara_Network_SilverTap extends Oara_Network{
 
 		$user = $credentials['user'];
         $password = $credentials['password'];
+        $report = null;
+		if ($credentials['network'] == "SilverTap"){
+			$this->_serverUrl = "http://mats.silvertap.com/";
+			 
+		} else if ($credentials['network'] == "BrandConversions"){
+			$this->_serverUrl = "https://mats.brandconversions.com/";
+			$report = 'BCCommission_Breakdown';
+		}
 		
-		
-		$loginUrl = 'http://mats.silvertap.com/login.aspx';
+		$loginUrl = $this->_serverUrl.'login.aspx';
 		
 		$valuesLogin = array(new Oara_Curl_Parameter('txtUsername', $user),
                              new Oara_Curl_Parameter('txtPassword', $password),
@@ -63,7 +75,7 @@ class Oara_Network_SilverTap extends Oara_Network{
 		
         $this->_exportTransactionParameters = array(new Oara_Curl_Parameter('user', $exportUser),
         											new Oara_Curl_Parameter('pwd', $exportPassword),
-        											new Oara_Curl_Parameter('report', 'AMSCommission_Breakdown'),
+        											new Oara_Curl_Parameter('report', $report),
         											new Oara_Curl_Parameter('groupby', 'Programme'),
         											new Oara_Curl_Parameter('groupdate', 'Day'),
         											new Oara_Curl_Parameter('creative', ''),
@@ -131,12 +143,22 @@ class Oara_Network_SilverTap extends Oara_Network{
         $startDate = $dStartDate->toString('dd/MM/yyyy');
         $endDate = $dEndDate->toString('dd/MM/yyyy');
         
+        $valueIndex = 9;
+        $commissionIndex = 15;
+        $statusIndex = 16;
+        if ($this->_serverUrl == "https://mats.brandconversions.com/"){
+        	$valueIndex = 11;
+	        $commissionIndex = 17;
+	        $statusIndex = 18;
+        }
+          
+        
         $valuesFormExport = Oara_Utilities::cloneArray($this->_exportTransactionParameters);
         //$valuesFormExport[] = new Oara_Curl_Parameter('merchant', '0');
         $valuesFormExport[] = new Oara_Curl_Parameter('datefrom', $startDate);
         $valuesFormExport[] = new Oara_Curl_Parameter('dateto', $endDate);
        	$urls = array();
-        $urls[] = new Oara_Curl_Request('http://mats.silvertap.com/reports/remote.aspx?', $valuesFormExport);
+        $urls[] = new Oara_Curl_Request($this->_serverUrl.'reports/remote.aspx?', $valuesFormExport);
         $exportReport = $this->_client->get($urls);
         $exportData = str_getcsv($exportReport[0],"\r\n");
         $num = count($exportData);
@@ -152,18 +174,18 @@ class Oara_Network_SilverTap extends Oara_Network{
 	            	$transaction['custom_id'] = $transactionExportArray[7];
 	            }
 
-	            if (preg_match('/Unpaid Confirmed/', $transactionExportArray[16]) || preg_match('/Paid Confirmed/', $transactionExportArray[16])){
+	            if (preg_match('/Unpaid Confirmed/', $transactionExportArray[$statusIndex]) || preg_match('/Paid Confirmed/', $transactionExportArray[$statusIndex])){
 	            	$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
-	            } else if (preg_match('/Unpaid Unconfirmed/', $transactionExportArray[16])){
+	            } else if (preg_match('/Unpaid Unconfirmed/', $transactionExportArray[$statusIndex])){
 	                $transaction['status'] = Oara_Utilities::STATUS_PENDING;
-	            } else if (preg_match('/Unpaid Rejected/', $transactionExportArray[16])){
+	            } else if (preg_match('/Unpaid Rejected/', $transactionExportArray[$statusIndex])){
 	                $transaction['status'] = Oara_Utilities::STATUS_DECLINED;
 	            } else {
 	            	echo "sdf";
 	            }
 	           
-	            $transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[9]);
-	            $transaction['commission'] = Oara_Utilities::parseDouble($transactionExportArray[15]);
+	            $transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[$valueIndex]);
+	            $transaction['commission'] = Oara_Utilities::parseDouble($transactionExportArray[$commissionIndex]);
 	            $totalTransactions[] = $transaction;
 			}
         }
@@ -184,7 +206,7 @@ class Oara_Network_SilverTap extends Oara_Network{
         $valuesFormExport[] = new Oara_Curl_Parameter('datefrom', $startDate);
         $valuesFormExport[] = new Oara_Curl_Parameter('dateto', $endDate);
         $urls = array();
-        $urls[] = new Oara_Curl_Request('http://mats.silvertap.com/reports/remote.aspx?', $valuesFormExport);
+        $urls[] = new Oara_Curl_Request($this->_serverUrl.'reports/remote.aspx?', $valuesFormExport);
         $exportReport = $this->_client->get($urls);
         $exportData = array();
         $exportData = str_getcsv($exportReport[0],"\r\n");
@@ -238,7 +260,7 @@ class Oara_Network_SilverTap extends Oara_Network{
 	private function getMerchantProgramMap(){
     	$merchantList = array();
     	$urls = array();
-        $urls[] = new Oara_Curl_Request('http://mats.silvertap.com/Reports/Default.aspx?report=Performance', array());
+        $urls[] = new Oara_Curl_Request($this->_serverUrl.'Reports/Default.aspx?report=Performance', array());
     	$result = $this->_client->get($urls);
     	
 	
@@ -273,11 +295,11 @@ class Oara_Network_SilverTap extends Oara_Network{
 	    
 	    
 	    $urls = array();
-        $urls[] = new Oara_Curl_Request('http://mats.silvertap.com/Reports/Default.aspx?', array(new Oara_Curl_Parameter('report', 'Performance')));
+        $urls[] = new Oara_Curl_Request($this->_serverUrl.'Reports/Default.aspx?', array(new Oara_Curl_Parameter('report', 'Performance')));
     	$result = $this->_client->get($urls);
     	
     	$urls = array();
-        $urls[] = new Oara_Curl_Request('http://mats.silvertap.com/Reports/RemoteHelp.aspx?', array());
+        $urls[] = new Oara_Curl_Request($this->_serverUrl.'/Reports/RemoteHelp.aspx?', array());
     	$result = $this->_client->get($urls);
 		
 	    /*** load the html into the object ***/
@@ -323,9 +345,9 @@ class Oara_Network_SilverTap extends Oara_Network{
 		if ($currentPage != 1){
 			
 			$urls = array();
-	        $urls[] = new Oara_Curl_Request('https://mats.silvertap.com/Invoices/Default.aspx?',$params);
+	        $urls[] = new Oara_Curl_Request($this->_serverUrl.'/Invoices/Default.aspx?',$params);
 	        $exportReport = $this->_client->post($urls);
-	    	/*** load the html into the object ***/
+	    	
 		    $doc = new DOMDocument();
 		    libxml_use_internal_errors(true);
 		    $doc->validateOnParse = true;
@@ -339,10 +361,10 @@ class Oara_Network_SilverTap extends Oara_Network{
 		}
 		
     	$urls = array();
-        $urls[] = new Oara_Curl_Request('https://mats.silvertap.com/Invoices/Default.aspx?',$params);
+        $urls[] = new Oara_Curl_Request($this->_serverUrl.'/Invoices/Default.aspx?',$params);
         $exportReport = $this->_client->post($urls);
         
-		/*** load the html into the object ***/
+		
 	    $doc = new DOMDocument();
 	    libxml_use_internal_errors(true);
 	    $doc->validateOnParse = true;
@@ -375,7 +397,7 @@ class Oara_Network_SilverTap extends Oara_Network{
 					$parameters = array();
 					$parameters[] = new Oara_Curl_Parameter('id', $registerLine->item(0)->nodeValue);
 					$urls = array();
-					$urls[] = new Oara_Curl_Request('https://mats.silvertap.com/Invoices/ViewInvoice.aspx?', $parameters);
+					$urls[] = new Oara_Curl_Request($this->_serverUrl.'Invoices/ViewInvoice.aspx?', $parameters);
 		        	$exportReport = $this->_client->get($urls);
 		        	$exportReportUrl = $this->_client->get($urls,'url');
 		        	$exportReportUrl = explode('/', $exportReportUrl[0]);
@@ -439,6 +461,7 @@ class Oara_Network_SilverTap extends Oara_Network{
 				}
 			}
 		}
+		
     	return $paymentHistory;
     }
 }

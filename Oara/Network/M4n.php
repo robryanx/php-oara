@@ -95,7 +95,7 @@ class Oara_Network_M4n extends Oara_Network{
 	           
 	            if ($transactionExportArray[2] == 'ACCEPTED'){
 	            	$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
-	            } else if ($transactionExportArray[2] == 'ON_HOLD' || $transactionExportArray[6] == 'TO_BE_APPROVED' || $transactionExportArray[6] == 'BLOCKED'){
+	            } else if ($transactionExportArray[2] == 'ON_HOLD' || $transactionExportArray[2] == 'TO_BE_APPROVED' || $transactionExportArray[2] == 'BLOCKED'){
 	            	$transaction['status'] = Oara_Utilities::STATUS_PENDING;
 	            } else if ($transactionExportArray[2] == 'REJECTED'){
 	                $transaction['status'] = Oara_Utilities::STATUS_DECLINED;
