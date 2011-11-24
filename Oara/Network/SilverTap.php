@@ -53,6 +53,7 @@ class Oara_Network_SilverTap extends Oara_Network{
         $report = null;
 		if ($credentials['network'] == "SilverTap"){
 			$this->_serverUrl = "http://mats.silvertap.com/";
+			$report = 'AMSCommission_Breakdown';
 			 
 		} else if ($credentials['network'] == "BrandConversions"){
 			$this->_serverUrl = "https://mats.brandconversions.com/";

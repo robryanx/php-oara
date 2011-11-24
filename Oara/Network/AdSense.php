@@ -250,7 +250,7 @@ class Oara_Network_AdSense extends Oara_Network{
 		$num = count($exportData);
 		for ($j = 1; $j < $num; $j++) {
 			$paymentExportArray = str_getcsv($exportData[$j],"\t");
-			if ($paymentExportArray[1] == "Payment issued"){
+			if (Oara_Utilities::parseDouble($paymentExportArray[2]) < 0){
 				$obj = array();
 				$date = new Zend_Date($paymentExportArray[0], "MM/dd/yy");
 				$obj['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
