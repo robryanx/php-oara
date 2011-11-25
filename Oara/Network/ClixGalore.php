@@ -260,42 +260,43 @@ class Oara_Network_ClixGalore extends Oara_Network{
 				
 				$exportData = self::htmlToCsv(self::DOMinnerHTML($tableNode));
 				for ($j = 1; $j < count($exportData); $j++) {
-	            
-	                $overviewExportArray = str_getcsv($exportData[$j],";");
-	                
-	                $obj = array();
-	                $obj['merchantId'] = $this->_merchantMap[$overviewExportArray[0]];
-	                
-	                $overviewDate = new Zend_Date($mothOverviewUrls[$i]->getParameter(2)->getValue(), "dd-MM-yyyy HH:mm:ss");
-	                $obj['date'] = $overviewDate->toString("yyyy-MM-dd HH:mm:ss");
-	                            
-	                $obj['impression_number'] = $overviewExportArray[4];
-	                $obj['click_number'] = $overviewExportArray[6];
-	                $obj['transaction_number'] = 0;
-	                            
-	                $obj['transaction_confirmed_commission'] = 0;
-	                $obj['transaction_confirmed_value'] = 0;
-	                $obj['transaction_pending_commission'] = 0;
-	                $obj['transaction_pending_value'] = 0;
-	                $obj['transaction_declined_commission'] = 0;
-	                $obj['transaction_declined_value'] = 0;
-	                $transactionDateArray = Oara_Utilities::getDayFromArray($obj['merchantId'], $transactionArray, $overviewDate);
-	            	foreach ($transactionDateArray as $transaction){
-	                    $obj['transaction_number']++;
-	                    if ($transaction['status'] == Oara_Utilities::STATUS_CONFIRMED){
-	                        $obj['transaction_confirmed_value'] += $transaction['amount'];
-	                        $obj['transaction_confirmed_commission'] += $transaction['commission'];
-	                    } else if ($transaction['status'] == Oara_Utilities::STATUS_PENDING){
-	                        $obj['transaction_pending_value'] += $transaction['amount'];
-	                        $obj['transaction_pending_commission'] += $transaction['commission'];
-	                    } else if ($transaction['status'] == Oara_Utilities::STATUS_DECLINED){
-	                        $obj['transaction_declined_value'] += $transaction['amount'];
-	                        $obj['transaction_declined_commission'] += $transaction['commission'];
-	                    }
-	                }
-	                if (Oara_Utilities::checkRegister($obj)){
-	                	$overviewArray[] = $obj;
-	               }
+					$overviewExportArray = str_getcsv($exportData[$j],";");
+					if (isset($this->_merchantMap[$overviewExportArray[0]]) && in_array((int)$this->_merchantMap[$overviewExportArray[0]], $merchantList)){
+ 
+		                $obj = array();
+		                $obj['merchantId'] = $this->_merchantMap[$overviewExportArray[0]];
+		                
+		                $overviewDate = new Zend_Date($mothOverviewUrls[$i]->getParameter(2)->getValue(), "dd-MM-yyyy HH:mm:ss");
+		                $obj['date'] = $overviewDate->toString("yyyy-MM-dd HH:mm:ss");
+		                            
+		                $obj['impression_number'] = $overviewExportArray[4];
+		                $obj['click_number'] = $overviewExportArray[6];
+		                $obj['transaction_number'] = 0;
+		                            
+		                $obj['transaction_confirmed_commission'] = 0;
+		                $obj['transaction_confirmed_value'] = 0;
+		                $obj['transaction_pending_commission'] = 0;
+		                $obj['transaction_pending_value'] = 0;
+		                $obj['transaction_declined_commission'] = 0;
+		                $obj['transaction_declined_value'] = 0;
+		                $transactionDateArray = Oara_Utilities::getDayFromArray($obj['merchantId'], $transactionArray, $overviewDate);
+		            	foreach ($transactionDateArray as $transaction){
+		                    $obj['transaction_number']++;
+		                    if ($transaction['status'] == Oara_Utilities::STATUS_CONFIRMED){
+		                        $obj['transaction_confirmed_value'] += $transaction['amount'];
+		                        $obj['transaction_confirmed_commission'] += $transaction['commission'];
+		                    } else if ($transaction['status'] == Oara_Utilities::STATUS_PENDING){
+		                        $obj['transaction_pending_value'] += $transaction['amount'];
+		                        $obj['transaction_pending_commission'] += $transaction['commission'];
+		                    } else if ($transaction['status'] == Oara_Utilities::STATUS_DECLINED){
+		                        $obj['transaction_declined_value'] += $transaction['amount'];
+		                        $obj['transaction_declined_commission'] += $transaction['commission'];
+		                    }
+		                }
+		                if (Oara_Utilities::checkRegister($obj)){
+		                	$overviewArray[] = $obj;
+		               	}
+					}
 	            }
 			}
 		}
