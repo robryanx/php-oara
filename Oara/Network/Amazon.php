@@ -201,8 +201,8 @@ class Oara_Network_Amazon extends Oara_Network{
 	    	$dateArraySize = sizeof($dateArray);
 	           
 	    	for ($j = 0; $j < $dateArraySize; $j++){
-				//echo "day ".$dateArray[$j]->toString("d")."\n";
-				//echo round(memory_get_usage(true)/1048576,2)." megabytes \n";
+				echo "day ".$dateArray[$j]->toString("d")."\n";
+				echo round(memory_get_usage(true)/1048576,2)." megabytes \n";
 				$valuesFromExport = Oara_Utilities::cloneArray($this->_exportTransactionParameters);
 				$valuesFromExport[] = new Oara_Curl_Parameter('startDay', $dateArray[$j]->toString("d"));
 				$valuesFromExport[] = new Oara_Curl_Parameter('startMonth', (int)$dateArray[$j]->toString("M")-1);
