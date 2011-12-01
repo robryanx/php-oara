@@ -220,7 +220,7 @@ class Oara_Network_CommissionJunction extends Oara_Network{
     
     private function getTransactionsXml($restUrl, $merchantList){
     	$totalTransactions = array();
-    	$client = new Zend_Http_Client($restUrl);
+    	$client = new Zend_Http_Client($restUrl, array('timeout'=> 60));
         $client->setHeaders('Authorization',$this->_apiPassword);
         $response = $client->request('GET');
         $xml = simplexml_load_string($response->getBody(), null, LIBXML_NOERROR | LIBXML_NOWARNING);
