@@ -172,46 +172,100 @@ class Oara_Network_CommissionJunction extends Oara_Network{
     public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null){
         $totalTransactions = Array();
         //The end data for the API has to be one day more 
-        $dEndDate->addDay(1);
-    	$restUrl = 'https://commission-detail.api.cj.com/v3/commissions?date-type=event&start-date='.$dStartDate->toString("yyyy-MM-dd").'&end-date='.$dEndDate->toString("yyyy-MM-dd");
-        //Setting the client.
-		$client = new Zend_Http_Client($restUrl);
+        
+	    foreach ($merchantList as $cid){
+	    	echo "mechant".$cid." ".count($totalTransactions)."\n\n";
+	    	try {
+	    		
+		    	$transactionDateEnd = clone $dEndDate;
+				$transactionDateEnd->addDay(1);
+		    	$restUrl = 'https://commission-detail.api.cj.com/v3/commissions?cids='.$cid.'&date-type=event&start-date='.$dStartDate->toString("yyyy-MM-dd").'&end-date='.$transactionDateEnd->toString("yyyy-MM-dd");
+		    	unset($transactionDateEnd);
+    			$totalTransactions = array_merge($totalTransactions, self::getTransactionsXml($restUrl, $merchantList));
+    			
+    		} catch (Exception $e) {
+    			
+    			$dateArray = Oara_Utilities::daysOfDifference($dStartDate, $dEndDate);
+    			$dateArraySize = sizeof($dateArray);
+	    		for ($j = 0; $j < $dateArraySize; $j++){
+			    	$transactionDateEnd = clone $dateArray[$j];
+					$transactionDateEnd->addDay(1);
+					echo $dateArray[$j]->toString("yyyy-MM-dd")."\n\n";
+			    	$restUrl = 'https://commission-detail.api.cj.com/v3/commissions?cids='.$cid.'&date-type=event&start-date='.$dateArray[$j]->toString("yyyy-MM-dd").'&end-date='.$transactionDateEnd->toString("yyyy-MM-dd");
+			    	try {
+			        	$totalTransactions = array_merge($totalTransactions, self::getTransactionsXml($restUrl, $merchantList));
+			        } catch (Exception $e) {
+				        $try = 0;
+						$done = false;
+						while (!$done && $try < 5){
+							try{
+								$totalTransactions = array_merge($totalTransactions, self::transactionsByType($cid, $dateArray[$j], $transactionDateEnd, $merchantList));
+								$done = true;
+							} catch (Exception $e){
+								$try++;
+								echo "try again $try\n\n";
+							}
+						}
+						if ($try == 5){
+							throw new Exception("Couldn't get data from the Transaction");
+						}
+			        	
+			        }
+			        unset($transactionDateEnd);
+			    }
+    		}
+	    }
+        return $totalTransactions;
+    }
+    
+    private function getTransactionsXml($restUrl, $merchantList){
+    	$totalTransactions = array();
+    	$client = new Zend_Http_Client($restUrl);
         $client->setHeaders('Authorization',$this->_apiPassword);
-		$response = $client->request('GET');
-    	$xml = simplexml_load_string($response->getBody(), null, LIBXML_NOERROR | LIBXML_NOWARNING);
-		if(isset($xml->commissions->commission)){
+        $response = $client->request('GET');
+        $xml = simplexml_load_string($response->getBody(), null, LIBXML_NOERROR | LIBXML_NOWARNING);
+		if (isset($xml->commissions->commission)){
 			foreach ($xml->commissions->commission as $singleTransaction){
-				
+					
 				if (in_array((int)self::findAttribute($singleTransaction, 'cid'),$merchantList)){
-	   				
-		            $transaction = Array();
-		            $transaction['merchantId'] = self::findAttribute($singleTransaction, 'cid');
-		            $transactionDate =  new Zend_Date(self::findAttribute($singleTransaction, 'event-date'),'yyyy-MM-ddTHH:mm:ss'); 
-		            $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
-		            
-		            
-		           	if (self::findAttribute($singleTransaction, 'sid') != null){
-		           		$transaction['custom_id'] = self::findAttribute($singleTransaction, 'sid');
-		           	}
-		            
-		           
-		            if (self::findAttribute($singleTransaction, 'action-status') == 'closed' || self::findAttribute($singleTransaction, 'action-status') == 'locked'){
-		                $transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
-		            } else if (self::findAttribute($singleTransaction, 'action-status') == 'extended' || self::findAttribute($singleTransaction, 'action-status') == 'new'){
-		                $transaction['status'] = Oara_Utilities::STATUS_PENDING;
-		            } else if (self::findAttribute($singleTransaction, 'action-status') == 'corrected'){
-		                $transaction['status'] = Oara_Utilities::STATUS_DECLINED;
-		            }
-		                        
-		            $transaction['amount'] = Oara_Utilities::parseDouble(self::findAttribute($singleTransaction, 'sale-amount'));
-		            $transaction['commission'] = Oara_Utilities::parseDouble(self::findAttribute($singleTransaction, 'commission-amount'));
-		            $totalTransactions[] = $transaction;
-	   			}
-				
+		   				
+			    	$transaction = Array();
+			     	$transaction['merchantId'] = self::findAttribute($singleTransaction, 'cid');
+			    	$transactionDate =  new Zend_Date(self::findAttribute($singleTransaction, 'event-date'),'yyyy-MM-ddTHH:mm:ss'); 
+			    	$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+			   		unset ($transactionDate);
+			            
+			       	if (self::findAttribute($singleTransaction, 'sid') != null){
+			        	$transaction['custom_id'] = self::findAttribute($singleTransaction, 'sid');
+			      	}
+			            
+			           
+			       	if (self::findAttribute($singleTransaction, 'action-status') == 'closed' || self::findAttribute($singleTransaction, 'action-status') == 'locked'){
+			        	$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
+			      	} else if (self::findAttribute($singleTransaction, 'action-status') == 'extended' || self::findAttribute($singleTransaction, 'action-status') == 'new'){
+			          	$transaction['status'] = Oara_Utilities::STATUS_PENDING;
+			       	} else if (self::findAttribute($singleTransaction, 'action-status') == 'corrected'){
+			          	$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
+			      	}
+			                        
+			     	$transaction['amount'] = Oara_Utilities::parseDouble(self::findAttribute($singleTransaction, 'sale-amount'));
+			     	$transaction['commission'] = Oara_Utilities::parseDouble(self::findAttribute($singleTransaction, 'commission-amount'));
+			    	$totalTransactions[] = $transaction;
+		   		}
 			}
 		}
-        
-        return $totalTransactions;
+    	return $totalTransactions;
+    }
+    
+    private function transactionsByType($cid, $startDate, $endDate, $merchantList){
+    	$totalTransactions = array();
+    	$typeTransactions = array("bonus", "click","impression","sale","lead","advanced%20sale","advanced%20lead", "performance%20incentive");
+    	foreach ($typeTransactions as $type){
+			echo $type."\n\n";
+			$restUrl = 'https://commission-detail.api.cj.com/v3/commissions?action-types='.$type.'&cids='.$cid.'&date-type=event&start-date='.$startDate->toString("yyyy-MM-dd").'&end-date='.$endDate->toString("yyyy-MM-dd");
+    		$totalTransactions = array_merge($totalTransactions, self::getTransactionsXml($restUrl, $merchantList));
+    	}
+    	return $totalTransactions;
     }
 	/**
 	 * (non-PHPdoc)
