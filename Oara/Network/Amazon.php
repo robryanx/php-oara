@@ -269,62 +269,86 @@ class Oara_Network_Amazon extends Oara_Network{
 		$transactionArray = Oara_Utilities::transactionMapPerDay($transactionList);
 		foreach ($this->_idBox as $id){
 			foreach ($merchantList as $merchantId){
-	
-				$overviewExport = Oara_Utilities::cloneArray($this->_exportOverviewParameters);
-				$overviewExport[] = new Oara_Curl_Parameter('startDay', $dStartDate->toString("d"));
-				$overviewExport[] = new Oara_Curl_Parameter('startMonth', (int)$dStartDate->toString("M")-1);
-				$overviewExport[] = new Oara_Curl_Parameter('startYear', $dStartDate->toString("yyyy"));
-				$overviewExport[] = new Oara_Curl_Parameter('endDay', $dEndDate->toString("d"));
-				$overviewExport[] = new Oara_Curl_Parameter('endMonth', (int)$dEndDate->toString("M")-1);
-				$overviewExport[] = new Oara_Curl_Parameter('endYear', $dEndDate->toString("yyyy"));
-				$overviewExport[] = new Oara_Curl_Parameter('idbox_store_id', $id);
 				
-				$urls = array();
-		        $urls[] = new Oara_Curl_Request($this->_networkServer."/gp/associates/network/reports/report.html?", $overviewExport);
-				$exportReport = $this->_client->get($urls);
-				$exportData = str_getcsv($exportReport[0],"\n");
-	            $num = count($exportData);
-	            for ($j = 2; $j < $num; $j++) {
-	            	
-	                $overviewExportArray = str_getcsv($exportData[$j],"\t");
-	                
-	                $obj = array();
-	                $obj['merchantId'] = 1;
-	                
-	                $overviewDate = new Zend_Date($overviewExportArray[0], "yyyy/MM/dd HH:mm:ss");
-	                $obj['date'] = $overviewDate->toString("yyyy-MM-dd HH:mm:ss");
-	                            
-	                $obj['impression_number'] = 0;
-	                $obj['click_number'] = $overviewExportArray[1];
-	                $obj['transaction_number'] = 0;
-	                            
-	                $obj['transaction_confirmed_commission'] = 0;
-	                $obj['transaction_confirmed_value'] = 0;
-	                $obj['transaction_pending_commission'] = 0;
-	                $obj['transaction_pending_value'] = 0;
-	                $obj['transaction_declined_commission'] = 0;
-	                $obj['transaction_declined_value'] = 0;
-	                $transactionDateArray = Oara_Utilities::getDayFromArray($obj['merchantId'], $transactionArray, $overviewDate);
-	                unset($overviewDate);
-	            	foreach ($transactionDateArray as $transaction){
-	                    $obj['transaction_number']++;
-	                    if ($transaction['status'] == Oara_Utilities::STATUS_CONFIRMED){
-	                        $obj['transaction_confirmed_value'] += $transaction['amount'];
-	                        $obj['transaction_confirmed_commission'] += $transaction['commission'];
-	                    } else if ($transaction['status'] == Oara_Utilities::STATUS_PENDING){
-	                        $obj['transaction_pending_value'] += $transaction['amount'];
-	                        $obj['transaction_pending_commission'] += $transaction['commission'];
-	                    } else if ($transaction['status'] == Oara_Utilities::STATUS_DECLINED){
-	                        $obj['transaction_declined_value'] += $transaction['amount'];
-	                        $obj['transaction_declined_commission'] += $transaction['commission'];
-	                    }
-	                }
-	                if (Oara_Utilities::checkRegister($obj)){
-	                	$overviewArray[] = $obj;
-	               	}
-	            }
+				$try = 0;
+				$done = false;
+				while (!$done && $try < 5){
+					try{
+						$overviewArray = array_merge($overviewArray, self::getOverviewReportRecursive($transactionArray, $id, $dStartDate, $dEndDate));
+						$done = true;
+					} catch (Exception $e){
+						$try++;
+						echo "try again $try\n\n";
+					}
+				}
+				if ($try == 5){
+					throw new Exception("Couldn't get data from the overview");
+				}
+	
+				
 			}
 		}
+		return $overviewArray;
+	}
+	
+	private function getOverviewReportRecursive($transactionArray, $id, $dStartDate, $dEndDate){
+		$overviewArray = array();
+		$overviewExport = Oara_Utilities::cloneArray($this->_exportOverviewParameters);
+		$overviewExport[] = new Oara_Curl_Parameter('startDay', $dStartDate->toString("d"));
+		$overviewExport[] = new Oara_Curl_Parameter('startMonth', (int)$dStartDate->toString("M")-1);
+		$overviewExport[] = new Oara_Curl_Parameter('startYear', $dStartDate->toString("yyyy"));
+		$overviewExport[] = new Oara_Curl_Parameter('endDay', $dEndDate->toString("d"));
+		$overviewExport[] = new Oara_Curl_Parameter('endMonth', (int)$dEndDate->toString("M")-1);
+		$overviewExport[] = new Oara_Curl_Parameter('endYear', $dEndDate->toString("yyyy"));
+		$overviewExport[] = new Oara_Curl_Parameter('idbox_store_id', $id);
+			
+		$urls = array();
+	    $urls[] = new Oara_Curl_Request($this->_networkServer."/gp/associates/network/reports/report.html?", $overviewExport);
+		$exportReport = $this->_client->get($urls);
+		$exportData = str_getcsv($exportReport[0],"\n");
+        $num = count($exportData);
+        for ($j = 2; $j < $num; $j++) {
+            	
+        	$overviewExportArray = str_getcsv($exportData[$j],"\t");
+                
+           	$obj = array();
+          	$obj['merchantId'] = 1;
+                
+           	$overviewDate = new Zend_Date($overviewExportArray[0], "yyyy/MM/dd HH:mm:ss");
+           	$obj['date'] = $overviewDate->toString("yyyy-MM-dd HH:mm:ss");
+                            
+           	$obj['impression_number'] = 0;
+        	if (!isset($overviewExportArray[1])){
+            	throw new Exception("Request failed");
+            }
+          	$obj['click_number'] = $overviewExportArray[1];
+          	$obj['transaction_number'] = 0;
+                            
+           	$obj['transaction_confirmed_commission'] = 0;
+           	$obj['transaction_confirmed_value'] = 0;
+         	$obj['transaction_pending_commission'] = 0;
+           	$obj['transaction_pending_value'] = 0;
+           	$obj['transaction_declined_commission'] = 0;
+          	$obj['transaction_declined_value'] = 0;
+          	$transactionDateArray = Oara_Utilities::getDayFromArray($obj['merchantId'], $transactionArray, $overviewDate);
+          	unset($overviewDate);
+          	foreach ($transactionDateArray as $transaction){
+            	$obj['transaction_number']++;
+              	if ($transaction['status'] == Oara_Utilities::STATUS_CONFIRMED){
+                 	$obj['transaction_confirmed_value'] += $transaction['amount'];
+                  	$obj['transaction_confirmed_commission'] += $transaction['commission'];
+              	} else if ($transaction['status'] == Oara_Utilities::STATUS_PENDING){
+                  	$obj['transaction_pending_value'] += $transaction['amount'];
+                 	$obj['transaction_pending_commission'] += $transaction['commission'];
+               	} else if ($transaction['status'] == Oara_Utilities::STATUS_DECLINED){
+                  	$obj['transaction_declined_value'] += $transaction['amount'];
+                 	$obj['transaction_declined_commission'] += $transaction['commission'];
+           		}
+       		}
+        	if (Oara_Utilities::checkRegister($obj)){
+             	$overviewArray[] = $obj;
+          	}
+     	}
 		return $overviewArray;
 	}
 	/**
