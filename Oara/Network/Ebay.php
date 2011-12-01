@@ -110,6 +110,36 @@ class Oara_Network_Ebay extends Oara_Network{
 	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null){
 		
 		$totalTransactions = array();
+		
+		$valuesFromExport = Oara_Utilities::cloneArray($this->_exportOverviewParameters);
+		$valuesFromExport[] = new Oara_Curl_Parameter('epc_start_date', $dStartDate->toString("MM/dd/yy"));
+		$valuesFromExport[] = new Oara_Curl_Parameter('epc_start_date_month', $dStartDate->toString("MM"));
+		$valuesFromExport[] = new Oara_Curl_Parameter('epc_start_date_day', $dStartDate->toString("dd"));
+		$valuesFromExport[] = new Oara_Curl_Parameter('epc_start_date_year', $dStartDate->toString("yyyy"));
+
+		$valuesFromExport[] = new Oara_Curl_Parameter('epc_end_date', $dEndDate->toString("MM/dd/yy"));
+		$valuesFromExport[] = new Oara_Curl_Parameter('epc_end_date_month', $dEndDate->toString("MM"));
+		$valuesFromExport[] = new Oara_Curl_Parameter('epc_end_date_day', $dEndDate->toString("dd"));
+		$valuesFromExport[] = new Oara_Curl_Parameter('epc_end_date_year', $dEndDate->toString("yyyy"));
+		
+	    
+		$urls = array();
+        $urls[] = new Oara_Curl_Request('https://publisher.ebaypartnernetwork.com/PublisherReportsTx?', $valuesFromExport);
+		$exportReport = $this->_client->get($urls);
+		$exportData = str_getcsv($exportReport[0],"\n");
+		$num = count($exportData);
+        for ($i = 1; $i < $num; $i++) {
+            $transactionExportArray = str_getcsv($exportData[$i],"\t");
+            $transaction = Array();
+            $transaction['merchantId'] = 1;
+            $transactionDate = new Zend_Date($transactionExportArray[0], 'yyyy-MM-dd', 'en');
+            $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+            unset($transactionDate);
+            $transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
+            $transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[7]);
+            $transaction['commission'] = Oara_Utilities::parseDouble($transactionExportArray[7]);
+            $totalTransactions[] = $transaction;
+        }
 
 		$valuesFromExport = Oara_Utilities::cloneArray($this->_exportTransactionParameters);
 		$valuesFromExport[] = new Oara_Curl_Parameter('start_date', $dStartDate->toString("MM/dd/yy"));
@@ -134,6 +164,7 @@ class Oara_Network_Ebay extends Oara_Network{
             $transaction['merchantId'] = 1;
             $transactionDate = new Zend_Date($transactionExportArray[0], 'yyyy-MM-dd', 'en');
             $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+            unset($transactionDate);
             if ($transactionExportArray[10] != null){
             	$transaction['custom_id'] = $transactionExportArray[10];
             }
@@ -144,35 +175,7 @@ class Oara_Network_Ebay extends Oara_Network{
             $totalTransactions[] = $transaction;
         }
         
-        $valuesFromExport = Oara_Utilities::cloneArray($this->_exportOverviewParameters);
-		$valuesFromExport[] = new Oara_Curl_Parameter('epc_start_date', $dStartDate->toString("MM/dd/yy"));
-		$valuesFromExport[] = new Oara_Curl_Parameter('epc_start_date_month', $dStartDate->toString("MM"));
-		$valuesFromExport[] = new Oara_Curl_Parameter('epc_start_date_day', $dStartDate->toString("dd"));
-		$valuesFromExport[] = new Oara_Curl_Parameter('epc_start_date_year', $dStartDate->toString("yyyy"));
-
-		$valuesFromExport[] = new Oara_Curl_Parameter('epc_end_date', $dEndDate->toString("MM/dd/yy"));
-		$valuesFromExport[] = new Oara_Curl_Parameter('epc_end_date_month', $dEndDate->toString("MM"));
-		$valuesFromExport[] = new Oara_Curl_Parameter('epc_end_date_day', $dEndDate->toString("dd"));
-		$valuesFromExport[] = new Oara_Curl_Parameter('epc_end_date_year', $dEndDate->toString("yyyy"));
-		
-	    
-		$urls = array();
-        $urls[] = new Oara_Curl_Request('https://publisher.ebaypartnernetwork.com/PublisherReportsTx?', $valuesFromExport);
-		$exportReport = $this->_client->get($urls);
-		$exportData = str_getcsv($exportReport[0],"\n");
-		$num = count($exportData);
-        for ($i = 1; $i < $num; $i++) {
-            $transactionExportArray = str_getcsv($exportData[$i],"\t");
-            $transaction = Array();
-            $transaction['merchantId'] = 1;
-            $transactionDate = new Zend_Date($transactionExportArray[0], 'yyyy-MM-dd', 'en');
-            $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
-            
-            $transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
-            $transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[7]);
-            $transaction['commission'] = Oara_Utilities::parseDouble($transactionExportArray[7]);
-            $totalTransactions[] = $transaction;
-        }
+        
         
         return $totalTransactions;
 	}
@@ -217,7 +220,7 @@ class Oara_Network_Ebay extends Oara_Network{
 	                
 	                $overviewDate = new Zend_Date($overviewExportArray[0], "yyyy/MM/dd");
 	                $obj['date'] = $overviewDate->toString("yyyy-MM-dd");
-	                            
+	                unset($overviewDate);     
 	                $obj['impression_number'] = $overviewExportArray[4];
 	                $obj['click_number'] = $overviewExportArray[5];
 	                $obj['transaction_number'] = 0;
@@ -235,6 +238,7 @@ class Oara_Network_Ebay extends Oara_Network{
 		foreach ($overviewByDateArray as $date => $obj){
 			$overviewDate = new Zend_Date($date, "yyyy/MM/dd");
 			$transactionDateArray = Oara_Utilities::getDayFromArray($obj['merchantId'], $transactionArray, $overviewDate);
+			unset($overviewDate);
             foreach ($transactionDateArray as $transaction){
                 $obj['transaction_number']++;
                 if ($transaction['status'] == Oara_Utilities::STATUS_CONFIRMED){
