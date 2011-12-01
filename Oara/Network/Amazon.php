@@ -203,41 +203,60 @@ class Oara_Network_Amazon extends Oara_Network{
 	    	for ($j = 0; $j < $dateArraySize; $j++){
 				echo "day ".$dateArray[$j]->toString("d")."\n";
 				echo round(memory_get_usage(true)/1048576,2)." megabytes \n";
-				$valuesFromExport = Oara_Utilities::cloneArray($this->_exportTransactionParameters);
-				$valuesFromExport[] = new Oara_Curl_Parameter('startDay', $dateArray[$j]->toString("d"));
-				$valuesFromExport[] = new Oara_Curl_Parameter('startMonth', (int)$dateArray[$j]->toString("M")-1);
-				$valuesFromExport[] = new Oara_Curl_Parameter('startYear', $dateArray[$j]->toString("yyyy"));
-				$valuesFromExport[] = new Oara_Curl_Parameter('endDay', $dateArray[$j]->toString("d"));
-				$valuesFromExport[] = new Oara_Curl_Parameter('endMonth', (int)$dateArray[$j]->toString("M")-1);
-				$valuesFromExport[] = new Oara_Curl_Parameter('endYear', $dateArray[$j]->toString("yyyy"));
-				$valuesFromExport[] = new Oara_Curl_Parameter('idbox_store_id', $id);
-		    
-				$urls = array();
-		        $urls[] = new Oara_Curl_Request($this->_networkServer."/gp/associates/network/reports/report.html?", $valuesFromExport);
-				$exportReport = $this->_client->get($urls);
-		        $exportData = str_getcsv($exportReport[0],"\n");
-		        $num = count($exportData);
-		        for ($i = 2; $i < $num; $i++) {
-		            $transactionExportArray = str_getcsv(str_replace("\"", "", $exportData[$i]),"\t");
-		            $transaction = Array();
-		            $transaction['merchantId'] = 1;
-		            $transactionDate = new Zend_Date($transactionExportArray[5], 'MMMM d,yyyy', 'en');
-		            $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
-		            unset($transactionDate);
-		            if ($transactionExportArray[4] != null){
-		            	$transaction['custom_id'] = $transactionExportArray[4];
-		            }
-		            
-		            $transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
-		            if (!isset($transactionExportArray[9])){
-		            	throw new Exception("$exportReport[0]");
-		            }
-		            $transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[9]);
-		            $transaction['commission'] = Oara_Utilities::parseDouble($transactionExportArray[10]);
-		            $totalTransactions[] = $transaction;
-		        }
+				$try = 0;
+				$done = false;
+				while (!$done && $try < 5){
+					try{
+						$totalTransactions = array_merge($totalTransactions, self::getTransactionReportRecursive($dateArray[$j]));
+						$done = true;
+					} catch (Exception $e){
+						$try++;
+					}
+				}
+				if ($try == 5){
+					throw new Exception("Couldn't get data for the date ".$dateArray[$j]->toString("dd-MM-yyyy"));
+				}
+				
 	    	}
 		}
+        return $totalTransactions;
+	}
+	
+	private function getTransactionReportRecursive($date){
+		$totalTransactions = array();
+		$valuesFromExport = Oara_Utilities::cloneArray($this->_exportTransactionParameters);
+		$valuesFromExport[] = new Oara_Curl_Parameter('startDay', $date->toString("d"));
+		$valuesFromExport[] = new Oara_Curl_Parameter('startMonth', (int)$date->toString("M")-1);
+		$valuesFromExport[] = new Oara_Curl_Parameter('startYear', $date->toString("yyyy"));
+		$valuesFromExport[] = new Oara_Curl_Parameter('endDay', $date->toString("d"));
+		$valuesFromExport[] = new Oara_Curl_Parameter('endMonth', (int)$date->toString("M")-1);
+		$valuesFromExport[] = new Oara_Curl_Parameter('endYear', $date->toString("yyyy"));
+		$valuesFromExport[] = new Oara_Curl_Parameter('idbox_store_id', $id);
+    
+		$urls = array();
+        $urls[] = new Oara_Curl_Request($this->_networkServer."/gp/associates/network/reports/report.html?", $valuesFromExport);
+		$exportReport = $this->_client->get($urls);
+        $exportData = str_getcsv($exportReport[0],"\n");
+        $num = count($exportData);
+        for ($i = 2; $i < $num; $i++) {
+            $transactionExportArray = str_getcsv(str_replace("\"", "", $exportData[$i]),"\t");
+            $transaction = Array();
+            $transaction['merchantId'] = 1;
+            $transactionDate = new Zend_Date($transactionExportArray[5], 'MMMM d,yyyy', 'en');
+            $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+            unset($transactionDate);
+            if ($transactionExportArray[4] != null){
+            	$transaction['custom_id'] = $transactionExportArray[4];
+            }
+            
+            $transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
+            if (!isset($transactionExportArray[9])){
+            	throw new Exception("Request failed");
+            }
+            $transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[9]);
+            $transaction['commission'] = Oara_Utilities::parseDouble($transactionExportArray[10]);
+            $totalTransactions[] = $transaction;
+        }
         return $totalTransactions;
 	}
 
