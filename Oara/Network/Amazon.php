@@ -207,7 +207,7 @@ class Oara_Network_Amazon extends Oara_Network{
 				$done = false;
 				while (!$done && $try < 5){
 					try{
-						$totalTransactions = array_merge($totalTransactions, self::getTransactionReportRecursive($dateArray[$j]));
+						$totalTransactions = array_merge($totalTransactions, self::getTransactionReportRecursive($id, $dateArray[$j]));
 						$done = true;
 					} catch (Exception $e){
 						$try++;
@@ -222,7 +222,7 @@ class Oara_Network_Amazon extends Oara_Network{
         return $totalTransactions;
 	}
 	
-	private function getTransactionReportRecursive($date){
+	private function getTransactionReportRecursive($id, $date){
 		$totalTransactions = array();
 		$valuesFromExport = Oara_Utilities::cloneArray($this->_exportTransactionParameters);
 		$valuesFromExport[] = new Oara_Curl_Parameter('startDay', $date->toString("d"));
