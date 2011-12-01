@@ -230,7 +230,7 @@ class Oara_Network_Amazon extends Oara_Network{
 		            
 		            $transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
 		            if (!isset($transactionExportArray[9])){
-		            	echo $exportReport[0];
+		            	throw new Exception("$exportReport[0]");
 		            }
 		            $transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[9]);
 		            $transaction['commission'] = Oara_Utilities::parseDouble($transactionExportArray[10]);
