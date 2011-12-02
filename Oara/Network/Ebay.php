@@ -30,7 +30,7 @@ class Oara_Network_Ebay extends Oara_Network{
      */
 	private $_exportPaymentParameters = null;
 	
-	private $_idBox = null;
+	private $_credentials = null;
     /**
      * Client 
      * @var unknown_type
@@ -43,21 +43,8 @@ class Oara_Network_Ebay extends Oara_Network{
 	 */
 	public function __construct($credentials)
 	{
-		$user = $credentials['user'];
-        $password = $credentials['password'];
-        
-		
-		$valuesLogin = array(
-							 new Oara_Curl_Parameter('login_username', $user),
-							 new Oara_Curl_Parameter('login_password', $password),
-							 new Oara_Curl_Parameter('submit_btn', 'GO'),
-							 new Oara_Curl_Parameter('hubpage', 'y')
-							 );
-							 
-		$loginUrl = 'https://ebaypartnernetwork.com/PublisherLogin?hubpage=y&lang=en-US?';		 
-		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
-		
-
+		$this->_credentials = $credentials;
+		self::logIn();
         $this->_exportTransactionParameters = array(new Oara_Curl_Parameter('pt', '1'),
 	                                                new Oara_Curl_Parameter('advIdProgIdCombo', ''),
 	                                                new Oara_Curl_Parameter('submit_excel', 'Download Excel File')
@@ -70,6 +57,21 @@ class Oara_Network_Ebay extends Oara_Network{
        $this->_exportPaymentParameters = array(); 
        
                                                
+	}
+	
+	private function logIn(){
+		$valuesLogin = array(
+							 new Oara_Curl_Parameter('login_username', $this->_credentials['user']),
+							 new Oara_Curl_Parameter('login_password', $this->_credentials['password']),
+							 new Oara_Curl_Parameter('submit_btn', 'GO'),
+							 new Oara_Curl_Parameter('hubpage', 'y')
+							 );
+							 
+		$loginUrl = 'https://ebaypartnernetwork.com/PublisherLogin?hubpage=y&lang=en-US?';		 
+		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $this->_credentials);
+		if (!self::checkConnection()){
+			throw new Exception ("You are not connected\n\n");
+		}
 	}
 	/**
 	 * Check the connection
@@ -108,7 +110,7 @@ class Oara_Network_Ebay extends Oara_Network{
 	 * @see library/Oara/Network/Oara_Network_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
 	 */
 	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null){
-		
+		self::logIn();
 		$totalTransactions = array();
 		
 		$valuesFromExport = Oara_Utilities::cloneArray($this->_exportOverviewParameters);
@@ -140,7 +142,8 @@ class Oara_Network_Ebay extends Oara_Network{
             $transaction['commission'] = Oara_Utilities::parseDouble($transactionExportArray[7]);
             $totalTransactions[] = $transaction;
         }
-
+        
+		self::logIn();
 		$valuesFromExport = Oara_Utilities::cloneArray($this->_exportTransactionParameters);
 		$valuesFromExport[] = new Oara_Curl_Parameter('start_date', $dStartDate->toString("MM/dd/yy"));
 		$valuesFromExport[] = new Oara_Curl_Parameter('start_date_month', $dStartDate->toString("MM"));
@@ -183,6 +186,7 @@ class Oara_Network_Ebay extends Oara_Network{
 	 * @see library/Oara/Network/Oara_Network_Base#getOverviewList($merchantId, $dStartDate, $dEndDate)
 	 */
 	public function getOverviewList($transactionList = null, $merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null){
+		self::logIn();
 		$overviewArray = Array();
 		$transactionArray = Oara_Utilities::transactionMapPerDay($transactionList);
 		
