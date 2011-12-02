@@ -109,20 +109,34 @@ class Oara_Network_AffiliateWindow extends Oara_Network{
 	        $urls[] = new Oara_Curl_Request('http://darwin.affiliatewindow.com/user/', array());
 	        $exportReport = $this->_exportClient->get($urls);
 	        
-			if (preg_match("/id=\"goDarwin(.*)\"/", $exportReport[0], $matches)){
-				$user = $matches[1];
+			if (preg_match_all("/id=\"goDarwin(.*)\"/", $exportReport[0], $matches)){
+				
+				foreach ($matches[1] as $user){
+					$urls = array();
+			        $urls[] = new Oara_Curl_Request('http://darwin.affiliatewindow.com/affiliate/'.$user, array());
+			        $exportReport = $this->_exportClient->get($urls);
+					if (preg_match("/<li>Payment<ul><li><a class=\"arrow sectionList\" href=\"(.*)\">/", $exportReport[0], $matches)){
+						$urls = array();
+			        	$urls[] = new Oara_Curl_Request('http://darwin.affiliatewindow.com'.$matches[1], array());
+			        	$exportReport = $this->_exportClient->get($urls);
+					} else {
+						throw new Exception("It couldn't connect to darwin");
+					}
+					
+					$urls = array();
+			        $urls[] = new Oara_Curl_Request('https://www.affiliatewindow.com/affiliates/accountdetails.php', array());
+			        $exportReport = $this->_exportClient->get($urls);
+					$dom = new Zend_Dom_Query($exportReport[0]);
+					$apiPassword = $dom->query('#aw_api_password_hash');
+					$apiPassword = $apiPassword->current();
+    				if ($apiPassword != null && $apiPassword->nodeValue == $password){
+    					break;
+    				}
+				}
+				
 			}
 			
-			$urls = array();
-	        $urls[] = new Oara_Curl_Request('http://darwin.affiliatewindow.com/affiliate/'.$user, array());
-	        $exportReport = $this->_exportClient->get($urls);
-			if (preg_match("/<li>Payment<ul><li><a class=\"arrow sectionList\" href=\"(.*)\">/", $exportReport[0], $matches)){
-				$urls = array();
-	        	$urls[] = new Oara_Curl_Request('http://darwin.affiliatewindow.com'.$matches[1], array());
-	        	$exportReport = $this->_exportClient->get($urls);
-			} else {
-				throw new Exception("It couldn't connect to darwin");
-			}
+			
 	        
 		} else {
 			throw new Exception("It's not an email");

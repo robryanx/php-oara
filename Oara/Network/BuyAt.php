@@ -153,7 +153,7 @@ class Oara_Network_BuyAt extends Oara_Network{
         for ($i = 1; $i < $num; $i++) {
             $merchantExportArray = str_getcsv($exportData[$i], ",");
             $obj = array();
-            $obj['cid'] = $merchantExportArray[9];
+            $obj['cid'] = $merchantExportArray[count($merchantExportArray)-2];
             $obj['name'] = $merchantExportArray[0];
             $obj['url'] = $merchantExportArray[1];
             $merchants[] = $obj;

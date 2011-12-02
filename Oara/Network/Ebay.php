@@ -175,8 +175,6 @@ class Oara_Network_Ebay extends Oara_Network{
             $totalTransactions[] = $transaction;
         }
         
-        
-        
         return $totalTransactions;
 	}
 
@@ -188,53 +186,34 @@ class Oara_Network_Ebay extends Oara_Network{
 		$overviewArray = Array();
 		$transactionArray = Oara_Utilities::transactionMapPerDay($transactionList);
 		
-		foreach ($merchantList as $merchantId){
-
-			$overviewExport = Oara_Utilities::cloneArray($this->_exportOverviewParameters);
-			$overviewExport[] = new Oara_Curl_Parameter('epc_start_date', $dStartDate->toString("MM/dd/yy"));
-			$overviewExport[] = new Oara_Curl_Parameter('epc_start_date_month', $dStartDate->toString("MM"));
-			$overviewExport[] = new Oara_Curl_Parameter('epc_start_date_day', $dStartDate->toString("dd"));
-			$overviewExport[] = new Oara_Curl_Parameter('epc_start_date_year', $dStartDate->toString("yyyy"));
+		$overviewExport = Oara_Utilities::cloneArray($this->_exportOverviewParameters);
+		$overviewExport[] = new Oara_Curl_Parameter('epc_start_date', $dStartDate->toString("MM/dd/yy"));
+		$overviewExport[] = new Oara_Curl_Parameter('epc_start_date_month', $dStartDate->toString("MM"));
+		$overviewExport[] = new Oara_Curl_Parameter('epc_start_date_day', $dStartDate->toString("dd"));
+		$overviewExport[] = new Oara_Curl_Parameter('epc_start_date_year', $dStartDate->toString("yyyy"));
 	
-			$overviewExport[] = new Oara_Curl_Parameter('epc_end_date', $dEndDate->toString("MM/dd/yy"));
-			$overviewExport[] = new Oara_Curl_Parameter('epc_end_date_month', $dEndDate->toString("MM"));
-			$overviewExport[] = new Oara_Curl_Parameter('epc_end_date_day', $dEndDate->toString("dd"));
-			$overviewExport[] = new Oara_Curl_Parameter('epc_end_date_year', $dEndDate->toString("yyyy"));
+		$overviewExport[] = new Oara_Curl_Parameter('epc_end_date', $dEndDate->toString("MM/dd/yy"));
+		$overviewExport[] = new Oara_Curl_Parameter('epc_end_date_month', $dEndDate->toString("MM"));
+		$overviewExport[] = new Oara_Curl_Parameter('epc_end_date_day', $dEndDate->toString("dd"));
+		$overviewExport[] = new Oara_Curl_Parameter('epc_end_date_year', $dEndDate->toString("yyyy"));
 			
-			$urls = array();
-	        $urls[] = new Oara_Curl_Request('https://publisher.ebaypartnernetwork.com/PublisherReportsTx?', $overviewExport);
-			$exportReport = $this->_client->get($urls);
-			$exportData = str_getcsv($exportReport[0],"\n");
-            $num = count($exportData);
-            $overviewByDateArray = array();
-            for ($j = 1; $j < $num; $j++) {
-            	
-                $overviewExportArray = str_getcsv($exportData[$j],"\t");
-                if (isset($overviewByDateArray[$overviewExportArray[0]])){
-                	$obj = $overviewByDateArray[$overviewExportArray[0]];
-                	$obj['impression_number'] += $overviewExportArray[4];
-	                $obj['click_number'] += $overviewExportArray[5];
-                } else {
-                	$obj = array();
-	                $obj['merchantId'] = 1;
-	                
-	                $overviewDate = new Zend_Date($overviewExportArray[0], "yyyy/MM/dd");
-	                $obj['date'] = $overviewDate->toString("yyyy-MM-dd");
-	                unset($overviewDate);     
-	                $obj['impression_number'] = $overviewExportArray[4];
-	                $obj['click_number'] = $overviewExportArray[5];
-	                $obj['transaction_number'] = 0;
-	                            
-	                $obj['transaction_confirmed_commission'] = 0;
-	                $obj['transaction_confirmed_value'] = 0;
-	                $obj['transaction_pending_commission'] = 0;
-	                $obj['transaction_pending_value'] = 0;
-	                $obj['transaction_declined_commission'] = 0;
-	                $obj['transaction_declined_value'] = 0;
-                }
-                $overviewByDateArray[$overviewExportArray[0]] = $obj;
-            }
+		$overviewByDateArray = array();
+		$try = 0;
+		$done = false;
+		while (!$done && $try < 5){
+			try{
+				$overviewByDateArray = array_merge($overviewByDateArray, self::getOverviewReportRecursive($overviewExport));
+				$done = true;
+			} catch (Exception $e){
+				$try++;
+			}
 		}
+		if ($try == 5){
+			throw new Exception("Couldn't get overview ");
+		}
+		
+		
+            
 		foreach ($overviewByDateArray as $date => $obj){
 			$overviewDate = new Zend_Date($date, "yyyy/MM/dd");
 			$transactionDateArray = Oara_Utilities::getDayFromArray($obj['merchantId'], $transactionArray, $overviewDate);
@@ -259,6 +238,43 @@ class Oara_Network_Ebay extends Oara_Network{
 		}
 	 			
 		return $overviewArray;
+	}
+	
+	private function getOverviewReportRecursive($overviewExport){
+		$urls = array();
+	    $urls[] = new Oara_Curl_Request('https://publisher.ebaypartnernetwork.com/PublisherReportsTx?', $overviewExport);
+		$exportReport = $this->_client->get($urls);
+		$exportData = str_getcsv($exportReport[0],"\n");
+       	$num = count($exportData);
+       	$overviewByDateArray = array();
+       	for ($j = 1; $j < $num; $j++) {
+            	
+         	$overviewExportArray = str_getcsv($exportData[$j],"\t");
+         	if (isset($overviewByDateArray[$overviewExportArray[0]])){
+               	$obj = $overviewByDateArray[$overviewExportArray[0]];
+               	$obj['impression_number'] += $overviewExportArray[4];
+	          	$obj['click_number'] += $overviewExportArray[5];
+          	} else {
+              	$obj = array();
+	          	$obj['merchantId'] = 1;
+	                
+	          	$overviewDate = new Zend_Date($overviewExportArray[0], "yyyy/MM/dd");
+	           	$obj['date'] = $overviewDate->toString("yyyy-MM-dd");
+	           	unset($overviewDate);     
+	           	$obj['impression_number'] = $overviewExportArray[4];
+	           	$obj['click_number'] = $overviewExportArray[5];
+	           	$obj['transaction_number'] = 0;
+	                            
+	          	$obj['transaction_confirmed_commission'] = 0;
+	         	$obj['transaction_confirmed_value'] = 0;
+	         	$obj['transaction_pending_commission'] = 0;
+	          	$obj['transaction_pending_value'] = 0;
+	           	$obj['transaction_declined_commission'] = 0;
+	      		$obj['transaction_declined_value'] = 0;
+        	}
+        	$overviewByDateArray[$overviewExportArray[0]] = $obj;
+        }
+		return $overviewByDateArray;
 	}
 	/**
 	 * (non-PHPdoc)

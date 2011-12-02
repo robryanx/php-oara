@@ -242,6 +242,9 @@ class Oara_Network_Amazon extends Oara_Network{
             $transactionExportArray = str_getcsv(str_replace("\"", "", $exportData[$i]),"\t");
             $transaction = Array();
             $transaction['merchantId'] = 1;
+            if (!isset($transactionExportArray[5])){
+            	echo $transactionExportArray."\n\n";
+            }
             $transactionDate = new Zend_Date($transactionExportArray[5], 'MMMM d,yyyy', 'en');
             $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
             unset($transactionDate);

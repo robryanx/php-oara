@@ -174,7 +174,7 @@ class Oara_Network_CommissionJunction extends Oara_Network{
         //The end data for the API has to be one day more 
         
 	    foreach ($merchantList as $cid){
-	    	echo "mechant".$cid." ".count($totalTransactions)."\n\n";
+	    	//echo "mechant".$cid." ".count($totalTransactions)."\n\n";
 	    	try {
 	    		
 		    	$transactionDateEnd = clone $dEndDate;
@@ -190,7 +190,7 @@ class Oara_Network_CommissionJunction extends Oara_Network{
 	    		for ($j = 0; $j < $dateArraySize; $j++){
 			    	$transactionDateEnd = clone $dateArray[$j];
 					$transactionDateEnd->addDay(1);
-					echo $dateArray[$j]->toString("yyyy-MM-dd")."\n\n";
+					//echo $dateArray[$j]->toString("yyyy-MM-dd")."\n\n";
 			    	$restUrl = 'https://commission-detail.api.cj.com/v3/commissions?cids='.$cid.'&date-type=event&start-date='.$dateArray[$j]->toString("yyyy-MM-dd").'&end-date='.$transactionDateEnd->toString("yyyy-MM-dd");
 			    	try {
 			        	$totalTransactions = array_merge($totalTransactions, self::getTransactionsXml($restUrl, $merchantList));
@@ -203,7 +203,7 @@ class Oara_Network_CommissionJunction extends Oara_Network{
 								$done = true;
 							} catch (Exception $e){
 								$try++;
-								echo "try again $try\n\n";
+								//echo "try again $try\n\n";
 							}
 						}
 						if ($try == 5){
@@ -261,7 +261,7 @@ class Oara_Network_CommissionJunction extends Oara_Network{
     	$totalTransactions = array();
     	$typeTransactions = array("bonus", "click","impression","sale","lead","advanced%20sale","advanced%20lead", "performance%20incentive");
     	foreach ($typeTransactions as $type){
-			echo $type."\n\n";
+			//echo $type."\n\n";
 			$restUrl = 'https://commission-detail.api.cj.com/v3/commissions?action-types='.$type.'&cids='.$cid.'&date-type=event&start-date='.$startDate->toString("yyyy-MM-dd").'&end-date='.$endDate->toString("yyyy-MM-dd");
     		$totalTransactions = array_merge($totalTransactions, self::getTransactionsXml($restUrl, $merchantList));
     	}
