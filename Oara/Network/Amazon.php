@@ -173,7 +173,6 @@ class Oara_Network_Amazon extends Oara_Network{
 						if (!in_array($idBoxName, $idBox)){
 							$idBox[] = $idBoxName;
 						}
-						
 					}
 		 		}
 			}
@@ -253,7 +252,7 @@ class Oara_Network_Amazon extends Oara_Network{
             $transaction = Array();
             $transaction['merchantId'] = 1;
             if (!isset($transactionExportArray[5])){
-            	echo $exportReport[0]."\n\n";
+            	throw new Exception("Request failed");
             }
             $transactionDate = new Zend_Date($transactionExportArray[5], 'MMMM d,yyyy', 'en');
             $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
@@ -263,9 +262,6 @@ class Oara_Network_Amazon extends Oara_Network{
             }
             
             $transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
-            if (!isset($transactionExportArray[9])){
-            	throw new Exception("Request failed");
-            }
             $transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[9]);
             $transaction['commission'] = Oara_Utilities::parseDouble($transactionExportArray[10]);
             $totalTransactions[] = $transaction;
