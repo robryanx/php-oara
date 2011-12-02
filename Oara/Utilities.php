@@ -259,9 +259,11 @@ class Oara_Utilities
 		if (isset($dateArray[$merchantId])){
 			$dateString = $date->toString("yyyy-MM-dd");
 			if (isset($dateArray[$merchantId][$dateString])){
-				$resultArray = $dateArray[$merchantId][$dateString];
 				if ($delete){
+					$resultArray = Oara_Utilities::cloneArray($dateArray[$merchantId][$dateString]);
 					unset($dateArray[$merchantId][$dateString]);
+				} else {
+					$resultArray = $dateArray[$merchantId][$dateString];
 				}
 			}
 		}
