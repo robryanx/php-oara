@@ -220,12 +220,10 @@ class Oara_Network_Ebay extends Oara_Network{
 			echo $exportReport[0];
 			throw new Exception("Couldn't get overview ");
 		}
-		
-		
-            
+		// Ad clicks and transactions for this day
 		foreach ($overviewByDateArray as $date => $obj){
 			$overviewDate = new Zend_Date($date, "yyyy/MM/dd");
-			$transactionDateArray = Oara_Utilities::getDayFromArray($obj['merchantId'], $transactionArray, $overviewDate);
+			$transactionDateArray = Oara_Utilities::getDayFromArray($obj['merchantId'], $transactionArray, $overviewDate, true);
 			unset($overviewDate);
             foreach ($transactionDateArray as $transaction){
                 $obj['transaction_number']++;
@@ -243,8 +241,44 @@ class Oara_Network_Ebay extends Oara_Network{
             if (Oara_Utilities::checkRegister($obj)){
             	$overviewArray[] = $obj;
             }
-			
 		}
+		//Add transactions
+		foreach ($transactionArray as $merchantId => $merchantTransaction){
+        	foreach ($merchantTransaction as $date => $transactionList){
+        		
+        		$overview = Array();
+                                    
+                $overview['merchantId'] = $merchantId;
+                $overviewDate = new Zend_Date($date, "yyyy-MM-dd");
+                $overview['date'] = $overviewDate->toString("yyyy-MM-dd HH:mm:ss");
+                unset($overviewDate);
+                $overview['click_number'] = 0;
+                $overview['impression_number'] = 0;
+                $overview['transaction_number'] = 0;
+                $overview['transaction_confirmed_value'] = 0;
+                $overview['transaction_confirmed_commission']= 0;
+                $overview['transaction_pending_value']= 0;
+                $overview['transaction_pending_commission']= 0;
+                $overview['transaction_declined_value']= 0;
+                $overview['transaction_declined_commission']= 0;
+                foreach ($transactionList as $transaction){
+                	$overview['transaction_number'] ++;
+                    if ($transaction['status'] == Oara_Utilities::STATUS_CONFIRMED){
+                    	$overview['transaction_confirmed_value'] += $transaction['amount'];
+                    	$overview['transaction_confirmed_commission'] += $transaction['commission'];
+                    } else if ($transaction['status'] == Oara_Utilities::STATUS_PENDING){
+                    	$overview['transaction_pending_value'] += $transaction['amount'];
+                    	$overview['transaction_pending_commission'] += $transaction['commission'];
+                    } else if ($transaction['status'] == Oara_Utilities::STATUS_DECLINED){
+                    	$overview['transaction_declined_value'] += $transaction['amount'];
+                    	$overview['transaction_declined_commission'] += $transaction['commission'];
+                	}
+        		}
+                $overviewArray[] = $overview;
+        	}
+        }
+			
+			
 	 			
 		return $overviewArray;
 	}

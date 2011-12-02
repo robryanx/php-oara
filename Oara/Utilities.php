@@ -254,12 +254,15 @@ class Oara_Utilities
 	 * @param Zend_Date $date
 	 * @return array
 	 */
-	public static function getDayFromArray($merchantId, $dateArray, Zend_Date $date){
+	public static function getDayFromArray($merchantId, $dateArray, Zend_Date $date, $delete = false){
 		$resultArray = array();
 		if (isset($dateArray[$merchantId])){
 			$dateString = $date->toString("yyyy-MM-dd");
 			if (isset($dateArray[$merchantId][$dateString])){
 				$resultArray = $dateArray[$merchantId][$dateString];
+				if ($delete){
+					unset($dateArray[$merchantId][$dateString]);
+				}
 			}
 		}
 		return $resultArray;

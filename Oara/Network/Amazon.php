@@ -31,6 +31,8 @@ class Oara_Network_Amazon extends Oara_Network{
 	private $_exportPaymentParameters = null;
 	
 	private $_idBox = null;
+	
+	private $_credentials = null;
     /**
      * Client 
      * @var unknown_type
@@ -47,9 +49,37 @@ class Oara_Network_Amazon extends Oara_Network{
 	 */
 	public function __construct($credentials)
 	{
-		$user = $credentials['user'];
-        $password = $credentials['password'];
-        $network = $credentials['network'];
+		$this->_credentials = $credentials;
+		
+		self::logIn();
+        $this->_exportTransactionParameters = array(new Oara_Curl_Parameter('tag', ''),
+	                                                new Oara_Curl_Parameter('reportType', 'earningsReport'),
+	                                                new Oara_Curl_Parameter('program', 'all'),
+	                                                new Oara_Curl_Parameter('preSelectedPeriod', 'monthToDate'),
+	                                                new Oara_Curl_Parameter('periodType', 'exact'),
+	                                                new Oara_Curl_Parameter('submit.download_CSV.x', '106'),
+	                                                new Oara_Curl_Parameter('submit.download_CSV.y', '11'),
+	                                                new Oara_Curl_Parameter('submit.download_CSV', 'Download report (CSV)')
+                                                   );
+                                                                                       
+       $this->_exportOverviewParameters =  array(new Oara_Curl_Parameter('tag', ''),
+                                                 new Oara_Curl_Parameter('reportType', 'trendsReport'),
+                                                 new Oara_Curl_Parameter('preSelectedPeriod', 'monthToDate'),
+                                                 new Oara_Curl_Parameter('periodType', 'exact'),
+                                                 new Oara_Curl_Parameter('submit.download_CSV.x', '106'),
+                                                 new Oara_Curl_Parameter('submit.download_CSV.y', '11'),
+                                                 new Oara_Curl_Parameter('submit.download_CSV', 'Download report (CSV)')
+                                                );
+                                               
+       $this->_exportPaymentParameters = array(); 
+       
+                                               
+	}
+
+	private function logIn(){
+		$user = $this->_credentials['user'];
+        $password = $this->_credentials['password'];
+        $network = $this->_credentials['network'];
         
 		$this->_networkServer = "";
       	switch ($network){
@@ -83,7 +113,7 @@ class Oara_Network_Amazon extends Oara_Network{
       	}
         
 		//Get html after Js
-		$hiddenParams = self::getHiddenParamsAfterJs($credentials);
+		$hiddenParams = self::getHiddenParamsAfterJs($this->_credentials);
 		
 		$valuesLogin = array(
 							 new Oara_Curl_Parameter('email', $user),
@@ -109,29 +139,9 @@ class Oara_Network_Amazon extends Oara_Network{
 		$urls = array();
 		$urls[] = new Oara_Curl_Request($this->_networkServer."/gp/associates/x-site/combinedReports.html?", $valuesLogin);
 		$this->_client->get($urls);
-
-        $this->_exportTransactionParameters = array(new Oara_Curl_Parameter('tag', ''),
-	                                                new Oara_Curl_Parameter('reportType', 'earningsReport'),
-	                                                new Oara_Curl_Parameter('program', 'all'),
-	                                                new Oara_Curl_Parameter('preSelectedPeriod', 'monthToDate'),
-	                                                new Oara_Curl_Parameter('periodType', 'exact'),
-	                                                new Oara_Curl_Parameter('submit.download_CSV.x', '106'),
-	                                                new Oara_Curl_Parameter('submit.download_CSV.y', '11'),
-	                                                new Oara_Curl_Parameter('submit.download_CSV', 'Download report (CSV)')
-                                                   );
-                                                                                       
-       $this->_exportOverviewParameters =  array(new Oara_Curl_Parameter('tag', ''),
-                                                 new Oara_Curl_Parameter('reportType', 'trendsReport'),
-                                                 new Oara_Curl_Parameter('preSelectedPeriod', 'monthToDate'),
-                                                 new Oara_Curl_Parameter('periodType', 'exact'),
-                                                 new Oara_Curl_Parameter('submit.download_CSV.x', '106'),
-                                                 new Oara_Curl_Parameter('submit.download_CSV.y', '11'),
-                                                 new Oara_Curl_Parameter('submit.download_CSV', 'Download report (CSV)')
-                                                );
-                                               
-       $this->_exportPaymentParameters = array(); 
-       
-                                               
+		if (!self::checkConnection()){
+			throw new Exception ("You are not connected\n\n");
+		}
 	}
 	/**
 	 * Check the connection
@@ -268,6 +278,7 @@ class Oara_Network_Amazon extends Oara_Network{
 	 * @see library/Oara/Network/Oara_Network_Base#getOverviewList($merchantId, $dStartDate, $dEndDate)
 	 */
 	public function getOverviewList($transactionList = null, $merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null){
+		self::logIn();
 		$overviewArray = Array();
 		$transactionArray = Oara_Utilities::transactionMapPerDay($transactionList);
 		foreach ($this->_idBox as $id){
