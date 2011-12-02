@@ -243,7 +243,7 @@ class Oara_Network_Amazon extends Oara_Network{
             $transaction = Array();
             $transaction['merchantId'] = 1;
             if (!isset($transactionExportArray[5])){
-            	echo $transactionExportArray."\n\n";
+            	echo $exportReport[0]."\n\n";
             }
             $transactionDate = new Zend_Date($transactionExportArray[5], 'MMMM d,yyyy', 'en');
             $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
