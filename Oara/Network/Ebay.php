@@ -202,13 +202,18 @@ class Oara_Network_Ebay extends Oara_Network{
 		$done = false;
 		while (!$done && $try < 5){
 			try{
-				$overviewByDateArray = array_merge($overviewByDateArray, self::getOverviewReportRecursive($overviewExport));
+				$urls = array();
+			    $urls[] = new Oara_Curl_Request('https://publisher.ebaypartnernetwork.com/PublisherReportsTx?', $overviewExport);
+				$exportReport = $this->_client->get($urls);
+				$exportData = str_getcsv($exportReport[0],"\n");
+				$overviewByDateArray = array_merge($overviewByDateArray, self::getOverviewReportRecursive($exportData));
 				$done = true;
 			} catch (Exception $e){
 				$try++;
 			}
 		}
 		if ($try == 5){
+			echo $exportReport[0];
 			throw new Exception("Couldn't get overview ");
 		}
 		
@@ -240,11 +245,7 @@ class Oara_Network_Ebay extends Oara_Network{
 		return $overviewArray;
 	}
 	
-	private function getOverviewReportRecursive($overviewExport){
-		$urls = array();
-	    $urls[] = new Oara_Curl_Request('https://publisher.ebaypartnernetwork.com/PublisherReportsTx?', $overviewExport);
-		$exportReport = $this->_client->get($urls);
-		$exportData = str_getcsv($exportReport[0],"\n");
+	private function getOverviewReportRecursive($exportData){
        	$num = count($exportData);
        	$overviewByDateArray = array();
        	for ($j = 1; $j < $num; $j++) {
