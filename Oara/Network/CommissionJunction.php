@@ -339,21 +339,14 @@ class Oara_Network_CommissionJunction extends Oara_Network{
 			    if (count($transactionDateArray) > 0 ){
 			    	$groupMap = self::groupOverview($groupMap, $transactionDateArray);
 			    }
-	                	
-	                	
-		   		foreach($groupMap as $merchant => $groupMerchant){
-					foreach($groupMerchant as $link => $groupLink){
-						foreach($groupLink as $website => $groupWebsite){
-					    	$groupWebsite['merchantId'] = $merchant;
-					    	$groupWebsite['link'] = $link;
-					    	$groupWebsite['website'] = $website;
-					    	$groupWebsite['date'] = $currentStartDate->toString("yyyy-MM-dd HH:mm:ss");
-					   		if (Oara_Utilities::checkRegister($groupWebsite)){
-					        	$totalOverview[] = $groupWebsite;
-					        }
-				        }
-				    }
-			    }
+			    
+		   		foreach($groupMap as $merchant => $groupOverview){
+			    	$groupOverview['merchantId'] = $merchant;
+			    	$groupOverview['date'] = $currentStartDate->toString("yyyy-MM-dd HH:mm:ss");
+			   		if (Oara_Utilities::checkRegister($groupOverview)){
+			        	$totalOverview[] = $groupOverview;
+			        }
+		        }
         	}
         }
 		return $totalOverview;  
@@ -367,21 +360,8 @@ class Oara_Network_CommissionJunction extends Oara_Network{
     public function groupOverview(array $groupMap = null, array $registers = null)
     {
         foreach ($registers as $register){
-        	if (!isset($register['link']) || $register['link'] === null){
-        		$register['link'] = '';
-        	}
-            if (!isset($register['website']) || $register['website'] === null){
-                $register['website'] = '';
-            }
-            
-        	if (!isset($groupMap[$register['merchantId']])){
-        		$groupMap[$register['merchantId']] = array();
-        	}
         	
-        	if (!isset($groupMap[$register['merchantId']][$register['link']])){
-        		$groupMap[$register['merchantId']][$register['link']] = array();
-        	}
-        	if(!isset($groupMap[$register['merchantId']][$register['link']][$register['website']])){
+        	if(!isset($groupMap[$register['merchantId']])){
         		$overView = array();
         		$overView['click_number'] = 0;
         		$overView['impression_number'] = 0;
@@ -393,28 +373,28 @@ class Oara_Network_CommissionJunction extends Oara_Network{
                 $overView['transaction_pending_commission'] = 0;
                 $overView['transaction_declined_commission'] = 0;
         		
-        		$groupMap[$register['merchantId']][$register['link']][$register['website']] = $overView;
+        		$groupMap[$register['merchantId']] = $overView;
         	}
         	if (isset($register['click_number'])){
-        		$groupMap[$register['merchantId']][$register['link']][$register['website']]['click_number'] += (int)$register['click_number'];
+        		$groupMap[$register['merchantId']]['click_number'] += (int)$register['click_number'];
         	}
             if (isset($register['impression_number'])){
-                $groupMap[$register['merchantId']][$register['link']][$register['website']]['impression_number'] += (int)$register['impression_number'];
+                $groupMap[$register['merchantId']]['impression_number'] += (int)$register['impression_number'];
             }
             if (isset($register['status'])){
-                $groupMap[$register['merchantId']][$register['link']][$register['website']]['transaction_number'] += 1;
+                $groupMap[$register['merchantId']]['transaction_number'] += 1;
             }
             if (isset($register['status']) && $register['status'] == Oara_Utilities::STATUS_CONFIRMED){
-                $groupMap[$register['merchantId']][$register['link']][$register['website']]['transaction_confirmed_value'] += (double)$register['amount'];
-                $groupMap[$register['merchantId']][$register['link']][$register['website']]['transaction_confirmed_commission'] += (double)$register['commission'];
+                $groupMap[$register['merchantId']]['transaction_confirmed_value'] += (double)$register['amount'];
+                $groupMap[$register['merchantId']]['transaction_confirmed_commission'] += (double)$register['commission'];
             }
             if (isset($register['status']) && $register['status'] == Oara_Utilities::STATUS_PENDING){
-                $groupMap[$register['merchantId']][$register['link']][$register['website']]['transaction_pending_value'] += (double)$register['amount'];
-                $groupMap[$register['merchantId']][$register['link']][$register['website']]['transaction_pending_commission'] += (double)$register['commission'];
+                $groupMap[$register['merchantId']]['transaction_pending_value'] += (double)$register['amount'];
+                $groupMap[$register['merchantId']]['transaction_pending_commission'] += (double)$register['commission'];
             }
             if (isset($register['status']) && $register['status'] == Oara_Utilities::STATUS_DECLINED){
-                $groupMap[$register['merchantId']][$register['link']][$register['website']]['transaction_declined_value'] += (double)$register['amount'];
-                $groupMap[$register['merchantId']][$register['link']][$register['website']]['transaction_declined_commission'] += (double)$register['commission'];
+                $groupMap[$register['merchantId']]['transaction_declined_value'] += (double)$register['amount'];
+                $groupMap[$register['merchantId']]['transaction_declined_commission'] += (double)$register['commission'];
             }
         }
         return $groupMap;
