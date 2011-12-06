@@ -45,6 +45,7 @@ class Oara_Network_Ebay extends Oara_Network{
 	{
 		$this->_credentials = $credentials;
 		self::logIn();
+	
         $this->_exportTransactionParameters = array(new Oara_Curl_Parameter('pt', '1'),
 	                                                new Oara_Curl_Parameter('advIdProgIdCombo', ''),
 	                                                new Oara_Curl_Parameter('submit_excel', 'Download Excel File')
@@ -113,16 +114,20 @@ class Oara_Network_Ebay extends Oara_Network{
 		self::logIn();
 		$totalTransactions = array();
 		
+		$epcStartDate = clone $dStartDate;
+		$epcStartDate->addDay(1);
+		$epcEndDate = clone $dEndDate;
+		$epcEndDate->addDay(1);
 		$valuesFromExport = Oara_Utilities::cloneArray($this->_exportOverviewParameters);
-		$valuesFromExport[] = new Oara_Curl_Parameter('epc_start_date', $dStartDate->toString("MM/dd/yy"));
-		$valuesFromExport[] = new Oara_Curl_Parameter('epc_start_date_month', $dStartDate->toString("MM"));
-		$valuesFromExport[] = new Oara_Curl_Parameter('epc_start_date_day', $dStartDate->toString("dd"));
-		$valuesFromExport[] = new Oara_Curl_Parameter('epc_start_date_year', $dStartDate->toString("yyyy"));
+		$valuesFromExport[] = new Oara_Curl_Parameter('epc_start_date', $epcStartDate->toString("MM/dd/yy"));
+		$valuesFromExport[] = new Oara_Curl_Parameter('epc_start_date_month', $epcStartDate->toString("MM"));
+		$valuesFromExport[] = new Oara_Curl_Parameter('epc_start_date_day', $epcStartDate->toString("dd"));
+		$valuesFromExport[] = new Oara_Curl_Parameter('epc_start_date_year', $epcStartDate->toString("yyyy"));
 
-		$valuesFromExport[] = new Oara_Curl_Parameter('epc_end_date', $dEndDate->toString("MM/dd/yy"));
-		$valuesFromExport[] = new Oara_Curl_Parameter('epc_end_date_month', $dEndDate->toString("MM"));
-		$valuesFromExport[] = new Oara_Curl_Parameter('epc_end_date_day', $dEndDate->toString("dd"));
-		$valuesFromExport[] = new Oara_Curl_Parameter('epc_end_date_year', $dEndDate->toString("yyyy"));
+		$valuesFromExport[] = new Oara_Curl_Parameter('epc_end_date', $epcEndDate->toString("MM/dd/yy"));
+		$valuesFromExport[] = new Oara_Curl_Parameter('epc_end_date_month', $epcEndDate->toString("MM"));
+		$valuesFromExport[] = new Oara_Curl_Parameter('epc_end_date_day', $epcEndDate->toString("dd"));
+		$valuesFromExport[] = new Oara_Curl_Parameter('epc_end_date_year', $epcEndDate->toString("yyyy"));
 		
 	    
 		$urls = array();
@@ -138,8 +143,8 @@ class Oara_Network_Ebay extends Oara_Network{
             $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
             unset($transactionDate);
             $transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
-            $transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[7]);
-            $transaction['commission'] = Oara_Utilities::parseDouble($transactionExportArray[7]);
+            $transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[6]);
+            $transaction['commission'] = Oara_Utilities::parseDouble($transactionExportArray[6]);
             $totalTransactions[] = $transaction;
         }
         
@@ -190,16 +195,20 @@ class Oara_Network_Ebay extends Oara_Network{
 		$overviewArray = Array();
 		$transactionArray = Oara_Utilities::transactionMapPerDay($transactionList);
 		
+		$epcStartDate = clone $dStartDate;
+		$epcStartDate->addDay(1);
+		$epcEndDate = clone $dEndDate;
+		$epcEndDate->addDay(1);
 		$overviewExport = Oara_Utilities::cloneArray($this->_exportOverviewParameters);
-		$overviewExport[] = new Oara_Curl_Parameter('epc_start_date', $dStartDate->toString("MM/dd/yy"));
-		$overviewExport[] = new Oara_Curl_Parameter('epc_start_date_month', $dStartDate->toString("MM"));
-		$overviewExport[] = new Oara_Curl_Parameter('epc_start_date_day', $dStartDate->toString("dd"));
-		$overviewExport[] = new Oara_Curl_Parameter('epc_start_date_year', $dStartDate->toString("yyyy"));
+		$overviewExport[] = new Oara_Curl_Parameter('epc_start_date', $epcStartDate->toString("MM/dd/yy"));
+		$overviewExport[] = new Oara_Curl_Parameter('epc_start_date_month', $epcStartDate->toString("MM"));
+		$overviewExport[] = new Oara_Curl_Parameter('epc_start_date_day', $epcStartDate->toString("dd"));
+		$overviewExport[] = new Oara_Curl_Parameter('epc_start_date_year', $epcStartDate->toString("yyyy"));
 	
-		$overviewExport[] = new Oara_Curl_Parameter('epc_end_date', $dEndDate->toString("MM/dd/yy"));
-		$overviewExport[] = new Oara_Curl_Parameter('epc_end_date_month', $dEndDate->toString("MM"));
-		$overviewExport[] = new Oara_Curl_Parameter('epc_end_date_day', $dEndDate->toString("dd"));
-		$overviewExport[] = new Oara_Curl_Parameter('epc_end_date_year', $dEndDate->toString("yyyy"));
+		$overviewExport[] = new Oara_Curl_Parameter('epc_end_date', $epcEndDate->toString("MM/dd/yy"));
+		$overviewExport[] = new Oara_Curl_Parameter('epc_end_date_month', $epcEndDate->toString("MM"));
+		$overviewExport[] = new Oara_Curl_Parameter('epc_end_date_day', $epcEndDate->toString("dd"));
+		$overviewExport[] = new Oara_Curl_Parameter('epc_end_date_year', $epcEndDate->toString("yyyy"));
 			
 		$overviewByDateArray = array();
 		$try = 0;
@@ -223,7 +232,9 @@ class Oara_Network_Ebay extends Oara_Network{
 		// Ad clicks and transactions for this day
 		foreach ($overviewByDateArray as $date => $obj){
 			$overviewDate = new Zend_Date($date, "yyyy/MM/dd");
-			$transactionDateArray = Oara_Utilities::getDayFromArray($obj['merchantId'], $transactionArray, $overviewDate, true);
+			$returnObject = self::getDayFromArray($obj['merchantId'], $transactionArray, $overviewDate, true);
+			$transactionDateArray = $returnObject->resultArray;
+			$transactionArray = $returnObject->dateArray;
 			unset($overviewDate);
             foreach ($transactionDateArray as $transaction){
                 $obj['transaction_number']++;
@@ -396,6 +407,21 @@ class Oara_Network_Ebay extends Oara_Network{
 	        $innerHTML.=trim($tmp_dom->saveHTML());
 	    }
 	    return $innerHTML;
+	}
+	
+	protected function getDayFromArray($merchantId, $dateArray, Zend_Date $date){
+		$return = new stdClass();
+		$resultArray = array();
+		if (isset($dateArray[$merchantId])){
+			$dateString = $date->toString("yyyy-MM-dd");
+			if (isset($dateArray[$merchantId][$dateString])){
+				$resultArray = $dateArray[$merchantId][$dateString];
+				unset($dateArray[$merchantId][$dateString]);
+			}
+		}
+		$return->resultArray = $resultArray;
+		$return->dateArray = $dateArray;
+		return $return;
 	}
 
 }
