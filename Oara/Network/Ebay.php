@@ -165,7 +165,7 @@ class Oara_Network_Ebay extends Oara_Network{
             $transactionExportArray = str_getcsv($exportData[$i],"\t");
             $transaction = Array();
             $transaction['merchantId'] = 1;
-            $transactionDate = new Zend_Date($transactionExportArray[0], 'yyyy-MM-dd', 'en');
+            $transactionDate = new Zend_Date($transactionExportArray[1], 'yyyy-MM-dd', 'en');
             $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
             unset($transactionDate);
             if ($transactionExportArray[10] != null){
@@ -174,7 +174,7 @@ class Oara_Network_Ebay extends Oara_Network{
             
             $transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
             $transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[3]);
-            $transaction['commission'] = Oara_Utilities::parseDouble($transactionExportArray[3]);
+            $transaction['commission'] = Oara_Utilities::parseDouble($transactionExportArray[20]);
             $totalTransactions[] = $transaction;
         }
         
