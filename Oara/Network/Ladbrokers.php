@@ -280,12 +280,14 @@ class Oara_Network_Ladbrokers extends Oara_Network{
 	private function DOMinnerHTML($element)
 	{
 	    $innerHTML = "";
-	    $children = $element->childNodes;
-	    foreach ($children as $child)
-	    {
-	        $tmp_dom = new DOMDocument();
-	        $tmp_dom->appendChild($tmp_dom->importNode($child, true));
-	        $innerHTML.=trim($tmp_dom->saveHTML());
+	    if ($element != null){
+		    $children = $element->childNodes;
+		    foreach ($children as $child)
+		    {
+		        $tmp_dom = new DOMDocument();
+		        $tmp_dom->appendChild($tmp_dom->importNode($child, true));
+		        $innerHTML.=trim($tmp_dom->saveHTML());
+		    }
 	    }
 	    return $innerHTML;
 	}

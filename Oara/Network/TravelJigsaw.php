@@ -151,7 +151,7 @@ class Oara_Network_TravelJigsaw extends Oara_Network{
 					$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
 				} else if ($exportTransaction[10] == 'Cancelled'){
 					$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
-				} else if ($exportTransaction[10] == 'Booked'){
+				} else if ($exportTransaction[10] == 'Booked' || $exportTransaction[10] == 'Amended'){
 					$transaction['status'] = Oara_Utilities::STATUS_PENDING;
 				} else{
 					throw new Exception('new state '. $exportTransaction[10]);
