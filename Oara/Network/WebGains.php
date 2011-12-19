@@ -76,7 +76,7 @@ class Oara_Network_WebGains extends Oara_Network{
 		                                                      'compression'=> SOAP_COMPRESSION_ACCEPT | SOAP_COMPRESSION_GZIP | SOAP_COMPRESSION_DEFLATE,
 		                                                      'soap_version' => SOAP_1_1));
 		
-		$loginUrl = 'http://www.webgains.com/index.html';
+		$loginUrl = 'https://www.webgains.com/index.html';
 		
 		$valuesLogin = array(
                              new Oara_Curl_Parameter('screenwidth', 1280),
