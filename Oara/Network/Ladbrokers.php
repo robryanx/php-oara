@@ -130,6 +130,7 @@ class Oara_Network_Ladbrokers extends Oara_Network{
 		$urls = array();
         $urls[] = new Oara_Curl_Request('https://www.ladbrokes.com/aff_man', $valuesFromExport);
 		$exportReport = $this->_client->post($urls);
+		$exportReport[0] = preg_replace('/<script\b[^>]*>(.*?)<\/script>/is', "", $exportReport[0]);
 		$dom = new Zend_Dom_Query($exportReport[0]);
 		$tableList = $dom->query('#results_table');
 		$exportData = self::htmlToCsv(self::DOMinnerHTML($tableList->current()));
@@ -172,6 +173,7 @@ class Oara_Network_Ladbrokers extends Oara_Network{
 		$urls = array();
         $urls[] = new Oara_Curl_Request('https://www.ladbrokes.com/aff_man', $valuesFromExport);
 		$exportReport = $this->_client->post($urls);
+		$exportReport[0] = preg_replace('/<script\b[^>]*>(.*?)<\/script>/is', "", $exportReport[0]);
 		$dom = new Zend_Dom_Query($exportReport[0]);
 		$tableList = $dom->query('#results_table');
 		$exportData = self::htmlToCsv(self::DOMinnerHTML($tableList->current()));
@@ -227,6 +229,7 @@ class Oara_Network_Ladbrokers extends Oara_Network{
 		$urls = array();
         $urls[] = new Oara_Curl_Request('https://www.ladbrokes.com/aff_man', $valuesFromExport);
 		$exportReport = $this->_client->post($urls);
+		$exportReport[0] = preg_replace('/<script\b[^>]*>(.*?)<\/script>/is', "", $exportReport[0]);
 		$dom = new Zend_Dom_Query($exportReport[0]);
 		$tableList = $dom->query('#results_table');
 		$exportData = self::htmlToCsv(self::DOMinnerHTML($tableList->current()));

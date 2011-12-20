@@ -90,6 +90,23 @@ class Oara_Network_WebGains extends Oara_Network{
 		
 		$this->_webClient = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
 		
+		$urls = array();
+        $urls[] = new Oara_Curl_Request('https://www.webgains.com/index.html', $valuesLogin);
+	    $exportReport = $this->_webClient->post($urls);
+		preg_match("/'YPF8827340282Jdskjhfiw_928937459182JAX666', '(.*)', 10/", $exportReport[0], $match);
+		
+		$dir = realpath(dirname(__FILE__)).'/../data/curl/'.$credentials['cookiesDir'].'/'.$credentials['cookiesSubDir'].'/';
+		$cookieName = $credentials["cookieName"];
+		$cookies = $dir.$cookieName.'_cookies.txt';
+		
+		$fh = fopen($cookies, 'a') or die("can't open file");
+		$stringData = "www.webgains.com	FALSE	/	FALSE	0	YPF8827340282Jdskjhfiw_928937459182JAX666	".trim($match[1])."\n";
+		fwrite($fh, $stringData);
+		$stringData = "www.webgains.com	FALSE	/	FALSE	0	DOAReferrer	http://www.webgains.com/index.html\n";
+		fwrite($fh, $stringData);
+		fclose($fh);
+		
+		
 		$this->_exportMerchantParameters = array('username' => $user,
 												 'password' => $password
 												);

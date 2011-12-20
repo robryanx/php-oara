@@ -115,7 +115,6 @@ class Oara_Network_Daisycon extends Oara_Network{
         $urls = array();
         $urls[] = new Oara_Curl_Request('http://publisher.daisycon.com/en/affiliatemarketing/programs/myprograms/?', $valuesFromExport);
 		$exportReport = $this->_client->get($urls);
-		
 		$exportData = str_getcsv($exportReport[0], "\r\n");
         $merchantReportList = Array();
         $num = count($exportData);

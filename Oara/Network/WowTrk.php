@@ -47,7 +47,7 @@ class Oara_Network_WowTrk extends Oara_Network{
         $password = $credentials['password'];
         
 		//login through wow website
-	    $loginUrl = 'https://a.wowtrk.com/';
+	    $loginUrl = 'https://p.wowtrk.com/';
 	    $valuesLogin = array(new Oara_Curl_Parameter('DL_AUTH_USERNAME', $addCode),
 							new Oara_Curl_Parameter('DL_AUTH_PASSWORD', $password),
 							new Oara_Curl_Parameter('submit', 'Login')

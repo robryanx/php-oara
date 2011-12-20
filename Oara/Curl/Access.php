@@ -134,7 +134,6 @@ class Oara_Curl_Access{
 				
 			curl_close($ch);
 		}
-		//echo $result;
 		if ($result == false){
 			throw new Exception ("Failed to connect");
 		} else {
