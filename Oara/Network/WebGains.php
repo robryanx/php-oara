@@ -76,13 +76,13 @@ class Oara_Network_WebGains extends Oara_Network{
 		                                                      'compression'=> SOAP_COMPRESSION_ACCEPT | SOAP_COMPRESSION_GZIP | SOAP_COMPRESSION_DEFLATE,
 		                                                      'soap_version' => SOAP_1_1));
 		
-		$loginUrl = 'https://www.webgains.com/index.html';
+		$loginUrl = 'https://www.webgains.com/loginform.html?action=login';
 		
 		$valuesLogin = array(
                              new Oara_Curl_Parameter('screenwidth', 1280),
                              new Oara_Curl_Parameter('screenheight', 768),
                              new Oara_Curl_Parameter('colourdepth', 32),
-                             new Oara_Curl_Parameter('usertype', 'affiliateuser'),
+                             new Oara_Curl_Parameter('user_type', 'affiliateuser'),
                              new Oara_Curl_Parameter('username', $user),
                              new Oara_Curl_Parameter('password', $password),
                              new Oara_Curl_Parameter('submitbutton', 'PLS WAIT')
@@ -91,8 +91,8 @@ class Oara_Network_WebGains extends Oara_Network{
 		$this->_webClient = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
 		
 		$urls = array();
-        $urls[] = new Oara_Curl_Request('https://www.webgains.com/index.html', $valuesLogin);
-	    $exportReport = $this->_webClient->post($urls);
+        $urls[] = new Oara_Curl_Request('http://www.webgains.com/affiliates/index.html', array());
+	    $exportReport = $this->_webClient->get($urls);
 		preg_match("/'YPF8827340282Jdskjhfiw_928937459182JAX666', '(.*)', 10/", $exportReport[0], $match);
 		
 		$dir = realpath(dirname(__FILE__)).'/../data/curl/'.$credentials['cookiesDir'].'/'.$credentials['cookiesSubDir'].'/';

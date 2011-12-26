@@ -53,17 +53,16 @@ class Oara_Curl_Access{
 			throw new Exception ('Problem creating folder in Access');
 		}
 		//Deleting the last cookie
-		//if (!$isAW){
-			if ($handle = opendir($dir)) {
-				/* This is the correct way to loop over the directory. */
-				while (false !== ($file = readdir($handle))) {
-					if ($credentials['cookieName'] == strstr($file, '_', true)){
-						unlink($dir.$file);
-					}
+		
+		if ($handle = opendir($dir)) {
+			/* This is the correct way to loop over the directory. */
+			while (false !== ($file = readdir($handle))) {
+				if ($credentials['cookieName'] == strstr($file, '_', true)){
+					unlink($dir.$file);
 				}
-				closedir($handle);
 			}
-		//}
+			closedir($handle);
+		}
 		
 
 		$cookieName = $credentials["cookieName"];

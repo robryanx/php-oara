@@ -108,7 +108,6 @@ class Oara_Network_AffiliateWindow extends Oara_Network{
 			$urls = array();
 	        $urls[] = new Oara_Curl_Request('http://darwin.affiliatewindow.com/user/', array());
 	        $exportReport = $this->_exportClient->get($urls);
-	        
 			if (preg_match_all("/id=\"goDarwin(.*)\"/", $exportReport[0], $matches)){
 				
 				foreach ($matches[1] as $user){
