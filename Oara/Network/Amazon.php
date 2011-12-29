@@ -152,15 +152,16 @@ class Oara_Network_Amazon extends Oara_Network{
 		$urls = array();
         $urls[] = new Oara_Curl_Request($this->_networkServer."/gp/associates/network/main.html", array());
 		$exportReport = $this->_client->get($urls);
-		if(preg_match("/noAccount/", $exportReport[0])){
+		$dom = new Zend_Dom_Query($exportReport[0]);
+		$results = $dom->query('#sign-in');
+		$count = count($results);
+		if($count != 0){
 			$connection = false;
 		} else {
-			$dom = new Zend_Dom_Query($exportReport[0]);
-  		
       		$results = $dom->query('#identitybox');
 			$idBox = array();
 			 
-			$results = $dom->query('select[name="idbox_store_id"]');
+			$results = $dom->query('select[name="idbox_tracking_id"]');
 			$count = count($results);
 			if($count == 0){
 				$idBox[] = "";
