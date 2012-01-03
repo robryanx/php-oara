@@ -89,7 +89,7 @@ class Oara_Network_WebGains extends Oara_Network{
                              );
 		
 		$this->_webClient = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
-		
+		/*
 		$urls = array();
         $urls[] = new Oara_Curl_Request('http://www.webgains.com/affiliates/index.html', array());
 	    $exportReport = $this->_webClient->get($urls);
@@ -105,7 +105,7 @@ class Oara_Network_WebGains extends Oara_Network{
 		$stringData = "www.webgains.com	FALSE	/	FALSE	0	DOAReferrer	http://www.webgains.com/index.html\n";
 		fwrite($fh, $stringData);
 		fclose($fh);
-		
+		*/
 		
 		$this->_exportMerchantParameters = array('username' => $user,
 												 'password' => $password
