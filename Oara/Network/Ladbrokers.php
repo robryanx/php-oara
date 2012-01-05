@@ -240,7 +240,7 @@ class Oara_Network_Ladbrokers extends Oara_Network{
 			$date = new Zend_Date($paymentExportArray[1], "dd/MM/yy", 'en');
 			$obj['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
 			$obj['pid'] = $i-1;
-			$obj['value'] = $paymentExportArray[10];
+			$obj['value'] = $paymentExportArray[9];
 			$obj['method'] = 'BACS';
 			$paymentHistory[] = $obj;
         }

@@ -31,9 +31,14 @@ class Oara_Network_WowTrk extends Oara_Network{
     private $_merchantMap = array();
     
     /**
+     * Api key.
+     */
+	private $_apiPassword = null;
+    
+    /**
      * page Size.
      */
-	private $_pageSize = 100;
+	private $_pageSize = 200;
     
     /**
      * Constructor.
@@ -42,27 +47,18 @@ class Oara_Network_WowTrk extends Oara_Network{
      */
 	public function __construct($credentials)
 	{
-        $client = $credentials['client'];
-        $addCode = $credentials['addcode'];
+        $user = $credentials['user'];
         $password = $credentials['password'];
+        $this->_apiPassword = $credentials['apiPassword'];
         
 		//login through wow website
-	    $loginUrl = 'https://p.wowtrk.com/';
-	    $valuesLogin = array(new Oara_Curl_Parameter('DL_AUTH_USERNAME', $addCode),
-							new Oara_Curl_Parameter('DL_AUTH_PASSWORD', $password),
-							new Oara_Curl_Parameter('submit', 'Login')
+	    $loginUrl = 'http://p.wowtrk.com/';
+	    $valuesLogin = array(new Oara_Curl_Parameter('data[User][email]', $user),
+							new Oara_Curl_Parameter('data[User][password]', $password),
+							new Oara_Curl_Parameter('_method', 'POST')
                            );
+        
 		$this->_exportClient = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
-		
-		
-        //login through wow api
-        $wsdlUrl = 'http://a.wowtrk.com/api/soap_affiliate.php?wsdl';
-        //Setting the client.
-		$this->_apiClient = new Oara_Import_Soap_Client($wsdlUrl, array('encoding' => 'UTF-8',
-					                                                    'compression'=> SOAP_COMPRESSION_ACCEPT | SOAP_COMPRESSION_GZIP | SOAP_COMPRESSION_DEFLATE,
-					                                                    'soap_version' => SOAP_1_1));
-
-		$this->_credentialsParameters = array('client' => $client,'add_code' => $addCode, 'password' => $password);
 	}
 	/**
 	 * Check the connection
@@ -70,9 +66,9 @@ class Oara_Network_WowTrk extends Oara_Network{
 	public function checkConnection(){
 		$connection = false;
 		try{
-			$params = $this->_credentialsParameters;
+			//http://p.wowtrk.com/offers/offers.csv
 			
-			$this->_apiClient->campaignInfo($params['client'],$params['add_code'], $params['password']);
+			
 			$connection = true;
 		} catch (Exception $e){
 			
@@ -87,24 +83,41 @@ class Oara_Network_WowTrk extends Oara_Network{
 	{
 		$merchants= array();
 		
-		$params = $this->_credentialsParameters;
-			
-		$merchantList = $this->_apiClient->campaignInfo($params['client'],$params['add_code'], $params['password']);
+		$valuesFromExport = array();
+        $valuesFromExport[] = new Oara_Curl_Parameter('api_key', $this->_apiPassword);
+        $valuesFromExport[] = new Oara_Curl_Parameter('limit', $this->_pageSize);
+        $valuesFromExport[] = new Oara_Curl_Parameter('page', 1);
+        
+        $urls = array();
+        $urls[] = new Oara_Curl_Request('http://p.wowtrk.com/offers/offers.xml?', $valuesFromExport);   
+		$exportReport = $this->_exportClient->get($urls);
 		
-		if (!preg_match("/No Results found/", $merchantList, $matches)){
-			$xmlObj = simplexml_load_string(html_entity_decode($merchantList));
-			foreach ($xmlObj->children() as $merchant) {
-				$obj = array();
-	            $obj['cid'] = (string)$merchant->program_id;
-	            $obj['name'] = (string)$merchant->program_name;
-	            $obj['url'] = (string)$merchant->url;
-	            $obj['description'] = (string)$merchant->program_description;
-	            $merchants[] = $obj;
-			}
-		}
+		
+		$exportData = self::loadXml($exportReport[0]);
+		
+        foreach ($exportData->offer as $merchant) {
+            $obj = array();
+            $obj['cid'] = (int)$merchant->id;
+            $obj['name'] = (string)$merchant->name;
+            $obj['url'] = (string)$merchant->preview_url;
+            $merchants[] = $obj;
+        }
 		return $merchants;
 	}
-    
+	/**
+	 * Convert the string in xml object.
+	 * @param $exportReport
+	 * @return xml
+	 */
+	private function loadXml($exportReport = null){
+		$xml = simplexml_load_string($exportReport, null, LIBXML_NOERROR | LIBXML_NOWARNING);
+		/**
+		if($xml == false){
+			throw new Exception('Problems in the XML');
+		}
+		*/
+		return $xml;
+	}
     /**
      * (non-PHPdoc)
      * @see library/Oara/Network/Oara_Network_Base#getTransactionList($merchantId,$dStartDate,$dEndDate)
@@ -252,11 +265,11 @@ class Oara_Network_WowTrk extends Oara_Network{
 	 */
 	public function getPaymentHistory(){
     	$paymentHistory = array();
+    	/*
     	$urls = array();
 		$urls[] = new Oara_Curl_Request('https://a.wowtrk.com/partners/payment_ecc.html?', array());
 		$content = $this->_exportClient->get($urls);
 		
-    	/*** load the html into the object ***/
 	    $doc = new DOMDocument();
 	    libxml_use_internal_errors(true);
 	    $doc->validateOnParse = true;
@@ -280,7 +293,7 @@ class Oara_Network_WowTrk extends Oara_Network{
 				$paymentHistory[] = $obj;
 			}
     	}
-    	
+    	*/
     	return $paymentHistory;
     }
 	

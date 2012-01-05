@@ -366,6 +366,7 @@ class Oara_Network_Omg extends Oara_Network{
 	 * @return array
 	 */
 	private function getMerchantExport (){
+		$merchants = array();
 		$valuesFromExport = $this->_exportMerchantParameters;
 		$merchantsAux = Array();
         $urls = array();

@@ -146,7 +146,6 @@ class Oara_Network_LinkShare extends Oara_Network{
 		$urls = array();
         $urls[] = new Oara_Curl_Request('http://cli.linksynergy.com/cli/publisher/home.php', array());
         $result = $this->_client->get($urls);
-        
         if (!preg_match("/https:\/\/cli\.linksynergy\.com\/cli\/common\/logout\.php/", $result[0], $matches)){
             $connection = false;
             
@@ -165,8 +164,6 @@ class Oara_Network_LinkShare extends Oara_Network{
         $result = $this->_client->get($urls);
         $exportData = str_getcsv(self::formatCsv($result[0]),"\n");
         $num = count($exportData);
-        
-    	
         for ($i = 1; $i < $num; $i++) {
         	$merchantArray = str_getcsv($exportData[$i],",");
         	//if (($this->_nid == '3' && $merchantArray[10] == 'U.K.')||

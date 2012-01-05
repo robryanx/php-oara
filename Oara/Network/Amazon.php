@@ -125,13 +125,10 @@ class Oara_Network_Amazon extends Oara_Network{
       	foreach ($hiddenParams as $hiddenParamName => $hiddenParamValue){
       		$valuesLogin[] = new Oara_Curl_Parameter($hiddenParamName, $hiddenParamValue);
       	}
-      	
-      	
 		
 		$urls = array();
 		$urls[] = new Oara_Curl_Request($this->_networkServer."/gp/flex/sign-in/select.html?", $valuesLogin);
 		$contentList = $this->_client->post($urls);
-		
 		$valuesLogin = array(
 							 new Oara_Curl_Parameter('combinedReports', 'on'),
 							 new Oara_Curl_Parameter('refURL', '/gp/associates/network/reports/report.html?reportType=earningsReport')
@@ -368,37 +365,35 @@ class Oara_Network_Amazon extends Oara_Network{
 	 */
 	public function getPaymentHistory(){
     	$paymentHistory = array();
-    	foreach ($this->_idBox as $id){
-	    	$urls = array();
-	    	$paymentExport = array();
-	    	$paymentExport[] = new Oara_Curl_Parameter('idbox_store_id', $id);
-	        $urls[] = new Oara_Curl_Request($this->_networkServer."/gp/associates/network/your-account/payment-history.html?", $paymentExport);
-			$exportReport = $this->_client->get($urls);
-	    	$dom = new Zend_Dom_Query($exportReport[0]);
-	      	$results = $dom->query('.paymenthistory');
-			$count = count($results);
-			$yearArray = array();
-			if ($count == 1){
-				$paymentTable = $results->current();
-				$paymentReport = self::htmlToCsv(self::DOMinnerHTML($paymentTable));
-				for ($i = 2; $i < count($paymentReport) - 1; $i++){
-					$paymentExportArray = str_getcsv($paymentReport[$i],";");
+	    $urls = array();
+	    $paymentExport = array();
+	    $paymentExport[] = new Oara_Curl_Parameter('idbox_store_id', '');
+	    $urls[] = new Oara_Curl_Request($this->_networkServer."/gp/associates/network/your-account/payment-history.html?", $paymentExport);
+		$exportReport = $this->_client->get($urls);
+	    $dom = new Zend_Dom_Query($exportReport[0]);
+	      $results = $dom->query('.paymenthistory');
+		$count = count($results);
+		$yearArray = array();
+		if ($count == 1){
+			$paymentTable = $results->current();
+			$paymentReport = self::htmlToCsv(self::DOMinnerHTML($paymentTable));
+			for ($i = 2; $i < count($paymentReport) - 1; $i++){
+				$paymentExportArray = str_getcsv($paymentReport[$i],";");
 					
-					$obj = array();
-					$paymentDate = new Zend_Date($paymentExportArray[0], "M d yyyy", "en");
-		    		$obj['date'] = $paymentDate->toString("yyyy-MM-dd HH:mm:ss");
-					$obj['pid'] = ($paymentDate->toString("yyyyMMdd").substr((string)base_convert(md5($id), 16, 10),0,5));
-					$obj['method'] = 'BACS';
-					if (preg_match("/-/", $paymentExportArray[4]) && preg_match("/[0-9]*,?[0-9]*\.?[0-9]+/", $paymentExportArray[4], $matches)) {
-						$obj['value'] = Oara_Utilities::parseDouble($matches[0]);
-						$paymentHistory[] = $obj;
-					}
-					
+				$obj = array();
+				$paymentDate = new Zend_Date($paymentExportArray[0], "M d yyyy", "en");
+		    	$obj['date'] = $paymentDate->toString("yyyy-MM-dd HH:mm:ss");
+				$obj['pid'] = ($paymentDate->toString("yyyyMMdd").substr((string)base_convert(md5($id), 16, 10),0,5));
+				$obj['method'] = 'BACS';
+				if (preg_match("/-/", $paymentExportArray[4]) && preg_match("/[0-9]*,?[0-9]*\.?[0-9]+/", $paymentExportArray[4], $matches)) {
+					$obj['value'] = Oara_Utilities::parseDouble($matches[0]);
+					$paymentHistory[] = $obj;
 				}
-			} else {
-				throw new Exception('Problem getting the payments');
+					
 			}
-    	}
+		} else {
+			throw new Exception('Problem getting the payments');
+		}
     	return $paymentHistory;
     }
     /**
@@ -492,7 +487,7 @@ class Oara_Network_Amazon extends Oara_Network{
 			$amazonServiceHttpLogin = $credentials["httpLogin"];
 			$amazonJavaServer = $credentials["javaServer"];
 			$amazonServiceAuthToken = $credentials["authToken"];
-			$amazonServiceParseUrl = "https://affiliate-program.amazon.com/";
+			$amazonServiceParseUrl = $this->_networkServer."/";
 			
 			$amazonServiceUrl = "$amazonJavaServer?auth=$amazonServiceAuthToken&url=$amazonServiceParseUrl&cookie=%22$cookiesString%22";
 			$curlSession = curl_init($amazonServiceUrl);
@@ -524,7 +519,7 @@ class Oara_Network_Amazon extends Oara_Network{
 					            2 => array('pipe', 'w')
 					           );
 					           
-			$url = "https://affiliate-program.amazon.com/";		           
+			$url = $this->_networkServer."/";		           
 			$jarPath = realpath(dirname(__FILE__)).'/Amazon/amazon.jar ';
 			$metadataReader = proc_open("java -jar $jarPath $url \"$cookiesString\"", $descriptorspec, $pipes, null, null);
 			$htmlAfterJs = '';
