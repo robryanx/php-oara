@@ -52,7 +52,6 @@ class Oara_Network_Amazon extends Oara_Network{
 		$this->_credentials = $credentials;
 		
 		self::logIn();
-		self::logIn();
         $this->_exportTransactionParameters = array(new Oara_Curl_Parameter('tag', ''),
 	                                                new Oara_Curl_Parameter('reportType', 'earningsReport'),
 	                                                new Oara_Curl_Parameter('program', 'all'),
