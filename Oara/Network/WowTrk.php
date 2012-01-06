@@ -22,7 +22,7 @@ class Oara_Network_WowTrk extends Oara_Network{
 	 * Credentials Export Parameters
 	 * @var array
 	 */
-	private $_credentialsParameters = array ();
+	private $_credentialsParameters = array();
 
     /**
      * merchantMap.
@@ -66,9 +66,6 @@ class Oara_Network_WowTrk extends Oara_Network{
 	public function checkConnection(){
 		$connection = false;
 		try{
-			//http://p.wowtrk.com/offers/offers.csv
-			
-			
 			$connection = true;
 		} catch (Exception $e){
 			
@@ -102,6 +99,15 @@ class Oara_Network_WowTrk extends Oara_Network{
             $obj['url'] = (string)$merchant->preview_url;
             $merchants[] = $obj;
         }
+        
+		$this->_merchantMap = $merchantMap;
+		foreach ($merchants as $merchant){
+			if (!isset($this->_merchantMap[$merchant['name']])){
+				$this->_merchantMap[$merchant['name']] = $merchant['cid'];
+			}
+			
+		}
+		
 		return $merchants;
 	}
 	/**
@@ -111,11 +117,6 @@ class Oara_Network_WowTrk extends Oara_Network{
 	 */
 	private function loadXml($exportReport = null){
 		$xml = simplexml_load_string($exportReport, null, LIBXML_NOERROR | LIBXML_NOWARNING);
-		/**
-		if($xml == false){
-			throw new Exception('Problems in the XML');
-		}
-		*/
 		return $xml;
 	}
     /**
@@ -126,51 +127,35 @@ class Oara_Network_WowTrk extends Oara_Network{
 	{	
 		$totalTransactions = array();
 		
-		$dStartDate = clone $dStartDate;
-	    $dStartDate->setHour("00");
-        $dStartDate->setMinute("00");
-        $dStartDate->setSecond("00");
-        $dEndDate = clone $dEndDate;
-        $dEndDate->setHour("23");
-        $dEndDate->setMinute("59");
-        $dEndDate->setSecond("59");
-			
-		$params = $this->_credentialsParameters;
+		//http://p.wowtrk.com/stats/lead_report.json?api_key=AFFGRwtPHzM18eArCGV44c68gzadls&start_date=2012-01-01&end_date=2012-01-05&filter[Stat.offer_id]=1,2
+		
+		$valuesFromExport = array();
+        $valuesFromExport[] = new Oara_Curl_Parameter('api_key', $this->_apiPassword);
+        $valuesFromExport[] = new Oara_Curl_Parameter('start_date', $dStartDate->toString("yyyy-MM-dd"));
+        $valuesFromExport[] = new Oara_Curl_Parameter('end_date', $dEndDate->toString("yyyy-MM-dd"));
+        $valuesFromExport[] = new Oara_Curl_Parameter('filter[Stat.offer_id]', implode(",", $merchantList));
+        
+        $urls = array();
+        $urls[] = new Oara_Curl_Request('http://p.wowtrk.com/stats/lead_report.xml?', $valuesFromExport);   
+		$exportReport = $this->_exportClient->get($urls);
 
-		$dateArray = Oara_Utilities::daysOfDifference($dStartDate, $dEndDate);
-        for ($i = 0; $i < sizeof($dateArray); $i++){
-        	$groupMap = array();
-        	$auxStartDate = clone $dateArray[$i];
-        	$auxStartDate->setHour("00");
-            $auxStartDate->setMinute("00");
-            $auxStartDate->setSecond("00");
-            
-            $transactionList = $this->_apiClient->getAffiliateAggregateStatistics($params['client'],$params['password'], 
-																				  $params['add_code'], $auxStartDate->toString("yyyy-MM-dd"), 
-																			      $auxStartDate->toString("yyyy-MM-dd"));
-									      
-			if (!preg_match("/No Results found/", $transactionList, $matches)){
-				$transactionList = str_replace(array("&pound;"), array("£"), $transactionList);
-				$xmlObj = simplexml_load_string($transactionList);
-				foreach ($xmlObj->children() as $transaction) {
-					$merchantId = (string)$transaction->campaign_id;
-					if (in_array($merchantId, $merchantList)){
-						
-						$obj = array();
-						$obj['merchantId'] = $merchantId;
-		                $obj['date'] = $auxStartDate->toString("yyyy-MM-dd HH:mm:ss");
-	                	$obj['status'] = Oara_Utilities::STATUS_CONFIRMED;
-		                        
-	                    $obj['amount'] = Oara_Utilities::parseDouble((string)$transaction->sales);  
-	                	$obj['commission'] = Oara_Utilities::parseDouble((string)$transaction->payout);
-	                	if ($obj['amount'] != 0 || $obj['commission'] != 0){
-	                		$totalTransactions[] = $obj;
-	                	}
-					}
-				}
-				
-			}	
-            
+		$exportData = self::loadXml($exportReport[0]);
+		
+		foreach ($exportData->stats as $transaction) {
+			if (isset($this->_merchantMap[(string)$transaction->offer])){
+				$obj = array();
+				$obj['merchantId'] = $this->_merchantMap[(string)$transaction->offer];
+				$date = new Zend_Date((string)$transaction->date, "yyyy-MM-dd HH:mm:ss");
+		     	$obj['date'] = $transaction->date;
+	          	$obj['status'] = Oara_Utilities::STATUS_CONFIRMED;
+		        $obj['customId'] = (string)$transaction->sub_id1;
+	         	$obj['amount'] = Oara_Utilities::parseDouble((string)$transaction->payout);  
+	          	$obj['commission'] = Oara_Utilities::parseDouble((string)$transaction->payout);
+	          	if ($obj['amount'] != 0 || $obj['commission'] != 0){
+	            	$totalTransactions[] = $obj;
+	          	}
+			}
+			
         }
 		return $totalTransactions;
 	}
@@ -181,6 +166,8 @@ class Oara_Network_WowTrk extends Oara_Network{
 	public function getOverviewList($transactionList = null, $merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null)
 	{
 		$totalOverview = array();
+		
+		//http://p.wowtrk.com/stats/stats.json?api_key=AFFGRwtPHzM18eArCGV44c68gzadls&start_date=2012-01-01&end_date=2012-01-05 & field[]=Stat.leads 
 		//At first, we need to be sure that there are some data.
 	    $auxStartDate = clone $dStartDate;
 	    $auxStartDate->setHour("00");

@@ -52,6 +52,7 @@ class Oara_Network_Amazon extends Oara_Network{
 		$this->_credentials = $credentials;
 		
 		self::logIn();
+		self::logIn();
         $this->_exportTransactionParameters = array(new Oara_Curl_Parameter('tag', ''),
 	                                                new Oara_Curl_Parameter('reportType', 'earningsReport'),
 	                                                new Oara_Curl_Parameter('program', 'all'),
@@ -129,6 +130,7 @@ class Oara_Network_Amazon extends Oara_Network{
 		$urls = array();
 		$urls[] = new Oara_Curl_Request($this->_networkServer."/gp/flex/sign-in/select.html?", $valuesLogin);
 		$contentList = $this->_client->post($urls);
+		echo $contentList[0];
 		$valuesLogin = array(
 							 new Oara_Curl_Parameter('combinedReports', 'on'),
 							 new Oara_Curl_Parameter('refURL', '/gp/associates/network/reports/report.html?reportType=earningsReport')
@@ -492,27 +494,37 @@ class Oara_Network_Amazon extends Oara_Network{
 			$amazonServiceParseUrl = $this->_networkServer."/";
 			
 			$amazonServiceUrl = "$amazonJavaServer?auth=$amazonServiceAuthToken&url=$amazonServiceParseUrl&cookie=%22$cookiesString%22";
-			$curlSession = curl_init($amazonServiceUrl);
-			curl_setopt_array($curlSession, array(
-				CURLOPT_USERAGENT => "Mozilla/5.0 (X11; U; Linux i686; es-CL; rv:1.9.2.17) Gecko/20110422 Ubuntu/10.10 (maverick) Firefox/3.6.17",
-				CURLOPT_FAILONERROR => true,
-				CURLOPT_RETURNTRANSFER => true,
-				CURLOPT_HTTPAUTH => CURLAUTH_ANY,
-				CURLOPT_AUTOREFERER => true,
-				CURLOPT_SSL_VERIFYPEER =>false,
-				CURLOPT_USERPWD => $amazonServiceHttpLogin
-			));
-			$htmlAfterJs = curl_exec($curlSession);		
-			curl_close($curlSession);
-			
-			$hiddenParamList = explode("\n", $htmlAfterJs);
-			foreach ($hiddenParamList as $hiddenParam){
-				$characterNumber = strpos($hiddenParam,":");
-				$hiddenName = substr($hiddenParam, 0 , $characterNumber);
-				$hiddenValue = substr($hiddenParam, $characterNumber + 1);
-				$hiddenParams[$hiddenName] = $hiddenValue;
+			$it = 0;
+			while (count($hiddenParams) != 7 && $it != 5){
+				$hiddenParams = array();
+				
+				$curlSession = curl_init($amazonServiceUrl);
+				curl_setopt_array($curlSession, array(
+					CURLOPT_USERAGENT => "Mozilla/5.0 (X11; U; Linux i686; es-CL; rv:1.9.2.17) Gecko/20110422 Ubuntu/10.10 (maverick) Firefox/3.6.17",
+					CURLOPT_FAILONERROR => true,
+					CURLOPT_RETURNTRANSFER => true,
+					CURLOPT_HTTPAUTH => CURLAUTH_ANY,
+					CURLOPT_AUTOREFERER => true,
+					CURLOPT_SSL_VERIFYPEER =>false,
+					CURLOPT_USERPWD => $amazonServiceHttpLogin
+				));
+				$htmlAfterJs = curl_exec($curlSession);		
+				curl_close($curlSession);
+				
+				$hiddenParamList = explode("\n", $htmlAfterJs);
+				foreach ($hiddenParamList as $hiddenParam){
+					$characterNumber = strpos($hiddenParam,":");
+					$hiddenName = substr($hiddenParam, 0 , $characterNumber);
+					$hiddenValue = substr($hiddenParam, $characterNumber + 1);
+					$hiddenParams[$hiddenName] = $hiddenValue;
+				}
+				
+				$it++;
 			}
 			
+			if ($it == 5){
+				throw new Exception("Couldn't read the hidden parameters");
+			}
 			
 		} else {
 			$descriptorspec = array(
