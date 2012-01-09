@@ -82,8 +82,6 @@ class Oara_Network_WowTrk extends Oara_Network{
 		
 		$valuesFromExport = array();
         $valuesFromExport[] = new Oara_Curl_Parameter('api_key', $this->_apiPassword);
-        $valuesFromExport[] = new Oara_Curl_Parameter('limit', $this->_pageSize);
-        $valuesFromExport[] = new Oara_Curl_Parameter('page', 1);
         
         $urls = array();
         $urls[] = new Oara_Curl_Request('http://p.wowtrk.com/offers/offers.xml?', $valuesFromExport);   
@@ -126,9 +124,7 @@ class Oara_Network_WowTrk extends Oara_Network{
 	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null)
 	{	
 		$totalTransactions = array();
-		
-		//http://p.wowtrk.com/stats/lead_report.json?api_key=AFFGRwtPHzM18eArCGV44c68gzadls&start_date=2012-01-01&end_date=2012-01-05&filter[Stat.offer_id]=1,2
-		
+
 		$valuesFromExport = array();
         $valuesFromExport[] = new Oara_Curl_Parameter('api_key', $this->_apiPassword);
         $valuesFromExport[] = new Oara_Curl_Parameter('start_date', $dStartDate->toString("yyyy-MM-dd"));
@@ -145,7 +141,7 @@ class Oara_Network_WowTrk extends Oara_Network{
 			if (isset($this->_merchantMap[(string)$transaction->offer])){
 				$obj = array();
 				$obj['merchantId'] = $this->_merchantMap[(string)$transaction->offer];
-				$date = new Zend_Date((string)$transaction->date, "yyyy-MM-dd HH:mm:ss");
+				$date = new Zend_Date((string)$transaction->date_time, "yyyy-MM-dd HH:mm:ss");
 		     	$obj['date'] = $transaction->date;
 	          	$obj['status'] = Oara_Utilities::STATUS_CONFIRMED;
 		        $obj['customId'] = (string)$transaction->sub_id1;
@@ -166,84 +162,78 @@ class Oara_Network_WowTrk extends Oara_Network{
 	public function getOverviewList($transactionList = null, $merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null)
 	{
 		$totalOverview = array();
+		$transactionArray = Oara_Utilities::transactionMapPerDay($transactionList);
 		
-		//http://p.wowtrk.com/stats/stats.json?api_key=AFFGRwtPHzM18eArCGV44c68gzadls&start_date=2012-01-01&end_date=2012-01-05 & field[]=Stat.leads 
-		//At first, we need to be sure that there are some data.
-	    $auxStartDate = clone $dStartDate;
-	    $auxStartDate->setHour("00");
-        $auxStartDate->setMinute("00");
-        $auxStartDate->setSecond("00");
-        $auxEndDate = clone $dEndDate;
-        $auxEndDate->setHour("23");
-        $auxEndDate->setMinute("59");
-        $auxEndDate->setSecond("59");
-            
-		$dStartDate = clone $dStartDate;
-	    $dStartDate->setHour("00");
-        $dStartDate->setMinute("00");
-        $dStartDate->setSecond("00");
-        $dEndDate = clone $dEndDate;
-        $dEndDate->setHour("23");
-        $dEndDate->setMinute("59");
-        $dEndDate->setSecond("59");
-			
-		$params = $this->_credentialsParameters;
+		$valuesFromExport[] = new Oara_Curl_Parameter('api_key', $this->_apiPassword);
+        $valuesFromExport[] = new Oara_Curl_Parameter('start_date', $dStartDate->toString("yyyy-MM-dd"));
+        $valuesFromExport[] = new Oara_Curl_Parameter('end_date', $dEndDate->toString("yyyy-MM-dd"));
+        //$valuesFromExport[] = new Oara_Curl_Parameter('field[]', 'Stat.impressions');
+        //$valuesFromExport[] = new Oara_Curl_Parameter('field[]', 'Stat.clicks');
+        $valuesFromExport[] = new Oara_Curl_Parameter('group[]', 'Stat.date');
+        $valuesFromExport[] = new Oara_Curl_Parameter('filter[Stat.offer_id]', implode(",", $merchantList));
+        
+        $urls = array();
+        $urls[] = new Oara_Curl_Request('http://p.wowtrk.com/stats/stats.xml?', $valuesFromExport);   
+		$exportReport = $this->_exportClient->get($urls);
 
+		$exportData = self::loadXml($exportReport[0]);
+		if (!isset($exportData->stats)){
+			return $totalOverview;
+		}
 		
-		$dateArray = Oara_Utilities::daysOfDifference($dStartDate, $dEndDate);
-        for ($i = 0; $i < sizeof($dateArray); $i++){
-        	$groupMap = array();
-        	$auxStartDate = clone $dateArray[$i];
-        	$auxStartDate->setHour("00");
-            $auxStartDate->setMinute("00");
-            $auxStartDate->setSecond("00");
-            
-            $overviewList = $this->_apiClient->getAffiliateAggregateStatistics($params['client'],$params['password'], 
-																				  $params['add_code'], $auxStartDate->toString("yyyy-MM-dd"), 
-																			      $auxStartDate->toString("yyyy-MM-dd"));
-									      
-			if (!preg_match("/No Results found/", $overviewList, $matches)){
-				$overviewList = str_replace(array("&pound;"), array("£"), $overviewList);
-				$xmlObj = simplexml_load_string($overviewList);
-				foreach ($xmlObj->children() as $overview) {
-					$merchantId = (string)$overview->campaign_id;
-					if (in_array($merchantId, $merchantList)){
-						$obj = array();
-						$obj['merchantId'] = $merchantId;
-		                $obj['date'] = $auxStartDate->toString("yyyy-MM-dd HH:mm:ss");
-	                	$obj['status'] = Oara_Utilities::STATUS_CONFIRMED;
-	                	
-	                	$obj['click_number'] = 0;
-	                	if ((string)$overview->clicks != null){
-	                		$obj['click_number'] = (string)$overview->clicks;
-	                	}
-						$obj['impression_number'] = 0;
-	                	if ((string)$overview->impressions != null){
-	                		$obj['impression_number'] = (string)$overview->impressions;
-	                	}
-	                	
-	                	$obj['transaction_number'] = 0;
-	                	$obj['transaction_confirmed_value'] = 0;
-	                	$obj['transaction_confirmed_commission'] = 0;
-	                	$obj['transaction_pending_value'] = 0;
-	                	$obj['transaction_pending_commission'] = 0;
-	                	$obj['transaction_declined_value'] = 0;
-	                	$obj['transaction_declined_commission'] = 0;
-	                	
-	                    $obj['transaction_confirmed_value'] = Oara_Utilities::parseDouble((string)$overview->sales);  
-	                	$obj['transaction_confirmed_commission'] = Oara_Utilities::parseDouble((string)$overview->payout);
-	                	if ($obj['transaction_confirmed_value'] != 0 || $obj['transaction_confirmed_commission'] != 0){
-	                		$obj['transaction_number']++;
-	                	}
-	                	if (Oara_Utilities::checkRegister($obj)){
-	                		$totalOverview[] = $obj;
-	                	}
-					}
-				}
+		foreach ($merchantList as $merchantId){
+			$valuesFromExport = array();
+	        $valuesFromExport[] = new Oara_Curl_Parameter('api_key', $this->_apiPassword);
+	        $valuesFromExport[] = new Oara_Curl_Parameter('start_date', $dStartDate->toString("yyyy-MM-dd"));
+	        $valuesFromExport[] = new Oara_Curl_Parameter('end_date', $dEndDate->toString("yyyy-MM-dd"));
+	        //$valuesFromExport[] = new Oara_Curl_Parameter('field[]', 'Stat.impressions');
+	        //$valuesFromExport[] = new Oara_Curl_Parameter('field[]', 'Stat.clicks');
+	        $valuesFromExport[] = new Oara_Curl_Parameter('group[]', 'Stat.date');
+	        $valuesFromExport[] = new Oara_Curl_Parameter('filter[Stat.offer_id]', $merchantId);
+	
+	        $urls = array();
+	        $urls[] = new Oara_Curl_Request('http://p.wowtrk.com/stats/stats.xml?', $valuesFromExport);   
+			$exportReport = $this->_exportClient->get($urls);
+	
+			$exportData = self::loadXml($exportReport[0]);
+	        
+			foreach ($exportData->stats as $overview) {
 				
-			}	
-            
-        }
+	        		$overview = Array();
+	                $overview['merchantId'] = $merchantId;
+		            $overviewDate =  new Zend_Date($overview->date, 'yyyy-MM-dd', 'en');
+	                $overview['date'] = $overviewDate->toString("yyyy-MM-dd HH:mm:ss");
+	                
+	                $overview['click_number'] = (int)$overview->clicks;
+	                $overview['impression_number'] = (int)$overview->impressions;
+	                $overview['transaction_number'] = 0;
+	                $overview['transaction_confirmed_value'] = 0;
+	                $overview['transaction_confirmed_commission']= 0;
+	                $overview['transaction_pending_value']= 0;
+	                $overview['transaction_pending_commission']= 0;
+	                $overview['transaction_declined_value']= 0;
+	                $overview['transaction_declined_commission']= 0;
+	                $transactionDateArray = Oara_Utilities::getDayFromArray($merchantId,$transactionArray, $overviewDate);
+	                foreach ($transactionDateArray as $transaction){ 	
+	                	$overview['transaction_number'] ++;
+	                    if ($transaction['status'] == Oara_Utilities::STATUS_CONFIRMED){
+	                        $overview['transaction_confirmed_value'] += $transaction['amount'];
+	                        $overview['transaction_confirmed_commission'] += $transaction['commission'];
+	                    } else if ($transaction['status'] == Oara_Utilities::STATUS_PENDING){
+	                        $overview['transaction_pending_value'] += $transaction['amount'];
+	                        $overview['transaction_pending_commission'] += $transaction['commission'];
+	                    } else if ($transaction['status'] == Oara_Utilities::STATUS_DECLINED){
+	                        $overview['transaction_declined_value'] += $transaction['amount'];
+	                        $overview['transaction_declined_commission'] += $transaction['commission'];
+	                    }
+	                }
+	                if (Oara_Utilities::checkRegister($overview)){
+	                   $overviewArray[] = $overview;
+	                }
+	        }
+			
+		}
+		
 	    return $totalOverview;
 	}
 	/**
