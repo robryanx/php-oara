@@ -45,9 +45,7 @@ class Oara_Network_TradeDoubler extends Oara_Network{
      */
     private $_dateFormat = null;
     
-    private $_user = null;
-    
-    private $_password = null;
+    private $_credentials = null;
 	/**
 	 * Constructor and Login
 	 * @param $tradeDoubler
@@ -56,8 +54,7 @@ class Oara_Network_TradeDoubler extends Oara_Network{
 	public function __construct($credentials)
 	{
 		
-		$this->_user = $credentials['user'];
-        $this->_password = $credentials['password'];
+		$this->_credentials = $credentials;
         
         self::login();
 
@@ -257,13 +254,15 @@ class Oara_Network_TradeDoubler extends Oara_Network{
 	}
 	
 	private function login(){
+		$user = $this->_credentials['user'];
+        $password = $this->_credentials['password'];
 		$loginUrl = 'http://www.tradedoubler.com/pan/login';
 		
-		$valuesLogin = array(new Oara_Curl_Parameter('j_username', $this->_user),
-                             new Oara_Curl_Parameter('j_password', $this->_password)
+		$valuesLogin = array(new Oara_Curl_Parameter('j_username', $user),
+                             new Oara_Curl_Parameter('j_password', $password)
                              );
 		
-		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
+		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $this->_credentials);
 		
 	}
 	/**
