@@ -44,6 +44,10 @@ class Oara_Network_TradeDoubler extends Oara_Network{
      * @var string
      */
     private $_dateFormat = null;
+    
+    private $_user = null;
+    
+    private $_password = null;
 	/**
 	 * Constructor and Login
 	 * @param $tradeDoubler
@@ -52,16 +56,10 @@ class Oara_Network_TradeDoubler extends Oara_Network{
 	public function __construct($credentials)
 	{
 		
-		$user = $credentials['user'];
-        $password = $credentials['password'];
+		$this->_user = $credentials['user'];
+        $this->_password = $credentials['password'];
         
-		$loginUrl = 'http://www.tradedoubler.com/pan/login';
-		
-		$valuesLogin = array(new Oara_Curl_Parameter('j_username', $user),
-                             new Oara_Curl_Parameter('j_password', $password)
-                             );
-		
-		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
+        self::login();
 
         $this->_exportMerchantParameters = array(new Oara_Curl_Parameter('reportName', 'aAffiliateMyProgramsReport'),
 				                                 new Oara_Curl_Parameter('tabMenuName', ''),
@@ -257,6 +255,17 @@ class Oara_Network_TradeDoubler extends Oara_Network{
         
         
 	}
+	
+	private function login(){
+		$loginUrl = 'http://www.tradedoubler.com/pan/login';
+		
+		$valuesLogin = array(new Oara_Curl_Parameter('j_username', $this->_user),
+                             new Oara_Curl_Parameter('j_password', $this->_password)
+                             );
+		
+		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
+		
+	}
 	/**
 	 * Check the connection
 	 */
@@ -367,7 +376,7 @@ class Oara_Network_TradeDoubler extends Oara_Network{
      */
 	public function getTransactionList($merchantList = null , Zend_Date $dStartDate = null , Zend_Date $dEndDate = null)
 	{
-
+		self::login();
 		$totalTransactions = Array();
 		if ($this->_dateFormat == 'dd/MM/yy'){
 	        $startDate = $dStartDate->toString('dd/MM/yyyy');
@@ -462,7 +471,8 @@ class Oara_Network_TradeDoubler extends Oara_Network{
      * @see library/Oara/Network/Oara_Network_Base#getOverviewList($merchantId, $dStartDate, $dEndDate)
      */
     public function getOverviewList($transactionList = null, $merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null){
-        $totalOverviews = Array();
+        self::login();
+    	$totalOverviews = Array();
         $transactionArray = Oara_Utilities::transactionMapPerDay($transactionList);
         
         $mothOverviewUrls = array();
@@ -625,7 +635,7 @@ class Oara_Network_TradeDoubler extends Oara_Network{
 		    if ($try < 5){
 		    	return self::checkReportError($exportReport[0], $request, $try);
 		    } else {
-		    	throw new Exception('Problem checking report\n\n'.$exportReport[0]);
+		    	throw new Exception('Problem checking report\n\n');
 		    }
 		    
         } else {
