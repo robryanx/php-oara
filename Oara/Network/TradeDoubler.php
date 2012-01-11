@@ -625,7 +625,7 @@ class Oara_Network_TradeDoubler extends Oara_Network{
 		    if ($try < 5){
 		    	return self::checkReportError($exportReport[0], $request, $try);
 		    } else {
-		    	throw new Exception('Problem checking report\n\n');
+		    	throw new Exception('Problem checking report\n\n'.$exportReport[0]);
 		    }
 		    
         } else {
