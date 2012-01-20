@@ -91,23 +91,23 @@ class Oara_Network_CarTrawler extends Oara_Network{
         $valuesFormExport[] = new Oara_Curl_Parameter('end_month', $dEndDate->toString("M"));
         $valuesFormExport[] = new Oara_Curl_Parameter('end_day', $dEndDate->toString("d"));
        	$urls = array();
-        $urls[] = new Oara_Curl_Request('https://www.cartrawler.com/affengine/AFFxreservelist2.asp?action=update', $valuesFormExport);
+        $urls[] = new Oara_Curl_Request('https://www.cartrawler.com/affengine/AFFxreservelist.asp?action=update', $valuesFormExport);
         $exportReport = $this->_client->post($urls);
-	    
 	    $exportTransactionList = self::readTransactionTable($exportReport[0], $dStartDate,$dEndDate);
 		foreach ($exportTransactionList as $exportTransaction){
 			$transaction = array();
-			
+			$exportTransaction = str_getcsv($exportTransaction,";");
 			$transaction['merchantId'] = 1;
-			$transactionDate = new Zend_Date($exportTransaction[1], "d MMM yy",'en_US');
-			$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
-			$transaction['amount'] = (double) $exportTransaction[5];
-			$transaction['commission'] = (double) $exportTransaction[11];
-			if ($exportTransaction[8] == 'CONFIRMED'){
+			
+			$stamp = strtotime($exportTransaction[2]);
+			$transaction['date'] = date("Y-m-d H:i:s", $stamp);
+			$transaction['amount'] = (double) $exportTransaction[11];
+			$transaction['commission'] = (double) $exportTransaction[13];
+			if ($exportTransaction[14] == 'CONFIRMED'){
 				$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
-			} else if ($exportTransaction[8] == 'CANCELLED'){
+			} else if ($exportTransaction[14] == 'CANCELLED'){
 				$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
-			} else if ($exportTransaction[8] == 'UNCONFIRMED' || $exportTransaction[8] =='REBOOKED' || $exportTransaction[8] =='PENDING INVOICE'){
+			} else if ($exportTransaction[14] == 'UNCONFIRMED' || $exportTransaction[14] =='REBOOKED' || $exportTransaction[14] =='PENDING INVOICE'){
 				$transaction['status'] = Oara_Utilities::STATUS_PENDING;
 			} else{
 				throw new Exception("New status found ".$transaction['status']);
@@ -173,33 +173,14 @@ class Oara_Network_CarTrawler extends Oara_Network{
      */
     public function readTransactionTable($htmlReport, Zend_Date $startDate, Zend_Date $endDate, $iteration = 0){
     	$transactions = array();
-    	
-    	/*** load the html into the object ***/
-	    $doc = new DOMDocument();
-	    libxml_use_internal_errors(true);
-	    $doc->validateOnParse = true;
-	    $doc->loadHTML($htmlReport);
-	    $tableList = $doc->getElementsByTagName('table');
-    	$tableNumber  = $tableList->length;
-    	$registerTable = $tableList->item(14);
-    	if ($registerTable != null){
-			$registerLines = $registerTable->childNodes;
-			
-			for ($i = 0;$i < $registerLines->length;$i++) {
-				$registerLine = $registerLines->item($i);
-				$register = $registerLine->childNodes;
-	
-				if ($register->length == 30) {
-					$obj = array();
-					for ($j = 0; $j < $register->length; $j++){
-						if ($j%2 == 0){
-							$attribute = $register->item($j);
-							$obj[] =  str_replace('&nbsp','',trim($attribute->nodeValue));
-						}
-					}
-					$transactions[] = $obj;
-				}
-			}
+    	$dom = new Zend_Dom_Query($htmlReport);
+	    $results = $dom->query('#reportingtable');
+		$count = count($results);
+    	if ($count == 1){
+			$exportData = self::htmlToCsv(self::DOMinnerHTML($results->current()));
+    		for ($j = 1; $j < count($exportData); $j++){
+    			$transactions[] = $exportData[$j];
+    		}
 		    
 		    if (preg_match("/<a href=\"(.*)\">\|Next\|<\/a>/",$htmlReport, $matches)){
 		    	$iteration++;
@@ -216,12 +197,59 @@ class Oara_Network_CarTrawler extends Oara_Network{
 		    	$parameters[] = new Oara_Curl_Parameter('sort', 'resdate');
 		    	$parameters[] = new Oara_Curl_Parameter('order', '');
 		    	$parameters[] = new Oara_Curl_Parameter('subaccount', '');
-		    	$urls[] = new Oara_Curl_Request('https://www.cartrawler.com/affengine/AFFxreservelist2.asp?', $parameters);
+		    	$urls[] = new Oara_Curl_Request('https://www.cartrawler.com/affengine/AFFxreservelist.asp?', $parameters);
 		        $exportReport = $this->_client->get($urls);
 		    	$transactions = array_merge($transactions, self::readTransactionTable($exportReport[0], $startDate, $endDate, $iteration));
 		    }
     	}
     	return $transactions;
     }
+    
+    /**
+     * 
+     * Function that Convert from a table to Csv
+     * @param unknown_type $html
+     */
+    private function htmlToCsv($html){
+    	$html = str_replace(array("\t","\r","\n"), "", $html);
+    	$csv = "";
+    	$dom = new Zend_Dom_Query($html);
+      	$results = $dom->query('tr');
+      	$count = count($results); // get number of matches: 4
+      	foreach ($results as $result){
+      		$tdList = $result->childNodes;
+      		$tdNumber = $tdList->length;
+			for ($i = 0;$i < $tdNumber;$i++) {
+				$value = (String)$tdList->item($i)->nodeValue;
+				if (strlen(trim($value)) > 0){
+					if ($i != $tdNumber -1){
+						$csv .= trim($value).";";
+					} else {
+						$csv .= trim($value);
+					}
+				}
+			}
+			$csv .= "\n";
+      	}
+    	$exportData = str_getcsv($csv,"\n");
+    	return $exportData;
+    }
+    /**
+     * 
+     * Function that returns the innet HTML code 
+     * @param unknown_type $element
+     */
+	private function DOMinnerHTML($element)
+	{
+	    $innerHTML = "";
+	    $children = $element->childNodes;
+	    foreach ($children as $child)
+	    {
+	        $tmp_dom = new DOMDocument();
+	        $tmp_dom->appendChild($tmp_dom->importNode($child, true));
+	        $innerHTML.=trim($tmp_dom->saveHTML());
+	    }
+	    return $innerHTML;
+	}
 
 }
