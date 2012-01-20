@@ -94,26 +94,29 @@ class Oara_Network_CarTrawler extends Oara_Network{
         $urls[] = new Oara_Curl_Request('https://www.cartrawler.com/affengine/AFFxreservelist.asp?action=update', $valuesFormExport);
         $exportReport = $this->_client->post($urls);
 	    $exportTransactionList = self::readTransactionTable($exportReport[0], $dStartDate,$dEndDate);
+	    $z = 0;
 		foreach ($exportTransactionList as $exportTransaction){
 			$transaction = array();
-			$exportTransaction = str_getcsv($exportTransaction,";");
+			$exportTransactionArray = str_getcsv($exportTransaction,";");
 			$transaction['merchantId'] = 1;
 			
-			$stamp = strtotime($exportTransaction[2]);
+			$stamp = strtotime($exportTransactionArray[2]);
 			$transaction['date'] = date("Y-m-d H:i:s", $stamp);
-			$transaction['amount'] = (double) $exportTransaction[11];
-			$transaction['commission'] = (double) $exportTransaction[13];
-			if ($exportTransaction[14] == 'CONFIRMED'){
+			$transaction['amount'] = (double) $exportTransactionArray[11];
+			$transaction['commission'] = (double) $exportTransactionArray[13];
+			$status = $exportTransactionArray[count($exportTransactionArray)- 2];
+			if ( $status== 'CONFIRMED'){
 				$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
-			} else if ($exportTransaction[14] == 'CANCELLED'){
+			} else if ($status == 'CANCELLED'){
 				$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
-			} else if ($exportTransaction[14] == 'UNCONFIRMED' || $exportTransaction[14] =='REBOOKED' || $exportTransaction[14] =='PENDING INVOICE'){
+			} else if ($status == 'UNCONFIRMED' || $status =='REBOOKED' || $status =='PENDING INVOICE'){
 				$transaction['status'] = Oara_Utilities::STATUS_PENDING;
 			} else{
 				throw new Exception("New status found ".$transaction['status']);
 			}
 			
 			$totalTransactions[] = $transaction;
+			$z++;
 		}
 		
         return $totalTransactions;

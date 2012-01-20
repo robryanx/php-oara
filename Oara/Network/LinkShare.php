@@ -77,13 +77,10 @@ class Oara_Network_LinkShare extends Oara_Network{
 
         $this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
 		
-        
-       
-                              
+                  
         $this->_exportTransactionParameters = array(new Oara_Curl_Parameter('analyticchannel', 'Reports'),
         											new Oara_Curl_Parameter('analyticpage', 'Advance Reports'),
         											new Oara_Curl_Parameter('dateRangeData', '1'),
-        											new Oara_Curl_Parameter('reportType', '29'),
         											new Oara_Curl_Parameter('dateRange', 'fromTo'),
         											new Oara_Curl_Parameter('advMID', '-1'),
         											new Oara_Curl_Parameter('nid', $this->_nid),
@@ -94,7 +91,6 @@ class Oara_Network_LinkShare extends Oara_Network{
         $this->_exportOverviewParameters = array(new Oara_Curl_Parameter('analyticchannel', 'Reports'),
                                                 new Oara_Curl_Parameter('analyticpage', 'Advance Reports'),
                                                 new Oara_Curl_Parameter('dateRangeData', '1'),
-                                                new Oara_Curl_Parameter('reportType', '26'),
                                                 new Oara_Curl_Parameter('dateRange', 'fromTo'),
                                                 new Oara_Curl_Parameter('advMID', '-1'),
                                                 new Oara_Curl_Parameter('nid', $this->_nid),
@@ -102,14 +98,29 @@ class Oara_Network_LinkShare extends Oara_Network{
                                                 new Oara_Curl_Parameter('y', '18')
                                                );
 
-
-        
-        $this->_exportPaymentParameters = array(new Oara_Curl_Parameter('startRow', '0'),
-                                                 new Oara_Curl_Parameter('sortKey', ''),
-                                                 new Oara_Curl_Parameter('sortOrder', ''),
-                                                 new Oara_Curl_Parameter('format', '6'),
-                                                 new Oara_Curl_Parameter('button', 'Go')
+        $this->_exportPaymentParameters = array(new Oara_Curl_Parameter('dateRange', '2'),
+                                                 new Oara_Curl_Parameter('x', '88'),
+                                                 new Oara_Curl_Parameter('y', '14')
                                                  );
+    	$urls = array();
+        $urls[] = new Oara_Curl_Request('https://cli.linksynergy.com/cli/publisher/reports/advancedReports.php', array());
+        $result = $this->_client->get($urls);
+    	$dom = new Zend_Dom_Query($result[0]);
+      	$results = $dom->query('select[name="reportType"]');
+		$count = count($results);
+		if ($count == 1){
+			$selectNode = $results->current();
+			$optionLines = $selectNode->childNodes;
+			for ($i = 0;$i < $optionLines->length;$i++) {
+				$option = (String)$optionLines->item($i)->nodeValue;
+				$value = (String)$optionLines->item($i)->attributes->getNamedItem("value")->nodeValue;
+				if ($option == "Signature Orders"){
+					$this->_exportTransactionParameters[] = new Oara_Curl_Parameter("reportType", $value);
+				} else if ($option == "Sales and Activity"){
+					$this->_exportOverviewParameters[] = new Oara_Curl_Parameter("reportType", $value);
+				}
+			}
+		}
         
     }
 	/**
@@ -166,21 +177,18 @@ class Oara_Network_LinkShare extends Oara_Network{
         $num = count($exportData);
         for ($i = 1; $i < $num; $i++) {
         	$merchantArray = str_getcsv($exportData[$i],",");
-        	//if (($this->_nid == '3' && $merchantArray[10] == 'U.K.')||
-        	//	($this->_nid == '1' && $merchantArray[14] == 'US')){
         		
-	            $obj = Array();
-	            
-	            if (!isset($merchantArray[2])){
-	            	throw new Exception("Error getting merchants");
-	            }
-	            
-				$obj['cid'] = (int)$merchantArray[2];		
-				$obj['name'] = $merchantArray[0];
-				$obj['description'] = $merchantArray[3];
-				$obj['url'] = $merchantArray[1];
-				$merchants[] = $obj;
-        	//}
+            $obj = Array();
+            
+            if (!isset($merchantArray[2])){
+            	throw new Exception("Error getting merchants");
+            }
+            
+			$obj['cid'] = (int)$merchantArray[2];		
+			$obj['name'] = $merchantArray[0];
+			$obj['description'] = $merchantArray[3];
+			$obj['url'] = $merchantArray[1];
+			$merchants[] = $obj;
               
         }
         return $merchants;
@@ -192,6 +200,7 @@ class Oara_Network_LinkShare extends Oara_Network{
      */
     public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null){
         $totalTransactions = Array();
+        
 
         $valuesFromExport = Oara_Utilities::cloneArray($this->_exportTransactionParameters);
         $valuesFromExport[] = new Oara_Curl_Parameter('fromDate', $dStartDate->toString("M/d/yyyy"));
@@ -350,24 +359,34 @@ class Oara_Network_LinkShare extends Oara_Network{
 	 */
 	public function getPaymentHistory(){
     	$paymentHistory = array();
-    	/**
+    	
+    	$past = new Zend_Date("01-01-2010", "dd-MM-yyyy");
+    	$now = new Zend_Date();
+    	
     	$urls = array();
-		$valuesFromExport = $this->_exportPaymentParameters;
-        $urls[] = new Oara_Curl_Request('https://members.cj.com/member/'.$this->_memberId.'/publisher/getpublisherpaymenthistory.do?', $valuesFromExport);   
-        $exportReport = $this->_client->get($urls);
-        $exportData = str_getcsv($exportReport[0],"\n");
-	    $num = count($exportData);
-	    for ($j = 1; $j < $num; $j++) {
-	    	$paymentData = str_getcsv($exportData[$j],",");
-	    	$obj = array();
-	    	$date = new Zend_Date($paymentData[0], "dd-MMM-yyyy HH:mm", 'en_US');
-			$obj['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
-	    	$obj['value'] = Oara_Utilities::parseDouble($paymentData[1]);
-	    	$obj['method'] = $paymentData[2];
-	    	$obj['pid'] = $paymentData[6];
-	    	$paymentHistory[] = $obj;
-	    }
-	    **/
+		$valuesFormExport = $this->_exportPaymentParameters;
+		$valuesFormExport[] = new Oara_Curl_Parameter('fromDate', $past->toString("M/d/yyyy"));
+        $valuesFormExport[] = new Oara_Curl_Parameter('toDate', $now->toString("M/d/yyyy"));
+        $urls[] = new Oara_Curl_Request('https://cli.linksynergy.com/cli/publisher/my_account/paymentInfoHistory.php?', $valuesFormExport);
+        
+        $exportReport = $this->_client->post($urls);
+    	$dom = new Zend_Dom_Query($exportReport[0]);
+      	$results = $dom->query('#paymentHistoryTable');
+		$count = count($results);
+        if ($count == 1){
+        	$exportData = self::htmlToCsv(self::DOMinnerHTML($results->current()));
+		    $num = count($exportData);
+		    for ($j = 1; $j < $num; $j++) {
+		    	$paymentData = str_getcsv($exportData[$j],";");
+		    	$obj = array();
+		    	$date = new Zend_Date($paymentData[1], "yyyy-MM-dd");
+				$obj['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
+		    	$obj['value'] = Oara_Utilities::parseDouble($paymentData[5]);
+		    	$obj['method'] = "BACS";
+		    	$obj['pid'] = $paymentData[0];
+		    	$paymentHistory[] = $obj;
+		    }
+        }
     	return $paymentHistory;
     }
     /**
@@ -388,24 +407,20 @@ class Oara_Network_LinkShare extends Oara_Network{
 		$exportReport = $this->_client->get($urls);
 		$exportData = str_getcsv(iconv('UTF-16', 'UTF-8',$exportReport[0]),"\n");
 		$num = count($exportData);
-		$groupedTransactions = array();
 		for ($j = 1; $j < $num; $j++) {
 		  	$transactionData = str_getcsv($exportData[$j],"\t");
 		  	
-		   	if (in_array((int)$transactionData[3],$merchantList)){
+		   	if (in_array((int)$transactionData[1],$merchantList)){
 		   		
-		   		if (isset($groupedTransactions[$transactionData[0]])){
-		   			$transaction = $groupedTransactions[$transactionData[0]];
-		   		} else {
-		   			$transaction = Array();
-		   		}
+		   		
+	   			$transaction = Array();
 				
-	            $transaction['merchantId'] = (int)$transactionData[3];
-	            $transactionDate = new Zend_Date($transactionData[1]." ".$transactionData[2], "MM/dd/yyyy HH:mm:ss");
+	            $transaction['merchantId'] = (int)$transactionData[1];
+	            $transactionDate = new Zend_Date($transactionData[4]." ".$transactionData[5], "MM/dd/yyyy HH:mm:ss");
 	            $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 	            
-	            if ($transactionData[5] != null){
-	            	$transaction['custom_id'] = $transactionData[5];
+	            if ($transactionData[0] != null){
+	            	$transaction['custom_id'] = $transactionData[0];
 	            }
 		       
 		        $sales = Oara_Utilities::parseDouble($transactionData[7]);
@@ -414,28 +429,16 @@ class Oara_Network_LinkShare extends Oara_Network{
 		           	$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
 		        } else if ($sales == 0){
 		            $transaction['status'] = Oara_Utilities::STATUS_PENDING;
-		        } else if ($transactionData[6] == 'D'){
-		            $transaction['status'] = Oara_Utilities::STATUS_DECLINED;
 		        }
 		                        
 	            $transaction['amount'] = Oara_Utilities::parseDouble($transactionData[7]);   
 		                       
 		        $transaction['commission'] = Oara_Utilities::parseDouble($transactionData[9]);
 		        
-		        
-		        if ((!isset($groupedTransactions[$transactionData[0]])) ||
-		        	(isset($groupedTransactions[$transactionData[0]]) && $transaction['status'] != Oara_Utilities::STATUS_PENDING)){
-		        	$groupedTransactions[$transactionData[0]] = $transaction;
-		        }
-		        
+		        $totalTransactions[] = $transaction;
 		        
 		  	}
         }
-        
-        foreach ($groupedTransactions as $groupedTransaction){
-        	$totalTransactions[] = $groupedTransaction;
-        }
-        
          
         return $totalTransactions;
     }
@@ -500,4 +503,49 @@ class Oara_Network_LinkShare extends Oara_Network{
 		}
 		return $totalOverview;
     }
+    
+	/**
+     * 
+     * Function that Convert from a table to Csv
+     * @param unknown_type $html
+     */
+    private function htmlToCsv($html){
+    	$html = str_replace(array("\t","\r","\n"), "", $html);
+    	$csv = "";
+    	$dom = new Zend_Dom_Query($html);
+      	$results = $dom->query('tr');
+      	$count = count($results); // get number of matches: 4
+      	foreach ($results as $result){
+      		$tdList = $result->childNodes;
+      		$tdNumber = $tdList->length;
+			for ($i = 0;$i < $tdNumber;$i++) {
+				$value = $tdList->item($i)->nodeValue;
+				if ($i != $tdNumber -1){
+					$csv .= trim($value).";";
+				} else {
+					$csv .= trim($value);
+				}
+			}
+			$csv .= "\n";
+      	}
+    	$exportData = str_getcsv($csv,"\n");
+    	return $exportData;
+    }
+    /**
+     * 
+     * Function that returns the innet HTML code 
+     * @param unknown_type $element
+     */
+	private function DOMinnerHTML($element)
+	{
+	    $innerHTML = "";
+	    $children = $element->childNodes;
+	    foreach ($children as $child)
+	    {
+	        $tmp_dom = new DOMDocument();
+	        $tmp_dom->appendChild($tmp_dom->importNode($child, true));
+	        $innerHTML.=trim($tmp_dom->saveHTML());
+	    }
+	    return $innerHTML;
+	}
 }
