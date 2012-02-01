@@ -102,13 +102,13 @@ class Oara_Network_Amazon extends Oara_Network{
       			$this->_networkServer = "https://partenaires.amazon.fr";
       			break;
       		case "it":
-      			$this->_networkServer = "https://programma-affiliazione.amazon.it/";
+      			$this->_networkServer = "https://programma-affiliazione.amazon.it";
       			break;
       		case "jp":
-      			$this->_networkServer = "https://affiliate.amazon.co.jp/";
+      			$this->_networkServer = "https://affiliate.amazon.co.jp";
       			break;
       		case "cn":
-      			$this->_networkServer = "https://associates.amazon.cn/";
+      			$this->_networkServer = "https://associates.amazon.cn";
       			break;
       	}
         
