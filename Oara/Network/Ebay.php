@@ -167,7 +167,7 @@ class Oara_Network_Ebay extends Oara_Network{
         $exportData = str_getcsv($exportReport[0],"\n");
         $num = count($exportData);
         for ($i = 1; $i < $num; $i++) {
-            $transactionExportArray = str_getcsv($exportData[$i],"\t");
+            $transactionExportArray = str_getcsv($exportData[$i],",");
             $transaction = Array();
             $transaction['merchantId'] = 1;
             $transactionDate = new Zend_Date($transactionExportArray[1], 'yyyy-MM-dd', 'en');
@@ -299,7 +299,7 @@ class Oara_Network_Ebay extends Oara_Network{
        	$overviewByDateArray = array();
        	for ($j = 1; $j < $num; $j++) {
             	
-         	$overviewExportArray = str_getcsv($exportData[$j],"\t");
+         	$overviewExportArray = str_getcsv($exportData[$j],",");
          	if (isset($overviewByDateArray[$overviewExportArray[0]])){
                	$obj = $overviewByDateArray[$overviewExportArray[0]];
                	$obj['impression_number'] += $overviewExportArray[4];

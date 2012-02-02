@@ -216,7 +216,7 @@ class Oara_Network_Omg extends Oara_Network{
 					$obj['amount'] = 0;
 					$obj['commission'] = 0;
 					
-					if (self::findAttribute($transaction, 'UID') == null) {
+					if (self::findAttribute($transaction, 'UID') != null) {
 						$obj['custom_id'] = self::findAttribute($transaction, 'UID');
 					}
 
