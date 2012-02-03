@@ -313,10 +313,36 @@ class Oara_Network_AffiliateWindow extends Oara_Network{
             
         $params['iLimit'] = $this->_pageSize;
 
-        $clickStats = $this->_apiClient->getClickStats($params);
-        $impressionStats = $this->_apiClient->getImpressionStats($params);
+        //$clickStats = $this->_apiClient->getClickStats($params);
+        //$impressionStats = $this->_apiClient->getImpressionStats($params);
         $transactionList = Oara_Utilities::transactionMapPerDay($transactionList);
         
+        $dateArray = Oara_Utilities::daysOfDifference($dStartDate, $dEndDate);
+        for ($i = 0; $i < sizeof($dateArray); $i++){
+        	$groupMap = array();
+        	$auxStartDate = clone $dateArray[$i];
+        	$auxStartDate->setHour("00");
+            $auxStartDate->setMinute("00");
+            $auxStartDate->setSecond("00");
+        
+			$transactionDateArray = array();
+	        foreach ($transactionList as $merchantId => $data){
+	        	$transactionDateArray = array_merge($transactionDateArray, Oara_Utilities::getDayFromArray($merchantId, $transactionList, $auxStartDate));
+	        }
+	                 
+			if (count($transactionDateArray) > 0 ){
+		    	$groupMap = self::groupOverview($groupMap, $transactionDateArray);
+		  	}
+		 	foreach($groupMap as $merchant => $overview){
+		    	$overview['merchantId'] = $merchant;
+		    	$overview['date'] = $auxStartDate->toString("yyyy-MM-dd HH:mm:ss");
+		     	if (Oara_Utilities::checkRegister($overview)){
+		      		$totalOverview[] = $overview;
+		  		}
+			}
+        }
+        
+        /*
         if (count($clickStats->getClickStatsReturn) > 0 
             || count($impressionStats->getImpressionStatsReturn) > 0
             || count($transactionList) > 0){
@@ -397,6 +423,7 @@ class Oara_Network_AffiliateWindow extends Oara_Network{
 	            }
 	        }
         }
+        */
 	    return $totalOverview;
 	}
 
