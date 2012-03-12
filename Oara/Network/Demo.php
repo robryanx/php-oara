@@ -17,13 +17,12 @@ class Oara_Network_Demo extends Oara_Network{
 								   "Omni Consumer Products", "Praxis Corporation", "Sombra Corporation" , "Sto Plains Holdings",
 								   "Sto Plains Holdings", "Yuhu Limited");
 
-	private $_linkList = array("homepage_content", "shopping_cart_sidenav", "footer", "linkspage", "homepage_header", "para_one_content_home");
-
-	private $_websiteList = array("Money Guide Site", "Football Guide Site", "Hotel Guide Site", "Browser Guide Site", "Paper Cup Site",
-								  "Lightbulb Shop Site");
-
-	private $_pageList = array("/home.html", "/sales.html", "/contact.html", "/book.html", "/index.html","/info.html");
-
+	//private $_linkList = array("homepage_content", "shopping_cart_sidenav", "footer", "linkspage", "homepage_header", "para_one_content_home");
+	private $_linkList = array("unknown");
+	//private $_websiteList = array("Money Guide Site", "Football Guide Site", "Hotel Guide Site", "Browser Guide Site", "Paper Cup Site", "Lightbulb Shop Site");
+	private $_websiteList = array("unknown");
+	//private $_pageList = array("/home.html", "/sales.html", "/contact.html", "/book.html", "/index.html","/info.html");
+	private $_pageList = array("unknown");
 	/**
 	 * Constructor and Login
 	 * @param $cartrawler
