@@ -313,10 +313,11 @@ class Oara_Network_AffiliateWindow extends Oara_Network{
             
         $params['iLimit'] = $this->_pageSize;
 
-        //$clickStats = $this->_apiClient->getClickStats($params);
-        //$impressionStats = $this->_apiClient->getImpressionStats($params);
+        $clickStats = $this->_apiClient->getClickStats($params);
+        $impressionStats = $this->_apiClient->getImpressionStats($params);
         $transactionList = Oara_Utilities::transactionMapPerDay($transactionList);
         
+        /* If we don't wan tot use click and impressions
         $dateArray = Oara_Utilities::daysOfDifference($dStartDate, $dEndDate);
         for ($i = 0; $i < sizeof($dateArray); $i++){
         	$groupMap = array();
@@ -333,6 +334,7 @@ class Oara_Network_AffiliateWindow extends Oara_Network{
 			if (count($transactionDateArray) > 0 ){
 		    	$groupMap = self::groupOverview($groupMap, $transactionDateArray);
 		  	}
+		  	
 		 	foreach($groupMap as $merchant => $overview){
 		    	$overview['merchantId'] = $merchant;
 		    	$overview['date'] = $auxStartDate->toString("yyyy-MM-dd HH:mm:ss");
@@ -340,9 +342,10 @@ class Oara_Network_AffiliateWindow extends Oara_Network{
 		      		$totalOverview[] = $overview;
 		  		}
 			}
+			
         }
+        */
         
-        /*
         if (count($clickStats->getClickStatsReturn) > 0 
             || count($impressionStats->getImpressionStatsReturn) > 0
             || count($transactionList) > 0){
@@ -423,7 +426,7 @@ class Oara_Network_AffiliateWindow extends Oara_Network{
 	            }
 	        }
         }
-        */
+        
 	    return $totalOverview;
 	}
 
