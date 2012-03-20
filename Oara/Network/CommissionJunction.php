@@ -172,14 +172,16 @@ class Oara_Network_CommissionJunction extends Oara_Network{
     public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null){
         $totalTransactions = Array();
         //The end data for the API has to be one day more 
-        
-	    foreach ($merchantList as $cid){
+        $iteration = self::calculeIterationNumber(count($merchantList), '20');
+	    for ($it = 0; $it < $iteration; $it++ ){
+	    	echo "iteration $it of $iteration \n\n";
 	    	//echo "mechant".$cid." ".count($totalTransactions)."\n\n";
+	    	$merchantSlice = array_slice($merchantList, $it*20, 20);
 	    	try {
 	    		
 		    	$transactionDateEnd = clone $dEndDate;
 				$transactionDateEnd->addDay(1);
-		    	$restUrl = 'https://commission-detail.api.cj.com/v3/commissions?cids='.$cid.'&date-type=event&start-date='.$dStartDate->toString("yyyy-MM-dd").'&end-date='.$transactionDateEnd->toString("yyyy-MM-dd");
+		    	$restUrl = 'https://commission-detail.api.cj.com/v3/commissions?cids='.implode(',',$merchantSlice).'&date-type=event&start-date='.$dStartDate->toString("yyyy-MM-dd").'&end-date='.$transactionDateEnd->toString("yyyy-MM-dd");
 		    	unset($transactionDateEnd);
     			$totalTransactions = array_merge($totalTransactions, self::getTransactionsXml($restUrl, $merchantList));
     			
@@ -190,8 +192,8 @@ class Oara_Network_CommissionJunction extends Oara_Network{
 	    		for ($j = 0; $j < $dateArraySize; $j++){
 			    	$transactionDateEnd = clone $dateArray[$j];
 					$transactionDateEnd->addDay(1);
-					//echo $dateArray[$j]->toString("yyyy-MM-dd")."\n\n";
-			    	$restUrl = 'https://commission-detail.api.cj.com/v3/commissions?cids='.$cid.'&date-type=event&start-date='.$dateArray[$j]->toString("yyyy-MM-dd").'&end-date='.$transactionDateEnd->toString("yyyy-MM-dd");
+					echo $dateArray[$j]->toString("yyyy-MM-dd")."\n\n";
+			    	$restUrl = 'https://commission-detail.api.cj.com/v3/commissions?cids='.implode(',',$merchantSlice).'&date-type=event&start-date='.$dateArray[$j]->toString("yyyy-MM-dd").'&end-date='.$transactionDateEnd->toString("yyyy-MM-dd");
 			    	try {
 			        	$totalTransactions = array_merge($totalTransactions, self::getTransactionsXml($restUrl, $merchantList));
 			        } catch (Exception $e) {
@@ -199,11 +201,11 @@ class Oara_Network_CommissionJunction extends Oara_Network{
 						$done = false;
 						while (!$done && $try < 5){
 							try{
-								$totalTransactions = array_merge($totalTransactions, self::transactionsByType($cid, $dateArray[$j], $transactionDateEnd, $merchantList));
+								$totalTransactions = array_merge($totalTransactions, self::transactionsByType(implode(',',$merchantSlice), $dateArray[$j], $transactionDateEnd, $merchantList));
 								$done = true;
 							} catch (Exception $e){
 								$try++;
-								//echo "try again $try\n\n";
+								echo "try again $try\n\n";
 							}
 						}
 						if ($try == 5){
@@ -220,7 +222,7 @@ class Oara_Network_CommissionJunction extends Oara_Network{
     
     private function getTransactionsXml($restUrl, $merchantList){
     	$totalTransactions = array();
-    	$client = new Zend_Http_Client($restUrl, array('timeout'=> 60));
+    	$client = new Zend_Http_Client($restUrl, array('timeout'=> 180));
         $client->setHeaders('Authorization',$this->_apiPassword);
         $response = $client->request('GET');
         $xml = simplexml_load_string($response->getBody(), null, LIBXML_NOERROR | LIBXML_NOWARNING);
