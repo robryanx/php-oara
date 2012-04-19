@@ -189,7 +189,6 @@ class Oara_Network_AffiliateWindow extends Oara_Network{
 	{
 		$params = Array();
 		$params['sRelationship'] = 'joined';
-		
 		$merchants = $this->_apiClient->getMerchantList($params)->getMerchantListReturn;
 		$arrayMerchantIds = Array();
 		foreach ($merchants as $merchant){
@@ -317,7 +316,7 @@ class Oara_Network_AffiliateWindow extends Oara_Network{
         $impressionStats = $this->_apiClient->getImpressionStats($params);
         $transactionList = Oara_Utilities::transactionMapPerDay($transactionList);
         
-        /* If we don't wan tot use click and impressions
+		//If we want only the transactions
         $dateArray = Oara_Utilities::daysOfDifference($dStartDate, $dEndDate);
         for ($i = 0; $i < sizeof($dateArray); $i++){
         	$groupMap = array();
@@ -344,8 +343,9 @@ class Oara_Network_AffiliateWindow extends Oara_Network{
 			}
 			
         }
-        */
         
+        //If we want also the clicks and impressions
+         /* 
         if (count($clickStats->getClickStatsReturn) > 0 
             || count($impressionStats->getImpressionStatsReturn) > 0
             || count($transactionList) > 0){
@@ -426,7 +426,7 @@ class Oara_Network_AffiliateWindow extends Oara_Network{
 	            }
 	        }
         }
-        
+         */
 	    return $totalOverview;
 	}
 
