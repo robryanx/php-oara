@@ -113,7 +113,21 @@ class Oara_Network_Amazon extends Oara_Network{
       	}
         
 		//Get html after Js
-		$hiddenParams = self::getHiddenParamsAfterJs($this->_credentials);
+		$hiddenParams = array();
+		if ($network == "us"){
+			$loginUrl = $this->_networkServer;
+			$this->_client = new Oara_Curl_Access($loginUrl, array(), $this->_credentials);
+			$cookies = self::readCookies($this->_credentials);
+			$hiddenParams['sessionId'] = $cookies['session-id'];
+			$hiddenParams['query'] = "/gp/associates/join/landing/main.html";
+			$hiddenParams['path'] = "/gp/associates/login/login.html";
+			$hiddenParams['action'] = "sign-in";
+			$hiddenParams['mode'] = "1";
+
+		} else {
+			$hiddenParams = self::getHiddenParamsAfterJs($this->_credentials);
+		}
+		
 		
 		$valuesLogin = array(
 							 new Oara_Curl_Parameter('email', $user),

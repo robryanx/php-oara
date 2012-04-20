@@ -174,6 +174,7 @@ class Oara_Network_LinkShare extends Oara_Network{
         $urls[] = new Oara_Curl_Request('http://cli.linksynergy.com/cli/publisher/programs/carDownload.php', array());
         $result = $this->_client->get($urls);
         $exportData = str_getcsv(self::formatCsv($result[0]),"\n");
+        echo ($result[0]);
         $num = count($exportData);
         for ($i = 1; $i < $num; $i++) {
         	$merchantArray = str_getcsv($exportData[$i],",");

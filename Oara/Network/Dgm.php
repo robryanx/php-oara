@@ -147,6 +147,10 @@ class Oara_Network_Dgm extends Oara_Network{
 	 */
 	public function checkConnection(){
 		$connection = true;
+		$merchantsImport = $this->_apiClient->GetCampaigns($this->_exportMerchantParameters);
+		if ($merchantsImport->status == 'failed'){
+			$connection = false;
+		}
 		return $connection;
 	}
     /**

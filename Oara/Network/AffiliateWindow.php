@@ -312,8 +312,8 @@ class Oara_Network_AffiliateWindow extends Oara_Network{
             
         $params['iLimit'] = $this->_pageSize;
 
-        $clickStats = $this->_apiClient->getClickStats($params);
-        $impressionStats = $this->_apiClient->getImpressionStats($params);
+        //$clickStats = $this->_apiClient->getClickStats($params);
+        //$impressionStats = $this->_apiClient->getImpressionStats($params);
         $transactionList = Oara_Utilities::transactionMapPerDay($transactionList);
         
 		//If we want only the transactions
