@@ -114,7 +114,7 @@ class Oara_Network_AffiliateWindow extends Oara_Network{
 					$urls = array();
 			        $urls[] = new Oara_Curl_Request('http://darwin.affiliatewindow.com/affiliate/'.$user, array());
 			        $exportReport = $this->_exportClient->get($urls);
-					if (preg_match("/<li>Payment<ul><li><a class=\"arrow sectionList\" href=\"(.*)\">/", $exportReport[0], $matches)){
+					if (preg_match("/<li>Payment<ul><li><a class=\"arrow sectionList\" href=\"(.*)?\">Overview/", $exportReport[0], $matches)){
 						$urls = array();
 			        	$urls[] = new Oara_Curl_Request('http://darwin.affiliatewindow.com'.$matches[1], array());
 			        	$exportReport = $this->_exportClient->get($urls);

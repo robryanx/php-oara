@@ -147,7 +147,9 @@ class Oara_Network_Dgm extends Oara_Network{
 	 */
 	public function checkConnection(){
 		$connection = true;
+		
 		$merchantsImport = $this->_apiClient->GetCampaigns($this->_exportMerchantParameters);
+		sleep(60);
 		if ($merchantsImport->status == 'failed'){
 			$connection = false;
 		}
@@ -162,6 +164,9 @@ class Oara_Network_Dgm extends Oara_Network{
 		
 		$this->_advertisersCampaings = array();
 		$merchantsImport = $this->_apiClient->GetCampaigns($this->_exportMerchantParameters);
+		if ($merchantsImport->status == 'failed'){
+			throw new Exception('Error advertisers not found');
+		}
 		if (!isset($merchantsImport->campaigns) || !isset($merchantsImport->campaigns->campaign)){
 			sleep(60);
 			throw new Exception('Error advertisers not found');
