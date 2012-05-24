@@ -243,7 +243,7 @@ class Oara_Network_TradeDoubler extends Oara_Network{
 												   
 			
 		$urls = array();
-        $urls[] = new Oara_Curl_Request('http://www.tradedoubler.com/pan/aReport3Selection.action?reportName=aAffiliateProgramOverviewReport', array());
+        $urls[] = new Oara_Curl_Request('http://publisher.tradedoubler.com/pan/aReport3Selection.action?reportName=aAffiliateProgramOverviewReport', array());
         $exportReport = $this->_client->get($urls);
 
 		if (preg_match("/\(([a-zA-Z]{0,2}[\/\.][a-zA-Z]{0,2}[\/\.][a-zA-Z]{0,2})\)/", $exportReport[0], $match)){
@@ -256,7 +256,7 @@ class Oara_Network_TradeDoubler extends Oara_Network{
 	private function login(){
 		$user = $this->_credentials['user'];
         $password = $this->_credentials['password'];
-		$loginUrl = 'http://www.tradedoubler.com/pan/login';
+		$loginUrl = 'http://publisher.tradedoubler.com/pan/login';
 		
 		$valuesLogin = array(new Oara_Curl_Parameter('j_username', $user),
                              new Oara_Curl_Parameter('j_password', $password)
@@ -326,7 +326,7 @@ class Oara_Network_TradeDoubler extends Oara_Network{
 		$valuesFormExport[] = new Oara_Curl_Parameter('programAffiliateStatusId', '3');
 				                                
         $urls = array();
-        $urls[] = new Oara_Curl_Request('http://www.tradedoubler.com/pan/aReport3Internal.action?', $valuesFormExport);
+        $urls[] = new Oara_Curl_Request('http://publisher.tradedoubler.com/pan/aReport3Internal.action?', $valuesFormExport);
         $exportReport = $this->_client->post($urls);
         $exportReport[0] = self::checkReportError($exportReport[0], $urls[0]);
         $merchantReportList = self::getExportMerchantReport($exportReport[0]);
@@ -335,7 +335,7 @@ class Oara_Network_TradeDoubler extends Oara_Network{
 		$valuesFormExport[] = new Oara_Curl_Parameter('programAffiliateStatusId', '4');
 				                                
         $urls = array();
-        $urls[] = new Oara_Curl_Request('http://www.tradedoubler.com/pan/aReport3Internal.action?', $valuesFormExport);
+        $urls[] = new Oara_Curl_Request('http://publisher.tradedoubler.com/pan/aReport3Internal.action?', $valuesFormExport);
         $exportReport = $this->_client->post($urls);
         $exportReport[0] = self::checkReportError($exportReport[0], $urls[0]);
         $merchantReportListAux = self::getExportMerchantReport($exportReport[0]);
@@ -397,7 +397,7 @@ class Oara_Network_TradeDoubler extends Oara_Network{
         $valuesFormExport[] = new Oara_Curl_Parameter('startDate', $startDate);
         $valuesFormExport[] = new Oara_Curl_Parameter('endDate', $endDate);
        	$urls = array();
-        $urls[] = new Oara_Curl_Request('http://www.tradedoubler.com/pan/aReport3Internal.action?', $valuesFormExport);
+        $urls[] = new Oara_Curl_Request('http://publisher.tradedoubler.com/pan/aReport3Internal.action?', $valuesFormExport);
         $exportReport = $this->_client->get($urls);
         
         $exportReport[0] = self::checkReportError($exportReport[0], $urls[0]);
@@ -494,7 +494,7 @@ class Oara_Network_TradeDoubler extends Oara_Network{
 			throw new Exception ("\n Date Format not supported ".$this->_dateFormat."\n");
 		}
         $urls = array();
-        $urls[] = new Oara_Curl_Request('http://www.tradedoubler.com/pan/aReport3Internal.action?', $valuesFormExport);
+        $urls[] = new Oara_Curl_Request('http://publisher.tradedoubler.com/pan/aReport3Internal.action?', $valuesFormExport);
         $exportReport = $this->_client->get($urls);
         
         
@@ -525,7 +525,7 @@ class Oara_Network_TradeDoubler extends Oara_Network{
 				}  else {
 					throw new Exception ("\n Date Format not supported ".$this->_dateFormat."\n");
 				}
-                $mothOverviewUrls[] = new Oara_Curl_Request('http://www.tradedoubler.com/pan/aReport3Internal.action?', $valuesFormExport);
+                $mothOverviewUrls[] = new Oara_Curl_Request('http://publisher.tradedoubler.com/pan/aReport3Internal.action?', $valuesFormExport);
             }                                     
         }
         
@@ -604,7 +604,7 @@ class Oara_Network_TradeDoubler extends Oara_Network{
         	//report too big, we have to download it and read it
         	if (preg_match("/(\/report\/published\/(aAffiliateEventBreakdownReport(.*))\.zip)/", $content, $matches)){
         		
-        		$file = "http://www.tradedoubler.com".$matches[0];
+        		$file = "http://publisher.tradedoubler.com".$matches[0];
 				$newfile = realpath(dirname(__FILE__)).'/../data/pdf/'.$matches[2].'.zip';
 				
 				if (!copy($file, $newfile)) {
@@ -651,7 +651,7 @@ class Oara_Network_TradeDoubler extends Oara_Network{
     	$paymentHistory = array();
     	
     	$urls = array();
-        $urls[] = new Oara_Curl_Request('http://www.tradedoubler.com/pan/reportSelection/Payment?', array());   
+        $urls[] = new Oara_Curl_Request('http://publisher.tradedoubler.com/pan/reportSelection/Payment?', array());   
         $exportReport = $this->_client->get($urls);
 		/*** load the html into the object ***/
 	    $doc = new DOMDocument();
@@ -738,7 +738,7 @@ class Oara_Network_TradeDoubler extends Oara_Network{
 				$valuesFormExport = Oara_Utilities::cloneArray($this->_exportCreativeParameters);
 		       	$valuesFormExport[] = new Oara_Curl_Parameter('programGEListParameterTransport.siteId', $websiteFirstId);
 		       	$valuesFormExport[] = new Oara_Curl_Parameter('programGEListParameterTransport.programIdOrName', $merchant['cid']);
-	       		$urls[] = new Oara_Curl_Request('http://www.tradedoubler.com/pan/aGEList.action?', $valuesFormExport);
+	       		$urls[] = new Oara_Curl_Request('http://publisher.tradedoubler.com/pan/aGEList.action?', $valuesFormExport);
 	       		
 				$exportReport = $this->_client->post($urls);
 		    	for ($i = 0; $i < count($exportReport); $i++){

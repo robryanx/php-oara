@@ -95,11 +95,6 @@ class Oara_Curl_Access{
 
 		$options[CURLOPT_POSTFIELDS] = $arg;
 
-		//problem with TD and SMG about the redirects and headers
-		if ($isTD){
-			$options[CURLOPT_FOLLOWLOCATION] = false;
-			$options[CURLOPT_HEADER] = true;
-		}
 		curl_setopt_array($ch, $options);
 		
 		$result = curl_exec($ch);
@@ -111,28 +106,7 @@ class Oara_Curl_Access{
 
 		//Close curl session
 		curl_close($ch);
-
-		while ($isTD && ($info['http_code'] == 301 || $info['http_code'] == 302)) { // redirect manually, cookies must be set, which curl does not itself
-
-			// extract new location
-			preg_match_all('|Location: (.*)\n|U', $result, $results);
-			$location = implode(';', $results[1]);
-			$ch = curl_init();
-
-			$options = $this->_options;
-			$options[CURLOPT_URL] = str_replace("/publisher/..", "", $location);
-			$options[CURLOPT_HEADER] = true;
-			$options[CURLOPT_FOLLOWLOCATION] = false;
-			
-			curl_setopt_array($ch, $options);
-
-			$result = curl_exec($ch);
-			$err = curl_errno($ch);
-			$errmsg = curl_error($ch);
-			$info = curl_getinfo($ch);
-				
-			curl_close($ch);
-		}
+		
 		//echo $result;
 		if ($result == false){
 			throw new Exception ("Failed to connect");
