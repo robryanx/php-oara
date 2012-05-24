@@ -32,7 +32,7 @@ class Oara_Curl_Access{
 	 * @return none
 	 */
 	public function __construct($url, array $valuesLogin, $credentials) {
-		
+
 		if (!isset($credentials["cookiesDir"])){
 			$credentials["cookiesDir"] = "Oara";
 		}
@@ -42,8 +42,8 @@ class Oara_Curl_Access{
 		if (!isset($credentials["cookieName"])){
 			$credentials["cookieName"] = "default";
 		}
-		
-		
+
+
 		//Setting cookies
 		$isTD = $credentials['networkName'] == "TradeDoubler";
 		//$isAW = $credentials['networkName'] == "AffiliateWindow";
@@ -53,7 +53,7 @@ class Oara_Curl_Access{
 			throw new Exception ('Problem creating folder in Access');
 		}
 		//Deleting the last cookie
-		
+
 		if ($handle = opendir($dir)) {
 			/* This is the correct way to loop over the directory. */
 			while (false !== ($file = readdir($handle))) {
@@ -63,23 +63,23 @@ class Oara_Curl_Access{
 			}
 			closedir($handle);
 		}
-		
+
 
 		$cookieName = $credentials["cookieName"];
 
 		$cookies = $dir.$cookieName.'_cookies.txt';
 
 		$this->_options = array(
-			CURLOPT_USERAGENT => "Mozilla/5.0 (X11; Linux i686; rv:7.0.1) Gecko/20100101 Firefox/7.0.1",
-			CURLOPT_RETURNTRANSFER => true,
-			CURLOPT_FAILONERROR => true,
-			CURLOPT_COOKIEJAR  => $cookies,
-			CURLOPT_COOKIEFILE => $cookies,
-			CURLOPT_FAILONERROR => true,
-			CURLOPT_HTTPAUTH => CURLAUTH_ANY,
-			CURLOPT_AUTOREFERER => true,
-			CURLOPT_SSL_VERIFYPEER =>false,
-			//CURLOPT_VERBOSE => true,
+		CURLOPT_USERAGENT => "Mozilla/5.0 (X11; Linux i686; rv:7.0.1) Gecko/20100101 Firefox/7.0.1",
+		CURLOPT_RETURNTRANSFER => true,
+		CURLOPT_FAILONERROR => true,
+		CURLOPT_COOKIEJAR  => $cookies,
+		CURLOPT_COOKIEFILE => $cookies,
+		CURLOPT_FAILONERROR => true,
+		CURLOPT_HTTPAUTH => CURLAUTH_ANY,
+		CURLOPT_AUTOREFERER => true,
+		CURLOPT_SSL_VERIFYPEER =>false,
+		//CURLOPT_VERBOSE => true,
 		);
 
 		//Init curl
@@ -87,26 +87,53 @@ class Oara_Curl_Access{
 		$options = $this->_options;
 		$options[CURLOPT_URL] = $url;
 		$options[CURLOPT_POST] = true;
-		
+
 		$options[CURLOPT_FOLLOWLOCATION] = true;
-		
+
 		// Login form fields
 		$arg = self::getPostFields($valuesLogin);
 
 		$options[CURLOPT_POSTFIELDS] = $arg;
 
+		//problem with TD and SMG about the redirects and headers
+		if ($isTD){
+			$options[CURLOPT_FOLLOWLOCATION] = false;
+			$options[CURLOPT_HEADER] = true;
+		}
+
 		curl_setopt_array($ch, $options);
-		
+
 		$result = curl_exec($ch);
 		$err = curl_errno($ch);
 		$errmsg = curl_error($ch);
 		$info = curl_getinfo($ch);
-		
-	
+
+
 
 		//Close curl session
 		curl_close($ch);
-		
+
+		while ($isTD && ($info['http_code'] == 301 || $info['http_code'] == 302)) { // redirect manually, cookies must be set, which curl does not itself
+
+			// extract new location
+			preg_match_all('|Location: (.*)\n|U', $result, $results);
+			$location = implode(';', $results[1]);
+			$ch = curl_init();
+
+			$options = $this->_options;
+			$options[CURLOPT_URL] = str_replace("/publisher/..", "", $location);
+			$options[CURLOPT_HEADER] = true;
+			$options[CURLOPT_FOLLOWLOCATION] = false;
+
+			curl_setopt_array($ch, $options);
+
+			$result = curl_exec($ch);
+			$err = curl_errno($ch);
+			$errmsg = curl_error($ch);
+			$info = curl_getinfo($ch);
+
+			curl_close($ch);
+		}
 		//echo $result;
 		if ($result == false){
 			throw new Exception ("Failed to connect");
@@ -147,7 +174,7 @@ class Oara_Curl_Access{
 				$arg = self::getPostFields($request->getParameters());
 				$options[CURLOPT_POSTFIELDS] = $arg;
 				curl_setopt_array($ch, $options);
-				
+
 				curl_multi_add_handle($mcurl, $ch);
 				$urls_id++;
 				$threadsRunning++;
@@ -229,7 +256,7 @@ class Oara_Curl_Access{
 				$options[CURLOPT_RETURNTRANSFER] = true;
 				$options[CURLOPT_FOLLOWLOCATION] = true;
 				curl_setopt_array($ch, $options);
-				
+
 				curl_multi_add_handle($mcurl, $ch);
 				$urls_id++;
 				$threadsRunning++;
