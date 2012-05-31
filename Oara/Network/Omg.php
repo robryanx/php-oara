@@ -76,7 +76,7 @@ class Oara_Network_Omg extends Oara_Network{
 		$urls = array();
         $urls[] = new Oara_Curl_Request('https://admin.omgpm.com/en/clientarea/affiliates/affiliate_campaigns.asp?', $valuesFromExport);
 	    $exportReport = $this->_client->post($urls);
-        echo ($exportReport[0]);
+        
         /*** load the html into the object ***/
 	    $doc = new DOMDocument();
 	    libxml_use_internal_errors(true);
@@ -469,57 +469,59 @@ class Oara_Network_Omg extends Oara_Network{
     	$urls = array();
         $urls[] = new Oara_Curl_Request('https://admin.omgpm.com/v2/finance/affiliate/view_payments.aspx?', array());   
         $exportReport = $this->_client->get($urls);
-        
 		/*** load the html into the object ***/
 	    $doc = new DOMDocument();
 	    libxml_use_internal_errors(true);
 	    $doc->validateOnParse = true;
 	    $doc->loadHTML($exportReport[0]);
 	    $hiddenList = $doc->getElementsByTagName('input');
-	    for ($i = 0;$i < $hiddenList->length;$i++) {
-	    	$attrs = $hiddenList->item($i)->attributes;
-			if ($attrs->getNamedItem("type")->nodeValue == 'hidden'){
-				//we are adding the hidden parameters
-				$valuesFromExport[] = new Oara_Curl_Parameter($attrs->getNamedItem("name")->nodeValue, $attrs->getNamedItem("value")->nodeValue); 
-			}
-	    }
-	    $yearSelect = $doc->getElementById('ctl00_ContentPlaceHolder1_ddlYear')->childNodes;
-	    $yearStart = (int)$yearSelect->item($yearSelect->length -1)->attributes->getNamedItem("value")->nodeValue;
-	    $nowDays = new Zend_Date();
-	    $yearEnd = (int)$nowDays->get(Zend_Date::YEAR);
-	    
-    	$urls = array();
-    	for ($i = $yearStart; $i <= $yearEnd; $i++ ){
-    		$requestValuesFromExport = Oara_Utilities::cloneArray($valuesFromExport);
-    		$requestValuesFromExport[] = new Oara_Curl_Parameter('ctl00$ContentPlaceHolder1$ddlYear', (string)$i);
-    		$urls[] = new Oara_Curl_Request('https://admin.omgpm.com/v2/finance/affiliate/view_payments.aspx?', $requestValuesFromExport);
-    	}
-        $exportReport = $this->_client->post($urls);
-        for ($i = 0; $i < count($exportReport); $i++){
-        	if (!preg_match("/No Results for this criteria/i", $exportReport[$i])){
-			    $doc = new DOMDocument();
-			    libxml_use_internal_errors(true);
-			    $doc->validateOnParse = true;
-			    $doc->loadHTML($exportReport[$i]);
-			    $table = $doc->getElementById('ctl00_ContentPlaceHolder1_gvSummary');
-			    $paymentList = $table->childNodes;
-			    for ($j = 1; $j < $paymentList->length;$j++) {
-				    $paymentData =  $paymentList->item($j)->childNodes;
-
-				    $obj = array();
-				    $obj['value'] = Oara_Utilities::parseDouble($paymentData->item(5)->nodeValue);
-				    if ($obj['value'] != null){
-				    	$date = new Zend_date($paymentData->item(8)->nodeValue, "dd/MM/yyyy HH:mm:ss");
-					    $obj['date'] =  $date->toString("yyyy-MM-dd HH:mm:ss");
-					    $obj['pid'] = $paymentData->item(2)->nodeValue;
-					    $ass = $paymentData->item(5)->nodeValue;
-					    $obj['method'] = 'BACS';
-					    $paymentHistory[] = $obj;
-				    }
-				    
+	    if ($hiddenList->length > 0){
+	    	
+		    for ($i = 0;$i < $hiddenList->length;$i++) {
+		    	$attrs = $hiddenList->item($i)->attributes;
+				if ($attrs->getNamedItem("type")->nodeValue == 'hidden'){
+					//we are adding the hidden parameters
+					$valuesFromExport[] = new Oara_Curl_Parameter($attrs->getNamedItem("name")->nodeValue, $attrs->getNamedItem("value")->nodeValue); 
 				}
 		    }
-        }
+		    $yearSelect = $doc->getElementById('ctl00_ContentPlaceHolder1_ddlYear')->childNodes;
+		    $yearStart = (int)$yearSelect->item($yearSelect->length -1)->attributes->getNamedItem("value")->nodeValue;
+		    $nowDays = new Zend_Date();
+		    $yearEnd = (int)$nowDays->get(Zend_Date::YEAR);
+		    
+	    	$urls = array();
+	    	for ($i = $yearStart; $i <= $yearEnd; $i++ ){
+	    		$requestValuesFromExport = Oara_Utilities::cloneArray($valuesFromExport);
+	    		$requestValuesFromExport[] = new Oara_Curl_Parameter('ctl00$ContentPlaceHolder1$ddlYear', (string)$i);
+	    		$urls[] = new Oara_Curl_Request('https://admin.omgpm.com/v2/finance/affiliate/view_payments.aspx?', $requestValuesFromExport);
+	    	}
+	        $exportReport = $this->_client->post($urls);
+	        for ($i = 0; $i < count($exportReport); $i++){
+	        	if (!preg_match("/No Results for this criteria/i", $exportReport[$i])){
+				    $doc = new DOMDocument();
+				    libxml_use_internal_errors(true);
+				    $doc->validateOnParse = true;
+				    $doc->loadHTML($exportReport[$i]);
+				    $table = $doc->getElementById('ctl00_ContentPlaceHolder1_gvSummary');
+				    $paymentList = $table->childNodes;
+				    for ($j = 1; $j < $paymentList->length;$j++) {
+					    $paymentData =  $paymentList->item($j)->childNodes;
+	
+					    $obj = array();
+					    $obj['value'] = Oara_Utilities::parseDouble($paymentData->item(5)->nodeValue);
+					    if ($obj['value'] != null){
+					    	$date = new Zend_date($paymentData->item(8)->nodeValue, "dd/MM/yyyy HH:mm:ss");
+						    $obj['date'] =  $date->toString("yyyy-MM-dd HH:mm:ss");
+						    $obj['pid'] = $paymentData->item(2)->nodeValue;
+						    $ass = $paymentData->item(5)->nodeValue;
+						    $obj['method'] = 'BACS';
+						    $paymentHistory[] = $obj;
+					    }
+					    
+					}
+			    }
+	        }
+	    }
     	return $paymentHistory;
     }
 	/**
