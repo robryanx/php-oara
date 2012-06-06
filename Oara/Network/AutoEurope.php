@@ -91,6 +91,9 @@ class Oara_Network_AutoEurope extends Oara_Network{
 		$xmlTransactionList = self::readTransactions($exportReport[0]);
 		
 		foreach ($xmlTransactionList as $xmlTransaction){
+			if (strlen($xmlTransaction['date']) != 10){
+				throw new Exception ("Error reading transaction");
+			}
 			$transaction = array();
 			$transaction['merchantId'] = 1;
 			$date = new Zend_date($xmlTransaction['date'],"MM/dd/yyyy");
@@ -201,7 +204,6 @@ class Oara_Network_AutoEurope extends Oara_Network{
 			while (! feof($stderr)) {
 				$error .= fgets($stderr);
 			}
-			echo $error;
 			fclose($stdin);
 			fclose($stdout);
 			fclose($stderr);
@@ -243,7 +245,8 @@ class Oara_Network_AutoEurope extends Oara_Network{
 				$i++;
 			}
 		}
-		
+		var_dump($transationList);
+		throw new Exception("asd");
 		return $transationList;
 	}
 
