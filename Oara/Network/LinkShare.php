@@ -391,7 +391,7 @@ class Oara_Network_LinkShare extends Oara_Network{
 		$paymentHistory = array();
 
 		$filter = new Zend_Filter_LocalizedToNormalized(array('precision' => 2));
-		$past = new Zend_Date("01-01-2012", "dd-MM-yyyy");
+		$past = new Zend_Date("01-01-2010", "dd-MM-yyyy");
 		$now = new Zend_Date();
 		$dateList = Oara_Utilities::yearsOfDifference($past,$now);
 		$dateList[] = $now;
