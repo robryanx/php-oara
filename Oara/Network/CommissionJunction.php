@@ -457,37 +457,7 @@ class Oara_Network_CommissionJunction extends Oara_Network{
         }
     	return $paymentHistory;
     }
-    /**
-	 * (non-PHPdoc)
-	 * @see Oara/Network/Oara_Network_Base#getCreatives()
-	 */
-	public function getCreatives(){
-		$creativesMap = array();
-		$pageSize = 100;
-    	$restUrl = 'https://linksearch.api.cj.com/v2/link-search?website-id=5269810&advertiser-ids=joined&page-number=1&records-per-page='.$pageSize;
-        //Setting the client.
-		$client = new Zend_Http_Client($restUrl);
-        $client->setHeaders('Authorization',$this->_apiPassword);
-		$response = $client->request('GET');
-    	$xml = simplexml_load_string($response->getBody(), null, LIBXML_NOERROR | LIBXML_NOWARNING);
-    	$linksNumber = self::findAttribute($xml->links->attributes(), 'total-matched');
-    	
-    	$iteration = self::calculeIterationNumber($linksNumber, $pageSize);
-		for($j = 1; $j < $iteration; $j++){
-			$restUrl = 'https://linksearch.api.cj.com/v2/link-search?website-id=5269810&advertiser-ids=joined&page-number='.$j.'&records-per-page='.$pageSize;
-	        //Setting the client.
-			$client = new Zend_Http_Client($restUrl);
-	        $client->setHeaders('Authorization',$this->_apiPassword);
-			$response = $client->request('GET');
-	    	$xml = simplexml_load_string($response->getBody(), null, LIBXML_NOERROR | LIBXML_NOWARNING);
-	    	foreach ($xml->links->link as $link){
-	    		$creativesMap[self::findAttribute($link, 'advertiser-id')][] = self::findAttribute($link, 'link-code-html');
-	    		//$link->link-code-javascript;
-	    		
-	    	}
-		}
-		return $creativesMap;
-	}
+  
 	/**
      * Calculate the number of iterations needed
      * @param $rowAvailable

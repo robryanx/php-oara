@@ -356,42 +356,4 @@ class Oara_Network_BuyAt extends Oara_Network{
 	    }
     	return $paymentHistory;
     }
-	/**
-	 * (non-PHPdoc)
-	 * @see Oara/Network/Oara_Network_Base#getCreatives()
-	 */
-	public function getCreatives(){
-		$creativesMap = array();
-		
-    	$merchantList = self::getMerchantList();
-    	
-    	foreach ($merchantList as $merchant){
-    		
-			$urls = array();
-			$valuesFormExport = array();
-			$valuesFormExport[] = new Oara_Curl_Parameter('pageType', 'isCreativeGraphics');
-			$valuesFormExport[] = new Oara_Curl_Parameter('prog_id', $merchant['cid']);
-			$valuesFormExport[] = new Oara_Curl_Parameter('creative_type_id', '1');
-			$valuesFormExport[] = new Oara_Curl_Parameter('creativegroup', '0');
-	       	$valuesFormExport[] = new Oara_Curl_Parameter('dimension', '0');
-	       	$valuesFormExport[] = new Oara_Curl_Parameter('customise', 'Go');
-       		$urls[] = new Oara_Curl_Request('https://users.buy.at/ma/index.php/affiliateCreative/creativeGraphics?', $valuesFormExport);
-       		
-			$exportReport = $this->_client->get($urls);
-			
-			$urls = array();
-			$valuesFormExport = array();
-			$valuesFormExport[] = new Oara_Curl_Parameter('format', 'csv');
-       		$urls[] = new Oara_Curl_Request('https://users.buy.at/ma/index.php/affiliateCreative/creativeGraphics?', $valuesFormExport);
-			$exportReport = $this->_client->get($urls);
-			$exportData = str_getcsv($exportReport[0],"\r\n");
-	    	$num = count($exportData);
-		    for ($j = 1; $j < $num; $j++) {
-		    	$creativeData = str_getcsv($exportData[$j],",");
-		    	$creativesMap[$merchant['cid']][] = $creativeData[5];
-		    }
-				
-    	}
-		return $creativesMap;
-	}
 }

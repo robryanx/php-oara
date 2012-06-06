@@ -219,32 +219,6 @@ class Oara_Network_Smg extends Oara_Network{
 		new Oara_Curl_Parameter('favoriteDescription','')
 		);
 
-		$this->_oldExportCreativeParameters = array(new Oara_Curl_Parameter('programGEListParameterTransport.currentPage', '1'),
-		new Oara_Curl_Parameter('searchPerformed', 'true'),
-		new Oara_Curl_Parameter('searchType', 'ge'),
-		new Oara_Curl_Parameter('programGEListParameterTransport.deepLinking', ''),
-		new Oara_Curl_Parameter('programGEListParameterTransport.tariffStructure', ''),
-		new Oara_Curl_Parameter('programGEListParameterTransport.orderBy', 'lastUpdated'),
-		new Oara_Curl_Parameter('programGEListParameterTransport.websiteStatusId', ''),
-		new Oara_Curl_Parameter('programGEListParameterTransport.pageSize', '100'),
-		new Oara_Curl_Parameter('programAdvancedListParameterTransport.directAutoApprove', ''),
-		new Oara_Curl_Parameter('programGEListParameterTransport.graphicalElementTypeId', ''),
-		new Oara_Curl_Parameter('programGEListParameterTransport.graphicalElementSize', ''),
-		new Oara_Curl_Parameter('programGEListParameterTransport.width', ''),
-		new Oara_Curl_Parameter('programGEListParameterTransport.height', ''),
-		new Oara_Curl_Parameter('programGEListParameterTransport.lastUpdated', ''),
-		new Oara_Curl_Parameter('programGEListParameterTransport.graphicalElementNameOrId', ''),
-		new Oara_Curl_Parameter('programGEListParameterTransport.showGeGraphics', 'true'),
-		new Oara_Curl_Parameter('programAdvancedListParameterTransport.pfAdToolUnitName', ''),
-		new Oara_Curl_Parameter('programAdvancedListParameterTransport.pfAdToolProductPerCell', ''),
-		new Oara_Curl_Parameter('programAdvancedListParameterTransport.pfAdToolDescription', ''),
-		new Oara_Curl_Parameter('programAdvancedListParameterTransport.pfTemplateTableRows', ''),
-		new Oara_Curl_Parameter('programAdvancedListParameterTransport.pfTemplateTableColumns', ''),
-		new Oara_Curl_Parameter('programAdvancedListParameterTransport.pfTemplateTableWidth', ''),
-		new Oara_Curl_Parameter('programAdvancedListParameterTransport.pfTemplateTableHeight', ''),
-		new Oara_Curl_Parameter('programAdvancedListParameterTransport.pfAdToolContentUnitRule', '')
-		);
-
 	}
 
 	private function oldLogin(){
@@ -319,15 +293,15 @@ class Oara_Network_Smg extends Oara_Network{
 			$newCheck = true;
 		}
 
-		if ($newCheck){
+		$newApi = false;
+		if ($newCheck && $this->_authToken != null && $this->_accountSid != null ){
 			//Checking API connection from Impact Radius
 			$uri = "https://".$this->_accountSid.":".$this->_authToken."@api.impactradius.com/2010-09-01/Mediapartners/".$this->_accountSid."/Campaigns.xml";
 			$res = simplexml_load_file($uri);
-			$newApi = true;
-			if ($res == false){
-				$newApi = false;
+			if (isset($res->Campaigns)){
+				$newApi = true;
 			}
-				
+			
 		}
 
 

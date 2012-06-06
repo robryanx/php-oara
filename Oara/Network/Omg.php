@@ -524,51 +524,5 @@ class Oara_Network_Omg extends Oara_Network{
 	    }
     	return $paymentHistory;
     }
-	/**
-	 * (non-PHPdoc)
-	 * @see Oara/Network/Oara_Network_Base#getCreatives()
-	 */
-	public function getCreatives(){
-		$creativesMap = array();
-		
-    	$merchantList = self::getMerchantList();
-    	
-    	foreach ($merchantList as $merchant){
-    		
-    		$urls = array();
-			$valuesFormExport = array();
-			$valuesFormExport[] = new Oara_Curl_Parameter('__EVENTTARGET', '');
-			$valuesFormExport[] = new Oara_Curl_Parameter('__EVENTARGUMENT', '');
-			$valuesFormExport[] = new Oara_Curl_Parameter('__LASTFOCUS', '');
-			$valuesFormExport[] = new Oara_Curl_Parameter('__VIEWSTATE', '/wEPDwUKMTQzMTQ3MzI4MQ9kFgJmD2QWBGYPZBYEAgMPFgIeBGhyZWYFFC9UZW1wbGF0ZXMvMV9zZWMuY3NzZAIFDxYCHwAFJC90ZW1wbGF0ZXMvQ3VzdG9tTWVyY2hhbnRDU1MvNTQyLmNzc2QCAQ9kFgQCAw9kFggCAw8PFgIeB1Zpc2libGVoZGQCBA9kFggCAg8QD2QWAh4Ib25jaGFuZ2UFFVNldFNpemVDb250cm9sVmFsdWUoKRAVFANBbGwcTWVkaXVtIFJlY3RhbmdsZSAoMzAwIHggMjUwKR5WZXJ0aWNhbCBSZWN0YW5nbGUgKDI0MCB4IDQwMCkbTGFyZ2UgUmVjdGFuZ2xlICgzMzYgeCAyODApFVJlY3RhbmdsZSAoMzAwIHggMTAwKRVQb3AtVW5kZXIgKDcyMCB4IDMwMCkcTWVkaXVtIFJlY3RhbmdsZSAoMzAwIHggMjUwKRZGdWxsIEJhbm5lciAoNDY4IHggNjApFkhhbGYgQmFubmVyICgyMzQgeCA2MCkTTWljcm8gQmFyICg4OCB4IDMxKRNCdXR0b24gMSAoMTIwIHggOTApE0J1dHRvbiAyICgxMjAgeCA2MCkbVmVydGljYWwgQmFubmVyICgxMjAgeCAyNDApGVNxdWFyZSBCdXR0b24gKDEyNSB4IDEyNSkWTGVhZGVyYm9hcmQgKDcyOCB4IDkwKRtXaWRlIFNreXNjcmFwZXIgKDE2MCB4IDYwMCkWU2t5c2NyYXBlciAoMTIwIHggNjAwKRhIYWxmIFBhZ2UgQWQgKDMwMCB4IDYwMCkVQmlsbGJvYXJkICg3NTAgeCAxMDApG0RvdWJsZWJpbGxib2FyZCAoNzUwIHggMjAwKRUUAAkzMDAgeCAyNTAJMjQwIHggNDAwCTMzNiB4IDI4MAkzMDAgeCAxMDAJNzIwIHggMzAwCTMwMCB4IDI1MAg0NjggeCA2MAgyMzQgeCA2MAc4OCB4IDMxCDEyMCB4IDkwCDEyMCB4IDYwCTEyMCB4IDI0MAkxMjUgeCAxMjUINzI4IHggOTAJMTYwIHggNjAwCTEyMCB4IDYwMAkzMDAgeCA2MDAJNzUwIHggMTAwCTc1MCB4IDIwMBQrAxRnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2RkAgYPEGQQFQcDQWxsBUltYWdlDEhUTUwgQ29udGVudA1GbGFzaCBCYW5uZXJzCkVkaXRvcmlhbHMFTWl4ZWQJVGV4dCBMaW5rFQcAATEBMgEzATUBNgE3FCsDB2dnZ2dnZ2dkZAIHD2QWAgIFDxBkEBUWA0FsbAdBZG1pcmFsD0FyZ29zIEluc3VyYW5jZQxBU0RBIEZpbmFuY2UcQmVubmV0dHMgTW90b3JiaWtlIEluc3VyYW5jZQlDaHVyY2hpbGwLRGlyZWN0IExpbmUYRGlyZWN0IFRyYXZlbCBJbnN1cmFuY2UgCEV1cm9zdGFyCUdvY29tcGFyZQpHcmVlbiBGbGFnFEhhbGlmYXggQ3JlZGl0IENhcmRzEkt3aWsgRml0IEluc3VyYW5jZRFNYXJrcyBhbmQgU3BlbmNlciBPaW5jLmNvbSBPbmxpbmUgVHJhdmVsIEluc3VyYW5jZRJPbmxpbmUgTWVkaWEgR3JvdXANUmVzY3VlIE15IENhchBTYWluc2J1cnkncyBCYW5rFFRyYXZlbCBJbnN1cmFuY2UgV2ViDFZpcmdpbiBNb25leQdXSFNtaXRoDVllcyBJbnN1cmFuY2UVFgEwBDQzMDEGMTExMzQ5BTg2MjUzBDI0MjEEMTIzNgQxNTM2BTEyMjUxBDQ4ODMEMzQ2NgQxNTM3BTE2MTgzBDE3NTQEMjI1MQU2NTU1NQQxMDI1BDQzODgFNDEzMzEEMTk1NgMzNTEENDU2OAQyMjc2FCsDFmdnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dnZ2dkZAIID2QWBAIMDw8WAh4JTWF4TGVuZ3RoZmRkAhIPDxYCHwNmZGQCBQ9kFgQCBQ8QZGQWAGQCDQ8QZGQWAWZkAgYPD2QPEBYDZgIBAgIWAxYCHg5QYXJhbWV0ZXJWYWx1ZQUDNTQyFgIfBGQWAh8EZBYDAgUCAwIDZGQCBQ8PFgIfAWhkZGTBpeqPSNcBsSw8OmyhYN8N7YyNcg==');
-			
-			
-			$valuesFormExport[] = new Oara_Curl_Parameter('ctl00$Uc_Navigation1$ddlNavSelectMerchant', '0');
-			$valuesFormExport[] = new Oara_Curl_Parameter('ctl00$ContentPlaceHolder1$Uc_containersearch1$drpSize', '');
-			$valuesFormExport[] = new Oara_Curl_Parameter('ctl00$ContentPlaceHolder1$Uc_containersearch1$txtSize', '');
-			$valuesFormExport[] = new Oara_Curl_Parameter('ctl00$ContentPlaceHolder1$Uc_containersearch1$drpType', '');
-	       	$valuesFormExport[] = new Oara_Curl_Parameter('ctl00$ContentPlaceHolder1$Uc_containersearch1$drpMerchant', $merchant['cid']);//
-	       	$valuesFormExport[] = new Oara_Curl_Parameter('ctl00$ContentPlaceHolder1$Uc_containersearch1$drpProduct', '-1');
-	       	$valuesFormExport[] = new Oara_Curl_Parameter('ctl00$ContentPlaceHolder1$Uc_containersearch1$cmdSearch', 'Search');
-	       	$valuesFormExport[] = new Oara_Curl_Parameter('ctl00$ContentPlaceHolder1$Uc_containersearch1$proghiddenfield', '');
-	       	
-	       	
-       		$urls[] = new Oara_Curl_Request('https://admin.omgpm.com/v2/creative/affiliate/adcentre.aspx?', $valuesFormExport);
-       		
-			$exportReport = $this->_client->post($urls);
-    		
-			var_dump($exportReport[0]);
-		
-
-			//OMGCreativeURL34321=<script type="text/javascript" src="http://track.omguk.com/bs/?AID=542&MID=86253&PID=6748&CID=3060734&CRID=34321&WID=18372&Width=490&Height=250"></script>
-			//hidden34321=html
-			//hiddencid34321=3060734
-			//hiddenMid34321=86253
-			//hiddenPid34321=6748
-
-			
-				
-    	}
-		return $creativesMap;
-	}
+	
 }

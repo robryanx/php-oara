@@ -46,6 +46,7 @@ class Oara_Curl_Access{
 
 		//Setting cookies
 		$isOldSMG = $credentials['networkName'] == "Smg" && (strpos($credentials["cookieName"], 'old') !== false);
+		$isTD = $credentials['networkName'] == "TradeDoubler";
 		//$isAW = $credentials['networkName'] == "AffiliateWindow";
 		$dir = realpath(dirname(__FILE__)).'/../data/curl/'.$credentials['cookiesDir'].'/'.$credentials['cookiesSubDir'].'/';
 			
@@ -96,7 +97,7 @@ class Oara_Curl_Access{
 		$options[CURLOPT_POSTFIELDS] = $arg;
 
 		//problem with SMG about the redirects and headers
-		if ($isOldSMG){
+		if ($isOldSMG || $isTD){
 			$options[CURLOPT_FOLLOWLOCATION] = false;
 			$options[CURLOPT_HEADER] = true;
 		}
@@ -113,7 +114,7 @@ class Oara_Curl_Access{
 		//Close curl session
 		curl_close($ch);
 
-		while ($isOldSMG && ($info['http_code'] == 301 || $info['http_code'] == 302)) { 
+		while (($isOldSMG || $isTD) && ($info['http_code'] == 301 || $info['http_code'] == 302)) { 
 			// redirect manually, cookies must be set, which curl does not itself
 
 			// extract new location

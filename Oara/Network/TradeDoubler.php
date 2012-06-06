@@ -29,10 +29,6 @@ class Oara_Network_TradeDoubler extends Oara_Network{
 	 * @var array
 	 */
 	private $_exportOverviewParameters = null;
-	/**
-	 * Creative Export Parameters
-	 */
-	private $_exportCreativeParameters = null;
 
     /**
      * Merchant Map
@@ -214,31 +210,6 @@ class Oara_Network_TradeDoubler extends Oara_Network{
 													new Oara_Curl_Parameter('favoriteDescription','')
 													);
 	                                               
-		$this->_exportCreativeParameters = array(new Oara_Curl_Parameter('programGEListParameterTransport.currentPage', '1'),
-	                                               new Oara_Curl_Parameter('searchPerformed', 'true'),
-	                                               new Oara_Curl_Parameter('searchType', 'ge'),
-	                                               new Oara_Curl_Parameter('programGEListParameterTransport.deepLinking', ''),
-	                                               new Oara_Curl_Parameter('programGEListParameterTransport.tariffStructure', ''),
-	                                               new Oara_Curl_Parameter('programGEListParameterTransport.orderBy', 'lastUpdated'),
-	                                               new Oara_Curl_Parameter('programGEListParameterTransport.websiteStatusId', ''),
-	                                               new Oara_Curl_Parameter('programGEListParameterTransport.pageSize', '100'),
-	                                               new Oara_Curl_Parameter('programAdvancedListParameterTransport.directAutoApprove', ''),
-	                                               new Oara_Curl_Parameter('programGEListParameterTransport.graphicalElementTypeId', ''),
-	                                               new Oara_Curl_Parameter('programGEListParameterTransport.graphicalElementSize', ''),
-	                                               new Oara_Curl_Parameter('programGEListParameterTransport.width', ''),
-	                                               new Oara_Curl_Parameter('programGEListParameterTransport.height', ''),
-	                                               new Oara_Curl_Parameter('programGEListParameterTransport.lastUpdated', ''),
-	                                               new Oara_Curl_Parameter('programGEListParameterTransport.graphicalElementNameOrId', ''),
-	                                               new Oara_Curl_Parameter('programGEListParameterTransport.showGeGraphics', 'true'),
-	                                               new Oara_Curl_Parameter('programAdvancedListParameterTransport.pfAdToolUnitName', ''),
-	                                               new Oara_Curl_Parameter('programAdvancedListParameterTransport.pfAdToolProductPerCell', ''),
-	                                               new Oara_Curl_Parameter('programAdvancedListParameterTransport.pfAdToolDescription', ''),
-	                                               new Oara_Curl_Parameter('programAdvancedListParameterTransport.pfTemplateTableRows', ''),
-	                                               new Oara_Curl_Parameter('programAdvancedListParameterTransport.pfTemplateTableColumns', ''),
-	                                               new Oara_Curl_Parameter('programAdvancedListParameterTransport.pfTemplateTableWidth', ''),
-	                                               new Oara_Curl_Parameter('programAdvancedListParameterTransport.pfTemplateTableHeight', ''),
-	                                               new Oara_Curl_Parameter('programAdvancedListParameterTransport.pfAdToolContentUnitRule', '')
-												   );
 												   
 												   
 			
@@ -710,66 +681,4 @@ class Oara_Network_TradeDoubler extends Oara_Network{
 	    }
     	return $paymentHistory;
     }
-
-	/**
-	 * (non-PHPdoc)
-	 * @see Oara/Network/Oara_Network_Base#getCreatives()
-	 */
-	public function getCreatives(){
-		$creativesMap = array();
-		
-    	$merchantList = self::getMerchantList();
-    	
-    	foreach ($merchantList as $merchant){
-    		$websiteFirstId = null;
-    		$websiteMap = array();
-    		if (isset($this->_websitesList[$merchant['cid']])){
-				$websiteMap = $this->_websitesList[$merchant['cid']];	
-			}
-			
-			foreach ($websiteMap as $websiteid => $websiteName){
-				$websiteFirstId = $websiteid;
-				break;
-			}
-			
-			if ($websiteFirstId != null){
-				$urls = array();
-				$valuesFormExport = Oara_Utilities::cloneArray($this->_exportCreativeParameters);
-		       	$valuesFormExport[] = new Oara_Curl_Parameter('programGEListParameterTransport.siteId', $websiteFirstId);
-		       	$valuesFormExport[] = new Oara_Curl_Parameter('programGEListParameterTransport.programIdOrName', $merchant['cid']);
-	       		$urls[] = new Oara_Curl_Request('http://publisher.tradedoubler.com/pan/aGEList.action?', $valuesFormExport);
-	       		
-				$exportReport = $this->_client->post($urls);
-		    	for ($i = 0; $i < count($exportReport); $i++){
-		    		if (preg_match_all("/javascript: showCode\((.+)?\)/", $exportReport[$i], $matches)){
-		    			foreach ($matches[1] as $parameters){
-		    				$paramatersArray = explode(',', $parameters);
-		    				$programId = $paramatersArray[1];
-		    				$graphicalElementId = $paramatersArray[0];
-		    				$affiliateId = $paramatersArray[3];
-		    				if (is_numeric($programId) && is_numeric($graphicalElementId) && is_numeric($affiliateId)){
-		    					/**
-			    				$creativesMap[(string)$programId][] = "<script type=\"text/javascript\">
-																	   var uri = 'http://impgb.tradedoubler.com/imp?type(img)g($graphicalElementId)a($affiliateId)' + new String (Math.random()).substring (2, 11);
-																	   document.write('<a href=\"http://clkuk.tradedoubler.com/click?p=$programId&a=$affiliateId&g=$graphicalElementId\" target=\"_BLANK\"><img src=\"'+uri+'\" border=0></a>');
-																	   </script>";
-			    				
-								$creativesMap[(string)$programId][] = "<script type=\"text/javascript\">
-																	   var uri = 'http://impgb.tradedoubler.com/imp?type(iframe)g($graphicalElementId)a($affiliateId)' + new String (Math.random()).substring (2, 11);
-																	   document.write('<iframe src=\"'+uri +'\" width=\"234\" height=\"60\" frameborder=\"0\" border=\"0\" marginwidth=\"0\" marginheight=\"0\" scrolling=\"no\"></iframe>');
-																	   </script>";
-								**/
-								
-								$creativesMap[(string)$programId][] = "<script type=\"text/javascript\">
-																	   var uri = 'http://impgb.tradedoubler.com/imp?type(js)g($graphicalElementId)a($affiliateId)' + new String (Math.random()).substring (2, 11);
-																	   document.write('<sc'+'ript type=\"text/javascript\" src=\"'+uri+'\" charset=\"\"></sc'+'ript>');
-																	   </script>";
-		    				}
-		    			}
-		    		}
-		    	}
-			}
-    	}
-		return $creativesMap;
-	}
 }

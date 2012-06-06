@@ -89,7 +89,7 @@ class Oara_Utilities
 		}
 
 
-		$difference = ($endDate->get(Zend_Date::YEAR) - $starDate->get(Zend_Date::YEAR));
+		$difference = (int)($endDate->get(Zend_Date::YEAR) - $starDate->get(Zend_Date::YEAR));
 		$dateArray = array();
 		$dateArray[] = clone $starDate;
 		/**If there are more than 1 month of difference ,
