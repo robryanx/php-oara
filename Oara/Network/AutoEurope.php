@@ -201,6 +201,7 @@ class Oara_Network_AutoEurope extends Oara_Network{
 			while (! feof($stderr)) {
 				$error .= fgets($stderr);
 			}
+			echo $error;
 			fclose($stdin);
 			fclose($stdout);
 			fclose($stderr);
