@@ -211,7 +211,7 @@ class Oara_Network_AutoEurope extends Oara_Network{
 		}
 		unlink($dir.$exportReportUrl);
 		
-		$myFile = "testFile.txt";
+		$myFile = "/sites/fubra-affjet/projects/live/affjet/testFile.txt";
 		$fh = fopen($myFile, 'w') or die("can't open file");
 		$stringData = $pdfContent;
 		fwrite($fh, $stringData);
