@@ -91,21 +91,19 @@ class Oara_Network_AutoEurope extends Oara_Network{
 		$xmlTransactionList = self::readTransactions($exportReport[0]);
 
 		foreach ($xmlTransactionList as $xmlTransaction){
-			if (strlen($xmlTransaction['date']) != 10){
-				throw new Exception ("Error reading transaction");
-			}
 			$transaction = array();
 			$transaction['merchantId'] = 1;
-			$date = new Zend_date($xmlTransaction['date'],"MM/dd/yyyy");
+			$date = new Zend_date($xmlTransaction['Booked'],"MM/dd/yyyy");
 			$transaction['date'] = $date->toString("yyyy-MM-dd");
-			$transaction['amount'] = (double) $xmlTransaction['value'];
+			$transaction['amount'] = (double) $xmlTransaction['commissionValue'];
 			$transaction['commission'] = (double) $xmlTransaction['commission'];
 			$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
-			$transaction['customId'] = $xmlTransaction['customId'];
+			$transaction['customId'] = $xmlTransaction['Res #'];
 
 			$totalTransactions[] = $transaction;
 		}
-
+		var_dump($totalTransactions);
+		throw new Exception("as");
 		return $totalTransactions;
 
 	}
@@ -210,50 +208,94 @@ class Oara_Network_AutoEurope extends Oara_Network{
 			$exit_code = proc_close($pdfReader);
 		}
 		unlink($dir.$exportReportUrl);
-		
-		$myFile = "/sites/fubra-affjet/projects/live/affjet/testFile.txt";
-		$fh = fopen($myFile, 'w') or die("can't open file");
-		$stringData = $pdfContent;
-		fwrite($fh, $stringData);
-		fclose($fh);
-		
 		$xml = new SimpleXMLElement($pdfContent);
+		$topHeader = null;
+		$list = $xml->xpath("page/text[@font=0 and b = \"Agent\"]");
+		if (count($list) > 0){
+			$header = current($list);
+			$attributes = $header->attributes();
+			$top = (int)$attributes['top'];
+		} else {
+			throw new Exception("No Header Found");
+		}
+		
+		if ($top == null){
+			throw new Exception("No Top Found");
+		}
+		$fromTop = $top - 3;
+		$toTop = $top + 3;
+		$list = $xml->xpath("page/text[@top>$fromTop and @top<$toTop and @font=0]");
+		$headerList = array();
+		foreach ($list as $header){
+			$xmlHeader = new stdClass();
+			$attributes = $header->attributes();
+			$xmlHeader->top = (int)$attributes['top'];
+			$xmlHeader->left = (int)$attributes['left'];
+			$xmlHeader->width = (int)$attributes['width'];
+			foreach ($header->children() as $child){
+				$xmlHeader->name = (String)$child;
+			}
+			if (strpos($xmlHeader->name, "commission") === false){
+				$headerList[] = $xmlHeader;
+			} else {
+				$xmlHeaderCommissionValue = new stdClass();
+				$xmlHeaderCommissionValue->top = $xmlHeader->top;
+				$xmlHeaderCommissionValue->left = $xmlHeader->left;
+				$xmlHeaderCommissionValue->width = 100;
+				$xmlHeaderCommissionValue->name = (String)"commissionValue";
+				
+				$xmlHeaderCommission = new stdClass();
+				$xmlHeaderCommission->top = $xmlHeader->top;
+				$xmlHeaderCommission->left = $xmlHeader->left + $xmlHeaderCommissionValue->width;
+				$xmlHeaderCommission->width = 150;
+				$xmlHeaderCommission->name = (String)"commission";
+				
+				$headerList[] = $xmlHeaderCommissionValue;
+				$headerList[] = $xmlHeaderCommission;
+			}
+			
+		}
+		
+		$list = $xml->xpath("page/text[@font=2]");
+		$rowList = array();
+		foreach ($list as $row){
+			$attributes = $row->attributes();
+			$top = (int)$attributes['top'];
+			if (!in_array($top, $rowList)){
+				$rowList[] = $top;
+			}
+		}
+		
 		$transationList = array();
-		$list = $xml->xpath("page/text[@left>20 and @left<40 and @font=2]");
-		$i = 0;
-		foreach ($list as $node){
-			if ((string)$node != null){
-				$transationList[$i]['date'] = (string)$node;
-				$i++;
+		foreach ($rowList as $top){
+			$transaction = array();
+			$list = $xml->xpath("page/text[@top=$top and @font=2]");
+			
+			foreach ($list as $value){
+				$attributes = $value->attributes();
+				$fromLeft = (int)$attributes['left'];
+				$toLeft = (int)($attributes['left'] + $attributes['width']);
+				
+				$i = 0;
+				$enc = false;
+				$number = count($headerList);
+				while (!$enc && ($i < $number)){
+					$header = $headerList[$i];
+					$headerFromLeft = $header->left;
+					$headerToLeft = $header->left + $header->width;
+					
+					$valueInHeader = $headerFromLeft<=$fromLeft && $toLeft<=$headerToLeft;
+					$headerInValue = $fromLeft<=$headerFromLeft && $headerToLeft<=$toLeft;
+					if ($valueInHeader || $headerInValue){
+						$transaction[$header->name] = (string)$value;
+						$enc = true;
+					}
+					$i++;
+				}
 			}
+			$transationList[] = $transaction;
 		}
-		$list = $xml->xpath("page/text[@left>420 and @left<460 and @font=2]");
-		$i = 0;
-		foreach ($list as $node){
-			if ((string)$node != null){
-				$transationList[$i]['customId'] = (string)$node;
-				$i++;
-			}
-		}
-		$list = $xml->xpath("page/text[@left>980 and @left<1080 and @font=2]");
-		$i = 0;
-		foreach ($list as $node){
-			if ((string)$node != null){
-				$transationList[$i]['value'] = (string)$node;
-				$i++;
-			}
-		}
-
-		$list = $xml->xpath("page/text[@left>1080 and @font=2]");
-		$i = 0;
-		foreach ($list as $node){
-			if ((string)$node != null){
-				$transationList[$i]['commission'] = (string)$node;
-				$i++;
-			}
-		}
-		var_dump($transationList);
-		throw new Exception("asd");
+		
 		return $transationList;
 	}
 
