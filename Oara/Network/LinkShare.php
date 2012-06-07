@@ -265,9 +265,11 @@ class Oara_Network_LinkShare extends Oara_Network{
 					$valuesFromExport[] = new Oara_Curl_Parameter('bdate', $dStartDate->toString("yyyyMMdd"));
 					$valuesFromExport[] = new Oara_Curl_Parameter('edate', $dEndDate->toString("yyyyMMdd"));
 
+					echo "getting Transactions for Merchant $mid for site ".$site->id."\n\n";
 					$urls = array();
 					$urls[] = new Oara_Curl_Request('https://reportws.linksynergy.com/downloadreport.php?', $valuesFromExport);
 					$result = $this->_client->get($urls);
+					
 					$exportData = str_getcsv($result[0],"\n");
 					$num = count($exportData);
 					for ($j = 1; $j < $num; $j++) {
@@ -403,6 +405,7 @@ class Oara_Network_LinkShare extends Oara_Network{
 					$edate->subDay(1);
 				}
 
+				echo "getting Payment for Site ".$site->id." and year ".$bdate->toString("yyyy")." \n\n";
 				$urls = array();
 				$urlParams = array();
 				$urlParams[] = new Oara_Curl_Parameter('bdate', $bdate->toString("yyyyMMdd"));
