@@ -103,7 +103,6 @@ class Oara_Network_AutoEurope extends Oara_Network{
 			$totalTransactions[] = $transaction;
 		}
 		var_dump($totalTransactions);
-		throw new Exception("as");
 		return $totalTransactions;
 
 	}
