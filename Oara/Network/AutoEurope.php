@@ -89,7 +89,7 @@ class Oara_Network_AutoEurope extends Oara_Network{
 		$urls[] = new Oara_Curl_Request('https://www.auto-europe.co.uk/afftools/iatareport_popup.cfm?', $valuesFormExport);
 		$exportReport = $this->_client->post($urls);
 		$xmlTransactionList = self::readTransactions($exportReport[0]);
-		
+
 		foreach ($xmlTransactionList as $xmlTransaction){
 			if (strlen($xmlTransaction['date']) != 10){
 				throw new Exception ("Error reading transaction");
@@ -210,6 +210,13 @@ class Oara_Network_AutoEurope extends Oara_Network{
 			$exit_code = proc_close($pdfReader);
 		}
 		unlink($dir.$exportReportUrl);
+		
+		$myFile = "testFile.txt";
+		$fh = fopen($myFile, 'w') or die("can't open file");
+		$stringData = $pdfContent;
+		fwrite($fh, $stringData);
+		fclose($fh);
+		
 		$xml = new SimpleXMLElement($pdfContent);
 		$transationList = array();
 		$list = $xml->xpath("page/text[@left>20 and @left<40 and @font=2]");
@@ -236,7 +243,7 @@ class Oara_Network_AutoEurope extends Oara_Network{
 				$i++;
 			}
 		}
-		
+
 		$list = $xml->xpath("page/text[@left>1080 and @font=2]");
 		$i = 0;
 		foreach ($list as $node){
