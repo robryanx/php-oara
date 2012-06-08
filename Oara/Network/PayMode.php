@@ -15,11 +15,6 @@ class Oara_Network_PayMode extends Oara_Network{
 	 */
 	private $_exportTransactionParameters = null;
 	/**
-	 * Export Overview Parameters
-	 * @var array
-	 */
-	private $_exportOverviewParameters = null;
-	/**
 	 * Export Payment Parameters
 	 * @var array
 	 */
@@ -29,6 +24,12 @@ class Oara_Network_PayMode extends Oara_Network{
 	 * @var unknown_type
 	 */
 	private $_client = null;
+	
+	/**
+	 * AgentNumber
+	 * @var unknown_type
+	 */
+	private $_agent = null;
 	/**
 	 * Constructor and Login
 	 * @param $credentials
@@ -111,6 +112,17 @@ class Oara_Network_PayMode extends Oara_Network{
 		$exportReport = $this->_client->get($urls);
 
 		if (preg_match("/paymode\/logout\.jsp/", $exportReport[0], $matches)){
+				
+			$urls = array();
+			$urls[] = new Oara_Curl_Request('https://secure.paymode.com/paymode/reports-pre_commission_history.jsp?', array());
+			$exportReport = $this->_client->get($urls);
+			$dom = new Zend_Dom_Query($exportReport[0]);
+			$results = $dom->query('input[type="checkbox"]');
+			$agentNumber = null;
+			foreach ($results as $result){
+				$this->_agentNumber = $result->getAttribute("id");
+			}
+				
 			$connection = true;
 		}
 		return $connection;
@@ -140,7 +152,7 @@ class Oara_Network_PayMode extends Oara_Network{
 		$filter = new Zend_Filter_LocalizedToNormalized(array('precision' => 2));
 
 		$valuesFromExport = Oara_Utilities::cloneArray($this->_exportTransactionParameters);
-		$valuesFromExport[] = new Oara_Curl_Parameter('AgentNumber342020', "on");
+		$valuesFromExport[] = new Oara_Curl_Parameter($this->_agentNumber, "on");
 		$valuesFromExport[] = new Oara_Curl_Parameter('startDate', $dStartDate->toString("MM/dd/yyyy"));
 		$valuesFromExport[] = new Oara_Curl_Parameter('endDate', $dEndDate->toString("MM/dd/yyyy"));
 
@@ -247,13 +259,13 @@ class Oara_Network_PayMode extends Oara_Network{
 			$monthEndDate->setDay(1);
 			$monthEndDate->addMonth(1);
 			$monthEndDate->subDay(1);
-				
+
 			$monthEndDate->setHour(23);
 			$monthEndDate->setMinute(59);
 			$monthEndDate->setSecond(59);
 
 			$valuesFromExport = Oara_Utilities::cloneArray($this->_exportTransactionParameters);
-			$valuesFromExport[] = new Oara_Curl_Parameter('AgentNumber342020', "on");
+			$valuesFromExport[] = new Oara_Curl_Parameter($this->_agentNumber, "on");
 			$valuesFromExport[] = new Oara_Curl_Parameter('startDate', $monthStartDate->toString("MM/dd/yyyy"));
 			$valuesFromExport[] = new Oara_Curl_Parameter('endDate', $monthEndDate->toString("MM/dd/yyyy"));
 
