@@ -330,7 +330,7 @@ class Oara_Network_Daisycon extends Oara_Network{
     }
     /**
      * 
-     * Function that returns the innet HTML code 
+     * Function that returns the inner HTML code 
      * @param unknown_type $element
      */
 	private function DOMinnerHTML($element)
