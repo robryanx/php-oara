@@ -77,7 +77,7 @@ class Oara_Network_AdSense extends Oara_Network{
 		$urls = array();
 		$urls[] = new Oara_Curl_Request('https://accounts.google.com/ServiceLoginAuth', $valuesLogin);
 		$content = $this->_client->post($urls);
-		echo current($content);
+		
 		$dom = new Zend_Dom_Query(current($content));
 		$results = $dom->query('#challengeform');
 		//We have to provide the challenge
