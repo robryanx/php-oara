@@ -77,7 +77,7 @@ class Oara_Network_AdSense extends Oara_Network{
 		$urls = array();
 		$urls[] = new Oara_Curl_Request('https://accounts.google.com/ServiceLoginAuth', $valuesLogin);
 		$content = $this->_client->post($urls);
-		
+		echo current($content);
 		$dom = new Zend_Dom_Query(current($content));
 		$results = $dom->query('#challengeform');
 		//We have to provide the challenge
@@ -88,13 +88,13 @@ class Oara_Network_AdSense extends Oara_Network{
 			$challenge[] = new Oara_Curl_Parameter('continue', 'https://www.google.com/adsense/v3/gaiaauth2?destination=/adsense/v3/home');
 			$challenge[] = new Oara_Curl_Parameter('jsenabled' , 'true');
 			
-			$results = $dom->query('#RecoveryEmailChallengeInput');
+			$results = $dom->query('#RecoveryEmailChallengeOption');
 			$count = count($results);
 			if ($count > 0 && $emailChallenge != null ){
 				$challenge[] = new Oara_Curl_Parameter('emailAnswer' , $emailChallenge);
 				$challenge[] = new Oara_Curl_Parameter('challengetype' , 'RecoveryEmailChallenge');
 			} else {
-				$results = $dom->query('#PhoneVerificationChallengeInput');
+				$results = $dom->query('#PhoneVerificationChallengeOption');
 				$count = count($results);
 				if ($count > 0 && $phoneChallenge != null){
 					$challenge[] = new Oara_Curl_Parameter('phoneNumber' , $phoneChallenge);
