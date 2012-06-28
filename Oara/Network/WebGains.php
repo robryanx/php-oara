@@ -50,7 +50,6 @@ class Oara_Network_WebGains extends Oara_Network{
 	                                                     'commission'=>'commission',
 	                                                     'date'=>'date',
 	                                                     'merchantId'=>'merchantId',
-														 'websiteId'=>'websiteId',
 														 'custom_id'=>'clickRef',
 	                                                    );
 	/**
@@ -89,23 +88,6 @@ class Oara_Network_WebGains extends Oara_Network{
                              );
 		
 		$this->_webClient = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
-		/*
-		$urls = array();
-        $urls[] = new Oara_Curl_Request('http://www.webgains.com/affiliates/index.html', array());
-	    $exportReport = $this->_webClient->get($urls);
-		preg_match("/'YPF8827340282Jdskjhfiw_928937459182JAX666', '(.*)', 10/", $exportReport[0], $match);
-		
-		$dir = realpath(dirname(__FILE__)).'/../data/curl/'.$credentials['cookiesDir'].'/'.$credentials['cookiesSubDir'].'/';
-		$cookieName = $credentials["cookieName"];
-		$cookies = $dir.$cookieName.'_cookies.txt';
-		
-		$fh = fopen($cookies, 'a') or die("can't open file");
-		$stringData = "www.webgains.com	FALSE	/	FALSE	0	YPF8827340282Jdskjhfiw_928937459182JAX666	".trim($match[1])."\n";
-		fwrite($fh, $stringData);
-		$stringData = "www.webgains.com	FALSE	/	FALSE	0	DOAReferrer	http://www.webgains.com/index.html\n";
-		fwrite($fh, $stringData);
-		fclose($fh);
-		*/
 		
 		$this->_exportMerchantParameters = array('username' => $user,
 												 'password' => $password
@@ -135,7 +117,7 @@ class Oara_Network_WebGains extends Oara_Network{
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Base#getMerchantList()
 	 */
-	public function getMerchantList($merchantMap = array())
+	public function getMerchantList()
 	{
 		$this->_campaignMap = self::getCampaignMap();
 		
@@ -145,9 +127,9 @@ class Oara_Network_WebGains extends Oara_Network{
 			foreach ($merchants as $merchant){
 				if ($merchant->programMembershipStatusName == 'Live'){
 					$merchantList[$merchant->programID] = $merchant;
-				}	
+				}
+				
 			}
-			
 		}
 		$merchantList = Oara_Utilities::soapConverter($merchantList, $this->_merchantConverterConfiguration);
 
@@ -157,7 +139,7 @@ class Oara_Network_WebGains extends Oara_Network{
      * (non-PHPdoc)
      * @see library/Oara/Network/Oara_Network_Base#getTransactionList($merchantId,$dStartDate,$dEndDate)
      */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null)
+	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null)
 	{	
 		$totalTransactions = Array();
 		
@@ -190,7 +172,6 @@ class Oara_Network_WebGains extends Oara_Network{
 					}
 					$transactionDate = new Zend_Date($transaction->date,"yyyy-MM-ddTHH:mm:ss");
 					$transaction->date = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
-					$transaction->websiteId = $campaignKey;
 			    	$totalTransactions[] = $transaction;
 				}
 			}
@@ -204,152 +185,52 @@ class Oara_Network_WebGains extends Oara_Network{
      * (non-PHPdoc)
      * @see library/Oara/Network/Oara_Network_Base#getOverviewList($merchantId,$dStartDate,$dEndDate)
      */
-	public function getOverviewList($transactionList = array(), $merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null)
+	public function getOverviewList($transactionList = array(), $merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null)
 	{
-		$totalOverview = array();
-		//At first, we need to be sure that there are some data.
-		$transactionList = self::transactionMapPerDay($transactionList);
-		$dateArray = Oara_Utilities::daysOfDifference($dStartDate, $dEndDate);
-	    $dateArraySize = count($dateArray);
-	    
-	    $auxStartDate = clone $dStartDate;
-	    $auxStartDate->setHour("00");
-        $auxStartDate->setMinute("00");
-        $auxStartDate->setSecond("00");
-        $auxEndDate = clone $dEndDate;
-        $auxEndDate->setHour("23");
-        $auxEndDate->setMinute("59");
-        $auxEndDate->setSecond("59");
+		$totalOverviews = Array();
+        $transactionArray = Oara_Utilities::transactionMapPerDay($transactionList);
+        foreach ($transactionArray as $merchantId => $merchantTransaction){
+        	foreach ($merchantTransaction as $date => $transactionList){
+        		
+        		$overview = Array();
+                                    
+                $overview['merchantId'] = $merchantId;
+                $overviewDate = new Zend_Date($date, "yyyy-MM-dd");
+                $overview['date'] = $overviewDate->toString("yyyy-MM-dd HH:mm:ss");
+                $overview['click_number'] = 0;
+                $overview['impression_number'] = 0;
+                $overview['transaction_number'] = 0;
+                $overview['transaction_confirmed_value'] = 0;
+                $overview['transaction_confirmed_commission']= 0;
+                $overview['transaction_pending_value']= 0;
+                $overview['transaction_pending_commission']= 0;
+                $overview['transaction_declined_value']= 0;
+                $overview['transaction_declined_commission']= 0;
+                $overview['transaction_paid_value']= 0;
+                $overview['transaction_paid_commission']= 0;
+                foreach ($transactionList as $transaction){
+                	$overview['transaction_number'] ++;
+                    if ($transaction['status'] == Oara_Utilities::STATUS_CONFIRMED){
+                    	$overview['transaction_confirmed_value'] += $transaction['amount'];
+                    	$overview['transaction_confirmed_commission'] += $transaction['commission'];
+                    } else if ($transaction['status'] == Oara_Utilities::STATUS_PENDING){
+                    	$overview['transaction_pending_value'] += $transaction['amount'];
+                    	$overview['transaction_pending_commission'] += $transaction['commission'];
+                    } else if ($transaction['status'] == Oara_Utilities::STATUS_DECLINED){
+                    	$overview['transaction_declined_value'] += $transaction['amount'];
+                    	$overview['transaction_declined_commission'] += $transaction['commission'];
+                	} else if ($transaction['status'] == Oara_Utilities::STATUS_PAID){
+                    	$overview['transaction_paid_value'] += $transaction['amount'];
+                    	$overview['transaction_paid_commission'] += $transaction['commission'];
+                	}
+        		}
+                $totalOverviews[] = $overview;
+        	}
+        }
         
-		$groupMap = array();
-        foreach ($this->_campaignMap as $campaignKey => $campaignValue){
-
-	        $overviewList = $this->_soapClient->getProgramReport($auxStartDate->getIso(), $auxEndDate->getIso(),
-																 $campaignKey, $this->_exportOverviewParameters['username'],
-																 $this->_exportOverviewParameters['password']);
-			$exist = false;
-			$j = 0;
-			while ( $j < count($overviewList) && !$exist){
-				if (in_array($overviewList[$j]->programID ,$merchantList)){
-					$exist = true;
-				}
-				$j++;
-			}								 
-			
-			if ($exist){
-			
-	            for ($i = 0; $i < $dateArraySize; $i++){
-	            	$auxStartDayDate = clone $dateArray[$i];
-		        	$auxStartDayDate->setHour("00");
-		            $auxStartDayDate->setMinute("00");
-		            $auxStartDayDate->setSecond("00");
-		            
-		            $auxEndDayDate = clone $dateArray[$i];
-		            $auxEndDayDate->setHour("23");
-		            $auxEndDayDate->setMinute("59");
-		            $auxEndDayDate->setSecond("59");
-		            
-		            $overviewList = $this->_soapClient->getProgramReport($auxStartDayDate->getIso(), $auxEndDayDate->getIso(),
-																		 $campaignKey, $this->_exportOverviewParameters['username'],
-																		 $this->_exportOverviewParameters['password']);
-
-					
-	            
-					for ($j = 0; $j < count($overviewList) ;$j++){
-						
-						if (in_array($overviewList[$j]->programID ,$merchantList)){
-							
-							$overviewArray = array();
-							
-							$overviewArray['merchantId'] = $overviewList[$j]->programID;
-							$overviewArray['date'] = $auxStartDayDate->toString("yyyy-MM-dd HH:mm:ss");
-							$overviewArray['click_number'] = $overviewList[$j]->clickTotals;
-							$overviewArray['impression_number'] = $overviewList[$j]->viewTotals;
-							
-							$transactionDateArray = self::getDayFromArray($overviewArray['merchantId'], $campaignKey, $transactionList, $auxStartDayDate);
-							$overviewArray['transaction_number'] = 0;
-							$overviewArray['transaction_confirmed_value'] = 0;
-	                        $overviewArray['transaction_confirmed_commission']= 0;
-	                        $overviewArray['transaction_pending_value']= 0;
-	                        $overviewArray['transaction_pending_commission']= 0;
-	                        $overviewArray['transaction_declined_value']= 0;
-	                        $overviewArray['transaction_declined_commission']= 0;
-							foreach ($transactionDateArray as $transaction){
-								if (!isset($transaction['amount'])){
-									$transaction['amount'] = 0;
-								}
-								if (!isset($transaction['commission'])){
-									$transaction['commission'] = 0;
-								}
-		                        $overviewArray['transaction_number']++;
-	                        	if ($transaction['status'] == Oara_Utilities::STATUS_CONFIRMED){
-	                            	$overviewArray['transaction_confirmed_value'] += $transaction['amount'];
-	                            	$overviewArray['transaction_confirmed_commission'] += $transaction['commission'];
-	                        	} else if ($transaction['status'] == Oara_Utilities::STATUS_PENDING){
-	                            	$overviewArray['transaction_pending_value'] += $transaction['amount'];
-	                            	$overviewArray['transaction_pending_commission'] += $transaction['commission'];
-	                        	} else if ($transaction['status'] == Oara_Utilities::STATUS_DECLINED){
-	                            	$overviewArray['transaction_declined_value'] += $transaction['amount'];
-	                            	$overviewArray['transaction_declined_commission'] += $transaction['commission'];
-	                        	}
-	                        }
-	                        $groupMap = self::groupOverview($groupMap, $overviewArray);
-						}
-					}
-	            }
-			}
-        }
-		foreach($groupMap as $merchant => $overviewPerDate){
-			foreach($overviewPerDate as $date => $overview){
-	            if (Oara_Utilities::checkRegister($overview)){
-	            	$totalOverview[] = $overview;
-	            }
-			}
-        }
-	    return $totalOverview;
+        return $totalOverviews;
 	}
 	
-	/**
-     * Group the overview
-     * @param $groupMap - map where we are grouping
-     * @param $registers - registers to add
-     * @return none
-     */
-    public function groupOverview(array $groupMap = null, array $register = null)
-    {
-            
-        if (!isset($groupMap[$register['merchantId']])){
-        	$groupMap[$register['merchantId']] = array();
-        }
-        
-    	if (!isset($groupMap[$register['merchantId']][$register['date']])){
-        	$groupMap[$register['merchantId']][$register['date']] = $register;
-        } else {
-        	
-	        if (isset($register['clicks'])){
-	        	$groupMap[$register['merchantId']][$register['date']]['click_number'] += (int)$register['clicks'];
-	        }
-	        if (isset($register['impressions'])){
-	        	$groupMap[$register['merchantId']][$register['date']]['impression_number'] += (int)$register['impressions'];
-	        }
-	        if (isset($register['status'])){
-	        	$groupMap[$register['merchantId']][$register['date']]['transaction_number'] += 1;
-	        }
-	        if (isset($register['status']) && $register['status'] == Oara_Utilities::STATUS_CONFIRMED){
-	        	$groupMap[$register['merchantId']][$register['date']]['transaction_confirmed_value'] += (double)$register['amount'];
-	        	$groupMap[$register['merchantId']][$register['date']]['transaction_confirmed_commission'] += (double)$register['commission'];
-	        }
-	        if (isset($register['status']) && $register['status'] == Oara_Utilities::STATUS_PENDING){
-	        	$groupMap[$register['merchantId']][$register['date']]['transaction_pending_value'] += (double)$register['amount'];
-	       		$groupMap[$register['merchantId']][$register['date']]['transaction_pending_commission'] += (double)$register['commission'];
-	        }
-	        if (isset($register['status']) && $register['status'] == Oara_Utilities::STATUS_DECLINED){
-	        	$groupMap[$register['merchantId']][$register['date']]['transaction_declined_value'] += (double)$register['amount'];
-	        	$groupMap[$register['merchantId']][$register['date']]['transaction_declined_commission'] += (double)$register['commission'];
-	        }
-        }
-        return $groupMap;
-    }
 	/**
 	 * Get the campaings identifiers and returns it in an array.
 	 * @return array
@@ -441,46 +322,4 @@ class Oara_Network_WebGains extends Oara_Network{
     	
     	return $paymentHistory;
     }
-	/**
-	 * Filter the transactionList per day
-	 * @param array $transactionList
-	 * @return array
-	 */
-	public function transactionMapPerDay(array $transactionList){
-		$transactionMap = array();
-		foreach ($transactionList as $transaction){
-			if (!isset($transactionMap[$transaction['merchantId']])){
-				$transactionMap[$transaction['merchantId']] = array();
-			}
-			$dateString = substr($transaction['date'], 0, 10);
-			if (!isset($transactionMap[$transaction['merchantId']][$dateString])){
-				$transactionMap[$transaction['merchantId']][$dateString] = array();
-			}
-			if (!isset($transactionMap[$transaction['merchantId']][$dateString][$transaction['websiteId']])){
-				$transactionMap[$transaction['merchantId']][$dateString][$transaction['websiteId']] = array();
-			}
-			$transactionMap[$transaction['merchantId']][$dateString][$transaction['websiteId']][] = $transaction;
-		}
-			
-		return $transactionMap;
-	}
-	/**
-	 * Get the day for this transaction array
-	 * @param map $dateArray
-	 * @param Zend_Date $date
-	 * @return array
-	 */
-	public static function getDayFromArray($merchantId, $websiteId, $dateArray, Zend_Date $date){
-		$resultArray = array();
-		if (isset($dateArray[$merchantId])){
-			$dateString = $date->toString("yyyy-MM-dd");
-			if (isset($dateArray[$merchantId][$dateString])){
-				if (isset($dateArray[$merchantId][$dateString][$websiteId])){
-					$resultArray = $dateArray[$merchantId][$dateString][$websiteId];
-				}
-				
-			}
-		}
-		return $resultArray;
-	}
 }

@@ -29,10 +29,6 @@ class Oara_Network_Skimlinks extends Oara_Network{
      * @var array
      */
 	private $_exportPaymentParameters = null;
-	/**
-	 * Merchants by name
-	 */
-	private $_merchantMap = array();
     /**
      * Client 
      * @var unknown_type
@@ -97,7 +93,7 @@ class Oara_Network_Skimlinks extends Oara_Network{
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Interface#getMerchantList()
 	 */
-	public function getMerchantList($merchantMap = array()){
+	public function getMerchantList(){
 		$merchants = array();
 		$urls = array();
         $urls[] = new Oara_Curl_Request('https://accounts.skimlinks.com/reports&report=daily', array());
@@ -116,12 +112,6 @@ class Oara_Network_Skimlinks extends Oara_Network{
 				}
 			}
 	    }
-		$this->_merchantMap = $merchantMap;
-		foreach ($merchants as $merchant){
-			if (!isset($this->_merchantMap[$merchant['name']])){
-				$this->_merchantMap[$merchant['name']] = $merchant['cid'];
-			}
-		}
 		return $merchants;
 	}
 
@@ -129,7 +119,7 @@ class Oara_Network_Skimlinks extends Oara_Network{
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null){
+	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null){
 		
 		$totalTransactions = array();
 		$mothUrls = array();
@@ -149,11 +139,11 @@ class Oara_Network_Skimlinks extends Oara_Network{
         	for ($j = 1; $j < $num-5; $j++) {
 	        	$transactionExportArray = str_getcsv($exportData[$j],",");
 	        	if (Oara_Utilities::parseDouble($transactionExportArray[2]) != 0&&
-	        		isset($this->_merchantMap[$transactionExportArray[0]]) &&
-	        		in_array($this->_merchantMap[$transactionExportArray[0]], $merchantList)){
+	        		isset($merchantMap[$transactionExportArray[0]]) &&
+	        		in_array($merchantMap[$transactionExportArray[0]], $merchantList)){
 	        			
 		            $transaction = Array();
-		            $transaction['merchantId'] = $this->_merchantMap[$transactionExportArray[0]];
+		            $transaction['merchantId'] = $merchantMap[$transactionExportArray[0]];
 		            $transactionDateString = $mothUrls[$i]->getParameter(5)->getValue();
 		            $transaction['date'] = $transactionDateString;
 
@@ -177,7 +167,7 @@ class Oara_Network_Skimlinks extends Oara_Network{
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Base#getOverviewList($merchantId, $dStartDate, $dEndDate)
 	 */
-	public function getOverviewList($transactionList = null, $merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null){
+	public function getOverviewList($transactionList = null, $merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null){
 		$overviewArray = Array();
 		$transactionArray = Oara_Utilities::transactionMapPerDay($transactionList);
 		
@@ -198,11 +188,11 @@ class Oara_Network_Skimlinks extends Oara_Network{
         	for ($j = 1; $j < $num-5; $j++) {
 	       		$overviewExportArray = str_getcsv($exportData[$j],",");
 	       		if (Oara_Utilities::parseDouble($overviewExportArray[2]) != 0&&
-	        		isset($this->_merchantMap[$overviewExportArray[0]]) &&
-	        		in_array($this->_merchantMap[$overviewExportArray[0]], $merchantList)){
+	        		isset($merchantMap[$overviewExportArray[0]]) &&
+	        		in_array($merchantMap[$overviewExportArray[0]], $merchantList)){
 	        			
 		        	$overview = Array();
-		        	$overview['merchantId'] = $this->_merchantMap[$overviewExportArray[0]];
+		        	$overview['merchantId'] = $merchantMap[$overviewExportArray[0]];
 			    	$overviewDate =  new Zend_Date($mothUrls[$i]->getParameter(5)->getValue(), 'yyyy-MM-dd', 'en');
 		        	$overview['date'] = $overviewDate->toString("yyyy-MM-dd HH:mm:ss");
 		                
@@ -215,7 +205,9 @@ class Oara_Network_Skimlinks extends Oara_Network{
 		     		$overview['transaction_pending_commission']= 0;
 		          	$overview['transaction_declined_value']= 0;
 		          	$overview['transaction_declined_commission']= 0;
-		         	$transactionDateArray = Oara_Utilities::getDayFromArray($overview['merchantId'],$transactionArray, $overviewDate);
+		          	$overview['transaction_paid_value']= 0;
+		          	$overview['transaction_paid_commission']= 0;
+		         	$transactionDateArray = Oara_Utilities::getDayFromArray($overview['merchantId'],$transactionArray, $overviewDate, true);
 		         	foreach ($transactionDateArray as $transaction){
 		          		$overview['transaction_number'] ++;
 		            	if ($transaction['status'] == Oara_Utilities::STATUS_CONFIRMED){
@@ -227,6 +219,9 @@ class Oara_Network_Skimlinks extends Oara_Network{
 		             	} else if ($transaction['status'] == Oara_Utilities::STATUS_DECLINED){
 		               		$overview['transaction_declined_value'] += $transaction['amount'];
 		                	$overview['transaction_declined_commission'] += $transaction['commission'];
+		           		} else if ($transaction['status'] == Oara_Utilities::STATUS_PAID){
+		               		$overview['transaction_paid_value'] += $transaction['amount'];
+		                	$overview['transaction_paid_commission'] += $transaction['commission'];
 		           		}
 		        	}
 		       		if (Oara_Utilities::checkRegister($overview)){

@@ -54,7 +54,7 @@ class Oara_Network_M4n extends Oara_Network{
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Interface#getMerchantList()
 	 */
-	public function getMerchantList($merchantMap = array()){
+	public function getMerchantList(){
 		$merchants = array();
 		$xmlLocation = 'https://api.m4n.nl/restful/csv/affiliate/merchants';
 		$merchantData = self::returnApiData($xmlLocation);
@@ -74,7 +74,7 @@ class Oara_Network_M4n extends Oara_Network{
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null){
+	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null){
 		
 		$totalTransactions = array();
 		
@@ -89,6 +89,7 @@ class Oara_Network_M4n extends Oara_Network{
 	            $transaction = Array();
 	            $merchantId = (int)$transactionExportArray[3];
 	            $transaction['merchantId'] = $merchantId;
+	            $transaction['unique_id'] = $transactionExportArray[0];
 	            $transactionDate = new Zend_Date($transactionExportArray[10], 'yyyy-MM-dd HH:mm:ss');
 	            $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 	            
@@ -114,7 +115,7 @@ class Oara_Network_M4n extends Oara_Network{
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Base#getOverviewList($merchantId, $dStartDate, $dEndDate)
 	 */
-	public function getOverviewList($transactionList = null, $merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null){
+	public function getOverviewList($transactionList = null, $merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null){
 		$overviewArray = Array();
         $transactionArray = Oara_Utilities::transactionMapPerDay($transactionList);
         foreach ($transactionArray as $merchantId => $merchantTransaction){
@@ -134,6 +135,8 @@ class Oara_Network_M4n extends Oara_Network{
                 $overview['transaction_pending_commission']= 0;
                 $overview['transaction_declined_value']= 0;
                 $overview['transaction_declined_commission']= 0;
+                $overview['transaction_paid_value']= 0;
+                $overview['transaction_paid_commission']= 0;
                 foreach ($transactionList as $transaction){
                 	$overview['transaction_number'] ++;
                     if ($transaction['status'] == Oara_Utilities::STATUS_CONFIRMED){
@@ -145,6 +148,9 @@ class Oara_Network_M4n extends Oara_Network{
                     } else if ($transaction['status'] == Oara_Utilities::STATUS_DECLINED){
                     	$overview['transaction_declined_value'] += $transaction['amount'];
                     	$overview['transaction_declined_commission'] += $transaction['commission'];
+                	} else if ($transaction['status'] == Oara_Utilities::STATUS_PAID){
+                    	$overview['transaction_paid_value'] += $transaction['amount'];
+                    	$overview['transaction_paid_commission'] += $transaction['commission'];
                 	}
         		}
                 $overviewArray[] = $overview;

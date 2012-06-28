@@ -25,6 +25,12 @@ class Oara_Network_AffiliNet extends Oara_Network{
 	 * User
 	 */
 	private $_password = null;
+	
+	/*
+	 * PaymentHistory
+	 */
+	private $_paymentHistory = null;
+	
 	/**
 	 * Converter configuration for the merchants.
 	 * @var array
@@ -39,11 +45,26 @@ class Oara_Network_AffiliNet extends Oara_Network{
      * @var array
      */
 	private $_transactionConverterConfiguration = Array ('TransactionStatus'=>'status',
-	                                                     'Commission'=>'commission,amount',
-	                                                     'Date'=>'date',
+														 'TransactionId' => 'unique_id',
+	                                                     'PublisherCommission'=>'commission',
+		 												 'NetPrice'=>'amount',
+	                                                     'RegistrationDate'=>'date',
 													     'ProgramId'=>'merchantId',
 														 'SubId'=>'custom_id'
 	                                                    );
+	                                                    
+	/**
+     * Converter configuration for the transactions for Payments.
+     * @var array
+     */
+	private $_transactionPaymentsConverterConfiguration = Array ('TransactionStatus'=>'status',
+																 'TransactionId' => 'unique_id',
+			                                                     'PublisherCommission'=>'commission',
+				 												 'NetPrice'=>'amount',
+			                                                     'CheckDate'=>'date',
+															     'ProgramId'=>'merchantId',
+																 'SubId'=>'custom_id'
+			                                                    );
     
     /**
      * Constructor.
@@ -69,7 +90,7 @@ class Oara_Network_AffiliNet extends Oara_Network{
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Base#getMerchantList()
 	 */
-	public function getMerchantList($merchantMap = array())
+	public function getMerchantList()
 	{
 		//Set the webservice
 		$publisherProgramServiceUrl = 'https://api.affili.net/V2.0/PublisherProgram.svc?wsdl';
@@ -99,7 +120,7 @@ class Oara_Network_AffiliNet extends Oara_Network{
      * (non-PHPdoc)
      * @see library/Oara/Network/Oara_Network_Base#getTransactionList($merchantId,$dStartDate,$dEndDate)
      */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null)
+	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null)
 	{	
 		$totalTransactions = array();
 		
@@ -133,23 +154,25 @@ class Oara_Network_AffiliNet extends Oara_Network{
 				            'EndDate' => strtotime($dEndDate->toString("yyyy-MM-dd")),
 				            'TransactionStatus' => 'All',
 				            'ProgramIds' => $merchantListAux,
+			/*
 				            'SubId' => '',
 				            'ProgramTypes' => 'All',
 				            'MaximumRecords' => '0',
 				            'ValuationType' => 'DateOfRegistration'
+				            */
 				           );
-				           
-			$transactionList = self::affilinetCall('transaction', $publisherStatisticsService, $params);
+			$currentPage = 1;	                      
+			$transactionList = self::affilinetCall('transaction', $publisherStatisticsService, $params, 0, $currentPage);
 			
-			
-			
-			if (isset($transactionList->SalesLeadsStatisticsRecords->SalesLeadsStatisticsRecords->SalesLeadsStatisticsRecord) && !is_array($transactionList->SalesLeadsStatisticsRecords->SalesLeadsStatisticsRecords->SalesLeadsStatisticsRecord)){
-	        	$transactionList->SalesLeadsStatisticsRecords->SalesLeadsStatisticsRecords->SalesLeadsStatisticsRecord = array($transactionList->SalesLeadsStatisticsRecords->SalesLeadsStatisticsRecords->SalesLeadsStatisticsRecord);
-       	 	}
-       	 	
-    		if (isset($transactionList->SalesLeadsStatisticsRecords->SalesLeadsStatisticsRecords->SalesLeadsStatisticsRecord)){
-			
-				$transactionList = Oara_Utilities::soapConverter($transactionList->SalesLeadsStatisticsRecords->SalesLeadsStatisticsRecords->SalesLeadsStatisticsRecord, $this->_transactionConverterConfiguration);
+    		while (isset($transactionList->TotalRecords) && $transactionList->TotalRecords > 0 && isset($transactionList->TransactionCollection->Transaction)){
+				$transactionCollection = array();
+    			if ($transactionList->TotalRecords == 1){
+    				$transactionCollection [] = $transactionList->TransactionCollection->Transaction;
+    			} else {
+    				$transactionCollection =  $transactionList->TransactionCollection->Transaction;
+    			}
+    			
+				$transactionList = Oara_Utilities::soapConverter($transactionCollection, $this->_transactionConverterConfiguration);
 
 		        foreach ($transactionList as $transaction){
 		        	//$transaction['merchantId'] = 3901;
@@ -162,6 +185,8 @@ class Oara_Network_AffiliNet extends Oara_Network{
 		        	}
 		        	$totalTransactions[] = $transaction;
 		        }
+		        $currentPage++;
+		        $transactionList = self::affilinetCall('transaction', $publisherStatisticsService, $params, 0, $currentPage);
         	}
         }
 		
@@ -171,7 +196,7 @@ class Oara_Network_AffiliNet extends Oara_Network{
      * (non-PHPdoc)
      * @see library/Oara/Network/Oara_Network_Base#getOverviewList($merchantId,$dStartDate,$dEndDate)
      */
-	public function getOverviewList($transactionList = null, $merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null)
+	public function getOverviewList($transactionList = null, $merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null)
 	{
 		$totalOverview = Array();
 		//At first, we need to be sure that there are some data.
@@ -189,7 +214,7 @@ class Oara_Network_AffiliNet extends Oara_Network{
 		$publisherStatisticsService = new Oara_Import_Soap_Client($publisherStatisticsServiceUrl, array('compression'=> SOAP_COMPRESSION_ACCEPT | SOAP_COMPRESSION_GZIP | SOAP_COMPRESSION_DEFLATE,
 		                                     				  							   	  	 'soap_version' => SOAP_1_1));
 		
-        $transactionList = Oara_Utilities::transactionMapPerDay($transactionList);
+        $transactionArray = Oara_Utilities::transactionMapPerDay($transactionList);
         
         foreach($merchantList as $merchantId){
         	
@@ -227,11 +252,13 @@ class Oara_Network_AffiliNet extends Oara_Network{
 	        		$overview['transaction_confirmed_commission'] = 0;
 	                $overview['transaction_pending_commission'] = 0;
 	                $overview['transaction_declined_commission'] = 0;
+	                $overview['transaction_paid_value']= 0;
+					$overview['transaction_paid_commission']= 0;
 	                
 	                $overviewDate = new Zend_Date($overviewDay->Date, "dd-MM-yyyy HH:mm:ss");
-					$transactionArray = Oara_Utilities::getDayFromArray($merchantId, $transactionList, $overviewDate);
-					$overview['transaction_number'] = count($transactionArray);
-					foreach ($transactionArray as $transaction){
+					$transactionList = Oara_Utilities::getDayFromArray($merchantId, $transactionArray, $overviewDate, true);
+					$overview['transaction_number'] = count($transactionList);
+					foreach ($transactionList as $transaction){
 					
 						if ($transaction['status'] == Oara_Utilities::STATUS_CONFIRMED){
 							$overview['transaction_confirmed_value'] += $transaction['amount'];
@@ -242,6 +269,9 @@ class Oara_Network_AffiliNet extends Oara_Network{
 						} else if ($transaction['status'] == Oara_Utilities::STATUS_DECLINED){
 							$overview['transaction_declined_value'] += $transaction['amount'];
 							$overview['transaction_declined_commission'] += $transaction['commission'];
+						} else if ($transaction['status'] == Oara_Utilities::STATUS_PAID){
+							$overview['transaction_paid_value'] += $transaction['amount'];
+							$overview['transaction_paid_commission'] += $transaction['commission'];
 						}
 						
 					}
@@ -253,6 +283,47 @@ class Oara_Network_AffiliNet extends Oara_Network{
        	 	}
         	
         }
+        
+        
+		foreach ($transactionArray as $merchantId => $merchantTransaction){
+			foreach ($merchantTransaction as $date => $transactionList){
+
+				$overview = Array();
+
+				$overview['merchantId'] = $merchantId;
+				$overviewDate = new Zend_Date($date, "yyyy-MM-dd");
+				$overview['date'] = $overviewDate->toString("yyyy-MM-dd HH:mm:ss");
+				$overview['click_number'] = 0;
+				$overview['impression_number'] = 0;
+				$overview['transaction_number'] = 0;
+				$overview['transaction_confirmed_value'] = 0;
+				$overview['transaction_confirmed_commission']= 0;
+				$overview['transaction_pending_value']= 0;
+				$overview['transaction_pending_commission']= 0;
+				$overview['transaction_declined_value']= 0;
+				$overview['transaction_declined_commission']= 0;
+				$overview['transaction_paid_value']= 0;
+				$overview['transaction_paid_commission']= 0;
+				foreach ($transactionList as $transaction){
+					$overview['transaction_number'] ++;
+					if ($transaction['status'] == Oara_Utilities::STATUS_CONFIRMED){
+						$overview['transaction_confirmed_value'] += $transaction['amount'];
+						$overview['transaction_confirmed_commission'] += $transaction['commission'];
+					} else if ($transaction['status'] == Oara_Utilities::STATUS_PENDING){
+						$overview['transaction_pending_value'] += $transaction['amount'];
+						$overview['transaction_pending_commission'] += $transaction['commission'];
+					} else if ($transaction['status'] == Oara_Utilities::STATUS_DECLINED){
+						$overview['transaction_declined_value'] += $transaction['amount'];
+						$overview['transaction_declined_commission'] += $transaction['commission'];
+					} else if ($transaction['status'] == Oara_Utilities::STATUS_PAID){
+						$overview['transaction_paid_value'] += $transaction['amount'];
+						$overview['transaction_paid_commission'] += $transaction['commission'];
+					}
+				}
+				$totalOverview[] = $overview;
+			}
+		}
+        
 	    return $totalOverview;
 	}
 	/**
@@ -314,12 +385,117 @@ class Oara_Network_AffiliNet extends Oara_Network{
     			$paymentHistory[] = $obj;
     		}
     	}
+    	$this->_paymentHistory = $paymentHistory;
     	return $paymentHistory;
     }
+    
+    
+    
+	/**
+	 *  It returns the transactions for a payment
+	 * @see Oara_Network::paymentTransactions()
+	 */
+    public function paymentTransactions($paymentId, $merchantList, $startDate){
+    	
+   		$paymentTransactionList = array();
+
+    	$paymentHistory = Oara_Utilities::registerBubbleSort($this->_paymentHistory);
+    	
+    	$paymentStartDate = new Zend_Date($startDate, "yyyy-MM-dd HH:mm:ss");
+    	$paymentEndDate = null;
+    	
+    	$enc = false;
+    	$i = 0;
+    	$payment = null;
+    	while(!$enc && $i < count($paymentHistory)){
+    		$payment = $paymentHistory[$i];
+    		if ($payment['pid'] == $paymentId) {
+    			$enc = true;
+    			$paymentEndDate = new Zend_Date($payment['date'], "yyyy-MM-dd HH:mm:ss");
+    		} else {
+    			$paymentStartDate = new Zend_Date($payment['date'], "yyyy-MM-dd HH:mm:ss");
+    		}
+    		$i++;
+    	}
+    	
+    	if ($enc && $paymentStartDate->compare($paymentEndDate) <= 0){
+	    	$totalTransactions = array();
+	    	
+	    	
+	    	$dateArray = Oara_Utilities::monthsOfDifference(new Zend_Date($startDate, "yyyy-MM-dd HH:mm:ss"), $paymentEndDate);
+			for ($i = 0; $i < count($dateArray); $i++){
+				$monthStartDate = clone $dateArray[$i];
+				$monthEndDate = null;
+	
+				if($i != count($dateArray)-1){
+					$monthEndDate = clone $dateArray[$i];
+					$monthEndDate->setDay(1);
+					$monthEndDate->addMonth(1);
+					$monthEndDate->subDay(1);
+				} else {
+					$monthEndDate = $paymentEndDate;
+				}
+				$monthEndDate->setHour(23);
+				$monthEndDate->setMinute(59);
+				$monthEndDate->setSecond(59);
+	
+				echo "\n importing from ".$monthStartDate->toString("dd-MM-yyyy HH:mm:ss"). " to ". $monthEndDate->toString("dd-MM-yyyy HH:mm:ss") ."\n";
+	
+				
+		        //Set the webservice      
+				$publisherStatisticsServiceUrl = 'https://api.affili.net/V2.0/PublisherStatistics.svc?wsdl';
+				$publisherStatisticsService = new Oara_Import_Soap_Client($publisherStatisticsServiceUrl, array('compression'=> SOAP_COMPRESSION_ACCEPT | SOAP_COMPRESSION_GZIP | SOAP_COMPRESSION_DEFLATE,
+				                                     				  							   	  'soap_version' => SOAP_1_1));
+		        $iterationNumber = self::calculeIterationNumber(count($merchantList), 100);
+		        
+		        for ($currentIteration = 0; $currentIteration < $iterationNumber; $currentIteration++){
+		        	$merchantListSlice = array_slice($merchantList, 100*$currentIteration, 100);
+			        $merchantListAux = array();
+			        foreach ($merchantListSlice as $merchant){
+			        	$merchantListAux[] = (string)$merchant;
+			        }
+				
+					//Call the function
+					$params = array(
+						            'StartDate' => strtotime($monthStartDate->toString("yyyy-MM-dd")),
+						            'EndDate' => strtotime($monthEndDate->toString("yyyy-MM-dd")),
+						            'TransactionStatus' => 'Confirmed',
+						            'ProgramIds' => $merchantListAux,
+						           );
+					$currentPage = 1;	                      
+					$transactionList = self::affilinetCall('transaction', $publisherStatisticsService, $params, 0, $currentPage);
+					
+		    		while (isset($transactionList->TotalRecords) && $transactionList->TotalRecords > 0 && isset($transactionList->TransactionCollection->Transaction)){
+						$transactionCollection = array();
+		    			if ($transactionList->TotalRecords == 1){
+		    				$transactionCollection [] = $transactionList->TransactionCollection->Transaction;
+		    			} else {
+		    				$transactionCollection =  $transactionList->TransactionCollection->Transaction;
+		    			}
+		    			
+						$transactionList = Oara_Utilities::soapConverter($transactionCollection, $this->_transactionPaymentsConverterConfiguration);
+		
+				        foreach ($transactionList as $transaction){
+				        	$transactionDate = new Zend_Date($transaction["date"], "yyyy-MM-dd HH:mm:ss");
+				        	if ($paymentStartDate->compare($transactionDate) <= 0 && $paymentEndDate->compare($transactionDate) >= 0){
+				        		$paymentTransactionList[] = $transaction["unique_id"];
+				        	}
+				        }
+				        $currentPage++;
+				        $transactionList = self::affilinetCall('transaction', $publisherStatisticsService, $params, 0, $currentPage);
+		        	}
+		        }
+			}
+    	}
+    	
+    	return $paymentTransactionList;
+    }
+    
+    
     /**
      * Call to the API controlling the exception and Login
      */
-    private function affilinetCall($call, $ws, $params, $try = 0){
+    private function affilinetCall($call, $ws, $params, $try = 0, $currentPage = 0){
     	$result = null;
     	try{
     		
@@ -329,8 +505,10 @@ class Oara_Network_AffiliNet extends Oara_Network{
 									           	  	 'GetProgramsRequestMessage' => $params));									        
 		        break;
 	    		case 'transaction':
-	    			$result = $ws->GetSalesLeadsStatistics(array('CredentialToken' => $this->_token,
-								           					     'GetSalesLeadsStatisticsRequestMessage' => $params));
+	    			$pageSettings = array("CurrentPage"=>$currentPage, "PageSize" => 100);
+	    			$result = $ws->GetTransactions(array('CredentialToken' => $this->_token,
+									           	  	 'TransactionQuery' => $params,
+	    											'PageSettings'=>$pageSettings));
 	    		break;
 		        case 'overview':
 	    			$result = $ws->GetDailyStatistics(array('CredentialToken' => $this->_token,
@@ -348,7 +526,7 @@ class Oara_Network_AffiliNet extends Oara_Network{
     		if (preg_match("/Login failed/", $e->getMessage()) && $try < 5){
             	self::Login();
             	$try++;
-    			$result = self::affilinetCall($call, $ws, $params, $try);
+    			$result = self::affilinetCall($call, $ws, $params, $try, $currentPage);
             }else {
     			throw new Exception ("problem with Affilinet API, no login fault");
     		}

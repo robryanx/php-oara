@@ -94,7 +94,7 @@ class Oara_Network_Ebay extends Oara_Network{
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Interface#getMerchantList()
 	 */
-	public function getMerchantList($merchantMap = array()){
+	public function getMerchantList(){
 		$merchants = array();
 		
         $obj = array();
@@ -110,7 +110,7 @@ class Oara_Network_Ebay extends Oara_Network{
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null){
+	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null){
 		self::logIn();
 		$totalTransactions = array();
 		
@@ -190,7 +190,7 @@ class Oara_Network_Ebay extends Oara_Network{
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Base#getOverviewList($merchantId, $dStartDate, $dEndDate)
 	 */
-	public function getOverviewList($transactionList = null, $merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null){
+	public function getOverviewList($transactionList = null, $merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null){
 		self::logIn();
 		$overviewArray = Array();
 		$transactionArray = Oara_Utilities::transactionMapPerDay($transactionList);
@@ -231,10 +231,8 @@ class Oara_Network_Ebay extends Oara_Network{
 		}
 		// Ad clicks and transactions for this day
 		foreach ($overviewByDateArray as $date => $obj){
-			$overviewDate = new Zend_Date($date, "yyyy/MM/dd");
-			$returnObject = self::getDayFromArray($obj['merchantId'], $transactionArray, $overviewDate, true);
-			$transactionDateArray = $returnObject->resultArray;
-			$transactionArray = $returnObject->dateArray;
+			$overviewDate = new Zend_Date($date, "yyyy-MM-dd");
+			$transactionDateArray = Oara_Utilities::getDayFromArray($obj['merchantId'], $transactionArray, $overviewDate, true);
 			unset($overviewDate);
             foreach ($transactionDateArray as $transaction){
                 $obj['transaction_number']++;
@@ -247,6 +245,9 @@ class Oara_Network_Ebay extends Oara_Network{
                 } else if ($transaction['status'] == Oara_Utilities::STATUS_DECLINED){
                 	$obj['transaction_declined_value'] += $transaction['amount'];
                 	$obj['transaction_declined_commission'] += $transaction['commission'];
+            	} else if ($transaction['status'] == Oara_Utilities::STATUS_PAID){
+                	$obj['transaction_paid_value'] += $transaction['amount'];
+                	$obj['transaction_paid_commission'] += $transaction['commission'];
             	}
             }
             if (Oara_Utilities::checkRegister($obj)){
@@ -272,6 +273,8 @@ class Oara_Network_Ebay extends Oara_Network{
                 $overview['transaction_pending_commission']= 0;
                 $overview['transaction_declined_value']= 0;
                 $overview['transaction_declined_commission']= 0;
+                $overview['transaction_paid_value']= 0;
+                $overview['transaction_paid_commission']= 0;
                 foreach ($transactionList as $transaction){
                 	$overview['transaction_number'] ++;
                     if ($transaction['status'] == Oara_Utilities::STATUS_CONFIRMED){
@@ -283,7 +286,10 @@ class Oara_Network_Ebay extends Oara_Network{
                     } else if ($transaction['status'] == Oara_Utilities::STATUS_DECLINED){
                     	$overview['transaction_declined_value'] += $transaction['amount'];
                     	$overview['transaction_declined_commission'] += $transaction['commission'];
-                	}
+                	} else if ($transaction['status'] == Oara_Utilities::STATUS_PAID){
+	                	$overview['transaction_paid_value'] += $transaction['amount'];
+	                	$overview['transaction_paid_commission'] += $transaction['commission'];
+            		}
         		}
                 $overviewArray[] = $overview;
         	}
@@ -309,7 +315,7 @@ class Oara_Network_Ebay extends Oara_Network{
 	          	$obj['merchantId'] = 1;
 	                
 	          	$overviewDate = new Zend_Date($overviewExportArray[0], "yyyy/MM/dd");
-	           	$obj['date'] = $overviewDate->toString("yyyy-MM-dd");
+	           	$obj['date'] = $overviewDate->toString("yyyy-MM-dd HH:mm:ss");
 	           	unset($overviewDate);     
 	           	$obj['impression_number'] = $overviewExportArray[4];
 	           	$obj['click_number'] = $overviewExportArray[5];
@@ -321,6 +327,8 @@ class Oara_Network_Ebay extends Oara_Network{
 	          	$obj['transaction_pending_value'] = 0;
 	           	$obj['transaction_declined_commission'] = 0;
 	      		$obj['transaction_declined_value'] = 0;
+	      		$obj['transaction_paid_commission'] = 0;
+	      		$obj['transaction_paid_value'] = 0;
         	}
         	$overviewByDateArray[$overviewExportArray[0]] = $obj;
         }
@@ -358,8 +366,6 @@ class Oara_Network_Ebay extends Oara_Network{
 				$paymentHistory[] = $obj;
 			}
 		}
-	    
-    	
     	
     	return $paymentHistory;
     }
@@ -407,21 +413,6 @@ class Oara_Network_Ebay extends Oara_Network{
 	        $innerHTML.=trim($tmp_dom->saveHTML());
 	    }
 	    return $innerHTML;
-	}
-	
-	protected function getDayFromArray($merchantId, $dateArray, Zend_Date $date){
-		$return = new stdClass();
-		$resultArray = array();
-		if (isset($dateArray[$merchantId])){
-			$dateString = $date->toString("yyyy-MM-dd");
-			if (isset($dateArray[$merchantId][$dateString])){
-				$resultArray = $dateArray[$merchantId][$dateString];
-				unset($dateArray[$merchantId][$dateString]);
-			}
-		}
-		$return->resultArray = $resultArray;
-		$return->dateArray = $dateArray;
-		return $return;
 	}
 
 }

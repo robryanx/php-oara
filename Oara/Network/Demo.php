@@ -43,7 +43,7 @@ class Oara_Network_Demo extends Oara_Network{
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Base#getMerchantList()
 	 */
-	public function getMerchantList($merchantMap = array())
+	public function getMerchantList()
 	{
 		$merchants = Array();
 		$merchantsNumber = count($this->_merchantList);
@@ -61,7 +61,7 @@ class Oara_Network_Demo extends Oara_Network{
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Base#getTransactionList($merchantId, $dStartDate, $dEndDate)
 	 */
-	public function getTransactionList($merchantList = null , Zend_Date $dStartDate = null , Zend_Date $dEndDate = null)
+	public function getTransactionList($merchantList = null , Zend_Date $dStartDate = null , Zend_Date $dEndDate = null, $merchantMap = null)
 	{
 		$totalTransactions = Array();
 		$transactionNumber = rand(1, 200);
@@ -72,14 +72,16 @@ class Oara_Network_Demo extends Oara_Network{
 			$dateIndex = rand(0, count($dateArray)-1);
 			$merchantIndex = rand(0, count($merchantList)-1);
 			$transaction = array();
+			$transaction['unique_id'] = md5(randomString());
+			$transaction['custom_id'] = "my_custom_id";
 			$transaction['merchantId'] = $merchantList[$merchantIndex];
 			$transaction['date'] = $dateArray[$dateIndex]->toString("yyyy-MM-dd HH:mm:ss");
 			$transactionAmount = rand(1, 1000);
 			$transaction['amount'] = $transactionAmount;
 			$transaction['commission'] = $transactionAmount/10;
-			$transaction['link'] = $this->_linkList[rand(0, count($this->_linkList)-1)];
-			$transaction['website'] = $this->_websiteList[rand(0, count($this->_websiteList)-1)];
-			$transaction['page'] = $this->_pageList[rand(0, count($this->_pageList)-1)];
+			//$transaction['link'] = $this->_linkList[rand(0, count($this->_linkList)-1)];
+			//$transaction['website'] = $this->_websiteList[rand(0, count($this->_websiteList)-1)];
+			//$transaction['page'] = $this->_pageList[rand(0, count($this->_pageList)-1)];
 			$transactionStatusChances = rand(1, 100);
 			if ($dateArray[$dateIndex]->compare($twoMonthsAgoDate) >= 0){
 				if ($transactionStatusChances < 60){
@@ -106,77 +108,48 @@ class Oara_Network_Demo extends Oara_Network{
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Base#getOverviewList($merchantId, $dStartDate, $dEndDate)
 	 */
-	public function getOverviewList($transactionList = null, $merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null){
+	public function getOverviewList($transactionList = null, $merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null){
 		$totalOverviews = Array();
-		$transactionArray = self::transactionMapPerDay($transactionList);
-		foreach ($transactionArray as $merchantId => $linkList){
-			foreach ($linkList as $link => $websiteList){
-				foreach ($websiteList as $website => $pageList){
-					foreach ($pageList as $page => $dateList){
-						foreach ($dateList as $date => $transactionList){
-								
-							$overview = Array();
+		$transactionArray = Oara_Utilities::transactionMapPerDay($transactionList);
+		foreach ($transactionArray as $merchantId => $merchantTransaction){
+			foreach ($merchantTransaction as $date => $transactionList){
 
-							$overview['merchantId'] = $merchantId;
-							$overviewDate = new Zend_Date($date, "yyyy-MM-dd");
-							$overview['date'] = $overviewDate->toString("yyyy-MM-dd HH:mm:ss");
-							$clickNumber = rand(1, 30);
-							$overview['click_number'] = $clickNumber;
-							$overview['link'] = $link;
-							$overview['website'] = $website;
-							$overview['page'] = $page;
-							$impressionNumber = rand(1, 60);
-							$overview['impression_number'] = $impressionNumber;
-							$overview['transaction_number'] = 0;
-							$overview['transaction_confirmed_value'] = 0;
-							$overview['transaction_confirmed_commission']= 0;
-							$overview['transaction_pending_value']= 0;
-							$overview['transaction_pending_commission']= 0;
-							$overview['transaction_declined_value']= 0;
-							$overview['transaction_declined_commission']= 0;
-							foreach ($transactionList as $transaction){
-								$overview['transaction_number'] ++;
-								if ($transaction['status'] == Oara_Utilities::STATUS_CONFIRMED){
-									$overview['transaction_confirmed_value'] += $transaction['amount'];
-									$overview['transaction_confirmed_commission'] += $transaction['commission'];
-								} else if ($transaction['status'] == Oara_Utilities::STATUS_PENDING){
-									$overview['transaction_pending_value'] += $transaction['amount'];
-									$overview['transaction_pending_commission'] += $transaction['commission'];
-								} else if ($transaction['status'] == Oara_Utilities::STATUS_DECLINED){
-									$overview['transaction_declined_value'] += $transaction['amount'];
-									$overview['transaction_declined_commission'] += $transaction['commission'];
-								}
-							}
-							$totalOverviews[] = $overview;
-						}
+				$overview = Array();
+
+				$overview['merchantId'] = $merchantId;
+				$overviewDate = new Zend_Date($date, "yyyy-MM-dd");
+				$overview['date'] = $overviewDate->toString("yyyy-MM-dd HH:mm:ss");
+				$overview['click_number'] = rand(0, 2000);
+				$overview['impression_number'] = $overview['click_number'] * (1 + (rand(60, 120)/10));
+				$overview['transaction_number'] = 0;
+				$overview['transaction_confirmed_value'] = 0;
+				$overview['transaction_confirmed_commission']= 0;
+				$overview['transaction_pending_value']= 0;
+				$overview['transaction_pending_commission']= 0;
+				$overview['transaction_declined_value']= 0;
+				$overview['transaction_declined_commission']= 0;
+				$overview['transaction_paid_value']= 0;
+				$overview['transaction_paid_commission']= 0;
+				foreach ($transactionList as $transaction){
+					$overview['transaction_number'] ++;
+					if ($transaction['status'] == Oara_Utilities::STATUS_CONFIRMED){
+						$overview['transaction_confirmed_value'] += $transaction['amount'];
+						$overview['transaction_confirmed_commission'] += $transaction['commission'];
+					} else if ($transaction['status'] == Oara_Utilities::STATUS_PENDING){
+						$overview['transaction_pending_value'] += $transaction['amount'];
+						$overview['transaction_pending_commission'] += $transaction['commission'];
+					} else if ($transaction['status'] == Oara_Utilities::STATUS_DECLINED){
+						$overview['transaction_declined_value'] += $transaction['amount'];
+						$overview['transaction_declined_commission'] += $transaction['commission'];
+					} else if ($transaction['status'] == Oara_Utilities::STATUS_PAID){
+						$overview['transaction_paid_value'] += $transaction['amount'];
+						$overview['transaction_paid_commission'] += $transaction['commission'];
 					}
 				}
+				$totalOverviews[] = $overview;
 			}
 		}
-		$dateArray = Oara_Utilities::daysOfDifference($dStartDate, $dEndDate);
-		$overviewNumber = rand(1, 20);
-		for ($i = 0; $i < $overviewNumber; $i++){
-			$dateIndex = rand(0, count($dateArray)-1);
-			$merchantIndex = rand(0, count($merchantList)-1);
-			$overview = Array();
-			$overview['merchantId'] = $merchantList[$merchantIndex];
-			$overview['date'] = $dateArray[$dateIndex]->toString("yyyy-MM-dd HH:mm:ss");
-			$clickNumber = rand(1, 30);
-			$overview['click_number'] = $clickNumber;
-			$overview['link'] = $this->_linkList[rand(0, count($this->_linkList)-1)];
-			$overview['website'] = $this->_websiteList[rand(0, count($this->_websiteList)-1)];
-			$overview['page'] = $this->_pageList[rand(0, count($this->_pageList)-1)];
-			$impressionNumber = rand(1, 60);
-			$overview['impression_number'] = $impressionNumber;
-			$overview['transaction_number'] = 0;
-			$overview['transaction_confirmed_value'] = 0;
-			$overview['transaction_confirmed_commission']= 0;
-			$overview['transaction_pending_value']= 0;
-			$overview['transaction_pending_commission']= 0;
-			$overview['transaction_declined_value']= 0;
-			$overview['transaction_declined_commission']= 0;
-			$totalOverviews[] = $overview;
-		}
+
 		return $totalOverviews;
 	}
 
@@ -201,23 +174,4 @@ class Oara_Network_Demo extends Oara_Network{
 		}
 		return $paymentHistory;
 	}
-
-	/**
-	 * Filter the transactionList per day
-	 * @param array $transactionList
-	 * @return array
-	 */
-	public function transactionMapPerDay(array $transactionList){
-		$transactionMap = array();
-		foreach ($transactionList as $transaction){
-			$dateString = substr($transaction['date'], 0, 10);
-			if (!isset($transactionMap[$transaction['merchantId']][$transaction['link']][$transaction['website']][$transaction['page']][$dateString])){
-				$transactionMap[$transaction['merchantId']][$transaction['link']][$transaction['website']][$transaction['page']][$dateString] = array();
-			}
-
-			$transactionMap[$transaction['merchantId']][$transaction['link']][$transaction['website']][$transaction['page']][$dateString][] = $transaction;
-		}
-		return $transactionMap;
-	}
-
 }

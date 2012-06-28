@@ -29,6 +29,13 @@ class Oara_Network_BuyAt extends Oara_Network{
      * @var array
      */
     private $_exportPaymentParameters = null;
+    
+    /**
+     * 
+     * Payment Details Parameters
+     * @var unknown_type
+     */
+    private $_exportPaymentDetailsParameters = null;
 
 
     /**
@@ -69,7 +76,7 @@ class Oara_Network_BuyAt extends Oara_Network{
                                                  new Oara_Curl_Parameter('filter_region', '0'),
                                                  new Oara_Curl_Parameter('query', ''),
                                                  new Oara_Curl_Parameter('has_feed', '0'),
-                                                 new Oara_Curl_Parameter('format', 'csv'),
+                                                 new Oara_Curl_Parameter('format', 'xml'),
                                                  new Oara_Curl_Parameter('email', $user),
                                                  new Oara_Curl_Parameter('password', $passwordApi)
                                                 );
@@ -121,6 +128,24 @@ class Oara_Network_BuyAt extends Oara_Network{
                                                new Oara_Curl_Parameter('email', $user),
                                                new Oara_Curl_Parameter('password', $passwordApi)
                                               );
+      
+       $this->_exportPaymentDetailsParameters = array(
+       										   new Oara_Curl_Parameter('prog_id', '0'),
+       										   new Oara_Curl_Parameter('handle', '0'),
+                                               new Oara_Curl_Parameter('orderby', 'date'),
+                                               new Oara_Curl_Parameter('dir', 'asc'),
+                                               new Oara_Curl_Parameter('showfields%5Bprogramme_name%5D', 'programme_name'),
+                                               new Oara_Curl_Parameter('showfields%5Blink_id%5D', 'link_id'),
+                                               new Oara_Curl_Parameter('showfields%5Btransaction_value%5D', 'transaction_value'),
+                                               new Oara_Curl_Parameter('showfields%5Bcommission%5D', 'commission'),
+                                               new Oara_Curl_Parameter('showfields%5Bunique_id%5D', 'unique_id'),
+                                               new Oara_Curl_Parameter('&showfields%5Bcommission%5D', 'commission'),
+                                               new Oara_Curl_Parameter('customise', 'Go'),
+                                               new Oara_Curl_Parameter('format', 'csv'),
+                                               new Oara_Curl_Parameter('email', $user),
+                                               new Oara_Curl_Parameter('password', $passwordApi)
+                                              );
+    
     }
 	/**
 	 * Check the connection
@@ -141,23 +166,22 @@ class Oara_Network_BuyAt extends Oara_Network{
      * (non-PHPdoc)
      * @see library/Oara/Network/Oara_Network_Interface#getMerchantList()
      */
-    public function getMerchantList($merchantMap = array()){
+    public function getMerchantList(){
         $valuesFromExport = $this->_exportMerchantParameters;
         $merchants = Array();
         $urls = array();
         $urls[] = new Oara_Curl_Request('http://users.buy.at/ma/index.php/affiliateProgrammes/programmes?', $valuesFromExport);   
             
         $exportReport = $this->_client->get($urls);
-        $exportData = str_getcsv($exportReport[0], "\r\n");
-        $num = count($exportData);
-        for ($i = 1; $i < $num; $i++) {
-            $merchantExportArray = str_getcsv($exportData[$i], ",");
+        $xml = new SimpleXMLElement($exportReport[0]);
+		$list = $xml->body->resultset;
+		foreach ($list as $merchant){
             $obj = array();
-            $obj['cid'] = $merchantExportArray[count($merchantExportArray)-2];
-            $obj['name'] = $merchantExportArray[0];
-            $obj['url'] = $merchantExportArray[1];
+            $obj['cid'] = (string)$merchant->programme_id;
+            $obj['name'] = (string)$merchant->programme_name;
+            $obj['url'] = "";
             $merchants[] = $obj;
-        }
+		}
         return $merchants;
     }
 
@@ -165,7 +189,7 @@ class Oara_Network_BuyAt extends Oara_Network{
      * (non-PHPdoc)
      * @see library/Oara/Network/Oara_Network_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate)
      */
-    public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null){
+    public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null){
     	$totalTransactions = array();
         $valuesFromExport = Oara_Utilities::cloneArray($this->_exportTransactionParameters);
         $valuesFromExport[] = new Oara_Curl_Parameter('from_year', $dStartDate->get(Zend_Date::YEAR));
@@ -190,6 +214,7 @@ class Oara_Network_BuyAt extends Oara_Network{
 	            $transaction['merchantId'] = $merchantId;
 	            $transactionDate = new Zend_Date($transactionExportArray[5], 'dd-MM-yyyy HH:mm:ss');
 	            $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+	            $transaction['unique_id'] = $transactionExportArray[8];
 	            
             	if ($transactionExportArray[6] != null){
                 	$transaction['custom_id'] = $transactionExportArray[6];
@@ -214,7 +239,7 @@ class Oara_Network_BuyAt extends Oara_Network{
      * (non-PHPdoc)
      * @see library/Oara/Network/Oara_Network_Interface#getOverviewList($aMerchantIds, $dStartDate, $dEndDate)
      */
-    public function getOverviewList($transactionList = null, $merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null){
+    public function getOverviewList($transactionList = null, $merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null){
         $overviewArray = array();
         $transactionArray = array();
 		$mothOverviewUrls = array();
@@ -274,7 +299,9 @@ class Oara_Network_BuyAt extends Oara_Network{
 	                	$obj['transaction_pending_value'] = 0;
 	                	$obj['transaction_declined_commission'] = 0;
 	                	$obj['transaction_declined_value'] = 0;
-	                	$transactionDateArray = Oara_Utilities::getDayFromArray($obj['merchantId'], $transactionArray, $overviewDate);
+	                	$obj['transaction_paid_value'] = 0;
+                        $obj['transaction_paid_commission'] = 0;
+	                	$transactionDateArray = Oara_Utilities::getDayFromArray($obj['merchantId'], $transactionArray, $overviewDate, true);
 	                    foreach ($transactionDateArray as $transaction){
 	                    	$obj['transaction_number']++;
 	                    	if ($transaction['status'] == Oara_Utilities::STATUS_CONFIRMED){
@@ -286,6 +313,9 @@ class Oara_Network_BuyAt extends Oara_Network{
 	                        } else if ($transaction['status'] == Oara_Utilities::STATUS_DECLINED){
 	                        	$obj['transaction_declined_value'] += $transaction['amount'];
 	                        	$obj['transaction_declined_commission'] += $transaction['commission'];
+	                        } else if ($transaction['status'] == Oara_Utilities::STATUS_PAID){
+	                        	$obj['transaction_paid_value'] += $transaction['amount'];
+	                        	$obj['transaction_paid_commission'] += $transaction['commission'];
 	                        }
 	                    }
 	                    if (Oara_Utilities::checkRegister($obj)){
@@ -294,6 +324,44 @@ class Oara_Network_BuyAt extends Oara_Network{
 	            	}
 	        	}
 	        }
+		}
+    	foreach ($transactionArray as $merchantId => $merchantTransaction){
+			foreach ($merchantTransaction as $date => $transactionList){
+
+				$overview = Array();
+
+				$overview['merchantId'] = $merchantId;
+				$overviewDate = new Zend_Date($date, "yyyy-MM-dd");
+				$overview['date'] = $overviewDate->toString("yyyy-MM-dd HH:mm:ss");
+				$overview['click_number'] = 0;
+				$overview['impression_number'] = 0;
+				$overview['transaction_number'] = 0;
+				$overview['transaction_confirmed_value'] = 0;
+				$overview['transaction_confirmed_commission']= 0;
+				$overview['transaction_pending_value']= 0;
+				$overview['transaction_pending_commission']= 0;
+				$overview['transaction_declined_value']= 0;
+				$overview['transaction_declined_commission']= 0;
+				$overview['transaction_paid_value']= 0;
+				$overview['transaction_paid_commission']= 0;
+				foreach ($transactionList as $transaction){
+					$overview['transaction_number'] ++;
+					if ($transaction['status'] == Oara_Utilities::STATUS_CONFIRMED){
+						$overview['transaction_confirmed_value'] += $transaction['amount'];
+						$overview['transaction_confirmed_commission'] += $transaction['commission'];
+					} else if ($transaction['status'] == Oara_Utilities::STATUS_PENDING){
+						$overview['transaction_pending_value'] += $transaction['amount'];
+						$overview['transaction_pending_commission'] += $transaction['commission'];
+					} else if ($transaction['status'] == Oara_Utilities::STATUS_DECLINED){
+						$overview['transaction_declined_value'] += $transaction['amount'];
+						$overview['transaction_declined_commission'] += $transaction['commission'];
+					} else if ($transaction['status'] == Oara_Utilities::STATUS_PAID){
+						$overview['transaction_paid_value'] += $transaction['amount'];
+						$overview['transaction_paid_commission'] += $transaction['commission'];
+					}
+				}
+				$overviewArray[] = $overview;
+			}
 		}
         return $overviewArray;
     }
@@ -355,5 +423,30 @@ class Oara_Network_BuyAt extends Oara_Network{
 	    	$paymentHistory[] = $obj;
 	    }
     	return $paymentHistory;
+    }
+    
+	/**
+     * 
+     * It returns the transactions for a payment
+     * @param int $paymentId
+     */
+    public function paymentTransactions($paymentId, $merchantList, $startDate){
+    	$transactionList = array();
+    	
+    	$urls = array();
+		$valuesFormExport = $this->_exportPaymentDetailsParameters;
+		$valuesFormExport[] = new Oara_Curl_Parameter('payment_id', $paymentId);
+		$urls[] = new Oara_Curl_Request('https://users.buy.at/ma/index.php/affiliatePayments/paymentDetails?', $valuesFormExport);
+		$exportReportList = $this->_client->get($urls);
+        foreach ($exportReportList as $exportReport){
+        	$exportReportData = str_getcsv($exportReport,"\r\n");
+        	$num = count($exportReportData);
+        	for ($i = 2; $i < $num-1; $i++) {
+        		$transactionArray = str_getcsv($exportReportData[$i],",");
+				$transactionList[] = $transactionArray[5];
+        	}
+        }
+        
+        return $transactionList;
     }
 }

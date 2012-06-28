@@ -25,6 +25,11 @@ class Oara_Utilities
 	 * @var string
 	 */
 	const STATUS_DECLINED = 'declined';
+	/**
+	 * paid status
+	 * @var string
+	 */
+	const STATUS_PAID = 'paid';
 
 
 
@@ -110,19 +115,19 @@ class Oara_Utilities
 	 * @param Zend_Date $endDate
 	 * @return array
 	 */
-	public static function monthsOfDifference(Zend_Date $starDate = null, Zend_Date $endDate = null, $gap = 1){
-		if($starDate->compare($endDate)>0){
+	public static function monthsOfDifference(Zend_Date $startDate = null, Zend_Date $endDate = null, $gap = 1){
+		if($startDate->compare($endDate)>0){
 			throw new Exception ('The start date can not be later than the end date');
 		}
 
-		$monthsOfDifferenceBetweenYears = ($endDate->get(Zend_Date::YEAR) - $starDate->get(Zend_Date::YEAR))*12;
-		$difference = (int)((($endDate->get(Zend_Date::MONTH) + $monthsOfDifferenceBetweenYears) - $starDate->get(Zend_Date::MONTH))/$gap);
+		$monthsOfDifferenceBetweenYears = ($endDate->get(Zend_Date::YEAR) - $startDate->get(Zend_Date::YEAR))*12;
+		$difference = (int)((($endDate->get(Zend_Date::MONTH) + $monthsOfDifferenceBetweenYears) - $startDate->get(Zend_Date::MONTH))/$gap);
 		$dateArray = array();
-		$dateArray[] = clone $starDate;
+		$dateArray[] = clone $startDate;
 		/**If there are more than 1 month of difference ,
 		 the next  element starts in the first day of the month**/
 		for($i = 0;$i < $difference;$i++){
-			$auxDate = clone $starDate;
+			$auxDate = clone $startDate;
 			$auxDate->addMonth(($i+1)*$gap);
 			$auxDate->setDay(1);
 			$dateArray[] = $auxDate;
@@ -254,7 +259,7 @@ class Oara_Utilities
 	 * @param Zend_Date $date
 	 * @return array
 	 */
-	public static function getDayFromArray($merchantId, $dateArray, Zend_Date $date, $delete = false){
+	public static function getDayFromArray($merchantId, &$dateArray, Zend_Date $date, $delete = false){
 		$resultArray = array();
 		if (isset($dateArray[$merchantId])){
 			$dateString = $date->toString("yyyy-MM-dd");
@@ -288,7 +293,9 @@ class Oara_Utilities
 	                        'transaction_pending_value',
 	                        'transaction_pending_commission',
 	                        'transaction_declined_value',
-	                        'transaction_declined_commission'
+	                        'transaction_declined_commission',
+							'transaction_paid_value',
+	                        'transaction_paid_commission'
 	                        );
 	                        while ($i < count($properties) && !$ok){
 	                        	if ($register[$properties[$i]] != 0){

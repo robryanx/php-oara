@@ -17,14 +17,12 @@ class Oara_Network
 	public function checkConnection(){
 		return false;
 	}
-	
 	/**
 	 * 
 	 * Get the merchants joined for the network
-	 * @param array $merchantMap - An array with the merchants already in the data base, 
 	 * it could be that we don't work with a merchant any more, but we want to retrieve its data
 	 */
-    public function getMerchantList($merchantMap = array()){
+    public function getMerchantList(){
     	$result = array();
     	return $result;
     }
@@ -35,7 +33,7 @@ class Oara_Network
 	 * @param Zend_Date $dStartDate - start date (included)
 	 * @param Zend_Date $dEndDate - end date (included)
 	 */
-    public function getTransactionList($merchantList, Zend_Date $dStartDate, Zend_Date $dEndDate){
+    public function getTransactionList($merchantList, Zend_Date $dStartDate, Zend_Date $dEndDate, $merchantMap = null){
     	$result = array();
     	return $result;
     }
@@ -47,7 +45,7 @@ class Oara_Network
 	 * @param Zend_Date $dStartDate - start date (included)
 	 * @param Zend_Date $dEndDate - end date (included)
 	 */
-    public function getOverviewList($transactionList, $merchantList, Zend_Date $dStartDate, Zend_Date $dEndDate){
+    public function getOverviewList($transactionList, $merchantList, Zend_Date $dStartDate, Zend_Date $dEndDate, $merchantMap = null){
     	$result = array();
     	return $result;
     }
@@ -56,6 +54,15 @@ class Oara_Network
      * Get the Payments already done for this network
      */
     public function getPaymentHistory(){
+    	$result = array();
+    	return $result;
+    }
+    /**
+     * 
+     * Get the Transactions for payment
+     * @param string $paymentId
+     */
+    public function paymentTransactions($paymentId, $merchantList, $startDate){
     	$result = array();
     	return $result;
     }

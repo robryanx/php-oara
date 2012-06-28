@@ -133,7 +133,7 @@ class Oara_Network_AdSense extends Oara_Network{
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Interface#getMerchantList()
 	 */
-	public function getMerchantList($merchantMap = array()){
+	public function getMerchantList(){
 		$merchants = Array();
 			
 		$obj = array();
@@ -149,7 +149,7 @@ class Oara_Network_AdSense extends Oara_Network{
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null){
+	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null){
 		$totalTransactions = array();
 		return $totalTransactions;
 	}
@@ -158,7 +158,7 @@ class Oara_Network_AdSense extends Oara_Network{
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Interface#getOverviewList($aMerchantIds, $dStartDate, $dEndDate)
 	 */
-	public function getOverviewList($transactionList = null, $merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null){
+	public function getOverviewList($transactionList = null, $merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null){
 		$overviewArray = array();
 		
 		$firstDayMonth = new Zend_Date();
@@ -216,6 +216,8 @@ class Oara_Network_AdSense extends Oara_Network{
 				$obj['transaction_pending_value'] =  0;
 				$obj['transaction_declined_commission'] = 0;
 				$obj['transaction_declined_value'] = 0;
+				$obj['transaction_paid_commission'] = 0;
+				$obj['transaction_paid_value'] = 0;
 					
 				$obj['impression_number'] = (int)Oara_Utilities::parseDouble($overviewExportArray[1]);
 				$obj['click_number'] =  Oara_Utilities::parseDouble($overviewExportArray[2]);

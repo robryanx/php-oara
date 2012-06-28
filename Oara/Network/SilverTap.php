@@ -19,11 +19,6 @@ class Oara_Network_SilverTap extends Oara_Network{
      * @var array
      */
 	private $_exportOverviewParameters = null;
-	/**
-	 * Program List
-	 * @var array
-	 */
-	private $_programList = array();
 
 	/**
 	 * Merchant Map
@@ -115,7 +110,7 @@ class Oara_Network_SilverTap extends Oara_Network{
      * (non-PHPdoc)
      * @see library/Oara/Network/Oara_Network_Base#getMerchantList()
      */
-	public function getMerchantList($merchantMap = array())
+	public function getMerchantList()
 	{
 		$merchantList = self::getMerchantProgramMap();
         $merchants = Array();
@@ -125,20 +120,13 @@ class Oara_Network_SilverTap extends Oara_Network{
         	$obj['name'] = $value;
         	$merchants[] = $obj;
         }
-		$this->_merchantMap = $merchantMap;
-		foreach ($merchants as $merchant){
-			if (!isset($this->_merchantMap[$merchant['name']])){
-				$this->_merchantMap[$merchant['name']] = $merchant['cid'];
-			}
-			
-		}
         return $merchants;
 	}
     /**
      * (non-PHPdoc)
      * @see library/Oara/Network/Oara_Network_Base#getTransactionList($merchantId, $dStartDate, $dEndDate)
      */
-	public function getTransactionList($merchantList = null , Zend_Date $dStartDate = null , Zend_Date $dEndDate = null)
+	public function getTransactionList($merchantList = null , Zend_Date $dStartDate = null , Zend_Date $dEndDate = null, $merchantMap = null)
 	{
 		$totalTransactions = Array();
         $startDate = $dStartDate->toString('dd/MM/yyyy');
@@ -167,6 +155,7 @@ class Oara_Network_SilverTap extends Oara_Network{
         	$transactionExportArray = str_getcsv($exportData[$i],",");
 			if (in_array((int)$transactionExportArray[3], $merchantList)){
 	            $transaction = Array();
+	            $transaction['unique_id'] = $transactionExportArray[0];
 	            $transaction['merchantId'] = $transactionExportArray[3];
 	            $transactionDate = new Zend_Date($transactionExportArray[2],"dd/MM/YY HH:mm:ss"); 
 	            $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
@@ -182,7 +171,7 @@ class Oara_Network_SilverTap extends Oara_Network{
 	            } else if (preg_match('/Unpaid Rejected/', $transactionExportArray[$statusIndex])){
 	                $transaction['status'] = Oara_Utilities::STATUS_DECLINED;
 	            } else {
-	            	echo "sdf";
+	            	throw new Exception ("No Status supported ".$transactionExportArray[$statusIndex]);
 	            }
 	           
 	            $transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[$valueIndex]);
@@ -197,7 +186,7 @@ class Oara_Network_SilverTap extends Oara_Network{
      * (non-PHPdoc)
      * @see library/Oara/Network/Oara_Network_Base#getOverviewList($merchantId, $dStartDate, $dEndDate)
      */
-    public function getOverviewList($transactionList = null, $merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null){
+    public function getOverviewList($transactionList = null, $merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null){
         $totalOverviews = Array();
         $transactionArray = Oara_Utilities::transactionMapPerDay($transactionList);
 		$startDate = $dStartDate->toString('dd/MM/yyyy');
@@ -216,11 +205,11 @@ class Oara_Network_SilverTap extends Oara_Network{
         if ($num > 1){
             for ($j = 1; $j < $num; $j++) {
                 $overviewExportArray = str_getcsv($exportData[$j],",");
-                if (isset($this->_merchantMap[$overviewExportArray[1]]) &&
-                    in_array((int)$this->_merchantMap[$overviewExportArray[1]], $merchantList)){
+                if (isset($merchantMap[$overviewExportArray[1]]) &&
+                    in_array((int)$merchantMap[$overviewExportArray[1]], $merchantList)){
                     	
 	                $overview = Array();
-	                $merchantId = $this->_merchantMap[$overviewExportArray[1]];
+	                $merchantId = $merchantMap[$overviewExportArray[1]];
 	                $overview['merchantId'] = $merchantId;       
 	                $overviewDate = new Zend_Date($overviewExportArray[0],"dd/MM/yyyy");
 	                $overview['date'] = $overviewDate->toString("yyyy-MM-dd HH:mm:ss");
@@ -233,7 +222,7 @@ class Oara_Network_SilverTap extends Oara_Network{
 	                $overview['transaction_pending_commission']= 0;
 	                $overview['transaction_declined_value']= 0;
 	                $overview['transaction_declined_commission']= 0;
-	                $transactionDateArray = Oara_Utilities::getDayFromArray($overview['merchantId'], $transactionArray, $overviewDate);
+	                $transactionDateArray = Oara_Utilities::getDayFromArray($overview['merchantId'], $transactionArray, $overviewDate, true);
 	                foreach ($transactionDateArray as $transaction){
 	                    $overview['transaction_number'] ++;
 		                if ($transaction['status'] == Oara_Utilities::STATUS_CONFIRMED){
@@ -245,6 +234,9 @@ class Oara_Network_SilverTap extends Oara_Network{
 		                } else if ($transaction['status'] == Oara_Utilities::STATUS_DECLINED){
 		                    $overview['transaction_declined_value'] += $transaction['amount'];
 		                    $overview['transaction_declined_commission'] += $transaction['commission'];
+		                } else if ($transaction['status'] == Oara_Utilities::STATUS_PAID){
+		                    $overview['transaction_paid_value'] += $transaction['amount'];
+		                    $overview['transaction_paid_commission'] += $transaction['commission'];
 		                }
 	                }
 	                if (Oara_Utilities::checkRegister($overview)){
@@ -253,6 +245,49 @@ class Oara_Network_SilverTap extends Oara_Network{
                 }
             }
         }
+        
+        
+    	foreach ($transactionArray as $merchantId => $merchantTransaction){
+        	foreach ($merchantTransaction as $date => $transactionList){
+        		
+        		$overview = Array();
+                                    
+                $overview['merchantId'] = $merchantId;
+                $overviewDate = new Zend_Date($date, "yyyy-MM-dd");
+                $overview['date'] = $overviewDate->toString("yyyy-MM-dd HH:mm:ss");
+                $overview['click_number'] = 0;
+                $overview['impression_number'] = 0;
+                $overview['transaction_number'] = 0;
+                $overview['transaction_confirmed_value'] = 0;
+                $overview['transaction_confirmed_commission']= 0;
+                $overview['transaction_pending_value']= 0;
+                $overview['transaction_pending_commission']= 0;
+                $overview['transaction_declined_value']= 0;
+                $overview['transaction_declined_commission']= 0;
+                $overview['transaction_paid_value']= 0;
+                $overview['transaction_paid_commission']= 0;
+                foreach ($transactionList as $transaction){
+                	$overview['transaction_number'] ++;
+                    if ($transaction['status'] == Oara_Utilities::STATUS_CONFIRMED){
+                    	$overview['transaction_confirmed_value'] += $transaction['amount'];
+                    	$overview['transaction_confirmed_commission'] += $transaction['commission'];
+                    } else if ($transaction['status'] == Oara_Utilities::STATUS_PENDING){
+                    	$overview['transaction_pending_value'] += $transaction['amount'];
+                    	$overview['transaction_pending_commission'] += $transaction['commission'];
+                    } else if ($transaction['status'] == Oara_Utilities::STATUS_DECLINED){
+                    	$overview['transaction_declined_value'] += $transaction['amount'];
+                    	$overview['transaction_declined_commission'] += $transaction['commission'];
+                	} else if ($transaction['status'] == Oara_Utilities::STATUS_PAID){
+                    	$overview['transaction_paid_value'] += $transaction['amount'];
+                    	$overview['transaction_paid_commission'] += $transaction['commission'];
+                	}
+        		}
+                $totalOverviews[] = $overview;
+        	}
+        }
+        
+        
+        
         return $totalOverviews;                                 	
     }
     /**
@@ -464,5 +499,43 @@ class Oara_Network_SilverTap extends Oara_Network{
 		}
 		
     	return $paymentHistory;
+    }
+    
+	/**
+	 *  It returns the transactions for a payment
+	 * @see Oara_Network::paymentTransactions()
+	 */
+    public function paymentTransactions($paymentId, $merchantList, $startDate){
+    	
+   		$paymentTransactionList = array();
+   		
+   		$params = array();
+			
+		$urls = array();
+        $urls[] = new Oara_Curl_Request($this->_serverUrl.'/Invoices/Default.aspx?',$params);
+        $exportReport = $this->_client->post($urls);
+    	
+	    $doc = new DOMDocument();
+	    libxml_use_internal_errors(true);
+	    $doc->validateOnParse = true;
+	    $doc->loadHTML($exportReport[0]);
+	    $viewState = $doc->getElementById('__VIEWSTATE')->attributes->getNamedItem("value")->nodeValue;
+			
+		$params = array(new Oara_Curl_Parameter('__EVENTTARGET', 'ctl00$ContentPlaceHolder1$gvInvoices'),
+        	   			 new Oara_Curl_Parameter('__EVENTARGUMENT', 'Breakdown$'.$paymentId),
+        	   			 new Oara_Curl_Parameter('__VIEWSTATE', $viewState)
+        	   			 );
+		
+    	$urls = array();
+        $urls[] = new Oara_Curl_Request($this->_serverUrl.'/Invoices/Default.aspx?',$params);
+        $exportReport = $this->_client->post($urls);
+        $exportData = str_getcsv($exportReport[0],"\r\n");
+        $num = count($exportData);
+        for ($i = 1; $i < $num; $i++) {
+        	$transactionExportArray = str_getcsv($exportData[$i],",");
+        	$paymentTransactionList[] = $transactionExportArray[0];
+        }
+		
+    	return $paymentTransactionList;
     }
 }

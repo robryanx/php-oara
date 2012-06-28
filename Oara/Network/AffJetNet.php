@@ -61,7 +61,7 @@ class Oara_Network_AffJetNet extends Oara_Network{
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Base#getMerchantList()
 	 */
-	public function getMerchantList($merchantMap = array())
+	public function getMerchantList()
 	{
 		$merchants = Array();
 		

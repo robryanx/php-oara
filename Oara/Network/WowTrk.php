@@ -23,12 +23,6 @@ class Oara_Network_WowTrk extends Oara_Network{
 	 * @var array
 	 */
 	private $_credentialsParameters = array();
-
-    /**
-     * merchantMap.
-     * @var array
-     */
-    private $_merchantMap = array();
     
     /**
      * Api key.
@@ -76,7 +70,7 @@ class Oara_Network_WowTrk extends Oara_Network{
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Base#getMerchantList()
 	 */
-	public function getMerchantList($merchantMap = array())
+	public function getMerchantList()
 	{
 		$merchants= array();
 		
@@ -98,14 +92,6 @@ class Oara_Network_WowTrk extends Oara_Network{
             $merchants[] = $obj;
         }
         
-		$this->_merchantMap = $merchantMap;
-		foreach ($merchants as $merchant){
-			if (!isset($this->_merchantMap[$merchant['name']])){
-				$this->_merchantMap[$merchant['name']] = $merchant['cid'];
-			}
-			
-		}
-		
 		return $merchants;
 	}
 	/**
@@ -121,7 +107,7 @@ class Oara_Network_WowTrk extends Oara_Network{
      * (non-PHPdoc)
      * @see library/Oara/Network/Oara_Network_Base#getTransactionList($merchantId,$dStartDate,$dEndDate)
      */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null)
+	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null)
 	{	
 		$totalTransactions = array();
 
@@ -138,9 +124,9 @@ class Oara_Network_WowTrk extends Oara_Network{
 		$exportData = self::loadXml($exportReport[0]);
 		
 		foreach ($exportData->stats as $transaction) {
-			if (isset($this->_merchantMap[(string)$transaction->offer])){
+			if (isset($merchantMap[(string)$transaction->offer])){
 				$obj = array();
-				$obj['merchantId'] = $this->_merchantMap[(string)$transaction->offer];
+				$obj['merchantId'] = $merchantMap[(string)$transaction->offer];
 				$date = new Zend_Date((string)$transaction->date_time, "yyyy-MM-dd HH:mm:ss");
 		     	$obj['date'] = $transaction->date;
 	          	$obj['status'] = Oara_Utilities::STATUS_CONFIRMED;
@@ -159,7 +145,7 @@ class Oara_Network_WowTrk extends Oara_Network{
      * (non-PHPdoc)
      * @see library/Oara/Network/Oara_Network_Base#getOverviewList($merchantId,$dStartDate,$dEndDate)
      */
-	public function getOverviewList($transactionList = null, $merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null)
+	public function getOverviewList($transactionList = null, $merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null)
 	{
 		$totalOverview = array();
 		$transactionArray = Oara_Utilities::transactionMapPerDay($transactionList);
@@ -213,6 +199,8 @@ class Oara_Network_WowTrk extends Oara_Network{
 	                $overview['transaction_pending_commission']= 0;
 	                $overview['transaction_declined_value']= 0;
 	                $overview['transaction_declined_commission']= 0;
+	                $overview['transaction_paid_value']= 0;
+	                $overview['transaction_paid_commission']= 0;
 	                $transactionDateArray = Oara_Utilities::getDayFromArray($merchantId,$transactionArray, $overviewDate);
 	                foreach ($transactionDateArray as $transaction){ 	
 	                	$overview['transaction_number'] ++;
@@ -225,6 +213,9 @@ class Oara_Network_WowTrk extends Oara_Network{
 	                    } else if ($transaction['status'] == Oara_Utilities::STATUS_DECLINED){
 	                        $overview['transaction_declined_value'] += $transaction['amount'];
 	                        $overview['transaction_declined_commission'] += $transaction['commission'];
+	                    } else if ($transaction['status'] == Oara_Utilities::STATUS_PAID){
+	                        $overview['transaction_paid_value'] += $transaction['amount'];
+	                        $overview['transaction_paid_commission'] += $transaction['commission'];
 	                    }
 	                }
 	                if (Oara_Utilities::checkRegister($overview)){

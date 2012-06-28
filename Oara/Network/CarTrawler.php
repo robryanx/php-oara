@@ -64,7 +64,7 @@ class Oara_Network_CarTrawler extends Oara_Network{
      * (non-PHPdoc)
      * @see library/Oara/Network/Oara_Network_Base#getMerchantList()
      */
-	public function getMerchantList($merchantMap = array())
+	public function getMerchantList()
 	{
         $merchants = Array();
         $obj = Array();
@@ -79,7 +79,7 @@ class Oara_Network_CarTrawler extends Oara_Network{
      * (non-PHPdoc)
      * @see library/Oara/Network/Oara_Network_Base#getTransactionList($merchantId, $dStartDate, $dEndDate)
      */
-	public function getTransactionList($merchantList = null , Zend_Date $dStartDate = null , Zend_Date $dEndDate = null)
+	public function getTransactionList($merchantList = null , Zend_Date $dStartDate = null , Zend_Date $dEndDate = null, $merchantMap = null)
 	{
 		$totalTransactions = Array();
 
@@ -99,7 +99,7 @@ class Oara_Network_CarTrawler extends Oara_Network{
 			$transaction = array();
 			$exportTransactionArray = str_getcsv($exportTransaction,";");
 			$transaction['merchantId'] = 1;
-			
+			$transaction['unique_id'] = $exportTransactionArray[1];
 			$stamp = strtotime($exportTransactionArray[2]);
 			$transaction['date'] = date("Y-m-d H:i:s", $stamp);
 			$transaction['amount'] = (double) $exportTransactionArray[11];
@@ -127,7 +127,7 @@ class Oara_Network_CarTrawler extends Oara_Network{
      * (non-PHPdoc)
      * @see library/Oara/Network/Oara_Network_Base#getOverviewList($merchantId, $dStartDate, $dEndDate)
      */
-    public function getOverviewList($transactionList = null, $merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null){
+    public function getOverviewList($transactionList = null, $merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null){
         $totalOverviews = Array();
         $transactionArray = Oara_Utilities::transactionMapPerDay($transactionList);
         foreach ($transactionArray as $merchantId => $merchantTransaction){
@@ -147,6 +147,8 @@ class Oara_Network_CarTrawler extends Oara_Network{
                 $overview['transaction_pending_commission']= 0;
                 $overview['transaction_declined_value']= 0;
                 $overview['transaction_declined_commission']= 0;
+                $overview['transaction_paid_value']= 0;
+                $overview['transaction_paid_commission']= 0;
                 foreach ($transactionList as $transaction){
                 	$overview['transaction_number'] ++;
                     if ($transaction['status'] == Oara_Utilities::STATUS_CONFIRMED){
@@ -158,6 +160,9 @@ class Oara_Network_CarTrawler extends Oara_Network{
                     } else if ($transaction['status'] == Oara_Utilities::STATUS_DECLINED){
                     	$overview['transaction_declined_value'] += $transaction['amount'];
                     	$overview['transaction_declined_commission'] += $transaction['commission'];
+                	} else if ($transaction['status'] == Oara_Utilities::STATUS_PAID){
+                    	$overview['transaction_paid_value'] += $transaction['amount'];
+                    	$overview['transaction_paid_commission'] += $transaction['commission'];
                 	}
         		}
                 $totalOverviews[] = $overview;
@@ -254,5 +259,33 @@ class Oara_Network_CarTrawler extends Oara_Network{
 	    }
 	    return $innerHTML;
 	}
+	
+	
+	
+	/**
+	 * (non-PHPdoc)
+	 * @see Oara/Network/Oara_Network_Base#getPaymentHistory()
+	 */
+	public function getPaymentHistory(){
+    	$paymentHistory = array();
+    	$filter = new Zend_Filter_LocalizedToNormalized(array('precision' => 2));
+    	$urls = array();
+        $urls[] = new Oara_Curl_Request('https://www.cartrawler.com/affengine/ReportingRev2.asp?', array()); 
+        $exportReport = $this->_client->get($urls);
+        if (preg_match_all("/<DIV>(\d{1,2}\/\d{1,2}\/\d{4}.*?)<\/DIV>/", $exportReport[0], $matches)){
+        	foreach ($matches[1] as  $match){
+        		$match = str_replace("&nbsp;", ";", $match);
+        		$paymentArray = str_getcsv($match,";");
+        		$obj = array();
+				$date = new Zend_Date($paymentArray[0], "M/d/yyyy");
+				$obj['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
+				$obj['pid'] = $date->toString("yyyyMMdd");
+				$obj['value'] = $filter->filter($paymentArray[2]);
+				$obj['method'] = "BACS";
+				$paymentHistory[] = $obj;
+        	}
+        }
+    	return $paymentHistory;
+    }
 
 }

@@ -36,6 +36,11 @@ class Oara_Network_PaidOnResults extends Oara_Network{
 	 * Session Id
 	 */
 	private $_sessionId = null;
+	
+	/**
+	 * Payment History
+	 */
+	private $_paymentHistory = null;
 
 	/**
 	 * Constructor and Login
@@ -87,7 +92,7 @@ class Oara_Network_PaidOnResults extends Oara_Network{
 													new Oara_Curl_Parameter('Format', 'CSV'),
 													new Oara_Curl_Parameter('FieldSeparator', 'comma'),
 													new Oara_Curl_Parameter('AffiliateID', $user),
-													new Oara_Curl_Parameter('Fields', 'MerchantID,OrderDate,HTTPReferal,CustomTrackingID,OrderValue,AffiliateCommission,TransactionType,CreativeName'),
+													new Oara_Curl_Parameter('Fields', 'MerchantID,OrderDate,NetworkOrderID,CustomTrackingID,OrderValue,AffiliateCommission,TransactionType,PaidtoAffiliate,DatePaidToAffiliate'),
 													new Oara_Curl_Parameter('AffiliateID', $user),
 													new Oara_Curl_Parameter('DateFormat', 'DD/MM/YYYY+HH:MN:SS'),
 													new Oara_Curl_Parameter('PendingSales', 'YES'),
@@ -107,7 +112,7 @@ class Oara_Network_PaidOnResults extends Oara_Network{
      * (non-PHPdoc)
      * @see library/Oara/Network/Oara_Network_Base#getMerchantList()
      */
-	public function getMerchantList($merchantMap = array())
+	public function getMerchantList()
 	{
         $merchants = Array();
         
@@ -131,7 +136,7 @@ class Oara_Network_PaidOnResults extends Oara_Network{
      * (non-PHPdoc)
      * @see library/Oara/Network/Oara_Network_Base#getTransactionList($merchantId, $dStartDate, $dEndDate)
      */
-	public function getTransactionList($merchantList = null , Zend_Date $dStartDate = null , Zend_Date $dEndDate = null)
+	public function getTransactionList($merchantList = null , Zend_Date $dStartDate = null , Zend_Date $dEndDate = null, $merchantMap = null)
 	{
 		$totalTransactions = Array();
 		
@@ -154,6 +159,7 @@ class Oara_Network_PaidOnResults extends Oara_Network{
 				$transactionDate = new Zend_Date($transactionExportArray[1], "dd/MM/yyyy HH:mm:ss");
 				$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 				
+				$transaction['unique_id'] = $transactionExportArray[2];
 				if ($transactionExportArray[3] != null){
 					$transaction['custom_id'] = $transactionExportArray[3];
 				}
@@ -181,7 +187,7 @@ class Oara_Network_PaidOnResults extends Oara_Network{
      * (non-PHPdoc)
      * @see library/Oara/Network/Oara_Network_Base#getOverviewList($merchantId, $dStartDate, $dEndDate)
      */
-    public function getOverviewList($transactionList = null, $merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null){
+    public function getOverviewList($transactionList = null, $merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null){
         $totalOverviews = Array();
         $transactionArray = Oara_Utilities::transactionMapPerDay($transactionList);
         foreach ($transactionArray as $merchantId => $merchantTransaction){
@@ -201,6 +207,8 @@ class Oara_Network_PaidOnResults extends Oara_Network{
                 $overview['transaction_pending_commission']= 0;
                 $overview['transaction_declined_value']= 0;
                 $overview['transaction_declined_commission']= 0;
+                $overview['transaction_paid_value']= 0;
+                $overview['transaction_paid_commission']= 0;
                 foreach ($transactionList as $transaction){
                 	$overview['transaction_number'] ++;
                     if ($transaction['status'] == Oara_Utilities::STATUS_CONFIRMED){
@@ -212,6 +220,9 @@ class Oara_Network_PaidOnResults extends Oara_Network{
                     } else if ($transaction['status'] == Oara_Utilities::STATUS_DECLINED){
                     	$overview['transaction_declined_value'] += $transaction['amount'];
                     	$overview['transaction_declined_commission'] += $transaction['commission'];
+                	} else if ($transaction['status'] == Oara_Utilities::STATUS_PAID){
+                    	$overview['transaction_paid_value'] += $transaction['amount'];
+                    	$overview['transaction_paid_commission'] += $transaction['commission'];
                 	}
         		}
                 $totalOverviews[] = $overview;
@@ -256,7 +267,83 @@ class Oara_Network_PaidOnResults extends Oara_Network{
 			}
 		    
 		}
-        
+        $this->_paymentHistory = $paymentHistory;
     	return $paymentHistory;
+    }
+    
+	/**
+	 *  It returns the transactions for a payment
+	 * @see Oara_Network::paymentTransactions()
+	 */
+    public function paymentTransactions($paymentId, $merchantList, $startDate){
+    	
+   		$paymentTransactionList = array();
+
+    	$paymentHistory = Oara_Utilities::registerBubbleSort($this->_paymentHistory);
+    	
+    	$paymentStartDate = new Zend_Date($startDate, "yyyy-MM-dd HH:mm:ss");
+    	$paymentEndDate = null;
+    	
+    	$enc = false;
+    	$i = 0;
+    	$payment = null;
+    	while(!$enc && $i < count($paymentHistory)){
+    		$payment = $paymentHistory[$i];
+    		if ($payment['pid'] == $paymentId) {
+    			$enc = true;
+    			$paymentEndDate = new Zend_Date($payment['date'], "yyyy-MM-dd HH:mm:ss");
+    		}
+    		$i++;
+    	}
+    	
+    	if ($enc && $paymentStartDate->compare($paymentEndDate) <= 0){
+	    	$totalTransactions = array();
+	    	
+	    	
+	    	$dateArray = Oara_Utilities::monthsOfDifference(new Zend_Date($startDate, "yyyy-MM-dd HH:mm:ss"), $paymentEndDate);
+			for ($i = 0; $i < count($dateArray); $i++){
+				$monthStartDate = clone $dateArray[$i];
+				$monthEndDate = null;
+	
+				if($i != count($dateArray)-1){
+					$monthEndDate = clone $dateArray[$i];
+					$monthEndDate->setDay(1);
+					$monthEndDate->addMonth(1);
+					$monthEndDate->subDay(1);
+				} else {
+					$monthEndDate = $paymentEndDate;
+				}
+				$monthEndDate->setHour(23);
+				$monthEndDate->setMinute(59);
+				$monthEndDate->setSecond(59);
+	
+				echo "\n importing from ".$monthStartDate->toString("dd-MM-yyyy HH:mm:ss"). " to ". $monthEndDate->toString("dd-MM-yyyy HH:mm:ss") ."\n";
+				
+				$urls = array();
+				$valuesFormExport = Oara_Utilities::cloneArray($this->_exportTransactionParameters);
+		       	$valuesFormExport[] = new Oara_Curl_Parameter('DateFrom', $monthStartDate->toString("yyyy-MM-dd"));
+		       	$valuesFormExport[] = new Oara_Curl_Parameter('DateTo', $monthEndDate->toString("yyyy-MM-dd"));
+		        $urls[] = new Oara_Curl_Request('http://affiliate.paidonresults.com/api/transactions?', $valuesFormExport);
+		        $exportReport = $this->_client->get($urls);
+		        
+		        $exportData = str_getcsv($exportReport[0], "\r\n");
+		        $num = count($exportData);
+		        for ($i = 1; $i < $num; $i++) {
+		        	$transactionExportArray = str_getcsv($exportData[$i], ",");
+		        	$paid = $transactionExportArray[7] == "YES" ? true : false;
+		        	if (in_array($transactionExportArray[0], $merchantList) && $paid){
+		        		
+						$transactionDate = new Zend_Date($transactionExportArray[8], "dd/MM/yyyy HH:mm:ss");
+						echo $paymentEndDate->toString("yyyy-MM-dd") ."  ".$transactionDate->toString("yyyy-MM-dd")."\n\n";
+						if ($paymentEndDate->toString("yyyy-MM-dd") == $transactionDate->toString("yyyy-MM-dd")){
+							$paymentTransactionList[] = $transactionExportArray[2];
+						}
+		        	}
+				}
+				
+			}
+    	}
+    	
+    	return $paymentTransactionList;
     }
 }

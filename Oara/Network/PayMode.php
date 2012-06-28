@@ -20,6 +20,14 @@ class Oara_Network_PayMode extends Oara_Network{
 	 */
 	private $_exportPaymentParameters = null;
 	/**
+	 * 
+	 * Payment Transactions Parameters
+	 * @var unknown_type
+	 */
+	private $_exportPaymentTransactionParameters = null;
+	
+	
+	/**
 	 * Client
 	 * @var unknown_type
 	 */
@@ -99,7 +107,15 @@ class Oara_Network_PayMode extends Oara_Network{
 		new Oara_Curl_Parameter('submit1', 'Submit')
 		);
 			
-			
+		$this->_exportPaymentTransactionParameters = array(
+		new Oara_Curl_Parameter('fromNonMigrated', 'false'),
+		new Oara_Curl_Parameter('returnPage', ''),
+		new Oara_Curl_Parameter('mode', ''),
+		new Oara_Curl_Parameter('siteid', ''),
+		new Oara_Curl_Parameter('ssid', '')
+		);
+		
+		
 	}
 	/**
 	 * Check the connection
@@ -131,7 +147,7 @@ class Oara_Network_PayMode extends Oara_Network{
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Interface#getMerchantList()
 	 */
-	public function getMerchantList($merchantMap = array()){
+	public function getMerchantList(){
 		$merchants = array();
 
 		$obj = array();
@@ -146,7 +162,7 @@ class Oara_Network_PayMode extends Oara_Network{
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null){
+	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null){
 
 		$totalTransactions = array();
 		$filter = new Zend_Filter_LocalizedToNormalized(array('precision' => 2));
@@ -179,6 +195,8 @@ class Oara_Network_PayMode extends Oara_Network{
 					if ($i == 5){
 						$transactionDate = new Zend_Date($attribute->nodeValue, 'MM/dd/yyyy', 'en');
 						$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+					} else if ($i == 10){
+						$transaction['unique_id'] =  $attribute->nodeValue;
 					} else if ($i == 13){
 						$transaction['amount'] = $filter->filter($attribute->nodeValue);
 						$transaction['commission'] = $filter->filter($attribute->nodeValue);
@@ -198,7 +216,7 @@ class Oara_Network_PayMode extends Oara_Network{
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Base#getOverviewList($merchantId, $dStartDate, $dEndDate)
 	 */
-	public function getOverviewList($transactionList = null, $merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null){
+	public function getOverviewList($transactionList = null, $merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null){
 		$totalOverviews = Array();
 		$transactionArray = Oara_Utilities::transactionMapPerDay($transactionList);
 		foreach ($transactionArray as $merchantId => $merchantTransaction){
@@ -218,6 +236,8 @@ class Oara_Network_PayMode extends Oara_Network{
 				$overview['transaction_pending_commission']= 0;
 				$overview['transaction_declined_value']= 0;
 				$overview['transaction_declined_commission']= 0;
+				$overview['transaction_paid_value']= 0;
+				$overview['transaction_paid_commission']= 0;
 				foreach ($transactionList as $transaction){
 					$overview['transaction_number'] ++;
 					if ($transaction['status'] == Oara_Utilities::STATUS_CONFIRMED){
@@ -229,6 +249,9 @@ class Oara_Network_PayMode extends Oara_Network{
 					} else if ($transaction['status'] == Oara_Utilities::STATUS_DECLINED){
 						$overview['transaction_declined_value'] += $transaction['amount'];
 						$overview['transaction_declined_commission'] += $transaction['commission'];
+					} else if ($transaction['status'] == Oara_Utilities::STATUS_PAID){
+						$overview['transaction_paid_value'] += $transaction['amount'];
+						$overview['transaction_paid_commission'] += $transaction['commission'];
 					}
 				}
 				$totalOverviews[] = $overview;
@@ -307,6 +330,49 @@ class Oara_Network_PayMode extends Oara_Network{
 		}
 		return $paymentHistory;
 	}
+	
+	/**
+	 *  It returns the transactions for a payment
+	 * @see Oara_Network::paymentTransactions()
+	 */
+    public function paymentTransactions($paymentId, $merchantList, $startDate){
+    	
+   		$paymentTransactionList = array();
+		$urls = array();
+		
+		$valuesFromExport = $this->_exportPaymentTransactionParameters;
+		$valuesFromExport[] = new Oara_Curl_Parameter('cpid', $paymentId);
+        $urls[] = new Oara_Curl_Request('https://secure.paymode.com/paymode/post-coll_comm_hist_detail.jsp?', $valuesFromExport);
+    	$exportReport = $this->_client->get($urls);
+    	
+    	$urls = array();
+		$urls[] = new Oara_Curl_Request('https://secure.paymode.com/paymode/tewf/navGenericReport.jsp?presentation=excel', array());
+		$exportReport = $this->_client->get($urls);
+
+		$dom = new Zend_Dom_Query($exportReport[0]);
+		$results = $dom->query('tr[valign="top"]');
+		foreach ($results as $line){
+			$transaction = Array();
+			$lineHtml = self::DOMinnerHTML($line);
+			$domLine = new Zend_Dom_Query($lineHtml);
+			$resultsLine = $domLine->query('.rptcontentText');
+			if (count($resultsLine) > 0){
+
+				$i = 0;
+				foreach ($resultsLine as $attribute){
+					if ($i == 10){
+						$paymentTransactionList[] =  $attribute->nodeValue;
+						break;
+					}
+					$i++;
+				}
+
+			}
+		}
+    	
+    	
+    	return $paymentTransactionList;
+    }
 
 
 	/**

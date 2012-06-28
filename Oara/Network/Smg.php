@@ -416,7 +416,7 @@ class Oara_Network_Smg extends Oara_Network{
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Base#getMerchantList()
 	 */
-	public function getMerchantList($merchantMap = array())
+	public function getMerchantList()
 	{
 		$merchantReportList = self::getMerchantReportList();
 		$merchants = Array();
@@ -433,79 +433,48 @@ class Oara_Network_Smg extends Oara_Network{
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Base#getTransactionList($merchantId, $dStartDate, $dEndDate)
 	 */
-	public function getTransactionList($merchantList = null , Zend_Date $dStartDate = null , Zend_Date $dEndDate = null)
+	public function getTransactionList($merchantList = null , Zend_Date $dStartDate = null , Zend_Date $dEndDate = null, $merchantMap = null)
 	{
-
+		$totalTransactions = Array();
+		$filter = new Zend_Filter_LocalizedToNormalized(array('precision' => 2));
 		if ($this->_oldAccess){
 			self::oldlogin();
-			$totalTransactions = Array();
-			if ($this->_dateFormat == 'dd/MM/yy'){
-				$startDate = $dStartDate->toString('dd/MM/yyyy');
-				$endDate = $dEndDate->toString('dd/MM/yyyy');
-			} else if ($this->_dateFormat == 'M/d/yy') {
-				$startDate = $dStartDate->toString('M/d/yy');
-				$endDate = $dEndDate->toString('M/d/yy');
-			} else if ($this->_dateFormat == 'd/MM/yy') {
-				$startDate = $dStartDate->toString('d/MM/yy');
-				$endDate = $dEndDate->toString('d/MM/yy');
-			} else if ($this->_dateFormat == 'tt.MM.uu') {
-				$startDate = $dStartDate->toString('dd.MM.yy');
-				$endDate = $dEndDate->toString('dd.MM.yy');
-			} else {
-				throw new Exception ("\n Date Format not supported ".$this->_dateFormat."\n");
-			}
-
+			
+	
 			$valuesFormExport = Oara_Utilities::cloneArray($this->_oldExportTransactionParameters);
-			$valuesFormExport[] = new Oara_Curl_Parameter('startDate', $startDate);
-			$valuesFormExport[] = new Oara_Curl_Parameter('endDate', $endDate);
+			$valuesFormExport[] = new Oara_Curl_Parameter('startDate',  self::formatDate($dStartDate));
+			$valuesFormExport[] = new Oara_Curl_Parameter('endDate',  self::formatDate($dEndDate));
 			$urls = array();
 			$urls[] = new Oara_Curl_Request('http://publisher.tradedoubler.com/pan/aReport3Internal.action?', $valuesFormExport);
 			$exportReport = $this->_oldClient->get($urls);
-
 			$exportReport[0] = self::checkReportError($exportReport[0], $urls[0]);
-
-
-			preg_match_all("/,\"([^\"]+?)\",/", $exportReport[0], $matches);
-			foreach ($matches[1] as $match){
-				if (preg_match("/\r\n/", $match)){
-					$rep = preg_replace("/\r\n/","", $match);
-					$exportReport[0] = str_replace($match, $rep, $exportReport[0]);
-				}
-			}
-
 			$exportData = str_getcsv($exportReport[0],"\r\n");
 			$num = count($exportData);
-
 			for ($i = 2; $i < $num-1; $i++) {
+				
 				$transactionExportArray = str_getcsv($exportData[$i],",");
-
+	
 				if (!isset($transactionExportArray[2])){
-
 					throw new Exception('Problem getting transaction\n\n');
 				}
-
-				if ($transactionExportArray[0] !== '' && in_array((int)$transactionExportArray[2], $merchantList)){
+				 
+				if ($transactionExportArray[0] !== '' && in_array((int)$transactionExportArray[2],$merchantList)){
+					
 					$transaction = Array();
 					$transaction['merchantId'] = $transactionExportArray[2];
-
-					if ($this->_dateFormat == 'dd/MM/yy'){
-						$transactionDate =  new Zend_Date(substr($transactionExportArray[4],0,-4), "dd/MM/yy HH:mm:ss");
-					} else if ($this->_dateFormat == 'M/d/yy') {
-						$transactionDate =  new Zend_Date(substr($transactionExportArray[4],0,-8), "M/d/yy HH:mm:ss");
-					} else if ($this->_dateFormat == 'd/MM/yy') {
-						$transactionDate =  new Zend_Date(substr($transactionExportArray[4],0,-4), "d/MM/yy HH:mm:ss");
-					} else if ($this->_dateFormat == 'tt.MM.uu') {
-						$transactionDate =  new Zend_Date(substr($transactionExportArray[4],0,-4), "dd.MM.yy HH:mm:ss");
-					} else {
-						throw new Exception ("\n Date Format not supported ".$this->_dateFormat."\n");
-					}
-
+					$transactionDate = self::toDate($transactionExportArray[4]);
 					$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
-
+					if ($transactionExportArray[8] != ''){
+						$transaction['unique_id'] = $transactionExportArray[8];
+					} else if ($transactionExportArray[7] != ''){
+						$transaction['unique_id'] = $transactionExportArray[7];
+					} else {
+						throw new Exception("No Identifier");
+					}
 					if ($transactionExportArray[9] != ''){
 						$transaction['custom_id'] = $transactionExportArray[9];
 					}
-
+					
 					if ($transactionExportArray[11] == 'A'){
 						$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
 					} else if ($transactionExportArray[11] == 'P'){
@@ -513,14 +482,14 @@ class Oara_Network_Smg extends Oara_Network{
 					} else if ($transactionExportArray[11] == 'D'){
 						$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
 					}
-
+	
 					if ($transactionExportArray[7] != ''){
-						$transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[20]);
+						$transaction['amount'] = $filter->filter($transactionExportArray[20]);
 					} else {
-						$transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[19]);
+						$transaction['amount'] = $filter->filter($transactionExportArray[19]);
 					}
-
-					$transaction['commission'] = Oara_Utilities::parseDouble($transactionExportArray[20]);
+	
+					$transaction['commission'] = $filter->filter($transactionExportArray[20]);
 					$totalTransactions[] = $transaction;
 				}
 			}
@@ -541,7 +510,8 @@ class Oara_Network_Smg extends Oara_Network{
 
 					$transactionDate =  new Zend_Date((string)$action->EventDate, "yyyy-MM-dd HH:mm:ss");
 					$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
-
+					
+					$transaction['unique_id'] = (string)$action->Id;
 					if ((string)$action->SharedId != ''){
 						$transaction['custom_id'] = (string)$action->SharedId;
 					}
@@ -574,7 +544,7 @@ class Oara_Network_Smg extends Oara_Network{
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Base#getOverviewList($merchantId, $dStartDate, $dEndDate)
 	 */
-	public function getOverviewList($transactionList = null, $merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null){
+	public function getOverviewList($transactionList = null, $merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null){
 		$overviewArray = Array();
 		$transactionArray = Oara_Utilities::transactionMapPerDay($transactionList);
 		foreach ($transactionArray as $merchantId => $merchantTransaction){
@@ -594,6 +564,8 @@ class Oara_Network_Smg extends Oara_Network{
 				$overview['transaction_pending_commission']= 0;
 				$overview['transaction_declined_value']= 0;
 				$overview['transaction_declined_commission']= 0;
+				$overview['transaction_paid_value']= 0;
+				$overview['transaction_paid_commission']= 0;
 				foreach ($transactionList as $transaction){
 					$overview['transaction_number'] ++;
 					if ($transaction['status'] == Oara_Utilities::STATUS_CONFIRMED){
@@ -605,6 +577,9 @@ class Oara_Network_Smg extends Oara_Network{
 					} else if ($transaction['status'] == Oara_Utilities::STATUS_DECLINED){
 						$overview['transaction_declined_value'] += $transaction['amount'];
 						$overview['transaction_declined_commission'] += $transaction['commission'];
+					} else if ($transaction['status'] == Oara_Utilities::STATUS_PAID){
+						$overview['transaction_paid_value'] += $transaction['amount'];
+						$overview['transaction_paid_commission'] += $transaction['commission'];
 					}
 				}
 				$overviewArray[] = $overview;
@@ -645,7 +620,7 @@ class Oara_Network_Smg extends Oara_Network{
 		} else if (preg_match("/ error/", $content, $matches)){
 			$urls = array();
 			$urls[] = $request;
-			$exportReport = $this->_client->get($urls);
+			$exportReport = $this->_oldClient->get($urls);
 			$try ++;
 			if ($try < 5){
 				return self::checkReportError($exportReport[0], $request, $try);
@@ -665,7 +640,7 @@ class Oara_Network_Smg extends Oara_Network{
 	 */
 	public function getPaymentHistory(){
 		$paymentHistory = array();
-
+		$filter = new Zend_Filter_LocalizedToNormalized(array('precision' => 2));
 		if ($this->_oldAccess){
 			$urls = array();
 			$urls[] = new Oara_Curl_Request('http://publisher.tradedoubler.com/pan/reportSelection/Payment?', array());
@@ -694,33 +669,23 @@ class Oara_Network_Smg extends Oara_Network{
 						$pid = $paymentLines->item($i)->attributes->getNamedItem("value")->nodeValue;
 						if (is_numeric($pid)){
 							$obj = array();
-
+	
 							$paymentLine = $paymentLines->item($i)->nodeValue;
 							$paymentLine = htmlentities($paymentLine);
 							$paymentLine = str_replace("&Acirc;&nbsp;", "", $paymentLine);
 							$paymentLine = html_entity_decode($paymentLine);
-
-							if ($this->_dateFormat == 'dd/MM/yy'){
-								$date = new Zend_Date(substr($paymentLine,0,10), "dd/MM/yy");
-							} else if ($this->_dateFormat == 'M/d/yy') {
-								$date = new Zend_Date(substr($paymentLine,0,10), "M/d/yy");
-							} else if ($this->_dateFormat == 'd/MM/yy') {
-								$date = new Zend_Date(substr($paymentLine,0,10), "d/MM/yy");
-							}  else if ($this->_dateFormat == 'tt.MM.uu') {
-								$date = new Zend_Date(substr($paymentLine,0,10), "dd.MM.yy");
-							} else {
-								throw new Exception ("\n Date Format not supported ".$this->_dateFormat."\n");
-							}
-
+	
+							$date = self::toDate(substr($paymentLine,0,10));
+	
 							$obj['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
 							$obj['pid'] = $pid;
 							$obj['method'] = 'BACS';
 							if (preg_match("/[-+]?[0-9]*,?[0-9]*\.?[0-9]+/", substr($paymentLine,10), $matches)) {
-								$obj['value'] = Oara_Utilities::parseDouble($matches[0]);
+								$obj['value'] = $filter->filter($matches[0]);
 							} else {
 								throw new Exception("Problem reading payments");
 							}
-
+	
 							$paymentHistory[] = $obj;
 						}
 					}
@@ -728,6 +693,52 @@ class Oara_Network_Smg extends Oara_Network{
 			}
 		}
 		return $paymentHistory;
+	}
+	
+	
+	
+	/**
+	 *
+	 * Add Dates in a certain format to the criteriaList
+	 * @param array $criteriaList
+	 * @param array $dateArray
+	 * @throws Exception
+	 */
+	private function formatDate($date){
+		$dateString = "";
+		if ($this->_dateFormat == 'dd/MM/yy'){
+			$dateString = $date->toString('dd/MM/yyyy');
+		} else if ($this->_dateFormat == 'M/d/yy') {
+			$dateString = $date->toString('M/d/yy');
+		} else if ($this->_dateFormat == 'd/MM/yy') {
+			$dateString = $date->toString('d/MM/yy');
+		} else if ($this->_dateFormat == 'tt.MM.uu') {
+			$dateString = $date->toString('dd.MM.yy');
+		} else {
+			throw new Exception ("\n Date Format not supported ".$this->_dateFormat."\n");
+		}
+		return $dateString;
+	}
+	/**
+	 *
+	 * Date String to Object
+	 * @param unknown_type $dateString
+	 * @throws Exception
+	 */
+	private function toDate($dateString){
+		$transactionDate = null;
+		if ($this->_dateFormat == 'dd/MM/yy'){
+			$transactionDate =  new Zend_Date(trim($dateString), "dd/MM/yy HH:mm:ss");
+		} else if ($this->_dateFormat == 'M/d/yy') {
+			$transactionDate =  new Zend_Date(trim($dateString), "M/d/yy HH:mm:ss");
+		} else if ($this->_dateFormat == 'd/MM/yy') {
+			$transactionDate =  new Zend_Date(trim($dateString), "d/MM/yy HH:mm:ss");
+		} else if ($this->_dateFormat == 'tt.MM.uu') {
+			$transactionDate =  new Zend_Date(trim($dateString), "dd.MM.yy HH:mm:ss");
+		} else {
+			throw new Exception ("\n Date Format not supported ".$this->_dateFormat."\n");
+		}
+		return $transactionDate;
 	}
 
 }
