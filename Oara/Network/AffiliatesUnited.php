@@ -323,14 +323,5 @@ class Oara_Network_AffiliatesUnited extends Oara_Network{
 	 			
 		return $overviewArray;
 	}
-	/**
-	 * (non-PHPdoc)
-	 * @see Oara/Network/Oara_Network_Base#getPaymentHistory()
-	 */
-	public function getPaymentHistory(){
-    	$paymentHistory = array();
-
-    	return $paymentHistory;
-    }
 
 }

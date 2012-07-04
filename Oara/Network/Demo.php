@@ -72,7 +72,7 @@ class Oara_Network_Demo extends Oara_Network{
 			$dateIndex = rand(0, count($dateArray)-1);
 			$merchantIndex = rand(0, count($merchantList)-1);
 			$transaction = array();
-			$transaction['unique_id'] = md5(randomString());
+			$transaction['unique_id'] = md5(mt_rand().$dateArray[$dateIndex]->toString("yyyy-MM-dd HH:mm:ss"));
 			$transaction['custom_id'] = "my_custom_id";
 			$transaction['merchantId'] = $merchantList[$merchantIndex];
 			$transaction['date'] = $dateArray[$dateIndex]->toString("yyyy-MM-dd HH:mm:ss");
