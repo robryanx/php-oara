@@ -322,6 +322,7 @@ class Oara_Network_AffiliateWindow extends Oara_Network{
     	$urls = array();
         $urls[] = new Oara_Curl_Request("https://darwin.affiliatewindow.com/awin/affiliate/".$this->_userId."/payments/history?", array());
         $exportReport = $this->_exportClient->get($urls);
+        
         $dom = new Zend_Dom_Query($exportReport[0]);
         $results = $dom->query('table tbody tr');
         
@@ -329,23 +330,24 @@ class Oara_Network_AffiliateWindow extends Oara_Network{
         while (!$finished){
 	        foreach ($results as $result) {
 				$linkList = $result->getElementsByTagName('a');
-	
-				$obj = array();
-				$date = new Zend_Date($linkList->item(0)->nodeValue, "EEEE,MMMM dd,yyyy");
-				$obj['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
-				$attrs = $linkList->item(0)->attributes;
-	 			foreach ($attrs as $attrName => $attrNode){
-	 				if ($attrName = 'href'){
-	 					$parseUrl = trim($attrNode->nodeValue);
-	 					if (preg_match("/\/region\/gb\/paymentId\/(.+)/", $parseUrl, $matches)){
-	 						$obj['pid'] = $matches[1];
-	 					}
-	 				}
-	 			}
-	 			
-				$obj['value'] = $filter->filter($linkList->item(3)->nodeValue);
-				$obj['method'] = trim($linkList->item(2)->nodeValue);
-				$paymentHistory[] = $obj;
+				if ($linkList->length > 0){
+					$obj = array();
+					$date = new Zend_Date($linkList->item(0)->nodeValue, "EEEE,MMMM dd,yyyy");
+					$obj['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
+					$attrs = $linkList->item(0)->attributes;
+		 			foreach ($attrs as $attrName => $attrNode){
+		 				if ($attrName = 'href'){
+		 					$parseUrl = trim($attrNode->nodeValue);
+		 					if (preg_match("/\/region\/gb\/paymentId\/(.+)/", $parseUrl, $matches)){
+		 						$obj['pid'] = $matches[1];
+		 					}
+		 				}
+		 			}
+		 			
+					$obj['value'] = $filter->filter($linkList->item(3)->nodeValue);
+					$obj['method'] = trim($linkList->item(2)->nodeValue);
+					$paymentHistory[] = $obj;
+				}
 			}
         	
 	        $results = $dom->query('#nextPage');

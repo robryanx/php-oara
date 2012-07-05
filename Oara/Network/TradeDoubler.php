@@ -337,8 +337,6 @@ class Oara_Network_TradeDoubler extends Oara_Network{
 		$totalTransactions = Array();
 		$filter = new Zend_Filter_LocalizedToNormalized(array('precision' => 2));
 		self::login();
-		
-
 
 		$valuesFormExport = Oara_Utilities::cloneArray($this->_exportTransactionParameters);
 		$valuesFormExport[] = new Oara_Curl_Parameter('startDate',  self::formatDate($dStartDate));

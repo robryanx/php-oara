@@ -120,7 +120,7 @@ class Oara_Network_Demo extends Oara_Network{
 				$overviewDate = new Zend_Date($date, "yyyy-MM-dd");
 				$overview['date'] = $overviewDate->toString("yyyy-MM-dd HH:mm:ss");
 				$overview['click_number'] = rand(0, 2000);
-				$overview['impression_number'] = $overview['click_number'] * (1 + (rand(60, 120)/10));
+				$overview['impression_number'] = (int)($overview['click_number'] * (1 + (rand(60, 120)/10)));
 				$overview['transaction_number'] = 0;
 				$overview['transaction_confirmed_value'] = 0;
 				$overview['transaction_confirmed_commission']= 0;
