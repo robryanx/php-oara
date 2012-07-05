@@ -55,6 +55,7 @@ class Oara_Network_CarTrawler extends Oara_Network{
 		$urls = array();
         $urls[] = new Oara_Curl_Request('https://www.cartrawler.com/affengine/home2.asp', array());
         $exportReport = $this->_client->get($urls);
+        echo $exportReport[0];
 		if (!preg_match("/Your session has timed out/", $exportReport[0], $matches)){
 			$connection = true;
 		}

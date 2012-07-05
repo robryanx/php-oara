@@ -293,12 +293,12 @@ class Oara_Network_Daisycon extends Oara_Network{
 	 */
 	public function getPaymentHistory(){
     	$paymentHistory = array();
+
+    	
     	$urls = array();
-    	$valuesFromExport = array();
-		$valuesFromExport[] = new Oara_Curl_Parameter('fo', 'true');
-		$valuesFromExport[] = new Oara_Curl_Parameter('filter_payments_posted', 'true');
-        $urls[] = new Oara_Curl_Request('http://publisher.daisycon.com/en/financial/payments/?', $valuesFromExport);
+        $urls[] = new Oara_Curl_Request("http://publisher.daisycon.com/en/financial/payments/?fo=true", array());
 		$exportReport = $this->_client->get($urls);
+		echo $exportReport[0];
     	$dom = new Zend_Dom_Query($exportReport[0]);
       	$results = $dom->query('#filter_payments_selection_start_year_id');
 		$count = count($results);

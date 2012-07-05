@@ -54,7 +54,7 @@ class Oara_Network_AutoEurope extends Oara_Network{
 		$urls = array();
 		$urls[] = new Oara_Curl_Request('https://www.auto-europe.co.uk/afftools/index.cfm', array());
 		$exportReport = $this->_client->get($urls);
-		if (preg_match("/affiliate_report\.cfm/", $exportReport[0], $matches)){
+		if (preg_match("/logout\.cfm/", $exportReport[0], $matches)){
 			$connection = true;
 		}
 		return $connection;
