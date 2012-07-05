@@ -382,10 +382,10 @@ class Oara_Network_TradeDoubler extends Oara_Network{
 					$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
 				}
 
-				if ($transactionExportArray[7] != ''){
-					$transaction['amount'] = $filter->filter($transactionExportArray[20]);
-				} else {
+				if ($transactionExportArray[19] != ''){
 					$transaction['amount'] = $filter->filter($transactionExportArray[19]);
+				} else {
+					$transaction['amount'] = $filter->filter($transactionExportArray[20]);
 				}
 
 				$transaction['commission'] = $filter->filter($transactionExportArray[20]);
