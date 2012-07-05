@@ -34,6 +34,8 @@ class Oara_Network_Daisycon extends Oara_Network{
      * @var unknown_type
      */
 	private $_client = null;
+	
+	private $_credentials = null;
 	/**
 	 * Constructor and Login
 	 * @param $credentials
@@ -41,12 +43,14 @@ class Oara_Network_Daisycon extends Oara_Network{
 	 */
 	public function __construct($credentials)
 	{
+		$this->_credentials = $credentials;
 		$user = $credentials['user'];
         $password = $credentials['password'];
         $merchantAuth = $credentials['merchantAuth'];
         $transactionAuth = $credentials['transactionAuth'];
         $overviewAuth = $credentials['overviewAuth'];
 
+        
 		$loginUrl = 'http://login.daisycon.com/en/index/';
         
 		
@@ -81,7 +85,10 @@ class Oara_Network_Daisycon extends Oara_Network{
                                                 new Oara_Curl_Parameter('headers', 'true')
                                                );
                                                
-       $this->_exportPaymentParameters = array(); 
+       $this->_exportPaymentParameters = array();
+       
+
+     
                                                
 	}
 	/**
@@ -294,11 +301,22 @@ class Oara_Network_Daisycon extends Oara_Network{
 	public function getPaymentHistory(){
     	$paymentHistory = array();
 
-    	
+    	$user = $this->_credentials['user'];
+        $password = $this->_credentials['password'];
+        
+		$loginUrl = 'http://login.daisycon.com/en/index/';
+        
+		
+		$valuesLogin = array(new Oara_Curl_Parameter('login[username]', $user),
+							 new Oara_Curl_Parameter('login[password]', $password)
+							);
+
+		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $this->_credentials);
+		
     	$urls = array();
         $urls[] = new Oara_Curl_Request("http://publisher.daisycon.com/en/financial/payments/?fo=true", array());
 		$exportReport = $this->_client->get($urls);
-		echo $exportReport[0];
+		
     	$dom = new Zend_Dom_Query($exportReport[0]);
       	$results = $dom->query('#filter_payments_selection_start_year_id');
 		$count = count($results);

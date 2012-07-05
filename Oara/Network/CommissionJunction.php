@@ -240,14 +240,12 @@ class Oara_Network_CommissionJunction extends Oara_Network{
 
 					 
 
-					if (self::findAttribute($singleTransaction, 'action-status') == 'locked'){
+					if (self::findAttribute($singleTransaction, 'action-status') == 'locked' || self::findAttribute($singleTransaction, 'action-status') == 'closed'){
 						$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
 					} else if (self::findAttribute($singleTransaction, 'action-status') == 'extended' || self::findAttribute($singleTransaction, 'action-status') == 'new'){
 						$transaction['status'] = Oara_Utilities::STATUS_PENDING;
 					} else if (self::findAttribute($singleTransaction, 'action-status') == 'corrected'){
 						$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
-					} else if (self::findAttribute($singleTransaction, 'action-status') == 'closed'){
-						$transaction['status'] = Oara_Utilities::STATUS_PAID;
 					}
 					 
 					$transaction['amount'] = (double)$filter->filter(self::findAttribute($singleTransaction, 'sale-amount'));
