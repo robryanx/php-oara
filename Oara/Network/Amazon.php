@@ -127,7 +127,7 @@ class Oara_Network_Amazon extends Oara_Network{
 		} else {
 			$hiddenParams = self::getHiddenParamsAfterJs($this->_credentials);
 		}
-		
+		var_dump($hiddenParams);
 		
 		$valuesLogin = array(
 							 new Oara_Curl_Parameter('email', $user),
