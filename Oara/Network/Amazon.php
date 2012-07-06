@@ -529,7 +529,7 @@ class Oara_Network_Amazon extends Oara_Network{
 	 */
 	private function getHiddenParamsAfterJs($credentials){
 		$hiddenParams = array();
-		
+		var_dump("entra");
 		$loginUrl = $this->_networkServer;
 		$this->_client = new Oara_Curl_Access($loginUrl, array(), $credentials);
         
@@ -570,6 +570,7 @@ class Oara_Network_Amazon extends Oara_Network{
 				$htmlAfterJs = curl_exec($curlSession);		
 				curl_close($curlSession);
 				
+				var_dump($htmlAfterJs);
 				$hiddenParamList = explode("\n", $htmlAfterJs);
 				foreach ($hiddenParamList as $hiddenParam){
 					$characterNumber = strpos($hiddenParam,":");
@@ -582,10 +583,9 @@ class Oara_Network_Amazon extends Oara_Network{
 			}
 			
 			if ($it == 5){
-				var_dump("Couldn't read the hidden parameters");
 				throw new Exception("Couldn't read the hidden parameters");
 			}
-			var_dump($hiddenParams);
+			
 		} else {
 			$descriptorspec = array(
 					            0 => array('pipe', 'r'),
