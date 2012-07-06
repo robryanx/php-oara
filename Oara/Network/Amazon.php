@@ -544,7 +544,6 @@ class Oara_Network_Amazon extends Oara_Network{
 			}
 			$i++;
 		}
-		unset($credentials["httpLogin"]);
 		//AffJet's way to call the JAR FILE, if you are a PHP-OARA user you need to use the other methong, calling java directly
 		if (isset($credentials["httpLogin"])){
 			$amazonServiceHttpLogin = $credentials["httpLogin"];
