@@ -557,7 +557,7 @@ class Oara_Network_Amazon extends Oara_Network{
 			
 			while (count($hiddenParams) != 7 && $it != 5){
 				$hiddenParams = array();
-				
+				var_dump($amazonServiceUrl);
 				$curlSession = curl_init($amazonServiceUrl);
 				curl_setopt_array($curlSession, array(
 					CURLOPT_USERAGENT => "Mozilla/5.0 (X11; U; Linux i686; es-CL; rv:1.9.2.17) Gecko/20110422 Ubuntu/10.10 (maverick) Firefox/3.6.17",
