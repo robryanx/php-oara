@@ -554,7 +554,7 @@ class Oara_Network_Amazon extends Oara_Network{
 			$amazonServiceUrl = "$amazonJavaServer?auth=$amazonServiceAuthToken&url=$amazonServiceParseUrl&cookie=%22$cookiesString%22";
 			
 			$it = 0;
-			var_dump($hiddenParams);
+			
 			while (count($hiddenParams) != 7 && $it != 5){
 				$hiddenParams = array();
 				
@@ -579,7 +579,7 @@ class Oara_Network_Amazon extends Oara_Network{
 					$hiddenValue = substr($hiddenParam, $characterNumber + 1);
 					$hiddenParams[$hiddenName] = $hiddenValue;
 				}
-				
+				var_dump($hiddenParams);
 				$it++;
 			}
 			
