@@ -308,7 +308,7 @@ class Oara_Network_AffiliateFuture extends Oara_Network{
 			$date = new Zend_Date(trim($registerLine->item(1)->nodeValue), "dd/MM/yyyy");
 			$obj['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
 			$obj['pid'] = trim($registerLine->item(0)->nodeValue);
-			$value = substr(trim($registerLine->item(4)->nodeValue),4);
+			$value = trim(substr(trim($registerLine->item(4)->nodeValue),4));
 			$obj['value'] = $filter->filter($value);
 			$obj['method'] = 'BACS';
 			$paymentHistory[] = $obj;
