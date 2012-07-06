@@ -127,7 +127,7 @@ class Oara_Network_Amazon extends Oara_Network{
 		} else {
 			$hiddenParams = self::getHiddenParamsAfterJs($this->_credentials);
 		}
-		var_dump($hiddenParams);
+		
 		
 		$valuesLogin = array(
 							 new Oara_Curl_Parameter('email', $user),
@@ -582,9 +582,10 @@ class Oara_Network_Amazon extends Oara_Network{
 			}
 			
 			if ($it == 5){
+				var_dump("Couldn't read the hidden parameters");
 				throw new Exception("Couldn't read the hidden parameters");
 			}
-			
+			var_dump($hiddenParams);
 		} else {
 			$descriptorspec = array(
 					            0 => array('pipe', 'r'),
