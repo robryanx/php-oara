@@ -529,7 +529,7 @@ class Oara_Network_Amazon extends Oara_Network{
 	 */
 	private function getHiddenParamsAfterJs($credentials){
 		$hiddenParams = array();
-		var_dump("entra");
+		
 		$loginUrl = $this->_networkServer;
 		$this->_client = new Oara_Curl_Access($loginUrl, array(), $credentials);
         
@@ -553,6 +553,7 @@ class Oara_Network_Amazon extends Oara_Network{
 			$amazonServiceParseUrl = $this->_networkServer."/";
 			
 			$amazonServiceUrl = "$amazonJavaServer?auth=$amazonServiceAuthToken&url=$amazonServiceParseUrl&cookie=%22$cookiesString%22";
+			var_dump("entra".$amazonServiceUrl);
 			$it = 0;
 			while (count($hiddenParams) != 7 && $it != 5){
 				$hiddenParams = array();
