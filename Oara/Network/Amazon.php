@@ -551,13 +551,12 @@ class Oara_Network_Amazon extends Oara_Network{
 			$amazonServiceAuthToken = $credentials["authToken"];
 			$amazonServiceParseUrl = $this->_networkServer."/";
 			
-			$amazonServiceUrl = "$amazonJavaServer?auth=$amazonServiceAuthToken&url=$amazonServiceParseUrl&cookie=%22$cookiesString%22";
+			$amazonServiceUrl = "$amazonJavaServer?auth=$amazonServiceAuthToken&url=$amazonServiceParseUrl&cookie=".urlencode($cookiesString);
 			
 			$it = 0;
 			
 			while (count($hiddenParams) != 7 && $it != 5){
 				$hiddenParams = array();
-				var_dump($amazonServiceUrl);
 				$curlSession = curl_init($amazonServiceUrl);
 				curl_setopt_array($curlSession, array(
 					CURLOPT_USERAGENT => "Mozilla/5.0 (X11; U; Linux i686; es-CL; rv:1.9.2.17) Gecko/20110422 Ubuntu/10.10 (maverick) Firefox/3.6.17",
@@ -571,7 +570,6 @@ class Oara_Network_Amazon extends Oara_Network{
 				$htmlAfterJs = curl_exec($curlSession);		
 				curl_close($curlSession);
 				
-				var_dump($htmlAfterJs);
 				$hiddenParamList = explode("\n", $htmlAfterJs);
 				foreach ($hiddenParamList as $hiddenParam){
 					$characterNumber = strpos($hiddenParam,":");
@@ -579,7 +577,7 @@ class Oara_Network_Amazon extends Oara_Network{
 					$hiddenValue = substr($hiddenParam, $characterNumber + 1);
 					$hiddenParams[$hiddenName] = $hiddenValue;
 				}
-				var_dump($hiddenParams);
+				
 				$it++;
 			}
 			

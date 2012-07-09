@@ -255,53 +255,52 @@ class Oara_Network_LinkShare extends Oara_Network{
 
 		$filter = new Zend_Filter_LocalizedToNormalized(array('precision' => 2));
 		foreach ($this->_siteList as $site){
-			foreach ($merchantList as $mid){
-				if (in_array((int)$mid,$merchantList)){
-					$valuesFromExport = array();
-					$valuesFromExport[] = new Oara_Curl_Parameter('mid', $mid);
-					$valuesFromExport[] = new Oara_Curl_Parameter('reportid', 12);
-					$valuesFromExport[] = new Oara_Curl_Parameter('nid', $this->_nid);
-					$valuesFromExport[] = new Oara_Curl_Parameter('token', $site->secureToken);
-					$valuesFromExport[] = new Oara_Curl_Parameter('bdate', $dStartDate->toString("yyyyMMdd"));
-					$valuesFromExport[] = new Oara_Curl_Parameter('edate', $dEndDate->toString("yyyyMMdd"));
+			//foreach ($merchantList as $mid){
 
-					echo "getting Transactions for Merchant $mid for site ".$site->id."\n\n";
-					$urls = array();
-					$urls[] = new Oara_Curl_Request('https://reportws.linksynergy.com/downloadreport.php?', $valuesFromExport);
-					$result = $this->_client->get($urls);
+
+					echo "getting Transactions for site ".$site->id."\n\n";
+
 					
-					$exportData = str_getcsv($result[0],"\n");
+					$url = "https://reportws.linksynergy.com/downloadreport.php?bdate=".$dStartDate->toString("yyyyMMdd")."&edate=".$dEndDate->toString("yyyyMMdd").
+																		"&token=".$site->secureToken."&nid=".$this->_nid."&reportid=12";
+					$result = file_get_contents($url);
+					if (preg_match("/You cannot request/", $result)){
+						throw new Exception("Reached the limit");
+					}
+					$exportData = str_getcsv($result,"\n");
 					$num = count($exportData);
 					for ($j = 1; $j < $num; $j++) {
 						$transactionData = str_getcsv($exportData[$j],",");
-						$transaction = Array();
 						
-						$transaction['merchantId'] = (int)$transactionData[1];
-						$transactionDate = new Zend_Date($transactionData[10]." ".$transactionData[11], "MM/dd/yyyy HH:mm:ss");
-						$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
-
-						if ($transactionData[0] != '<none>'){
-							$transaction['custom_id'] = $transactionData[0];
-						}
-						$transaction['unique_id'] = $transactionData[3];
-
-						$sales = $filter->filter($transactionData[7]);
-
-						if ($sales != 0){
-							$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
-						} else if ($sales == 0){
-							$transaction['status'] = Oara_Utilities::STATUS_PENDING;
-						}
-
-						$transaction['amount'] = $filter->filter($transactionData[7]);
-
-						$transaction['commission'] = $filter->filter($transactionData[9]);
-
-						$totalTransactions[] = $transaction;
+						
+						if (in_array((int)$transactionData[1],$merchantList)){
+							$transaction = Array();
+							$transaction['merchantId'] = (int)$transactionData[1];
+							$transactionDate = new Zend_Date($transactionData[10]." ".$transactionData[11], "MM/dd/yyyy HH:mm:ss");
+							$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+	
+							if ($transactionData[0] != '<none>'){
+								$transaction['custom_id'] = $transactionData[0];
+							}
+							$transaction['unique_id'] = $transactionData[3];
+	
+							$sales = $filter->filter($transactionData[7]);
+	
+							if ($sales != 0){
+								$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
+							} else if ($sales == 0){
+								$transaction['status'] = Oara_Utilities::STATUS_PENDING;
+							}
+	
+							$transaction['amount'] = $filter->filter($transactionData[7]);
+	
+							$transaction['commission'] = $filter->filter($transactionData[9]);
+	
+							$totalTransactions[] = $transaction;
 							
+						}
 					}
-				}
-			}
+			//}
 		}
 
 		return $totalTransactions;
@@ -376,17 +375,16 @@ class Oara_Network_LinkShare extends Oara_Network{
 				}
 
 				echo "getting Payment for Site ".$site->id." and year ".$bdate->toString("yyyy")." \n\n";
-				$urls = array();
-				$urlParams = array();
-				$urlParams[] = new Oara_Curl_Parameter('bdate', $bdate->toString("yyyyMMdd"));
-				$urlParams[] = new Oara_Curl_Parameter('edate', $edate->toString("yyyyMMdd"));
-				$urlParams[] = new Oara_Curl_Parameter('token', $site->secureToken);
-				$urlParams[] = new Oara_Curl_Parameter('nid', $this->_nid);
-				$urlParams[] = new Oara_Curl_Parameter('reportid', 1);
-				$urls[] = new Oara_Curl_Request('https://reportws.linksynergy.com/downloadreport.php?', $urlParams);
-				$result = $this->_client->get($urls);
+				
+				
+				$url = "https://reportws.linksynergy.com/downloadreport.php?bdate=".$bdate->toString("yyyyMMdd")."&edate=".$edate->toString("yyyyMMdd").
+																		"&token=".$site->secureToken."&nid=".$this->_nid."&reportid=1";
+				if (preg_match("/You cannot request/", $result)){
+						throw new Exception("Reached the limit");
+				}
+				$result = file_get_contents($url);
 
-				$paymentLines = str_getcsv($result[0], "\n");
+				$paymentLines = str_getcsv($result, "\n");
 				$number = count($paymentLines);
 				for ($j = 1; $j < $number ; $j++){
 					$paymentData = str_getcsv($paymentLines[$j], ",");
@@ -413,15 +411,12 @@ class Oara_Network_LinkShare extends Oara_Network{
     public function paymentTransactions($paymentId, $merchantList, $startDate){
     	$transactionList = array();
     	foreach ($this->_siteList as $site){
-	    	$urls = array();
-			$urlParams = array();
-			$urlParams[] = new Oara_Curl_Parameter('payid', $paymentId);
-			$urlParams[] = new Oara_Curl_Parameter('token', $site->secureToken);
-			$urlParams[] = new Oara_Curl_Parameter('reportid', 3);
-			$urls[] = new Oara_Curl_Request('https://reportws.linksynergy.com/downloadreport.php?', $urlParams);
-			$result = $this->_client->get($urls);
-			
-	    	$paymentLines = str_getcsv($result[0], "\n");
+			$url = "https://reportws.linksynergy.com/downloadreport.php?payid=$paymentId&token=".$site->secureToken."&reportid=3";
+			$result = file_get_contents($url);
+    		if (preg_match("/You cannot request/", $result)){
+					throw new Exception("Reached the limit");
+			}
+	    	$paymentLines = str_getcsv($result, "\n");
 			$number = count($paymentLines);
 			for ($j = 1; $j < $number ; $j++){
 				$paymentData = str_getcsv($paymentLines[$j], ",");
