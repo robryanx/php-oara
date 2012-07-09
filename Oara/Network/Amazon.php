@@ -548,14 +548,13 @@ class Oara_Network_Amazon extends Oara_Network{
 		if (isset($credentials["httpLogin"])){
 			$amazonServiceHttpLogin = $credentials["httpLogin"];
 			$amazonJavaServer = $credentials["javaServer"];
-			$amazonServiceAuthToken = $credentials["authToken"];
 			$amazonServiceParseUrl = $this->_networkServer."/";
 			
-			$amazonServiceUrl = "$amazonJavaServer?auth=$amazonServiceAuthToken&url=$amazonServiceParseUrl&cookie=".urlencode($cookiesString);
+			$amazonServiceUrl = "$amazonJavaServer?&url=$amazonServiceParseUrl&cookie=".urlencode($cookiesString);
 			
 			$it = 0;
 			
-			while (count($hiddenParams) != 7 && $it != 5){
+			while (count($hiddenParams) < 5 && $it != 5){
 				$hiddenParams = array();
 				$curlSession = curl_init($amazonServiceUrl);
 				curl_setopt_array($curlSession, array(

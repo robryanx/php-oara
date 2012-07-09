@@ -381,12 +381,12 @@ class Oara_Network_TradeDoubler extends Oara_Network{
 				}
 
 				if ($transactionExportArray[19] != ''){
-					$transaction['amount'] = $filter->filter($transactionExportArray[19]);
+					$transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[19]);
 				} else {
-					$transaction['amount'] = $filter->filter($transactionExportArray[20]);
+					$transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[20]);
 				}
 
-				$transaction['commission'] = $filter->filter($transactionExportArray[20]);
+				$transaction['commission'] = Oara_Utilities::parseDouble($transactionExportArray[20]);
 				$totalTransactions[] = $transaction;
 			}
 		}
