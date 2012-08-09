@@ -60,6 +60,7 @@ class Oara_Curl_Access{
 			while (false !== ($file = readdir($handle))) {
 				if ($credentials['cookieName'] == strstr($file, '_', true)){
 					unlink($dir.$file);
+					break;
 				}
 			}
 			closedir($handle);

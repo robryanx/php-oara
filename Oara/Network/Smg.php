@@ -692,6 +692,32 @@ class Oara_Network_Smg extends Oara_Network{
 				}
 			}
 		}
+		if ($this->_newAccess){
+			
+			$urls = array();
+			$urls[] = new Oara_Curl_Request('https://member.impactradius.co.uk/secure/nositemesh/accounting/getPayStubParamsCSV.csv', array());
+			$exportReport = $this->_newClient->get($urls);
+			$exportData = str_getcsv($exportReport[0], "\n");
+			
+			$num = count($exportData);
+			for ($i = 1; $i < $num; $i++) {
+				$paymentExportArray = str_getcsv($exportData[$i], ",");
+				
+				$obj = array();
+
+				$date = new Zend_Date($paymentExportArray[1], "dd MMM, yyyy");
+
+				$obj['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
+				$obj['pid'] = $paymentExportArray[0];
+				$obj['method'] = 'BACS';
+				if (preg_match("/[-+]?[0-9]*,?[0-9]*\.?[0-9]+/", $paymentExportArray[6], $matches)) {
+					$obj['value'] = $filter->filter($matches[0]);
+				} else {
+					throw new Exception("Problem reading payments");
+				}
+				$paymentHistory[] = $obj;
+			}
+		}
 		return $paymentHistory;
 	}
 	
