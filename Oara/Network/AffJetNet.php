@@ -150,6 +150,7 @@ class Oara_Network_AffJetNet extends Oara_Network{
 		$criteriaList[] = new Dao_Doctrine_Criteria_Restriction_Groupby('date', 'MONTH');
 		$criteriaList[] = new Dao_Doctrine_Criteria_Restriction_Groupby('date', 'YEAR');
 		$affjetNetClickList = $affjetNetClickDao->findBy($criteriaList);
+		
         
         foreach ($affjetNetClickList as $affjetNetClick){
         		
