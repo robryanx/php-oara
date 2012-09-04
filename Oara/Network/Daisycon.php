@@ -314,11 +314,11 @@ class Oara_Network_Daisycon extends Oara_Network{
 		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $this->_credentials);
 		
     	$urls = array();
-        $urls[] = new Oara_Curl_Request("http://publisher.daisycon.com/en/financial/payments/?fo=true", array());
+        $urls[] = new Oara_Curl_Request("http://publishers.daisycon.com/en/financial/payments", array());
 		$exportReport = $this->_client->get($urls);
 		
     	$dom = new Zend_Dom_Query($exportReport[0]);
-      	$results = $dom->query('#filter_payments_selection_start_year_id');
+      	$results = $dom->query('#year');
 		$count = count($results);
 		$yearArray = array();
 		if ($count == 1){
@@ -330,31 +330,32 @@ class Oara_Network_Daisycon extends Oara_Network{
 			
 			foreach ($yearArray as $year){
 				$valuesFromExport = array();
-				$valuesFromExport[] = new Oara_Curl_Parameter('fo', 'true');
-				$valuesFromExport[] = new Oara_Curl_Parameter('filter_payments_posted', 'true');
-				$valuesFromExport[] = new Oara_Curl_Parameter('filter_payments[selection][start_year]', $year);
+				$valuesFromExport[] = new Oara_Curl_Parameter('_filtername', 'filter');
+				$valuesFromExport[] = new Oara_Curl_Parameter('post', 'Filter');
+				$valuesFromExport[] = new Oara_Curl_Parameter('year', $year);
 				$urls = array();
-	        	$urls[] = new Oara_Curl_Request('http://publisher.daisycon.com/en/financial/payments/?', $valuesFromExport);
+	        	$urls[] = new Oara_Curl_Request('http://publishers.daisycon.com/en/financial/payments', $valuesFromExport);
 				$exportReport = $this->_client->post($urls);
 				$dom = new Zend_Dom_Query($exportReport[0]);
-      			$payments = $dom->query('.financialPaymentsTable');
+      			$payments = $dom->query('.baseBody table');
 				foreach ($payments as $payment){
-					
 					$paymentReport = self::htmlToCsv(self::DOMinnerHTML($payment));
-					$paymentExportArray = str_getcsv($paymentReport[2],";");
-					if ($paymentExportArray[0] != ""){
-						$obj = array();
-						$paymentDate = new Zend_Date($paymentExportArray[0], "MM dd yyyy", "en");
-			    		$obj['date'] = $paymentDate->toString("yyyy-MM-dd HH:mm:ss");
-						$obj['pid'] = $paymentDate->toString("yyyyMMdd");
-						$obj['method'] = 'BACS';
-						if (preg_match("/[-+]?[0-9]*,?[0-9]*\.?[0-9]+/", $paymentExportArray[4], $matches)) {
-							$obj['value'] = Oara_Utilities::parseDouble($matches[0]);
-						} else {
-							throw new Exception("Problem reading payments");
+					for ($j = 2; $j < count($paymentReport) -2; $j++){
+						$paymentExportArray = str_getcsv($paymentReport[$j],";");
+						if ($paymentExportArray[4] != "-"){
+							$obj = array();
+							$paymentDate = new Zend_Date($paymentExportArray[4], "dd MMMM yyyy", "en");
+				    		$obj['date'] = $paymentDate->toString("yyyy-MM-dd HH:mm:ss");
+							$obj['pid'] = (double)$paymentExportArray[5];
+							$obj['method'] = 'BACS';
+							if (preg_match("/[-+]?[0-9]*,?[0-9]*\.?[0-9]+/", $paymentExportArray[3], $matches)) {
+								$obj['value'] = Oara_Utilities::parseDouble($matches[0]);
+							} else {
+								throw new Exception("Problem reading payments");
+							}
+							
+							$paymentHistory[] = $obj;
 						}
-						
-						$paymentHistory[] = $obj;
 					}
 				}
 			}

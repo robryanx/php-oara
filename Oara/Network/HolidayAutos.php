@@ -77,8 +77,6 @@ class Oara_Network_HolidayAutos extends Oara_Network{
 
 				$totalTransactions[] = $transaction;
 			}
-		} else {
-			throw new Exception("Fail in the query");
 		}
 
 		return $totalTransactions;
