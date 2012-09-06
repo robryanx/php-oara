@@ -3,12 +3,12 @@
  * API Class
  *
  * @author     Carlos Morillo Merino
- * @category   Oara_Network_Efiliation
+ * @category   Oara_Network_ClickBank
  * @copyright  Fubra Limited
  * @version    Release: 01.00
  *
  */
-class Oara_Network_Effiliation extends Oara_Network{
+class Oara_Network_ClickBank extends Oara_Network{
     /**
      * Export Credentials
      * @var array
@@ -45,7 +45,7 @@ class Oara_Network_Effiliation extends Oara_Network{
     public function getMerchantList(){
     	$merchants = array();
     	
-        $content = @file_get_contents('http://api.effiliation.com/api/programmes.xml?key='.$this->_credentials["apiPassword"]);
+        $content = file_get_contents('http://api.effiliation.com/api/programmes.xml?key='.$this->_credentials["apiPassword"]);
 		$xml = simplexml_load_string($content, null, LIBXML_NOERROR | LIBXML_NOWARNING);
         foreach ($xml->programme as $merchant){
         	if ( (string)$merchant->etat == "inscrit"){
