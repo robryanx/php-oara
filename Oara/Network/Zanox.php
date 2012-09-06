@@ -164,7 +164,8 @@ class Oara_Network_Zanox extends Oara_Network{
 					}
 					$obj['unique_id'] = $transaction->id;
 					$obj['commission'] = $transaction->commission;
-					$obj['date'] = $transaction->trackingDate;
+					$transactionDate = new Zend_Date($transaction->trackingDate, "yyyy-MM-dd HH:mm:ss");
+					$obj['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 					$obj['merchantId'] = $transaction->program->id;
 					$totalTransactions[] = $obj;
 				}
