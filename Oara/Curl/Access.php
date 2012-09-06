@@ -46,7 +46,7 @@ class Oara_Curl_Access{
 
 		//Setting cookies
 		$isOldSMG = $credentials['networkName'] == "Smg" && (strpos($credentials["cookieName"], 'old') !== false);
-		$isTD = $credentials['networkName'] == "TradeDoubler";
+		$isTD = ($credentials['networkName'] == "TradeDoubler" || $credentials['networkName'] == "Stream20");
 		//$isAW = $credentials['networkName'] == "AffiliateWindow";
 		$dir = realpath(dirname(__FILE__)).'/../data/curl/'.$credentials['cookiesDir'].'/'.$credentials['cookiesSubDir'].'/';
 			
