@@ -1,4 +1,6 @@
 <?php
+require_once "GoogleApiClient/src/apiClient.php";
+require_once "GoogleApiClient/src/contrib/apiAdsenseService.php";
 /**
  * API Class
  *
@@ -11,20 +13,10 @@
 class Oara_Network_AdSense extends Oara_Network{
 
 	/**
-	 * Export Overview Parameters
-	 * @var array
-	 */
-	private $_exportOverviewParameters = null;
-	/**
-	 * Export Payment Parameters
-	 * @var array
-	 */
-	private $_exportPaymentParameters = null;
-	/**
-	 * Client
+	 * Adsense Client
 	 * @var unknown_type
 	 */
-	private $_client = null;
+	private $_adsense = null;
 	/**
 	 * Constructor and Login
 	 * @param $buy
@@ -32,98 +24,20 @@ class Oara_Network_AdSense extends Oara_Network{
 	 */
 	public function __construct($credentials)
 	{
-
-		$user = $credentials['user'];
-        $password = $credentials['password'];
-        $emailChallenge = null;
-        if (isset($credentials['emailChallenge']) && $credentials['emailChallenge'] != null){
-        	$emailChallenge = $credentials['emailChallenge'];
-        }
-		$phoneChallenge = null;
-        if (isset($credentials['phoneChallenge']) && $credentials['phoneChallenge'] != null){
-        	$phoneChallenge = $credentials['phoneChallenge'];
-        }
-       
-
-		// /adsense/
-		$this->_client = new Oara_Curl_Access('https://www.google.com/adsense/v3/', array(), $credentials);
-		
-		$urls = array();
-		$urls[] = new Oara_Curl_Request("https://www.google.com/adsense/v3/", array());
-		$contentList = $this->_client->get($urls);
-		
-		$doc = new DOMDocument();
-		libxml_use_internal_errors(true);
-		$doc->validateOnParse = true;
-		$doc->loadHTML($contentList[0]);
-		$hiddenList = $doc->getElementsByTagName('input');
-		$hiddenMap = array();
-		$nodeListLength = $hiddenList->length; // this value will also change
-		for ($i = 0; $i < $nodeListLength; $i ++)
-		{
-			$node = $hiddenList->item($i);
-			if ($node->getAttribute( 'type' ) == 'hidden'){
-				$hiddenMap[$node->getAttribute( 'name' )] = $node->getAttribute( 'value' );
-			}
-		}
-		$valuesLogin = array();
-		foreach($hiddenMap as $key => $value) {
-			$valuesLogin[] = new Oara_Curl_Parameter($key, $value);
-		}
-		$valuesLogin[] = new Oara_Curl_Parameter('Email', $user);
-		$valuesLogin[] = new Oara_Curl_Parameter('Passwd' , $password);
-		$valuesLogin[] = new Oara_Curl_Parameter('signIn' , 'Sign in');
-
-		$urls = array();
-		$urls[] = new Oara_Curl_Request('https://accounts.google.com/ServiceLoginAuth', $valuesLogin);
-		$content = $this->_client->post($urls);
-		//echo $content[0];
-		$dom = new Zend_Dom_Query(current($content));
-		$results = $dom->query('#challengeform');
-		//We have to provide the challenge
-		$count = count($results);
-		if ($count > 0){
-			
-			$challenge = array();
-			$challenge[] = new Oara_Curl_Parameter('continue', 'https://www.google.com/adsense/v3/gaiaauth2?destination=/adsense/v3/home');
-			$challenge[] = new Oara_Curl_Parameter('jsenabled' , 'true');
-			
-			$results = $dom->query('#RecoveryEmailChallengeOption');
-			$count = count($results);
-			if ($count > 0 && $emailChallenge != null ){
-				$challenge[] = new Oara_Curl_Parameter('emailAnswer' , $emailChallenge);
-				$challenge[] = new Oara_Curl_Parameter('challengetype' , 'RecoveryEmailChallenge');
-			} else {
-				$results = $dom->query('#PhoneVerificationChallengeOption');
-				$count = count($results);
-				if ($count > 0 && $phoneChallenge != null){
-					$challenge[] = new Oara_Curl_Parameter('phoneNumber' , $phoneChallenge);
-					$challenge[] = new Oara_Curl_Parameter('challengetype' , 'PhoneVerificationChallenge');
-				}	
-			}
-			
-			$challenge[] = new Oara_Curl_Parameter('answer' , '');
-			$challenge[] = new Oara_Curl_Parameter('address' , '');
-			$challenge[] = new Oara_Curl_Parameter('submitChallenge' , '');
-			
-			if ($emailChallenge != null || $phoneChallenge != null){
-				$urls = array();
-				$urls[] = new Oara_Curl_Request('https://accounts.google.com/LoginVerification?Email='.$user.'&continue=https://www.google.com/adsense/v3/gaiaauth2?destination=/adsense/v3/home&service=adsense', $challenge);
-				$content = $this->_client->post($urls);	
-			}
-			
-		}
+		$client = new apiClient();
+		$client->setApplicationName("AffJet");
+		$client->setClientId('16630800841-enfgglm0okfiafv2ci042r27f0gfik44.apps.googleusercontent.com');
+		$client->setClientSecret('tsZR2ZFiexQl6JN9xs3QuBVL');
+		$client->setAccessToken($credentials['oauth2']);
+		$this->_client = $client;
+		$this->_adsense = new apiAdsenseService($client);
 	}
 	/**
 	 * Check the connection
 	 */
 	public function checkConnection(){
 		$connection = false;
-
-		$urls = array();
-		$urls[] = new Oara_Curl_Request('https://www.google.com/adsense/v3/app#home', array());
-		$content = $this->_client->get($urls);
-		if (preg_match("/signout/", $content[0], $matches) || preg_match("/unsupportedBrowser/", $content[0], $matches)) {
+		if ($this->_client->getAccessToken()){
 			$connection = true;
 		}
 		return $connection;
@@ -161,54 +75,23 @@ class Oara_Network_AdSense extends Oara_Network{
 	public function getOverviewList($transactionList = null, $merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null){
 		$overviewArray = array();
 		
+		
+		$report = $this->_adsense->reports->generate($dStartDate->toString("YYYY-MM-dd"), $dEndDate->toString("YYYY-MM-dd"), array("dimension"=>"DATE", "metric"=>array("PAGE_VIEWS", "CLICKS", "EARNINGS"), "sort"=>"DATE"));
+		
 		$firstDayMonth = new Zend_Date();
 		$firstDayMonth->setDay(1);
 		$firstDayMonth->setHour("00");
 		$firstDayMonth->setMinute("00");
 		$firstDayMonth->setSecond("00");
-		
-		$modeArray = array("AdSense for Content", "AdSense for Search", "AdSense for Feeds", "AdSense for Domains");
-		$valuesExport = array();
-		$valuesExport[] = new Oara_Curl_Parameter('d', $dStartDate->toString("yyyy/M/d")."-".$dEndDate->toString("yyyy/M/d"));
-		$valuesExportReport[] = new Oara_Curl_Parameter('ag', 'date');
-		$valuesExport[] = new Oara_Curl_Parameter('oc', 'earnings');
-		$valuesExport[] = new Oara_Curl_Parameter('oo', 'descending');
-		$valuesExport[] = new Oara_Curl_Parameter('hl', 'en_GB');
-		
-		$urls = array();
-		$valuesExportReport = Oara_Utilities::cloneArray($valuesExport);
-		
-		$valuesExportReport[] = new Oara_Curl_Parameter('dd', '1YproductY1YAFCYAdSense for Content');
-		$urls[] = new Oara_Curl_Request('https://www.google.com/adsense/v3/gwt/exportCsv?', $valuesExportReport);
-		
-		$valuesExportReport = Oara_Utilities::cloneArray($valuesExport);
-		$valuesExportReport[] = new Oara_Curl_Parameter('dd', '1YproductY1YAFSYAdSense for Search');
-		$urls[] = new Oara_Curl_Request('https://www.google.com/adsense/v3/gwt/exportCsv?', $valuesExportReport);
-		
-		$valuesExportReport = Oara_Utilities::cloneArray($valuesExport);
-		$valuesExportReport[] = new Oara_Curl_Parameter('dd', '1YproductY1YAFFYAdSense for Feeds');
-		$urls[] = new Oara_Curl_Request('https://www.google.com/adsense/v3/gwt/exportCsv?', $valuesExportReport);
-		
-		$valuesExportReport = Oara_Utilities::cloneArray($valuesExport);
-		$valuesExportReport[] = new Oara_Curl_Parameter('dd', '1YproductY1YAFDYAdSense for Domains');
-		$urls[] = new Oara_Curl_Request('https://www.google.com/adsense/v3/gwt/exportCsv?', $valuesExportReport);
-		
-		
-		$content = $this->_client->post($urls);
-		for ($i = 0; $i < count($content); $i++){
-			$exportData = str_getcsv(@iconv('UTF-16', 'UTF-8',$content[$i]),"\n");
-			for ($j = 1; $j < count($exportData); $j++) {
-				$overviewExportArray = str_getcsv($exportData[$j],"\t");
-					
+		foreach ($report["rows"] as $row){
 				$obj = array();
 				$obj['merchantId'] = 1;
-				$overviewDate = new Zend_Date($overviewExportArray[0],"yyyy-MM-dd");
+				$overviewDate = new Zend_Date($row[0],"yyyy-MM-dd");
 				$overviewDate->setHour("00");
 				$overviewDate->setMinute("00");
 				$overviewDate->setSecond("00");
 				$obj['date'] = $overviewDate->toString("yyyy-MM-dd HH:mm:ss");
-				 
-				$obj['link'] = $modeArray[$i];
+				
 				$obj['transaction_number'] = 0;
 				$obj['transaction_confirmed_commission'] =  0;
 				$obj['transaction_confirmed_value'] =  0;
@@ -219,24 +102,21 @@ class Oara_Network_AdSense extends Oara_Network{
 				$obj['transaction_paid_commission'] = 0;
 				$obj['transaction_paid_value'] = 0;
 					
-				$obj['impression_number'] = (int)Oara_Utilities::parseDouble($overviewExportArray[1]);
-				$obj['click_number'] =  Oara_Utilities::parseDouble($overviewExportArray[2]);
+				$obj['impression_number'] = (int)Oara_Utilities::parseDouble($row[1]);
+				$obj['click_number'] =  Oara_Utilities::parseDouble($row[2]);
 				if ($firstDayMonth->compare($overviewDate) <= 0){
-					$obj['transaction_pending_commission'] = Oara_Utilities::parseDouble($overviewExportArray[6]);
-					$obj['transaction_pending_value'] = Oara_Utilities::parseDouble($overviewExportArray[6]);
+					$obj['transaction_pending_commission'] = Oara_Utilities::parseDouble($row[3]);
+					$obj['transaction_pending_value'] = Oara_Utilities::parseDouble($row[3]);
 				} else {
-					$obj['transaction_confirmed_commission'] =  Oara_Utilities::parseDouble($overviewExportArray[6]);
-					$obj['transaction_confirmed_value'] =  Oara_Utilities::parseDouble($overviewExportArray[6]);
+					$obj['transaction_confirmed_commission'] =  Oara_Utilities::parseDouble($row[3]);
+					$obj['transaction_confirmed_value'] =  Oara_Utilities::parseDouble($row[3]);
 				}
 				
 				if (Oara_Utilities::checkRegister($obj)){
 					$overviewArray[] = $obj;
 				}
-				
-			}
-			
 		}
-		unset ($urls);
+		
 		return $overviewArray;
 	}
 	/**
@@ -245,23 +125,7 @@ class Oara_Network_AdSense extends Oara_Network{
 	 */
 	public function getPaymentHistory(){
 		$paymentHistory = array();
-		$urls = array();
-		$urls[] = new Oara_Curl_Request('https://www.google.com/adsense/v3/reports-payment?csv=true&historical=false&reportRange=ALL_TIME', array());
-		$content = $this->_client->get($urls);
-		$exportData = str_getcsv(@iconv('UTF-16', 'UTF-8',$content[0]),"\n");
-		$num = count($exportData);
-		for ($j = 1; $j < $num; $j++) {
-			$paymentExportArray = str_getcsv($exportData[$j],"\t");
-			if (Oara_Utilities::parseDouble($paymentExportArray[2]) < 0){
-				$obj = array();
-				$date = new Zend_Date($paymentExportArray[0], "MM/dd/yy");
-				$obj['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
-				$obj['pid'] = $date->toString("yyMMdd");
-				$obj['method'] = 'BACS';
-				$obj['value'] = abs(Oara_Utilities::parseDouble($paymentExportArray[2]));
-				$paymentHistory[] = $obj;
-			}
-		}
+		
 		return $paymentHistory;
 	}
 }
