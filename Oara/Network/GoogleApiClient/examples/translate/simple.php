@@ -11,7 +11,7 @@ $client->setApplicationName('Google Translate PHP Starter Application');
 $service = new apiTranslateService($client);
 
 $langs = $service->languages->listLanguages();
-print "<h1>Languages</h1><pre>" . print_r($langs, true) . "</pre>";
+print "<h1>Languages</h1><pre>".print_r($langs, true)."</pre>";
 
 $translations = $service->translations->listTranslations('Hello', 'hi');
-print "<h1>Translations</h1><pre>" . print_r($translations, true) . "</pre>";
+print "<h1>Translations</h1><pre>".print_r($translations, true)."</pre>";

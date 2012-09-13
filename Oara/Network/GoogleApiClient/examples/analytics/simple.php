@@ -15,34 +15,34 @@ $client->setApplicationName("Google Analytics PHP Starter Application");
 $service = new apiAnalyticsService($client);
 
 if (isset($_GET['logout'])) {
-  unset($_SESSION['token']);
+	unset($_SESSION['token']);
 }
 
 if (isset($_GET['code'])) {
-  $client->authenticate();
-  $_SESSION['token'] = $client->getAccessToken();
-  header('Location: http://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF']);
+	$client->authenticate();
+	$_SESSION['token'] = $client->getAccessToken();
+	header('Location: http://'.$_SERVER['HTTP_HOST'].$_SERVER['PHP_SELF']);
 }
 
 if (isset($_SESSION['token'])) {
-  $client->setAccessToken($_SESSION['token']);
+	$client->setAccessToken($_SESSION['token']);
 }
 
 if ($client->getAccessToken()) {
-  $props = $service->management_webproperties->listManagementWebproperties("~all");
-  print "<h1>Web Properties</h1><pre>" . print_r($props, true) . "</pre>";
+	$props = $service->management_webproperties->listManagementWebproperties("~all");
+	print "<h1>Web Properties</h1><pre>".print_r($props, true)."</pre>";
 
-  $accounts = $service->management_accounts->listManagementAccounts();
-  print "<h1>Accounts</h1><pre>" . print_r($accounts, true) . "</pre>";
+	$accounts = $service->management_accounts->listManagementAccounts();
+	print "<h1>Accounts</h1><pre>".print_r($accounts, true)."</pre>";
 
-  $segments = $service->management_segments->listManagementSegments();
-  print "<h1>Segments</h1><pre>" . print_r($segments, true) . "</pre>";
+	$segments = $service->management_segments->listManagementSegments();
+	print "<h1>Segments</h1><pre>".print_r($segments, true)."</pre>";
 
-  $goals = $service->management_goals->listManagementGoals("~all", "~all", "~all");
-  print "<h1>Segments</h1><pre>" . print_r($goals, true) . "</pre>";
+	$goals = $service->management_goals->listManagementGoals("~all", "~all", "~all");
+	print "<h1>Segments</h1><pre>".print_r($goals, true)."</pre>";
 
-  $_SESSION['token'] = $client->getAccessToken();
+	$_SESSION['token'] = $client->getAccessToken();
 } else {
-  $authUrl = $client->createAuthUrl();
-  print "<a class='login' href='$authUrl'>Connect Me!</a>";
+	$authUrl = $client->createAuthUrl();
+	print "<a class='login' href='$authUrl'>Connect Me!</a>";
 }

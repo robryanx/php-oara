@@ -1,10 +1,9 @@
 <?php
-require realpath(dirname(__FILE__)) . '/../settings.php';
+require realpath(dirname(__FILE__)).'/../settings.php';
 
 //Retrieving the credentials for AffiliateWindow
 $config = Zend_Registry::getInstance()->get('credentialsIni');
 $credentials = $config->affiliatewindow->toArray();
-
 
 //Path for the cookie located inside the Oara/data/curl folder
 $credentials["cookiesDir"] = "example";

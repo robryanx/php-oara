@@ -16,7 +16,7 @@
  */
 
 // Require the base class
-require_once __DIR__ . "/../BaseExample.php";
+require_once __DIR__."/../BaseExample.php";
 
 /**
  * Gets all ad clients for the logged in user.
@@ -26,34 +26,31 @@ require_once __DIR__ . "/../BaseExample.php";
  * @author Silvano Luciani <silvano.luciani@gmail.com>
  */
 class GetAllAdClients extends BaseExample {
-  public function render() {
-    $optParams['maxResults'] = AD_MAX_PAGE_SIZE;
-    $listClass = 'clients';
-    printListHeader($listClass);
-    $pageToken = null;
-    do {
-      $optParams['pageToken'] = $pageToken;
-      // Retrieve ad client list, and display it.
-      $result = $this->adSenseService->adclients->listAdclients($optParams);
-      $adClients = $result['items'];
-      if (isset($adClients)) {
-        foreach ($adClients as $adClient) {
-          $content = array();
-          $mainFormat = 'Ad client for product "%s" with ID "%s" was found.';
-          $firstNestedFormat = 'Supports reporting: %s';
-          $content[] = sprintf(
-              $mainFormat, $adClient['productCode'], $adClient['id']);
-          $reporting = $adClient['supportsReporting'] ? 'Yes' : 'No';
-          $content[] = sprintf($firstNestedFormat, $reporting);
-          printListElementForClients($content);
-        }
-        $pageToken = isset($result['nextPageToken']) ? $result['nextPageToken']
-            : null;
-      } else {
-        printNoResultForList();
-      }
-    } while ($pageToken);
-    printListFooter();
-  }
+	public function render() {
+		$optParams['maxResults'] = AD_MAX_PAGE_SIZE;
+		$listClass = 'clients';
+		printListHeader($listClass);
+		$pageToken = null;
+		do {
+			$optParams['pageToken'] = $pageToken;
+			// Retrieve ad client list, and display it.
+			$result = $this->adSenseService->adclients->listAdclients($optParams);
+			$adClients = $result['items'];
+			if (isset($adClients)) {
+				foreach ($adClients as $adClient) {
+					$content = array();
+					$mainFormat = 'Ad client for product "%s" with ID "%s" was found.';
+					$firstNestedFormat = 'Supports reporting: %s';
+					$content[] = sprintf($mainFormat, $adClient['productCode'], $adClient['id']);
+					$reporting = $adClient['supportsReporting'] ? 'Yes' : 'No';
+					$content[] = sprintf($firstNestedFormat, $reporting);
+					printListElementForClients($content);
+				}
+				$pageToken = isset($result['nextPageToken']) ? $result['nextPageToken'] : null;
+			} else {
+				printNoResultForList();
+			}
+		} while ($pageToken);
+		printListFooter();
+	}
 }
-

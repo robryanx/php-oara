@@ -26,18 +26,18 @@ require_once 'io/apiRPC.php';
  * @author Chris Chabot <chabotc@google.com>
  */
 interface apiIO {
-  /**
-   * An utility function that first calls $this->auth->sign($request) and then executes makeRequest()
-   * on that signed request. Used for when a request should be authenticated
-   * @param apiHttpRequest $request
-   * @return apiHttpRequest $request
-   */
-  public function authenticatedRequest(apiHttpRequest $request);
+	/**
+	 * An utility function that first calls $this->auth->sign($request) and then executes makeRequest()
+	 * on that signed request. Used for when a request should be authenticated
+	 * @param apiHttpRequest $request
+	 * @return apiHttpRequest $request
+	 */
+	public function authenticatedRequest(apiHttpRequest $request);
 
-  /**
-   * Executes a apIHttpRequest and returns the resulting populated httpRequest
-   * @param apiHttpRequest $request
-   * @return apiHttpRequest $request
-   */
-  public function makeRequest(apiHttpRequest $request);
+	/**
+	 * Executes a apIHttpRequest and returns the resulting populated httpRequest
+	 * @param apiHttpRequest $request
+	 * @return apiHttpRequest $request
+	 */
+	public function makeRequest(apiHttpRequest $request);
 }

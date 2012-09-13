@@ -21,10 +21,10 @@
 require_once 'TasksTest.php';
 
 class AllTasksTests extends PHPUnit_Framework_TestSuite {
-  public static function suite() {
-    $suite = new PHPUnit_Framework_TestSuite();
-    $suite->setName('Google Tasks API tests');
-    $suite->addTestSuite('TasksTest');
-    return $suite;
-  }
+	public static function suite() {
+		$suite = new PHPUnit_Framework_TestSuite();
+		$suite->setName('Google Tasks API tests');
+		$suite->addTestSuite('TasksTest');
+		return $suite;
+	}
 }

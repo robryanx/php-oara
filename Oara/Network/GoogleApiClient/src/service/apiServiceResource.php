@@ -25,183 +25,173 @@
  *
  */
 class apiServiceResource {
-  // Valid query parameters that work, but don't appear in discovery.
-  private $stackParameters = array(
-      'alt' => array('type' => 'string', 'location' => 'query'),
-      'fields' => array('type' => 'string', 'location' => 'query'),
-      'trace' => array('type' => 'string', 'location' => 'query'),
-      'userIp' => array('type' => 'string', 'location' => 'query'),
-      'userip' => array('type' => 'string', 'location' => 'query'),
-      'file' => array('type' => 'complex', 'location' => 'body'),
-      'data' => array('type' => 'string', 'location' => 'body'),
-      'mimeType' => array('type' => 'string', 'location' => 'header'),
-      'uploadType' => array('type' => 'string', 'location' => 'query'),
-  );
+	// Valid query parameters that work, but don't appear in discovery.
+	private $stackParameters = array(
+		'alt'		 => array('type' => 'string', 'location' => 'query'),
+		'fields'	 => array('type' => 'string', 'location' => 'query'),
+		'trace'		 => array('type' => 'string', 'location' => 'query'),
+		'userIp'	 => array('type' => 'string', 'location' => 'query'),
+		'userip'	 => array('type' => 'string', 'location' => 'query'),
+		'file'		 => array('type' => 'complex', 'location' => 'body'),
+		'data'		 => array('type' => 'string', 'location' => 'body'),
+		'mimeType'	 => array('type' => 'string', 'location' => 'header'),
+		'uploadType' => array('type' => 'string', 'location' => 'query'),
+	);
 
-  /** @var apiService $service */
-  private $service;
+	/** @var apiService $service */
+	private $service;
 
-  /** @var string $serviceName */
-  private $serviceName;
+	/** @var string $serviceName */
+	private $serviceName;
 
-  /** @var string $resourceName */
-  private $resourceName;
+	/** @var string $resourceName */
+	private $resourceName;
 
-  /** @var array $methods */
-  private $methods;
+	/** @var array $methods */
+	private $methods;
 
-  public function __construct($service, $serviceName, $resourceName, $resource) {
-    $this->service = $service;
-    $this->serviceName = $serviceName;
-    $this->resourceName = $resourceName;
-    $this->methods = isset($resource['methods']) ? $resource['methods'] : array($resourceName => $resource);
-  }
+	public function __construct($service, $serviceName, $resourceName, $resource) {
+		$this->service = $service;
+		$this->serviceName = $serviceName;
+		$this->resourceName = $resourceName;
+		$this->methods = isset($resource['methods']) ? $resource['methods'] : array($resourceName => $resource);
+	}
 
-  /**
-   * @param $name
-   * @param $arguments
-   * @return apiServiceRequest|array
-   * @throws apiException
-   */
-  public function __call($name, $arguments) {
-    if (count($arguments) != 1 && count($arguments) != 2) {
-      throw new apiException("client method calls expect 1 or 2 parameter (\$client->plus->activities->list(array('userId' => 'me'))");
-    }
-    if (! is_array($arguments[0])) {
-      throw new apiException("client method parameter should be an array (\$client->plus->activities->list(array('userId' => 'me'))");
-    }
-    $batchKey = false;
-    if (isset($arguments[1])) {
-      if (! is_string($arguments[1])) {
-        throw new apiException("The batch key parameter should be a string (\$client->plus->activities->list( array('userId' => 'me'), 'batchKey'))");
-      }
-      $batchKey = $arguments[1];
-    }
-    if (! isset($this->methods[$name])) {
-      throw new apiException("Unknown function: {$this->serviceName}->{$this->resourceName}->{$name}()");
-    }
-    $method = $this->methods[$name];
-    $parameters = $arguments[0];
-    // postBody is a special case since it's not defined in the discovery document as parameter, but we abuse the param entry for storing it
-    $postBody = null;
-    if (isset($parameters['postBody'])) {
-      if (is_object($parameters['postBody'])) {
-        $this->stripNull($parameters['postBody']);
-      }
+	/**
+	 * @param $name
+	 * @param $arguments
+	 * @return apiServiceRequest|array
+	 * @throws apiException
+	 */
+	public function __call($name, $arguments) {
+		if (count($arguments) != 1 && count($arguments) != 2) {
+			throw new apiException("client method calls expect 1 or 2 parameter (\$client->plus->activities->list(array('userId' => 'me'))");
+		}
+		if (!is_array($arguments[0])) {
+			throw new apiException("client method parameter should be an array (\$client->plus->activities->list(array('userId' => 'me'))");
+		}
+		$batchKey = false;
+		if (isset($arguments[1])) {
+			if (!is_string($arguments[1])) {
+				throw new apiException("The batch key parameter should be a string (\$client->plus->activities->list( array('userId' => 'me'), 'batchKey'))");
+			}
+			$batchKey = $arguments[1];
+		}
+		if (!isset($this->methods[$name])) {
+			throw new apiException("Unknown function: {$this->serviceName}->{$this->resourceName}->{$name}()");
+		}
+		$method = $this->methods[$name];
+		$parameters = $arguments[0];
+		// postBody is a special case since it's not defined in the discovery document as parameter, but we abuse the param entry for storing it
+		$postBody = null;
+		if (isset($parameters['postBody'])) {
+			if (is_object($parameters['postBody'])) {
+				$this->stripNull($parameters['postBody']);
+			}
 
-      // Some APIs require the postBody to be set under the data key.
-      if (is_array($parameters['postBody']) && 'latitude' == $this->serviceName) {
-        if (!isset($parameters['postBody']['data'])) {
-          $rawBody = $parameters['postBody'];
-          unset($parameters['postBody']);
-          $parameters['postBody']['data'] = $rawBody;
-        }
-      }
+			// Some APIs require the postBody to be set under the data key.
+			if (is_array($parameters['postBody']) && 'latitude' == $this->serviceName) {
+				if (!isset($parameters['postBody']['data'])) {
+					$rawBody = $parameters['postBody'];
+					unset($parameters['postBody']);
+					$parameters['postBody']['data'] = $rawBody;
+				}
+			}
 
-      $postBody = is_array($parameters['postBody']) || is_object($parameters['postBody'])
-          ? json_encode($parameters['postBody'])
-          : $parameters['postBody'];
-      unset($parameters['postBody']);
+			$postBody = is_array($parameters['postBody']) || is_object($parameters['postBody']) ? json_encode($parameters['postBody']) : $parameters['postBody'];
+			unset($parameters['postBody']);
 
-      if (isset($parameters['optParams'])) {
-        $optParams = $parameters['optParams'];
-        unset($parameters['optParams']);
-        $parameters = array_merge($parameters, $optParams);
-      }
-    }
+			if (isset($parameters['optParams'])) {
+				$optParams = $parameters['optParams'];
+				unset($parameters['optParams']);
+				$parameters = array_merge($parameters, $optParams);
+			}
+		}
 
-    if (!isset($method['parameters'])) {
-      $method['parameters'] = array();
-    }
-    
-    $method['parameters'] = array_merge($method['parameters'], $this->stackParameters);
-    foreach ($parameters as $key => $val) {
-      if ($key != 'postBody' && ! isset($method['parameters'][$key])) {
-        throw new apiException("($name) unknown parameter: '$key'");
-      }
-    }
-    if (isset($method['parameters'])) {
-      foreach ($method['parameters'] as $paramName => $paramSpec) {
-        if (isset($paramSpec['required']) && $paramSpec['required'] && ! isset($parameters[$paramName])) {
-          throw new apiException("($name) missing required param: '$paramName'");
-        }
-        if (isset($parameters[$paramName])) {
-          $value = $parameters[$paramName];
-          $parameters[$paramName] = $paramSpec;
-          $parameters[$paramName]['value'] = $value;
-          unset($parameters[$paramName]['required']);
-        } else {
-          unset($parameters[$paramName]);
-        }
-      }
-    }
+		if (!isset($method['parameters'])) {
+			$method['parameters'] = array();
+		}
 
-    // Discovery v1.0 puts the canonical method id under the 'id' field.
-    if (! isset($method['id'])) {
-      $method['id'] = $method['rpcMethod'];
-    }
+		$method['parameters'] = array_merge($method['parameters'], $this->stackParameters);
+		foreach ($parameters as $key => $val) {
+			if ($key != 'postBody' && !isset($method['parameters'][$key])) {
+				throw new apiException("($name) unknown parameter: '$key'");
+			}
+		}
+		if (isset($method['parameters'])) {
+			foreach ($method['parameters'] as $paramName => $paramSpec) {
+				if (isset($paramSpec['required']) && $paramSpec['required'] && !isset($parameters[$paramName])) {
+					throw new apiException("($name) missing required param: '$paramName'");
+				}
+				if (isset($parameters[$paramName])) {
+					$value = $parameters[$paramName];
+					$parameters[$paramName] = $paramSpec;
+					$parameters[$paramName]['value'] = $value;
+					unset($parameters[$paramName]['required']);
+				} else {
+					unset($parameters[$paramName]);
+				}
+			}
+		}
 
-    // Discovery v1.0 puts the canonical path under the 'path' field.
-    if (! isset($method['path'])) {
-      $method['path'] = $method['restPath'];
-    }
+		// Discovery v1.0 puts the canonical method id under the 'id' field.
+		if (!isset($method['id'])) {
+			$method['id'] = $method['rpcMethod'];
+		}
 
-    $restBasePath = $this->service->restBasePath;
+		// Discovery v1.0 puts the canonical path under the 'path' field.
+		if (!isset($method['path'])) {
+			$method['path'] = $method['restPath'];
+		}
 
-    // Process Media Request
-    $contentType = false;
-    if (isset($method['mediaUpload'])) {
-      $media = apiMediaFileUpload::process($postBody, $method, $parameters);
-      if (isset($media['content-type'])) {
-        $contentType = $media['content-type'];
-      }
+		$restBasePath = $this->service->restBasePath;
 
-      if (isset($media['data'])) {
-        $postBody = $media['data'];
-      }
+		// Process Media Request
+		$contentType = false;
+		if (isset($method['mediaUpload'])) {
+			$media = apiMediaFileUpload::process($postBody, $method, $parameters);
+			if (isset($media['content-type'])) {
+				$contentType = $media['content-type'];
+			}
 
-      if (isset($media['file'])) {
-        $postBody = array('file' => $media['file']);
-      }
+			if (isset($media['data'])) {
+				$postBody = $media['data'];
+			}
 
-      if (isset($media['restBasePath'])) {
-        $restBasePath = $media['restBasePath'];
-        $method['path'] = '';
-      }
-    }
+			if (isset($media['file'])) {
+				$postBody = array('file' => $media['file']);
+			}
 
-    $request = new apiServiceRequest(
-        $restBasePath,
-        $this->service->rpcPath,
-        $method['path'],
-        $method['id'],
-        $method['httpMethod'],
-        $parameters, $postBody
-    );
+			if (isset($media['restBasePath'])) {
+				$restBasePath = $media['restBasePath'];
+				$method['path'] = '';
+			}
+		}
 
-    $request->setContentType($contentType);
-    if ($batchKey) {
-      $request->setBatchKey($batchKey);
-      return $request;
-    } else {
-      return apiREST::execute($request);
-    }
-  }
+		$request = new apiServiceRequest($restBasePath, $this->service->rpcPath, $method['path'], $method['id'], $method['httpMethod'], $parameters, $postBody);
 
-  protected function useObjects() {
-    global $apiConfig;
-    return (isset($apiConfig['use_objects']) && $apiConfig['use_objects']);
-  }
+		$request->setContentType($contentType);
+		if ($batchKey) {
+			$request->setBatchKey($batchKey);
+			return $request;
+		} else {
+			return apiREST::execute($request);
+		}
+	}
 
-  protected function stripNull(&$o) {
-    $o = (array) $o;
-    foreach ($o as $k => $v) {
-      if ($v === null || strstr($k, "\0*\0__")) {
-        unset($o[$k]);
-      }
-      elseif (is_object($v) || is_array($v)) {
-        $this->stripNull($o[$k]);
-      }
-    }
-  }
+	protected function useObjects() {
+		global $apiConfig;
+		return (isset($apiConfig['use_objects']) && $apiConfig['use_objects']);
+	}
+
+	protected function stripNull(&$o) {
+		$o = (array) $o;
+		foreach ($o as $k => $v) {
+			if ($v === null || strstr($k, "\0*\0__")) {
+				unset($o[$k]);
+			} elseif (is_object($v) || is_array($v)) {
+				$this->stripNull($o[$k]);
+			}
+		}
+	}
 }

@@ -16,7 +16,7 @@
  */
 
 // Require the base class.
-require_once __DIR__ . "/../BaseExample.php";
+require_once __DIR__."/../BaseExample.php";
 
 /**
  * Retrieves a report for the specified ad client.
@@ -27,31 +27,30 @@ require_once __DIR__ . "/../BaseExample.php";
  * @author Silvano Luciani <silvano.luciani@gmail.com>
  */
 class GenerateReport extends BaseExample {
-  public function render() {
-    $startDate = $this->getSixMonthsBeforeNow();
-    $endDate = $this->getNow();
-    $optParams = array(
-      'metric' => array(
-        'PAGE_VIEWS', 'AD_REQUESTS', 'AD_REQUESTS_COVERAGE',
-        'CLICKS', 'AD_REQUESTS_CTR', 'COST_PER_CLICK', 'AD_REQUESTS_RPM',
-        'EARNINGS'),
-      'dimension' => 'DATE',
-      'sort' => 'DATE',
-      'filter' => array(
-        'AD_CLIENT_ID==' . AD_CLIENT_ID
-      )
-    );
-    // Retrieve report.
-    $report = $this->adSenseService->reports
-        ->generate($startDate, $endDate, $optParams);
+	public function render() {
+		$startDate = $this->getSixMonthsBeforeNow();
+		$endDate = $this->getNow();
+		$optParams = array(
+			'metric'	 => array(
+				'PAGE_VIEWS', 'AD_REQUESTS', 'AD_REQUESTS_COVERAGE',
+				'CLICKS', 'AD_REQUESTS_CTR', 'COST_PER_CLICK', 'AD_REQUESTS_RPM',
+				'EARNINGS'),
+			'dimension'	 => 'DATE',
+			'sort'		 => 'DATE',
+			'filter'	 => array(
+				'AD_CLIENT_ID=='.AD_CLIENT_ID
+			)
+		);
+		// Retrieve report.
+		$report = $this->adSenseService->reports
+		->generate($startDate, $endDate, $optParams);
 
-    if (isset($report['rows'])) {
-      printReportTableHeader($report['headers']);
-      printReportTableRows($report['rows']);
-      printReportTableFooter();
-    } else {
-      printNoResultForTable(count($report['headers']));
-    }
-  }
+		if (isset($report['rows'])) {
+			printReportTableHeader($report['headers']);
+			printReportTableRows($report['rows']);
+			printReportTableFooter();
+		} else {
+			printNoResultForTable(count($report['headers']));
+		}
+	}
 }
-

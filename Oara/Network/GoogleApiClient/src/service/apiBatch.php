@@ -22,18 +22,18 @@
  */
 class apiBatch {
 
-  /**
-   * Execute one or multiple Google API requests, takes one or multiple requests as param
-   * Example usage:
-   *   $ret = apiBatch::execute(
-   *     $apiClient->activities->list(array('@public', '@me'), 'listActivitiesKey'),
-   *     $apiClient->people->get(array('userId' => '@me'), 'getPeopleKey')
-   *   );
-   *   print_r($ret['getPeopleKey']);
-   */
-  static public function execute( /* polymorphic */) {
-    $requests = func_get_args();
-    return apiRPC::execute($requests);
-  }
+	/**
+	 * Execute one or multiple Google API requests, takes one or multiple requests as param
+	 * Example usage:
+	 *   $ret = apiBatch::execute(
+	 *     $apiClient->activities->list(array('@public', '@me'), 'listActivitiesKey'),
+	 *     $apiClient->people->get(array('userId' => '@me'), 'getPeopleKey')
+	 *   );
+	 *   print_r($ret['getPeopleKey']);
+	 */
+	static public function execute( /* polymorphic */) {
+		$requests = func_get_args();
+		return apiRPC::execute($requests);
+	}
 
 }

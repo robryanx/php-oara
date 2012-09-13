@@ -16,7 +16,7 @@
  */
 
 // Require the base class
-require_once __DIR__ . "/../BaseExample.php";
+require_once __DIR__."/../BaseExample.php";
 
 /**
  * Gets a specific account for the logged in user.
@@ -27,39 +27,36 @@ require_once __DIR__ . "/../BaseExample.php";
  * @author Silvano Luciani <silvano.luciani@gmail.com>
  */
 class GetAccountTree extends BaseExample {
-  public function render() {
-    $accountId = ACCOUNT_ID;
-    $optParams = array('tree' => true);
-    // Retrieve account with sub accounts.
-    $account = $this->adSenseService->accounts->get($accountId, $optParams);
-    $data = array();
-    $this->buildTree($account, &$data, null);
-    $data = json_encode($data);
-    $columns = array(
-      array('string', 'Account ID'),
-      array('string', 'Parent'),
-      array('number', 'Weight')
-    );
-    $type = 'TreeMap';
-    $options = json_encode(
-      array('title' => 'Account treemap')
-    );
-    print generateChartHtml($data, $columns, $type, $options);
-  }
+	public function render() {
+		$accountId = ACCOUNT_ID;
+		$optParams = array('tree' => true);
+		// Retrieve account with sub accounts.
+		$account = $this->adSenseService->accounts->get($accountId, $optParams);
+		$data = array();
+		$this->buildTree($account, &$data, null);
+		$data = json_encode($data);
+		$columns = array(
+			array('string', 'Account ID'),
+			array('string', 'Parent'),
+			array('number', 'Weight')
+		);
+		$type = 'TreeMap';
+		$options = json_encode(array('title' => 'Account treemap'));
+		print generateChartHtml($data, $columns, $type, $options);
+	}
 
-  /**
-   * Builds the data structure to represent the tree from the API response.
-   * @param array $account The response of the API
-   * @param array $data The data structure that represent the tree
-   * @param string $parent The parent for the current node
-   */
-  private function buildTree($account, $data, $parent) {
-    $data[] = array($account['name'], null, 1);
-    if ($account['subAccounts']) {
-      foreach($account['subAccounts'] as $subAccount) {
-        $this->buildTree($subAccount, $data, $account['name']);
-      }
-    }
-  }
+	/**
+	 * Builds the data structure to represent the tree from the API response.
+	 * @param array $account The response of the API
+	 * @param array $data The data structure that represent the tree
+	 * @param string $parent The parent for the current node
+	 */
+	private function buildTree($account, $data, $parent) {
+		$data[] = array($account['name'], null, 1);
+		if ($account['subAccounts']) {
+			foreach ($account['subAccounts'] as $subAccount) {
+				$this->buildTree($subAccount, $data, $account['name']);
+			}
+		}
+	}
 }
-

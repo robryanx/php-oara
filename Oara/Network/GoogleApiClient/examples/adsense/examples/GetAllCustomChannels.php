@@ -16,7 +16,7 @@
  */
 
 // Require the base class
-require_once __DIR__ . "/../BaseExample.php";
+require_once __DIR__."/../BaseExample.php";
 
 /**
  * Gets all custom channels in an ad client.
@@ -27,52 +27,45 @@ require_once __DIR__ . "/../BaseExample.php";
  * @author Silvano Luciani <silvano.luciani@gmail.com>
  */
 class GetAllCustomChannels extends BaseExample {
-  public function render() {
-    $adClientId = AD_CLIENT_ID;
-    $optParams['maxResults'] = AD_MAX_PAGE_SIZE;
-    $listClass = 'list';
-    printListHeader($listClass);
-    $pageToken = null;
-    do {
-      $optParams['pageToken'] = $pageToken;
-      // Retrieve custom channels list, and display it.
-      $result = $this->adSenseService->customchannels
-          ->listCustomchannels($adClientId, $optParams);
-      $customChannels = $result['items'];
-      if (isset($customChannels)) {
-        foreach ($customChannels as $customChannel) {
-          $content = array();
-          $mainFormat =
-              'Custom channel with code "%s" and name "%s" was found.';
-          $content[] = sprintf($mainFormat, $customChannel['productCode'],
-              $customChannel['name']);
-          if($customChannel['targetingInfo']) {
-            $targetingInfo = $customChannel['targetingInfo'];
-            if($targetingInfo['adsAppearOn']) {
-              $content[] = sprintf('Ads appear on: %s',
-                $targetingInfo['adsAppearOn']);
-            }
-            if($targetingInfo['location']) {
-              $content[] = sprintf('Location: %s', $targetingInfo['location']);
-            }
-            if($targetingInfo['description']) {
-              $content[] = sprintf('Description: %s',
-                $targetingInfo['description']);
-            }
-            if($targetingInfo['siteLanguage']) {
-              $content[] = sprintf('Site language: %s',
-                $targetingInfo['siteLanguage']);
-            }
-          }
-          printListElementForClients($content);
-        }
-        $pageToken = isset($result['nextPageToken']) ? $result['nextPageToken']
-            : null;
-      } else {
-        printNoResultForList();
-      }
-    } while ($pageToken);
-    printListFooter();
-  }
+	public function render() {
+		$adClientId = AD_CLIENT_ID;
+		$optParams['maxResults'] = AD_MAX_PAGE_SIZE;
+		$listClass = 'list';
+		printListHeader($listClass);
+		$pageToken = null;
+		do {
+			$optParams['pageToken'] = $pageToken;
+			// Retrieve custom channels list, and display it.
+			$result = $this->adSenseService->customchannels
+			->listCustomchannels($adClientId, $optParams);
+			$customChannels = $result['items'];
+			if (isset($customChannels)) {
+				foreach ($customChannels as $customChannel) {
+					$content = array();
+					$mainFormat = 'Custom channel with code "%s" and name "%s" was found.';
+					$content[] = sprintf($mainFormat, $customChannel['productCode'], $customChannel['name']);
+					if ($customChannel['targetingInfo']) {
+						$targetingInfo = $customChannel['targetingInfo'];
+						if ($targetingInfo['adsAppearOn']) {
+							$content[] = sprintf('Ads appear on: %s', $targetingInfo['adsAppearOn']);
+						}
+						if ($targetingInfo['location']) {
+							$content[] = sprintf('Location: %s', $targetingInfo['location']);
+						}
+						if ($targetingInfo['description']) {
+							$content[] = sprintf('Description: %s', $targetingInfo['description']);
+						}
+						if ($targetingInfo['siteLanguage']) {
+							$content[] = sprintf('Site language: %s', $targetingInfo['siteLanguage']);
+						}
+					}
+					printListElementForClients($content);
+				}
+				$pageToken = isset($result['nextPageToken']) ? $result['nextPageToken'] : null;
+			} else {
+				printNoResultForList();
+			}
+		} while ($pageToken);
+		printListFooter();
+	}
 }
-

@@ -28,16 +28,16 @@ require_once "ApiOAuth2Test.php";
 
 class GeneralTests extends PHPUnit_Framework_TestSuite {
 
-  public static function suite() {
-    $suite = new PHPUnit_Framework_TestSuite('Google API PHP Library core component tests');
-    //$suite->addTestSuite('AuthTest');
-    $suite->addTestSuite('CacheTest');
-    $suite->addTestSuite('IoTest');
-    $suite->addTestSuite('ServiceTest');
-    $suite->addTestSuite('ApiClientTest');
-    $suite->addTestSuite('ApiOAuth2Test');
-    $suite->addTestSuite('ApiCacheParserTest');
-    $suite->addTestSuite('RestTest');
-    return $suite;
-  }
+	public static function suite() {
+		$suite = new PHPUnit_Framework_TestSuite('Google API PHP Library core component tests');
+		//$suite->addTestSuite('AuthTest');
+		$suite->addTestSuite('CacheTest');
+		$suite->addTestSuite('IoTest');
+		$suite->addTestSuite('ServiceTest');
+		$suite->addTestSuite('ApiClientTest');
+		$suite->addTestSuite('ApiOAuth2Test');
+		$suite->addTestSuite('ApiCacheParserTest');
+		$suite->addTestSuite('RestTest');
+		return $suite;
+	}
 }

@@ -20,8 +20,8 @@
 require_once '../src/contrib/apiPlusService.php';
 
 class ServiceTest extends BaseTest {
-  public function testServiceResource() {
-    // temp place holder as tests are being filled in
-    $service = new apiPlusService(BaseTest::$client);
-  }
+	public function testServiceResource() {
+		// temp place holder as tests are being filled in
+		$service = new apiPlusService(BaseTest::$client);
+	}
 }

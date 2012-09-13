@@ -5,7 +5,7 @@
  * Please check you have entered your crendentials in your credential.ini before you run this script
  *
  * Parameters:
- * 
+ *
  * 	-s 	startDate with format dd/MM/yyyy (11/06/2011)
  *  -e 	endDate with format dd/MM/yyyy (11/06/2011)
  *	-n 	network name of the Oara_Network class for the network (AffiliateWindow, BuyAt, Dgm, WebGains......)
@@ -20,22 +20,18 @@
  *
  */
 
-
-
-require realpath(dirname(__FILE__)) . '/../settings.php';
+require realpath(dirname(__FILE__)).'/../settings.php';
 
 $arguments = Oara_Utilities::arguments($argv);
 $argumentsMap = array();
 
 $argumentsNumber = count($arguments['arguments']);
-for ($i = 0; $i < $argumentsNumber; $i++){
-	
+for ($i = 0; $i < $argumentsNumber; $i++) {
+
 	$argumentsMap[$arguments['flags'][$i]] = $arguments['arguments'][$i];
 }
 
-
-
-if (isset($argumentsMap['s']) && isset($argumentsMap['e']) && isset($argumentsMap['n'])){
+if (isset($argumentsMap['s']) && isset($argumentsMap['e']) && isset($argumentsMap['n'])) {
 	//Retrieving the credentials for the network selected
 	$config = Zend_Registry::getInstance()->get('credentialsIni');
 	$iniNetworkOption = strtolower($argumentsMap['n']);
@@ -53,24 +49,5 @@ if (isset($argumentsMap['s']) && isset($argumentsMap['e']) && isset($argumentsMa
 
 	Oara_Test::affjetCli($argumentsMap, $network);
 } else {
-	fwrite(STDERR, 
-		"Usage: affjet [-s startDate] [-e endDate] [-t type] [-n network]\n".
-		"\n".
-		" 	NB: Please check you have entered your credentials in your credential.ini before you run this script.".
-		"\n".
-	 	" 	Parameters:\n".
-	 	"\n".
-	 	" 		-s 	startDate with format dd/MM/yyyy (11/06/2011)\n".
-	 	" 		-e 	endDate with format dd/MM/yyyy (11/06/2011)\n".
-	 	"		-n 	network name of the Oara_Network class for the network (AffiliateWindow, BuyAt, Dgm, WebGains......)\n".
-	 	"		-t 	type this param is not compulsory, choose which report we want, by default it will show us all of them (payment, merchant, transaction, overview)\n".
-	 	"\n".
-	 	"	Examples from command line:\n".
-	 	"\n".
-	 	"		php affjet.php -s 12/02/2010 -e 15/06/2011 -n TradeDoubler\n".
-	 	"		php affjet.php -s 12/02/2010 -e 15/06/2011 -n TradeDoubler -t merchant\n".
-	 	"		php affjet.php -s 12/02/2010 -e 15/06/2011 -n AffiliateWindow -t payment\n"	
-	);
+	fwrite(STDERR, "Usage: affjet [-s startDate] [-e endDate] [-t type] [-n network]\n"."\n"." 	NB: Please check you have entered your credentials in your credential.ini before you run this script."."\n"." 	Parameters:\n"."\n"." 		-s 	startDate with format dd/MM/yyyy (11/06/2011)\n"." 		-e 	endDate with format dd/MM/yyyy (11/06/2011)\n"."		-n 	network name of the Oara_Network class for the network (AffiliateWindow, BuyAt, Dgm, WebGains......)\n"."		-t 	type this param is not compulsory, choose which report we want, by default it will show us all of them (payment, merchant, transaction, overview)\n"."\n"."	Examples from command line:\n"."\n"."		php affjet.php -s 12/02/2010 -e 15/06/2011 -n TradeDoubler\n"."		php affjet.php -s 12/02/2010 -e 15/06/2011 -n TradeDoubler -t merchant\n"."		php affjet.php -s 12/02/2010 -e 15/06/2011 -n AffiliateWindow -t payment\n");
 }
-
-

@@ -28,40 +28,41 @@ $client = new apiClient();
 $tasksService = new apiTasksService($client);
 
 if (isset($_REQUEST['logout'])) {
-  unset($_SESSION['access_token']);
+	unset($_SESSION['access_token']);
 }
 
 if (isset($_SESSION['access_token'])) {
-  $client->setAccessToken($_SESSION['access_token']);
+	$client->setAccessToken($_SESSION['access_token']);
 } else {
-  $client->setAccessToken($client->authenticate());
-  $_SESSION['access_token'] = $client->getAccessToken();
+	$client->setAccessToken($client->authenticate());
+	$_SESSION['access_token'] = $client->getAccessToken();
 }
 
 if (isset($_GET['code'])) {
-  $redirect = 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'];
-  header('Location: ' . filter_var($redirect, FILTER_SANITIZE_URL));
+	$redirect = 'http://'.$_SERVER['HTTP_HOST'].$_SERVER['PHP_SELF'];
+	header('Location: '.filter_var($redirect, FILTER_SANITIZE_URL));
 }
 ?>
 <!doctype html>
 <html>
 <head>
-  <title>Tasks API Sample</title>
-  <link rel='stylesheet' href='http://fonts.googleapis.com/css?family=Droid+Serif|Droid+Sans:regular,bold' />
-  <link rel='stylesheet' href='css/style.css' />
+<title>Tasks API Sample</title>
+<link rel='stylesheet'
+	href='http://fonts.googleapis.com/css?family=Droid+Serif|Droid+Sans:regular,bold' />
+<link rel='stylesheet' href='css/style.css' />
 </head>
 <body>
 <div id='container'>
-  <div id='top'><h1>Tasks API Sample</h1></div>
-  <div id='main'>
-<?php
-  $lists = $tasksService->tasklists->listTasklists();
-  foreach ($lists['items'] as $list) {
-    print "<h3>{$list['title']}</h3>";
-    $tasks = $tasksService->tasks->listTasks($list['id']);
-  }
-?>
-  </div>
+<div id='top'>
+<h1>Tasks API Sample</h1>
+</div>
+<div id='main'><?php
+$lists = $tasksService->tasklists->listTasklists();
+foreach ($lists['items'] as $list) {
+	print "<h3>{$list['title']}</h3>";
+	$tasks = $tasksService->tasks->listTasks($list['id']);
+}
+?></div>
 </div>
 </body>
 </html>

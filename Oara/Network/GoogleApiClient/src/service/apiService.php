@@ -30,35 +30,35 @@ require_once 'service/apiBatch.php';
  *
  */
 class apiService {
-  public $version = null;
-  public $restBasePath;
-  public $rpcPath;
-  public $resource = null;
+	public $version = null;
+	public $restBasePath;
+	public $rpcPath;
+	public $resource = null;
 
-  public function __construct($serviceName, $discoveryDocument) {
-    global $apiConfig;
-    if (!isset($discoveryDocument['version']) || !isset($discoveryDocument['restBasePath']) || !isset($discoveryDocument['rpcPath'])) {
-      throw new apiServiceException("Invalid discovery document");
-    }
-    $this->version = $discoveryDocument['version'];
-    $this->restBasePath = $apiConfig['basePath'] . $discoveryDocument['restBasePath'];
-    $this->rpcPath = $apiConfig['basePath'] . $discoveryDocument['rpcPath'];
-    foreach ($discoveryDocument['resources'] as $resourceName => $resourceTypes) {
-      $this->$resourceName = new apiServiceResource($this, $serviceName, $resourceName, $resourceTypes);
-    }
-  }
+	public function __construct($serviceName, $discoveryDocument) {
+		global $apiConfig;
+		if (!isset($discoveryDocument['version']) || !isset($discoveryDocument['restBasePath']) || !isset($discoveryDocument['rpcPath'])) {
+			throw new apiServiceException("Invalid discovery document");
+		}
+		$this->version = $discoveryDocument['version'];
+		$this->restBasePath = $apiConfig['basePath'].$discoveryDocument['restBasePath'];
+		$this->rpcPath = $apiConfig['basePath'].$discoveryDocument['rpcPath'];
+		foreach ($discoveryDocument['resources'] as $resourceName => $resourceTypes) {
+			$this->$resourceName = new apiServiceResource($this, $serviceName, $resourceName, $resourceTypes);
+		}
+	}
 
-  /**
-   * @return string $restBasePath
-   */
-  public function getRestBasePath() {
-    return $this->restBasePath;
-  }
+	/**
+	 * @return string $restBasePath
+	 */
+	public function getRestBasePath() {
+		return $this->restBasePath;
+	}
 
-  /**
-   * @return string $rpcPath
-   */
-  public function getRpcPath() {
-    return $this->rpcPath;
-  }
+	/**
+	 * @return string $rpcPath
+	 */
+	public function getRpcPath() {
+		return $this->rpcPath;
+	}
 }

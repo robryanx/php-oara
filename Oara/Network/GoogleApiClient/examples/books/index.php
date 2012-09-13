@@ -35,38 +35,38 @@ $service = new apiBooksService($client);
  * @return void
  */
 function echoBookList($results) {
-  print <<<HTML
+	print <<<HTML
   <table><tr><td id="resultcell">
   <div id="searchResults">
     <table class="volumeList"><tbody>
 HTML;
-  foreach ($results['items'] as $result) {
-    $volumeInfo = $result['volumeInfo'];
-    $title = $volumeInfo['title'];
-    if (isset($volumeInfo['imageLinks']['smallThumbnail'])) {
-      $thumbnail = $volumeInfo['imageLinks']['smallThumbnail'];
-    } else {
-      $thumbnail = null;
-    }
+	foreach ($results['items'] as $result) {
+		$volumeInfo = $result['volumeInfo'];
+		$title = $volumeInfo['title'];
+		if (isset($volumeInfo['imageLinks']['smallThumbnail'])) {
+			$thumbnail = $volumeInfo['imageLinks']['smallThumbnail'];
+		} else {
+			$thumbnail = null;
+		}
 
-    if (isset($volumeInfo['authors'])) {
-      $creators = implode(", ", $volumeInfo['authors']);
-      if ($creators) $creators = "by " . $creators;
-    }
+		if (isset($volumeInfo['authors'])) {
+			$creators = implode(", ", $volumeInfo['authors']);
+			if ($creators) $creators = "by " . $creators;
+		}
 
-    $preview = $volumeInfo['previewLink'];
-    $previewLink = '';
-    if ($result['accessInfo']['embeddable'] == true) {
-      $previewLink = ""
-          . "<a href=\"javascript:load_viewport('${preview}','viewport');\">"
-          . "<img class='previewbutton' src='http://code.google.com/apis/books/images/gbs_preview_button1.png' />"
-          . "</a><br>";
-    }
+		$preview = $volumeInfo['previewLink'];
+		$previewLink = '';
+		if ($result['accessInfo']['embeddable'] == true) {
+			$previewLink = ""
+			. "<a href=\"javascript:load_viewport('${preview}','viewport');\">"
+			. "<img class='previewbutton' src='http://code.google.com/apis/books/images/gbs_preview_button1.png' />"
+			. "</a><br>";
+	}
 
-    $thumbnailImg = ($thumbnail)
-        ? "<a href='${preview}'><img alt='$title' src='${thumbnail}'/></a>"
-        : '';
-    print <<<HTML
+	$thumbnailImg = ($thumbnail)
+	? "<a href='${preview}'><img alt='$title' src='${thumbnail}'/></a>"
+	: '';
+	print <<<HTML
     <tr>
     <td><div class="thumbnail">${thumbnailImg}</div></td>
     <td width="100%">
@@ -88,28 +88,28 @@ HTML;
  */
 $queryType = isset($_GET['queryType']) ? $_GET['queryType'] : null;
 if ($queryType != null) {
-  $volumes = $service->volumes;
-  $optParams = array();
+	$volumes = $service->volumes;
+	$optParams = array();
 
-  /* display a list of volumes */
-  if (isset($_GET['searchTerm'])) {
-    $searchTerm = $_GET['searchTerm'];
-  }
-  if (isset($_GET['startIndex'])) {
-    $optParams['startIndex'] = $_GET['startIndex'];
-  }
-  if (isset($_GET['maxResults'])) {
-    $optParams['maxResults'] = $_GET['maxResults'];
-  }
+	/* display a list of volumes */
+	if (isset($_GET['searchTerm'])) {
+		$searchTerm = $_GET['searchTerm'];
+	}
+	if (isset($_GET['startIndex'])) {
+		$optParams['startIndex'] = $_GET['startIndex'];
+	}
+	if (isset($_GET['maxResults'])) {
+		$optParams['maxResults'] = $_GET['maxResults'];
+	}
 
-  /* check for one of the restricted feeds, or list from 'all' videos */
-  if ($queryType == 'full_view') {
-    $optParams['filter'] = 'full';
-  }
-  else if ($queryType == 'partial_view') {
-    $optParams['filter'] = 'partial';
-  }
+	/* check for one of the restricted feeds, or list from 'all' videos */
+	if ($queryType == 'full_view') {
+		$optParams['filter'] = 'full';
+	}
+	else if ($queryType == 'partial_view') {
+		$optParams['filter'] = 'partial';
+	}
 
-  $results = $volumes->listVolumes($searchTerm, $optParams);
-  echoBookList($results);
+	$results = $volumes->listVolumes($searchTerm, $optParams);
+	echoBookList($results);
 }

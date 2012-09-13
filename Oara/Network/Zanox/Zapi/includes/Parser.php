@@ -1,7 +1,7 @@
 <?php
 
-require_once DIR . '/includes/model/IParser.php';
-require_once DIR . '/includes/ApiError.php';
+require_once DIR.'/includes/model/IParser.php';
+require_once DIR.'/includes/ApiError.php';
 
 /**
  * Xml & Json Parser
@@ -19,301 +19,242 @@ require_once DIR . '/includes/ApiError.php';
  * @version     2009-09-01
  * @copyright   Copyright (c) 2007-2011 zanox.de AG
  */
-class Parser implements IParser
-{
+class Parser implements IParser {
 
-    /**
-     * Contructor
-     *
-     * @access     public
-     *
-     * @return     void
-     */
-    function __construct() {}
+	/**
+	 * Contructor
+	 *
+	 * @access     public
+	 *
+	 * @return     void
+	 */
+	function __construct() {
+	}
 
+	/**
+	 * Serializes array to json string.
+	 *
+	 * @param      string      $rootName       name of root node
+	 * @param      array       $itemArray      properties of item
+	 * @param      array       $attributes     root node attributes
+	 *
+	 * @access     public
+	 *
+	 * @return     string                      json string or false
+	 */
+	public function serializeJson($rootName, $itemArray, $attributes) {
+		if (!function_exists("json_encode")) {
+			throw new ApiClientException("Json parser requires PHP >= 5.2.0");
+		}
 
+		$json[$rootName] = $itemArray;
 
-    /**
-     * Serializes array to json string.
-     *
-     * @param      string      $rootName       name of root node
-     * @param      array       $itemArray      properties of item
-     * @param      array       $attributes     root node attributes
-     *
-     * @access     public
-     *
-     * @return     string                      json string or false
-     */
-    public function serializeJson( $rootName, $itemArray, $attributes )
-    {
-        if ( !function_exists("json_encode") )
-        {
-            throw new ApiClientException("Json parser requires PHP >= 5.2.0");
-        }
+		foreach ($attributes as $name => $value) {
+			$json['@'.$name] = $value;
+		}
 
-        $json[$rootName] = $itemArray;
+		$result = json_encode($json);
 
-        foreach ($attributes as $name => $value )
-        {
-            $json['@' . $name] = $value;
-        }
+		$result = preg_replace("/#text/", "\$", $result);
 
-        $result = json_encode($json);
+		if ($result) {
+			return $result;
+		}
 
-        $result = preg_replace("/#text/", "\$", $result);
+		return false;
+	}
 
-        if ( $result )
-        {
-            return $result;
-        }
+	/**
+	 * Unserialize json string to array.
+	 *
+	 * @param      string      $json           json string
+	 *
+	 * @access     private
+	 *
+	 * @return     array                       array or false
+	 */
+	public function unserializeJson($json) {
+		if (!function_exists("json_decode")) {
+			throw new ApiClientException("Json parser requires PHP >= 5.2.0");
+		}
 
-        return false;
-    }
+		$result = json_decode($json, true);
 
+		if ($result) {
+			return $result;
+		}
 
+		return false;
+	}
 
-    /**
-     * Unserialize json string to array.
-     *
-     * @param      string      $json           json string
-     *
-     * @access     private
-     *
-     * @return     array                       array or false
-     */
-    public function unserializeJson( $json )
-    {
-        if ( !function_exists("json_decode") )
-        {
-            throw new ApiClientException("Json parser requires PHP >= 5.2.0");
-        }
+	/**
+	 * Serializes array to XML.
+	 *
+	 * @param      string      $rootName       name of sub-root node
+	 * @param      array       $itemArray      properties of item
+	 * @param      array       $attributes     root node attributes
+	 *
+	 * @access     private
+	 *
+	 * @return     string                      xml or false
+	 */
+	public function serializeXml($rootName, $itemArray, $attributes) {
+		$dom = new DOMDocument('1.0', 'utf-8');
 
-        $result = json_decode($json, true);
+		$root = $dom->appendChild($dom->createElement($rootName, false));
 
-        if ( $result )
-        {
-            return $result;
-        }
+		foreach ($attributes as $name => $value) {
+			$root->setAttribute($name, $value);
+		}
 
-        return false;
-    }
+		$this->createXmlNode($dom, $root, $rootName, $itemArray);
 
+		return $dom->saveXML();
+	}
 
+	/**
+	 * Unserialize XML to array.
+	 *
+	 * @param      string      $xml            xml data to serialize
+	 *
+	 * @access     private
+	 *
+	 * @return     array                       array or false
+	 */
+	public function unserializeXml($xml) {
+		$result = $this->parse_xml($xml);
 
-    /**
-     * Serializes array to XML.
-     *
-     * @param      string      $rootName       name of sub-root node
-     * @param      array       $itemArray      properties of item
-     * @param      array       $attributes     root node attributes
-     *
-     * @access     private
-     *
-     * @return     string                      xml or false
-     */
-    public function serializeXml( $rootName, $itemArray, $attributes )
-    {
-        $dom = new DOMDocument('1.0', 'utf-8');
+		if (isset($result['response'])) {
+			return $result['response'];
+		}
 
-        $root = $dom->appendChild($dom->createElement($rootName, false));
+		return false;
+	}
 
-        foreach ( $attributes as $name => $value )
-        {
-           $root->setAttribute($name, $value);
-        }
+	/**
+	 * Transforms XML into Array Structure.
+	 *
+	 * @param      dom object     $xml           xml data to serialize
+	 *
+	 * @access     private
+	 *
+	 * @return     array                         array or false
+	 */
+	private function parse_xml($xml) {
+		$p = xml_parser_create('UTF-8');
 
-        $this->createXmlNode($dom, $root, $rootName, $itemArray);
+		xml_parser_set_option($p, XML_OPTION_SKIP_WHITE, 1);
 
-        return $dom->saveXML();
-    }
+		if (xml_parse_into_struct($p, $xml, $values, $index)) {
+			xml_parser_free($p);
 
+			$level = 0;
+			$return = array();
 
+			foreach ($values as $key => $value) {
+				if ($value['type'] == 'open') {
+					$level++;
 
-    /**
-     * Unserialize XML to array.
-     *
-     * @param      string      $xml            xml data to serialize
-     *
-     * @access     private
-     *
-     * @return     array                       array or false
-     */
-    public function unserializeXml( $xml )
-    {
-        $result = $this->parse_xml($xml);
+					$open[$level] = strtolower($value['tag']);
+					if (isset($value['attributes'])) {
+						foreach ($value['attributes'] as $k => $v) {
+							$return[$level]['_attr'][strtolower($k)] = $v;
+						}
+					}
 
-        if (isset($result['response']))
-        {
-            return $result['response'];
-        }
+				} else
+					if ($value['type'] == 'close') {
+						$tmp = $return[$level];
+						$item = $open[$level];
 
-        return false;
-    }
+						$level--;
 
+						if (count($index[$value['tag']]) > 2) {
+							$return[$level][$item][] = $tmp;
+						} else {
+							$return[$level][$item] = $tmp;
+						}
 
+						foreach (array_keys($tmp) as $key) {
+							unset($return[$level + 1][$key]);
+						}
+					} else {
+						$tag = strtolower($value['tag']);
 
-    /**
-     * Transforms XML into Array Structure.
-     *
-     * @param      dom object     $xml           xml data to serialize
-     *
-     * @access     private
-     *
-     * @return     array                         array or false
-     */
-    private function parse_xml( $xml )
-    {
-        $p = xml_parser_create('UTF-8');
+						if (isset($value['value'])) {
+							if (!isset($return[$level][$tag])) {
+								$return[$level][$tag] = $value['value'];
+							} else {
+								if (!is_array($return[$level][$tag])) {
+									$tmp = $return[$level][$tag];
 
-        xml_parser_set_option($p, XML_OPTION_SKIP_WHITE, 1);
+									$return[$level][$tag] = array();
+									$return[$level][$tag][] = $tmp;
+								}
 
-        if ( xml_parse_into_struct($p, $xml, $values, $index) )
-        {
-            xml_parser_free($p);
+								$return[$level][$tag][] = $value['value'];
+							}
+						} else {
+							$return[$level][$tag][] = false;
+						}
+					}
 
-            $level = 0;
-            $return = array();
+			}
 
-            foreach ($values as $key => $value)
-            {
-                if ($value['type'] == 'open')
-                {
-                    $level++;
+			return $return[0];
+		}
 
-                    $open[$level] = strtolower($value['tag']);
-                    if (isset($value['attributes']))
-                    {
-                        foreach ( $value['attributes'] as $k => $v)
-                        {
-                            $return[$level]['_attr'][strtolower($k)] = $v;
-                        }
-                    }
+		return false;
+	}
 
-                }
-                else if ($value['type'] == 'close')
-                {
-                    $tmp  = $return[$level];
-                    $item = $open[$level];
+	/**
+	 * Recursively creates Xml Nodes.
+	 *
+	 * @param      object      $dom            dom object
+	 * @param      object      $root           root node object
+	 * @param      string      $name           root node name
+	 * @param      array       $array          array elements
+	 *
+	 * @access     private
+	 *
+	 * @return     void
+	 */
+	private function createXmlNode($dom, $root, $name, $array) {
+		foreach ($array as $element => $value) {
+			$numeric = false;
 
-                    $level--;
+			if (is_array($value)) {
+				foreach ($value as $k => $v) {
+					if (is_numeric($k)) {
+						$numeric = true;
+					}
+				}
 
-                    if ( count($index[$value['tag']]) > 2 )
-                    {
-                        $return[$level][$item][] = $tmp;
-                    }
-                    else
-                    {
-                        $return[$level][$item] = $tmp;
-                    }
+				if ($numeric) {
+					$this->createXmlNode($dom, $root, $element, $value);
+				} else {
+					$element = is_numeric($element) ? $name : $element;
 
-                    foreach (array_keys($tmp) as $key)
-                    {
-                        unset($return[ $level + 1 ][$key]);
-                    }
-                }
-                else
-                {
-                    $tag = strtolower($value['tag']);
+					$child = $dom->createElement($element, (is_array($value) ? null : $value));
+					$root->appendChild($child);
 
-                    if ( isset($value['value']) )
-                    {
-                        if ( !isset($return[$level][$tag]) )
-                        {
-                            $return[$level][$tag] = $value['value'];
-                        }
-                        else
-                        {
-                            if ( !is_array($return[$level][$tag]) )
-                            {
-                                $tmp = $return[$level][$tag];
+					$this->createXmlNode($dom, $child, $element, $value);
+				}
+			} else {
+				if (preg_match("/^#text/", $element)) {
+					$root->nodeValue = $value;
+				} else
+					if (preg_match("/^@/", $element)) {
+						$root->setAttribute(str_replace("@", "", $element), $value);
+					} else {
+						$element = is_numeric($element) ? $name : $element;
 
-                                $return[$level][$tag] = array();
-                                $return[$level][$tag][] = $tmp;
-                            }
-
-                            $return[$level][$tag][] = $value['value'];
-                        }
-                    }
-                    else
-                    {
-                        $return[$level][$tag][] = false;
-                    }
-                }
-
-            }
-
-            return $return[0];
-        }
-
-        return false;
-    }
-
-
-
-    /**
-     * Recursively creates Xml Nodes.
-     *
-     * @param      object      $dom            dom object
-     * @param      object      $root           root node object
-     * @param      string      $name           root node name
-     * @param      array       $array          array elements
-     *
-     * @access     private
-     *
-     * @return     void
-     */
-    private function createXmlNode ( $dom, $root, $name, $array )
-    {
-        foreach( $array as $element => $value )
-        {
-            $numeric = false;
-
-            if ( is_array($value) )
-            {
-                foreach ( $value as $k => $v )
-                {
-                    if ( is_numeric($k) )
-                    {
-                        $numeric = true;
-                    }
-                }
-
-                if ( $numeric )
-                {
-                    $this->createXmlNode($dom, $root, $element, $value);
-                }
-                else
-                {
-                    $element = is_numeric( $element ) ? $name : $element;
-
-                    $child = $dom->createElement($element, (is_array($value) ? null : $value));
-                    $root->appendChild($child);
-
-                    $this->createXmlNode($dom, $child, $element, $value);
-                }
-            }
-            else
-            {
-                if (preg_match("/^#text/", $element))
-                {
-                    $root->nodeValue = $value;
-                }
-                else if (preg_match("/^@/", $element))
-                {
-                    $root->setAttribute(str_replace("@", "", $element), $value);
-                }
-                else
-                {
-                    $element = is_numeric( $element ) ? $name : $element;
-
-                    $child = $dom->createElement($element, (is_array($value) ? null : $value));
-                    $root->appendChild($child);
-                }
-            }
-        }
-    }
-
+						$child = $dom->createElement($element, (is_array($value) ? null : $value));
+						$root->appendChild($child);
+					}
+			}
+		}
+	}
 
 }
-
 ?>

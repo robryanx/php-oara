@@ -26,12 +26,12 @@ $client = new apiClient();
 //$client->setClientSecret('INSERT_CLIENT_SECRET');
 $client->setRedirectUri('urn:ietf:wg:oauth:2.0:oob');
 $client->setScopes(array(
-  'https://www.googleapis.com/auth/plus.me',
-  'https://www.googleapis.com/auth/latitude',
-  'https://www.googleapis.com/auth/moderator',
-  'https://www.googleapis.com/auth/tasks',
-  'https://www.googleapis.com/auth/siteverification',
-  'https://www.googleapis.com/auth/urlshortener',
+	'https://www.googleapis.com/auth/plus.me',
+	'https://www.googleapis.com/auth/latitude',
+	'https://www.googleapis.com/auth/moderator',
+	'https://www.googleapis.com/auth/tasks',
+	'https://www.googleapis.com/auth/siteverification',
+	'https://www.googleapis.com/auth/urlshortener',
 ));
 
 $authUrl = $client->createAuthUrl();

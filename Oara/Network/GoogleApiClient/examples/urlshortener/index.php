@@ -28,52 +28,48 @@ $client = new apiClient();
 $service = new apiUrlshortenerService($client);
 
 if (isset($_REQUEST['logout'])) {
-  unset($_SESSION['access_token']);
+	unset($_SESSION['access_token']);
 }
 
 if (isset($_GET['code'])) {
-  $client->authenticate();
-  $_SESSION['access_token'] = $client->getAccessToken();
-  $redirect = 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'];
-  header('Location: ' . filter_var($redirect, FILTER_SANITIZE_URL));
+	$client->authenticate();
+	$_SESSION['access_token'] = $client->getAccessToken();
+	$redirect = 'http://'.$_SERVER['HTTP_HOST'].$_SERVER['PHP_SELF'];
+	header('Location: '.filter_var($redirect, FILTER_SANITIZE_URL));
 }
 
 if (isset($_SESSION['access_token']) && $_SESSION['access_token']) {
-  $client->setAccessToken($_SESSION['access_token']);
+	$client->setAccessToken($_SESSION['access_token']);
 } else {
-  $authUrl = $client->createAuthUrl();
+	$authUrl = $client->createAuthUrl();
 }
 
 if ($client->getAccessToken() && isset($_GET['url'])) {
-  // Start to make API requests.
-  $url = new Url();
-  $url->longUrl = $_GET['url'];
-  $short = $service->url->insert($url);
-  $_SESSION['access_token'] = $client->getAccessToken();
+	// Start to make API requests.
+	$url = new Url();
+	$url->longUrl = $_GET['url'];
+	$short = $service->url->insert($url);
+	$_SESSION['access_token'] = $client->getAccessToken();
 }
 ?>
 <!doctype html>
 <html>
-<head><link rel='stylesheet' href='style.css' /></head>
+<head>
+<link rel='stylesheet' href='style.css' />
+</head>
 <body>
-<header><h1>Google Url Shortener Sample App</h1></header>
+<header>
+<h1>Google Url Shortener Sample App</h1>
+</header>
 <div class="box">
-  <div class="request">
-    <?php if (isset($authUrl)): ?>
-      <a class='login' href='<?php print $authUrl; ?>'>Connect Me!</a>
-    <?php else: ?>
-      <form id="url" method="GET" action="index.php">
-        <input name="url" class="url" type="text">
-        <input type="submit" value="Shorten">
-      </form>
-      <a class='logout' href='?logout'>Logout</a>
-    <?php endif ?>
-  </div>
+<div class="request"><?php if (isset($authUrl)) : ?> <a class='login'
+	href='<?php print $authUrl; ?>'>Connect Me!</a> <?php else : ?>
+<form id="url" method="GET" action="index.php"><input name="url"
+	class="url" type="text"> <input type="submit" value="Shorten"></form>
+<a class='logout' href='?logout'>Logout</a> <?php endif ?></div>
 
-  <?php if (isset($short)): ?>
-    <div class="shortened">
-      <pre><?php var_dump($short); ?></pre>
-    </div>
-  <?php endif ?>
-</div>
-</body></html>
+<?php if (isset($short)) : ?>
+<div class="shortened"><pre><?php var_dump($short); ?></pre></div>
+<?php endif ?></div>
+</body>
+</html>

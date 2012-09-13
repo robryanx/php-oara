@@ -17,25 +17,25 @@
 
 require_once '../src/apiClient.php';
 class BaseTest extends PHPUnit_Framework_TestCase {
-  /**
-   * @var apiClient
-   */
-  public static $client;
-  public function __construct() {
-    parent::__construct();
-    if (!BaseTest::$client) {
-      global $apiConfig;
-      $apiConfig['ioFileCache_directory'] = '/tmp/google-api-php-client/tests';
+	/**
+	 * @var apiClient
+	 */
+	public static $client;
+	public function __construct() {
+		parent::__construct();
+		if (!BaseTest::$client) {
+			global $apiConfig;
+			$apiConfig['ioFileCache_directory'] = '/tmp/google-api-php-client/tests';
 
-      BaseTest::$client = new apiClient();
-      if (!BaseTest::$client->getAccessToken()) {
-        BaseTest::$client->setAccessToken($apiConfig['oauth_test_token']);
-      }
-    }
-  }
+			BaseTest::$client = new apiClient();
+			if (!BaseTest::$client->getAccessToken()) {
+				BaseTest::$client->setAccessToken($apiConfig['oauth_test_token']);
+			}
+		}
+	}
 
-  public function __destruct() {
-    global $apiConfig;
-    $apiConfig['oauth_test_token'] = self::$client->getAccessToken();
-  }
+	public function __destruct() {
+		global $apiConfig;
+		$apiConfig['oauth_test_token'] = self::$client->getAccessToken();
+	}
 }

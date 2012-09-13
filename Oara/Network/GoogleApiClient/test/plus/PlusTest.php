@@ -18,45 +18,45 @@
 require_once '../src/contrib/apiPlusService.php';
 
 class AllPlusTests extends PHPUnit_Framework_TestSuite {
-  public static function suite() {
-    $suite = new PHPUnit_Framework_TestSuite();
-    $suite->setName('Google Plus API tests');
-    $suite->addTestSuite('PlusTest');
-    return $suite;
-  }
+	public static function suite() {
+		$suite = new PHPUnit_Framework_TestSuite();
+		$suite->setName('Google Plus API tests');
+		$suite->addTestSuite('PlusTest');
+		return $suite;
+	}
 }
 
 class PlusTest extends BaseTest {
-  public $plus;
-  public function __construct() {
-    parent::__construct();
-    $this->plus = new apiPlusService(BaseTest::$client);
-  }
+	public $plus;
+	public function __construct() {
+		parent::__construct();
+		$this->plus = new apiPlusService(BaseTest::$client);
+	}
 
-  public function testGetPerson() {
-    $person = $this->plus->people->get("118051310819094153327");
-    $this->assertArrayHasKey('kind', $person);
-    $this->assertArrayHasKey('displayName', $person);
-    $this->assertArrayHasKey('gender', $person);
-    $this->assertArrayHasKey('id', $person);
-    $this->assertArrayHasKey('urls', $person);
-    $this->assertArrayHasKey('organizations', $person);
-  }
+	public function testGetPerson() {
+		$person = $this->plus->people->get("118051310819094153327");
+		$this->assertArrayHasKey('kind', $person);
+		$this->assertArrayHasKey('displayName', $person);
+		$this->assertArrayHasKey('gender', $person);
+		$this->assertArrayHasKey('id', $person);
+		$this->assertArrayHasKey('urls', $person);
+		$this->assertArrayHasKey('organizations', $person);
+	}
 
-  public function testListActivities() {
-    $activities = $this->plus->activities
-        ->listActivities("118051310819094153327", "public");
-    
-    $item = $activities['items'][0];
-    $this->assertArrayHasKey('kind', $activities);
-    $this->assertArrayHasKey('items', $activities);
-    $this->assertArrayHasKey('actor', $item);
-    $this->assertArrayHasKey('displayName', $item['actor']);
-    $this->assertArrayHasKey('url', $item['actor']);
-    $this->assertArrayHasKey('object', $item);
-    $this->assertArrayHasKey('access', $item);
-    $this->assertArrayHasKey('crosspostSource', $item);
-    $this->assertArrayHasKey('provider', $item);
+	public function testListActivities() {
+		$activities = $this->plus->activities
+		->listActivities("118051310819094153327", "public");
 
-  }
+		$item = $activities['items'][0];
+		$this->assertArrayHasKey('kind', $activities);
+		$this->assertArrayHasKey('items', $activities);
+		$this->assertArrayHasKey('actor', $item);
+		$this->assertArrayHasKey('displayName', $item['actor']);
+		$this->assertArrayHasKey('url', $item['actor']);
+		$this->assertArrayHasKey('object', $item);
+		$this->assertArrayHasKey('access', $item);
+		$this->assertArrayHasKey('crosspostSource', $item);
+		$this->assertArrayHasKey('provider', $item);
+
+	}
 }

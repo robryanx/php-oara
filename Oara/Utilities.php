@@ -8,8 +8,7 @@
  * @version    Release: 01.00
  *
  */
-class Oara_Utilities
-{
+class Oara_Utilities {
 	/**
 	 * confirmed status
 	 * @var string
@@ -31,8 +30,6 @@ class Oara_Utilities
 	 */
 	const STATUS_PAID = 'paid';
 
-
-
 	/**
 	 * It returns the value's position in the array for a type.
 	 * @param array $array
@@ -40,14 +37,14 @@ class Oara_Utilities
 	 * @param $value
 	 * @return object
 	 */
-	public static function arrayFetchValue(array $array, $type, $value){
+	public static function arrayFetchValue(array $array, $type, $value) {
 		$returnValue = null;
 		$i = 0;
 		$enc = false;
-		while ($i < count($array) && !$enc){
+		while ($i < count($array) && !$enc) {
 			$element = $array[$i];
 			$elementValue = $element[$type];
-			if($value == $elementValue){
+			if ($value == $elementValue) {
 				$enc = true;
 				$returnValue = $element;
 			}
@@ -61,17 +58,17 @@ class Oara_Utilities
 	 * @param array $converterRules
 	 * @return array
 	 */
-	public static function soapConverter(array $soapResults, array $converterRules){
+	public static function soapConverter(array $soapResults, array $converterRules) {
 		$convertion = array();
-		foreach ($soapResults as $soapResult){
+		foreach ($soapResults as $soapResult) {
 			$objectValue = array();
-			foreach ($converterRules as  $key=>$rule){
+			foreach ($converterRules as $key => $rule) {
 				$groupRule = explode(',', $rule);
-				foreach ($groupRule as $individualRule){
-					if(isset($soapResult->$key)){
+				foreach ($groupRule as $individualRule) {
+					if (isset($soapResult->$key)) {
 						$attribute = $soapResult->$key;
-						if($attribute !== null){
-							$objectValue[$individualRule]= $attribute;
+						if ($attribute !== null) {
+							$objectValue[$individualRule] = $attribute;
 						}
 					}
 				}
@@ -88,20 +85,19 @@ class Oara_Utilities
 	 * @param $starDate
 	 * @param $endDate
 	 */
-	public static function yearsOfDifference(Zend_Date $starDate = null, Zend_Date $endDate = null){
-		if($starDate->compare($endDate)>0){
-			throw new Exception ('The start date can not be later than the end date');
+	public static function yearsOfDifference(Zend_Date $starDate = null, Zend_Date $endDate = null) {
+		if ($starDate->compare($endDate) > 0) {
+			throw new Exception('The start date can not be later than the end date');
 		}
 
-
-		$difference = (int)($endDate->get(Zend_Date::YEAR) - $starDate->get(Zend_Date::YEAR));
+		$difference = (int) ($endDate->get(Zend_Date::YEAR) - $starDate->get(Zend_Date::YEAR));
 		$dateArray = array();
 		$dateArray[] = clone $starDate;
 		/**If there are more than 1 month of difference ,
 		 the next  element starts in the first day of the month**/
-		for($i=0;$i<$difference;$i++){
+		for ($i = 0; $i < $difference; $i++) {
 			$auxDate = clone $starDate;
-			$auxDate->addYear($i+1);
+			$auxDate->addYear($i + 1);
 			$auxDate->setDay(1);
 			$auxDate->setMonth(1);
 			$dateArray[] = $auxDate;
@@ -115,20 +111,20 @@ class Oara_Utilities
 	 * @param Zend_Date $endDate
 	 * @return array
 	 */
-	public static function monthsOfDifference(Zend_Date $startDate = null, Zend_Date $endDate = null, $gap = 1){
-		if($startDate->compare($endDate)>0){
-			throw new Exception ('The start date can not be later than the end date');
+	public static function monthsOfDifference(Zend_Date $startDate = null, Zend_Date $endDate = null, $gap = 1) {
+		if ($startDate->compare($endDate) > 0) {
+			throw new Exception('The start date can not be later than the end date');
 		}
 
-		$monthsOfDifferenceBetweenYears = ($endDate->get(Zend_Date::YEAR) - $startDate->get(Zend_Date::YEAR))*12;
-		$difference = (int)((($endDate->get(Zend_Date::MONTH) + $monthsOfDifferenceBetweenYears) - $startDate->get(Zend_Date::MONTH))/$gap);
+		$monthsOfDifferenceBetweenYears = ($endDate->get(Zend_Date::YEAR) - $startDate->get(Zend_Date::YEAR)) * 12;
+		$difference = (int) ((($endDate->get(Zend_Date::MONTH) + $monthsOfDifferenceBetweenYears) - $startDate->get(Zend_Date::MONTH)) / $gap);
 		$dateArray = array();
 		$dateArray[] = clone $startDate;
 		/**If there are more than 1 month of difference ,
 		 the next  element starts in the first day of the month**/
-		for($i = 0;$i < $difference;$i++){
+		for ($i = 0; $i < $difference; $i++) {
 			$auxDate = clone $startDate;
-			$auxDate->addMonth(($i+1)*$gap);
+			$auxDate->addMonth(($i + 1) * $gap);
 			$auxDate->setDay(1);
 			$dateArray[] = $auxDate;
 		}
@@ -141,18 +137,18 @@ class Oara_Utilities
 	 * @param Zend_Date $endDate
 	 * @return array
 	 */
-	public static function daysOfDifference(Zend_Date $starDate = null, Zend_Date $endDate = null){
-		if($starDate->compare($endDate)>0){
-			throw new Exception ('The start date can not be later than the end date');
+	public static function daysOfDifference(Zend_Date $starDate = null, Zend_Date $endDate = null) {
+		if ($starDate->compare($endDate) > 0) {
+			throw new Exception('The start date can not be later than the end date');
 		}
 		$difference = intval(self::numberOfDaysBetweenTwoDates($starDate, $endDate));
 		$dateArray = array();
 		$dateArray[] = clone $starDate;
 		/**If there are more than 1 month of difference ,
 		 the next  element starts in the first day of the month**/
-		for($i=0;$i<$difference;$i++){
+		for ($i = 0; $i < $difference; $i++) {
 			$auxDate = clone $starDate;
-			$auxDate->addDay($i+1);
+			$auxDate->addDay($i + 1);
 			$dateArray[] = $auxDate;
 		}
 
@@ -164,27 +160,26 @@ class Oara_Utilities
 	 * @param Zend_Date $endDate
 	 * @return array
 	 */
-	public static function weeksOfDifference(Zend_Date $starDate = null, Zend_Date $endDate = null){
-		if($starDate->compare($endDate)>0){
-			throw new Exception ('The start date can not be later than the end date');
+	public static function weeksOfDifference(Zend_Date $starDate = null, Zend_Date $endDate = null) {
+		if ($starDate->compare($endDate) > 0) {
+			throw new Exception('The start date can not be later than the end date');
 		}
 		$auxStartDate = clone $starDate;
 		$weekDay = $starDate->get(Zend_Date::WEEKDAY_DIGIT);
-		$subDays = ($weekDay+6)%7;
+		$subDays = ($weekDay + 6) % 7;
 		$auxStartDate->subDay($subDays);
 
-		$difference = intval(self::numberOfDaysBetweenTwoDates($auxStartDate, $endDate)/7);
+		$difference = intval(self::numberOfDaysBetweenTwoDates($auxStartDate, $endDate) / 7);
 
 		$dateArray = array();
 		$dateArray[] = clone $starDate;
 		/**If there are more than 1 month of difference ,
 		 the next  element starts in the first day of the month**/
-		for($i=0;$i < $difference;$i++){
+		for ($i = 0; $i < $difference; $i++) {
 			$auxDate = clone $auxStartDate;
-			$auxDate->addWeek($i+1);
+			$auxDate->addWeek($i + 1);
 			$dateArray[] = $auxDate;
 		}
-
 
 		return $dateArray;
 	}
@@ -194,11 +189,11 @@ class Oara_Utilities
 	 * @param Zend_Date $endDate
 	 * @return int
 	 */
-	public static function numberOfDaysBetweenTwoDates(Zend_Date $starDate = null, Zend_Date $endDate = null){
+	public static function numberOfDaysBetweenTwoDates(Zend_Date $starDate = null, Zend_Date $endDate = null) {
 		$starDate = clone $starDate;
 		$endDate = clone $endDate;
-		if($starDate->compare($endDate)>0){
-			throw new Exception ('The start date can not be later than the end date');
+		if ($starDate->compare($endDate) > 0) {
+			throw new Exception('The start date can not be later than the end date');
 		}
 		$diff = $endDate->getTimestamp() - $starDate->getTimestamp();
 		return $diff / 60 / 60 / 24;
@@ -208,9 +203,9 @@ class Oara_Utilities
 	 * @param array $cloneArray
 	 * @return array
 	 */
-	public static function cloneArray(array $cloneArray){
+	public static function cloneArray(array $cloneArray) {
 		$returnArray = array();
-		foreach($cloneArray as $element){
+		foreach ($cloneArray as $element) {
 			$returnArray[] = clone $element;
 		}
 		return $returnArray;
@@ -221,7 +216,7 @@ class Oara_Utilities
 	 * @param unknown_type $a
 	 * @param unknown_type $b
 	 */
-	public static function compareDates($a, $b){
+	public static function compareDates($a, $b) {
 		return strcmp($a['date'], $b['date']);
 	}
 	/**
@@ -229,7 +224,7 @@ class Oara_Utilities
 	 * @param array $dataArray
 	 * @return array
 	 */
-	public static function registerBubbleSort(array $dataArray){
+	public static function registerBubbleSort(array $dataArray) {
 		usort($dataArray, array("Oara_Utilities", "compareDates"));
 
 		return $dataArray;
@@ -240,17 +235,17 @@ class Oara_Utilities
 	 * @param $attributes
 	 * @return boolean
 	 */
-	public static function attributeDistinctThanZero($entity, array $attributes){
+	public static function attributeDistinctThanZero($entity, array $attributes) {
 		$result = false;
 		$i = 0;
 		$long = count($attributes);
-		while ($i < $long && !$result){
-			if($entity->$attributes[$i] != 0){
+		while ($i < $long && !$result) {
+			if ($entity->$attributes[$i] != 0) {
 				$result = true;
 			}
 			$i++;
 		}
-			
+
 		return $result;
 	}
 	/**
@@ -259,12 +254,12 @@ class Oara_Utilities
 	 * @param Zend_Date $date
 	 * @return array
 	 */
-	public static function getDayFromArray($merchantId, &$dateArray, Zend_Date $date, $delete = false){
+	public static function getDayFromArray($merchantId, &$dateArray, Zend_Date $date, $delete = false) {
 		$resultArray = array();
-		if (isset($dateArray[$merchantId])){
+		if (isset($dateArray[$merchantId])) {
 			$dateString = $date->toString("yyyy-MM-dd");
-			if (isset($dateArray[$merchantId][$dateString])){
-				if ($delete){
+			if (isset($dateArray[$merchantId][$dateString])) {
+				if ($delete) {
 					$resultArray = $dateArray[$merchantId][$dateString];
 					unset($dateArray[$merchantId][$dateString]);
 				} else {
@@ -281,48 +276,48 @@ class Oara_Utilities
 	 * @param array $properties
 	 * @return boolean
 	 */
-	public static function checkRegister(array $register){
+	public static function checkRegister(array $register) {
 		$ok = false;
 		$i = 0;
 		$properties = array(
-	                        'click_number',
-	                        'impression_number',
-	                        'transaction_number',
-	                        'transaction_confirmed_value',
-	                        'transaction_confirmed_commission',
-	                        'transaction_pending_value',
-	                        'transaction_pending_commission',
-	                        'transaction_declined_value',
-	                        'transaction_declined_commission',
-							'transaction_paid_value',
-	                        'transaction_paid_commission'
-	                        );
-	                        while ($i < count($properties) && !$ok){
-	                        	if ($register[$properties[$i]] != 0){
-	                        		$ok = true;
-	                        	}
-	                        	$i++;
-	                        }
-	                        return $ok;
+			'click_number',
+			'impression_number',
+			'transaction_number',
+			'transaction_confirmed_value',
+			'transaction_confirmed_commission',
+			'transaction_pending_value',
+			'transaction_pending_commission',
+			'transaction_declined_value',
+			'transaction_declined_commission',
+			'transaction_paid_value',
+			'transaction_paid_commission'
+		);
+		while ($i < count($properties) && !$ok) {
+			if ($register[$properties[$i]] != 0) {
+				$ok = true;
+			}
+			$i++;
+		}
+		return $ok;
 	}
 	/**
 	 * Filter the transactionList per day
 	 * @param array $transactionList
 	 * @return array
 	 */
-	public static function transactionMapPerDay(array $transactionList){
+	public static function transactionMapPerDay(array $transactionList) {
 		$transactionMap = array();
-		foreach ($transactionList as $transaction){
-			if (!isset($transactionMap[$transaction['merchantId']])){
+		foreach ($transactionList as $transaction) {
+			if (!isset($transactionMap[$transaction['merchantId']])) {
 				$transactionMap[$transaction['merchantId']] = array();
 			}
 			$dateString = substr($transaction['date'], 0, 10);
-			if (!isset($transactionMap[$transaction['merchantId']][$dateString])){
+			if (!isset($transactionMap[$transaction['merchantId']][$dateString])) {
 				$transactionMap[$transaction['merchantId']][$dateString] = array();
 			}
 			$transactionMap[$transaction['merchantId']][$dateString][] = $transaction;
 		}
-			
+
 		return $transactionMap;
 	}
 
@@ -331,19 +326,19 @@ class Oara_Utilities
 	 * @param $data
 	 * @return double
 	 */
-	public static function parseDouble($data){
+	public static function parseDouble($data) {
 		$double = 0;
-		if($data != null){
-				
-			$bits = explode(",",trim($data)); // split input value up to allow checking
-			 
-			$last = strlen($bits[count($bits) -1]); // gets part after first comma (thousands (or decimals if incorrectly used by user)
-			if ($last <3){ // checks for comma being used as decimal place
-				$convertnum = str_replace(",",".",trim($data));
+		if ($data != null) {
+
+			$bits = explode(",", trim($data)); // split input value up to allow checking
+
+			$last = strlen($bits[count($bits) - 1]); // gets part after first comma (thousands (or decimals if incorrectly used by user)
+			if ($last < 3) { // checks for comma being used as decimal place
+				$convertnum = str_replace(",", ".", trim($data));
 			} else {
-				$convertnum = str_replace(",","",trim($data));
+				$convertnum = str_replace(",", "", trim($data));
 			}
-			$double = number_format((float)$convertnum, 2, '.', '');
+			$double = number_format((float) $convertnum, 2, '.', '');
 		}
 		return $double;
 	}
@@ -353,10 +348,9 @@ class Oara_Utilities
 	 * @param string $pathname The directory path.
 	 * @return boolean returns TRUE if exists or made or FALSE on failure.
 	 */
-	public static function mkdir_recursive($dir, $mode)
-	{
+	public static function mkdir_recursive($dir, $mode) {
 		$return = false;
-		if (is_dir($dir) || mkdir($dir,$mode,true)){
+		if (is_dir($dir) || mkdir($dir, $mode, true)) {
 			$return = true;
 		}
 
@@ -368,16 +362,15 @@ class Oara_Utilities
 	 * Glue the parsed url and returns the string
 	 * @param string $parsed
 	 */
-	public static function glue_url($parsed)
-	{
-		if (! is_array($parsed)) return false;
-		$uri = isset($parsed['scheme']) ? $parsed['scheme'].':'.((strtolower($parsed['scheme']) == 'mailto') ? '':'//'): '';
-		$uri .= isset($parsed['user']) ? $parsed['user'].($parsed['pass']? ':'.$parsed['pass']:'').'@':'';
+	public static function glue_url($parsed) {
+		if (!is_array($parsed))
+			return false;
+		$uri = isset($parsed['scheme']) ? $parsed['scheme'].':'.((strtolower($parsed['scheme']) == 'mailto') ? '' : '//') : '';
+		$uri .= isset($parsed['user']) ? $parsed['user'].($parsed['pass'] ? ':'.$parsed['pass'] : '').'@' : '';
 		$uri .= isset($parsed['host']) ? $parsed['host'] : '';
 		$uri .= isset($parsed['port']) ? ':'.$parsed['port'] : '';
-		if(isset($parsed['path']))
-		{
-			$uri .= (substr($parsed['path'],0,1) == '/')?$parsed['path']:'/'.$parsed['path'];
+		if (isset($parsed['path'])) {
+			$uri .= (substr($parsed['path'], 0, 1) == '/') ? $parsed['path'] : '/'.$parsed['path'];
 		}
 		$uri .= isset($parsed['query']) ? '?'.$parsed['query'] : '';
 		$uri .= isset($parsed['fragment']) ? '#'.$parsed['fragment'] : '';
@@ -404,47 +397,47 @@ class Oara_Utilities
 	 * @param $rowAvailable
 	 * @param $rowsReturned
 	 */
-	public static function calculeIterationNumber($rowAvailable, $rowsReturned){
-		$iterationDouble = (double)($rowAvailable/$rowsReturned);
-		$iterationInt = (int)($rowAvailable/$rowsReturned);
-		if($iterationDouble > $iterationInt){
+	public static function calculeIterationNumber($rowAvailable, $rowsReturned) {
+		$iterationDouble = (double) ($rowAvailable / $rowsReturned);
+		$iterationInt = (int) ($rowAvailable / $rowsReturned);
+		if ($iterationDouble > $iterationInt) {
 			$iterationInt++;
 		}
 		return $iterationInt;
 	}
 	/**
-	 * 
+	 *
 	 * Clasify the arguments given to the command line
 	 * @param array $args
 	 */
 	public static function arguments($args) {
 		$ret = array(
-        'exec'      => '',
-        'options'   => array(),
-        'flags'     => array(),
-        'arguments' => array(),
+			'exec'		 => '',
+			'options'	 => array(),
+			'flags'		 => array(),
+			'arguments'	 => array(),
 		);
 
-		$ret['exec'] = array_shift( $args );
+		$ret['exec'] = array_shift($args);
 
 		while (($arg = array_shift($args)) != NULL) {
 			// Is it a option? (prefixed with --)
-			if ( substr($arg, 0, 2) === '--' ) {
+			if (substr($arg, 0, 2) === '--') {
 				$option = substr($arg, 2);
 
 				// is it the syntax '--option=argument'?
-				if (strpos($option,'=') !== FALSE)
-				array_push( $ret['options'], explode('=', $option, 2) );
+				if (strpos($option, '=') !== FALSE)
+					array_push($ret['options'], explode('=', $option, 2));
 				else
-				array_push( $ret['options'], $option );
-				 
+					array_push($ret['options'], $option);
+
 				continue;
 			}
 
 			// Is it a flag or a serial of flags? (prefixed with -)
-			if ( substr( $arg, 0, 1 ) === '-' ) {
-				for ($i = 1; isset($arg[$i]) ; $i++)
-				$ret['flags'][] = $arg[$i];
+			if (substr($arg, 0, 1) === '-') {
+				for ($i = 1; isset($arg[$i]); $i++)
+					$ret['flags'][] = $arg[$i];
 
 				continue;
 			}
@@ -455,6 +448,5 @@ class Oara_Utilities
 		}
 		return $ret;
 	}
-
 
 }

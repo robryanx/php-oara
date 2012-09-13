@@ -26,31 +26,29 @@ require_once "apiMemcacheCache.php";
  */
 abstract class apiCache {
 
-  /**
-   * Retrieves the data for the given key, or false if they
-   * key is unknown or expired
-   *
-   * @param String $key The key who's data to retrieve
-   * @param boolean|int $expiration Expiration time in seconds
-   *
-   */
-  abstract function get($key, $expiration = false);
+	/**
+	 * Retrieves the data for the given key, or false if they
+	 * key is unknown or expired
+	 *
+	 * @param String $key The key who's data to retrieve
+	 * @param boolean|int $expiration Expiration time in seconds
+	 *
+	 */
+	abstract function get($key, $expiration = false);
 
-  /**
-   * Store the key => $value set. The $value is serialized
-   * by this function so can be of any type
-   *
-   * @param String $key Key of the data
-   * @param $value the data
-   */
-  abstract function set($key, $value);
+	/**
+	 * Store the key => $value set. The $value is serialized
+	 * by this function so can be of any type
+	 *
+	 * @param String $key Key of the data
+	 * @param $value the data
+	 */
+	abstract function set($key, $value);
 
-  /**
-   * Removes the key/data pair for the given $key
-   *
-   * @param String $key
-   */
-  abstract function delete($key);
+	/**
+	 * Removes the key/data pair for the given $key
+	 *
+	 * @param String $key
+	 */
+	abstract function delete($key);
 }
-
-

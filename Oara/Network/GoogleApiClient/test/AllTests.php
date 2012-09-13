@@ -30,14 +30,14 @@ require_once 'urlshortener/AllUrlShortenerTests.php';
 require_once 'plus/PlusTest.php';
 
 class AllTests {
-  public static function suite() {
-    $suite = new PHPUnit_Framework_TestSuite();
-    $suite->setName('All Google API PHP Client tests');
-    $suite->addTestSuite(AllTasksTests::suite());
-    $suite->addTestSuite(AllPageSpeedTests::suite());
-    $suite->addTestSuite(AllUrlShortenerTests::suite());
-    $suite->addTestSuite(AllPlusTests::suite());
-    $suite->addTestSuite(GeneralTests::suite());
-    return $suite;
-  }
+	public static function suite() {
+		$suite = new PHPUnit_Framework_TestSuite();
+		$suite->setName('All Google API PHP Client tests');
+		$suite->addTestSuite(AllTasksTests::suite());
+		$suite->addTestSuite(AllPageSpeedTests::suite());
+		$suite->addTestSuite(AllUrlShortenerTests::suite());
+		$suite->addTestSuite(AllPlusTests::suite());
+		$suite->addTestSuite(GeneralTests::suite());
+		return $suite;
+	}
 }

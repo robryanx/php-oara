@@ -19,9 +19,9 @@
  */
 
 class ApiClientTest extends BaseTest {
-  public function testDummy() {
-    // temp place holder as tests are being filled in
-    $this->assertTrue(true);
-  }
+	public function testDummy() {
+		// temp place holder as tests are being filled in
+		$this->assertTrue(true);
+	}
 
 }

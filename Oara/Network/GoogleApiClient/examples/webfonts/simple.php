@@ -10,4 +10,4 @@ $client->setApplicationName("Google WebFonts PHP Starter Application");
 // $client->setDeveloperKey('insert_your_developer_key');
 $service = new apiWebfontsService($client);
 $fonts = $service->webfonts->listWebfonts();
-print "<h1>Fonts</h1><pre>" . print_r($fonts, true) . "</pre>";
+print "<h1>Fonts</h1><pre>".print_r($fonts, true)."</pre>";

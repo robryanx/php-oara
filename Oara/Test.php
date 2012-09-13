@@ -8,7 +8,7 @@
  * @version    Release: 01.00
  *
  */
-class Oara_Test{
+class Oara_Test {
 	/**
 	 * Test the network provided
 	 * @param $affiliateNetwork
@@ -30,10 +30,8 @@ class Oara_Test{
 		$endDate->setMinute(59);
 		$endDate->setSecond(59);
 
-
-
 		//are we connected?
-		if ($network->checkConnection()){
+		if ($network->checkConnection()) {
 			//Get all the payments for this network.
 			$paymentsList = $network->getPaymentHistory();
 
@@ -46,20 +44,20 @@ class Oara_Test{
 
 			// Building the array of merchant Id we want to retrieve data from.
 			$merchantIdList = array();
-			foreach ($merchantList as $merchant){
+			foreach ($merchantList as $merchant) {
 				$merchantIdList[] = $merchant['cid'];
 			}
 			//If we have joined any merchant
-			if (!empty($merchantIdList)){
+			if (!empty($merchantIdList)) {
 				//Split the dates monthly, Most of the network don't allow us to retrieve more than a month data
 				$dateArray = Oara_Utilities::monthsOfDifference($startDate, $endDate);
 
-				for ($i = 0; $i < count($dateArray); $i++){
+				for ($i = 0; $i < count($dateArray); $i++) {
 					// Calculating the start and end date for the current month
 					$monthStartDate = clone $dateArray[$i];
 					$monthEndDate = null;
 
-					if($i != count($dateArray)-1){
+					if ($i != count($dateArray) - 1) {
 						$monthEndDate = clone $dateArray[$i];
 						$monthEndDate->setDay(1);
 						$monthEndDate->addMonth(1);
@@ -71,7 +69,7 @@ class Oara_Test{
 					$monthEndDate->setMinute(59);
 					$monthEndDate->setSecond(59);
 
-					echo "\n importing from ".$monthStartDate->toString("dd-MM-yyyy HH:mm:ss"). " to ". $monthEndDate->toString("dd-MM-yyyy HH:mm:ss") ."\n";
+					echo "\n importing from ".$monthStartDate->toString("dd-MM-yyyy HH:mm:ss")." to ".$monthEndDate->toString("dd-MM-yyyy HH:mm:ss")."\n";
 
 					$transactionList = $network->getTransactionList($merchantIdList, $monthStartDate, $monthEndDate);
 
@@ -83,7 +81,6 @@ class Oara_Test{
 
 				}
 
-
 			}
 
 			echo "Import finished \n\n";
@@ -92,7 +89,6 @@ class Oara_Test{
 			echo "Error connecting to the network, check credentials\n\n";
 		}
 	}
-
 
 	/**
 	 * The affjet cli , read the arguments and build the report requested
@@ -114,12 +110,11 @@ class Oara_Test{
 		$endDate->setMinute(59);
 		$endDate->setSecond(59);
 
-
 		//are we connected?
 		fwrite(STDERR, "\nAccessing to your account \n\n");
-		if ($network->checkConnection()){
+		if ($network->checkConnection()) {
 			fwrite(STDERR, "Connected successfully \n\n");
-			if (!isset($arguments['t']) || $arguments['t'] == 'payment'){
+			if (!isset($arguments['t']) || $arguments['t'] == 'payment') {
 
 				fwrite(STDERR, "Getting payments, please wait \n\n");
 				//Get all the payments for this network.
@@ -129,15 +124,15 @@ class Oara_Test{
 				fwrite(STDERR, "------------------------------------------------------------------------\n");
 				fwrite(STDERR, "ID			DATE					VALUE\n");
 				fwrite(STDERR, "------------------------------------------------------------------------\n");
-				foreach ($paymentsList as $payment){
+				foreach ($paymentsList as $payment) {
 					$paymentDate = new Zend_Date($payment['date'], "yyyy-MM-dd HH:mm:ss");
-					if ($paymentDate->compare($startDate) >= 0 && $paymentDate->compare($endDate) <= 0){
+					if ($paymentDate->compare($startDate) >= 0 && $paymentDate->compare($endDate) <= 0) {
 						fwrite(STDERR, $payment['pid']."			".$payment['date']."			".$payment['value']." \n");
 					}
 
 				}
 
-				if (isset($arguments['t']) &&  $arguments['t'] == 'payment'){
+				if (isset($arguments['t']) && $arguments['t'] == 'payment') {
 					return null;
 				}
 
@@ -147,41 +142,37 @@ class Oara_Test{
 			fwrite(STDERR, "\nGetting merchants, please wait \n\n");
 			$merchantList = $network->getMerchantList(array());
 
-			if (!isset($arguments['t']) || $arguments['t'] == 'merchant'){
+			if (!isset($arguments['t']) || $arguments['t'] == 'merchant') {
 
 				fwrite(STDERR, "Number of merchants: ".count($merchantList)."\n\n");
 				fwrite(STDERR, "--------------------------------------------------\n");
 				fwrite(STDERR, "ID			NAME\n");
 				fwrite(STDERR, "--------------------------------------------------\n");
-				foreach ($merchantList as $merchant){
+				foreach ($merchantList as $merchant) {
 					fwrite(STDERR, $merchant['cid']."			".$merchant['name']." \n");
 				}
 
-				if (isset($arguments['t']) && $arguments['t'] == 'merchant'){
+				if (isset($arguments['t']) && $arguments['t'] == 'merchant') {
 					return null;
 				}
 			}
 
-
-
-
-
 			// Building the array of merchant Id we want to retrieve data from.
 			$merchantIdList = array();
-			foreach ($merchantList as $merchant){
+			foreach ($merchantList as $merchant) {
 				$merchantIdList[] = $merchant['cid'];
 			}
 			//If we have joined any merchant
-			if (!empty($merchantIdList)){
+			if (!empty($merchantIdList)) {
 				//Split the dates monthly, Most of the network don't allow us to retrieve more than a month data
 				$dateArray = Oara_Utilities::monthsOfDifference($startDate, $endDate);
 
-				for ($i = 0; $i < count($dateArray); $i++){
+				for ($i = 0; $i < count($dateArray); $i++) {
 					// Calculating the start and end date for the current month
 					$monthStartDate = clone $dateArray[$i];
 					$monthEndDate = null;
 
-					if($i != count($dateArray)-1){
+					if ($i != count($dateArray) - 1) {
 						$monthEndDate = clone $dateArray[$i];
 						$monthEndDate->setDay(1);
 						$monthEndDate->addMonth(1);
@@ -193,36 +184,31 @@ class Oara_Test{
 					$monthEndDate->setMinute(59);
 					$monthEndDate->setSecond(59);
 
-
-
-					fwrite(STDERR, "\n*Importing data from ".$monthStartDate->toString("dd-MM-yyyy HH:mm:ss"). " to ". $monthEndDate->toString("dd-MM-yyyy HH:mm:ss") ."\n\n");
+					fwrite(STDERR, "\n*Importing data from ".$monthStartDate->toString("dd-MM-yyyy HH:mm:ss")." to ".$monthEndDate->toString("dd-MM-yyyy HH:mm:ss")."\n\n");
 					fwrite(STDERR, "Getting transactions, please wait \n\n");
 					$transactionList = $network->getTransactionList($merchantIdList, $monthStartDate, $monthEndDate);
 
-					if (!isset($arguments['t']) || $arguments['t'] == 'transaction'){
+					if (!isset($arguments['t']) || $arguments['t'] == 'transaction') {
 						fwrite(STDERR, "Number of transactions: ".count($transactionList)."\n\n");
-
 
 						$totalAmount = 0;
 						$totalCommission = 0;
-						foreach ($transactionList as $transaction){
+						foreach ($transactionList as $transaction) {
 							$totalAmount += $transaction['amount'];
 							$totalCommission += $transaction['commission'];
-								
+
 						}
 						fwrite(STDERR, "--------------------------------------------------\n");
 						fwrite(STDERR, "TOTAL AMOUNT		$totalAmount\n");
 						fwrite(STDERR, "TOTAL COMMISSION	$totalCommission\n");
 						fwrite(STDERR, "--------------------------------------------------\n\n");
 
-
 					}
 
-					if (!isset($arguments['t']) || $arguments['t'] == 'overview'){
+					if (!isset($arguments['t']) || $arguments['t'] == 'overview') {
 						fwrite(STDERR, "Getting overview, please wait \n\n");
 						$overviewList = $network->getOverviewList($transactionList, $merchantIdList, $monthStartDate, $monthEndDate);
 						fwrite(STDERR, "Number register on the overview: ".count($overviewList)."\n\n");
-
 
 						$totalCV = 0;
 						$totalCC = 0;
@@ -230,7 +216,7 @@ class Oara_Test{
 						$totalPC = 0;
 						$totalDV = 0;
 						$totalDC = 0;
-						foreach ($overviewList as $overview){
+						foreach ($overviewList as $overview) {
 							$totalCV += $overview['transaction_confirmed_value'];
 							$totalCC += $overview['transaction_confirmed_commission'];
 							$totalPV += $overview['transaction_pending_value'];

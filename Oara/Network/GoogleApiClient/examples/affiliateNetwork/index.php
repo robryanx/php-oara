@@ -30,37 +30,37 @@ $client->setApplicationName("Google GAN PHP Starter Application");
 $gan = new apiGanService($client);
 
 if (isset($_REQUEST['logout'])) {
-  unset($_SESSION['access_token']);
+	unset($_SESSION['access_token']);
 }
 
 if (isset($_GET['code'])) {
-  $client->authenticate();
-  $_SESSION['access_token'] = $client->getAccessToken();
-  $redirect = 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'];
-  header('Location: ' . filter_var($redirect, FILTER_SANITIZE_URL));
+	$client->authenticate();
+	$_SESSION['access_token'] = $client->getAccessToken();
+	$redirect = 'http://'.$_SERVER['HTTP_HOST'].$_SERVER['PHP_SELF'];
+	header('Location: '.filter_var($redirect, FILTER_SANITIZE_URL));
 }
 
 if (isset($_SESSION['access_token'])) {
-  $client->setAccessToken($_SESSION['access_token']);
+	$client->setAccessToken($_SESSION['access_token']);
 }
 
 if ($client->getAccessToken()) {
-  $publishers = $gan->publishers->listPublishers("advertisers", "INSERT_ROLE_ID" /* The ID of the requesting advertiser or publisher */);
-  $advertisers = $gan->advertisers->listAdvertisers("publishers", "INSERT_ROLE_ID" /* The ID of the requesting advertiser or publisher */);
-  print "<pre>" . print_r($publishers, true) . "</pre>";
-  print "<pre>" . print_r($advertisers, true) . "</pre>";
+	$publishers = $gan->publishers->listPublishers("advertisers", "INSERT_ROLE_ID" /* The ID of the requesting advertiser or publisher */);
+	$advertisers = $gan->advertisers->listAdvertisers("publishers", "INSERT_ROLE_ID" /* The ID of the requesting advertiser or publisher */);
+	print "<pre>".print_r($publishers, true)."</pre>";
+	print "<pre>".print_r($advertisers, true)."</pre>";
 
-  // The access token may have been updated lazily.
-  $_SESSION['access_token'] = $client->getAccessToken();
+	// The access token may have been updated lazily.
+	$_SESSION['access_token'] = $client->getAccessToken();
 } else {
-  $authUrl = $client->createAuthUrl();
+	$authUrl = $client->createAuthUrl();
 }
 ?>
 
 <?php
-  if(isset($authUrl)) {
-    print "<a class='login' href='$authUrl'>Connect Me!</a>";
-  } else {
-   print "<a class='logout' href='?logout'>Logout</a>";
-  }
+if (isset($authUrl)) {
+	print "<a class='login' href='$authUrl'>Connect Me!</a>";
+} else {
+	print "<a class='logout' href='?logout'>Logout</a>";
+}
 ?>

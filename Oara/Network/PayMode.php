@@ -8,7 +8,7 @@
  * @version    Release: 01.00
  *
  */
-class Oara_Network_PayMode extends Oara_Network{
+class Oara_Network_PayMode extends Oara_Network {
 	/**
 	 * Export Transaction Parameters
 	 * @var array
@@ -20,19 +20,18 @@ class Oara_Network_PayMode extends Oara_Network{
 	 */
 	private $_exportPaymentParameters = null;
 	/**
-	 * 
+	 *
 	 * Payment Transactions Parameters
 	 * @var unknown_type
 	 */
 	private $_exportPaymentTransactionParameters = null;
-	
-	
+
 	/**
 	 * Client
 	 * @var unknown_type
 	 */
 	private $_client = null;
-	
+
 	/**
 	 * AgentNumber
 	 * @var unknown_type
@@ -43,102 +42,97 @@ class Oara_Network_PayMode extends Oara_Network{
 	 * @param $credentials
 	 * @return Oara_Network_Daisycon
 	 */
-	public function __construct($credentials)
-	{
+	public function __construct($credentials) {
 		$user = $credentials['user'];
 		$password = $credentials['password'];
 		$valuesLogin = array(
-		new Oara_Curl_Parameter('username', $user),
-		new Oara_Curl_Parameter('password', $password),
-		new Oara_Curl_Parameter('Enter', 'Enter')
+			new Oara_Curl_Parameter('username', $user),
+			new Oara_Curl_Parameter('password', $password),
+			new Oara_Curl_Parameter('Enter', 'Enter')
 		);
 
 		$loginUrl = 'https://secure.paymode.com/paymode/do-login.jsp?';
 		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
 
-
 		$this->_exportTransactionParameters = array(new Oara_Curl_Parameter('isDetailReport', 'true'),
-		new Oara_Curl_Parameter('method', 'ALL'),
-		new Oara_Curl_Parameter('currency', 'ALL_CURRENCIES'),
-		new Oara_Curl_Parameter('amount', ''),
-		new Oara_Curl_Parameter('disburserName', ''),
-		new Oara_Curl_Parameter('remitType', 'CAR'),
-		new Oara_Curl_Parameter('CAR_customerName', ''),
-		new Oara_Curl_Parameter('CAR_confirmationNumber', ''),
-		new Oara_Curl_Parameter('CAR_franchiseNumber', ''),
-		new Oara_Curl_Parameter('CAR_remitStartDate', ''),
-		new Oara_Curl_Parameter('CAR_remitEndDate', ''),
-		new Oara_Curl_Parameter('CAR_rentalLocation', ''),
-		new Oara_Curl_Parameter('CAR_agreementNumber', ''),
-		new Oara_Curl_Parameter('CAR_commissionAmount', ''),
-		new Oara_Curl_Parameter('CAR_sortBy', 'CUSTOMER_NAME'),
-		new Oara_Curl_Parameter('submit1', 'Submit'),
-		new Oara_Curl_Parameter('AIR_customerName', ''),
-		new Oara_Curl_Parameter('AIR_confirmationNumber', ''),
-		new Oara_Curl_Parameter('AIR_agreementNumber', ''),
-		new Oara_Curl_Parameter('AIR_issueDate', ''),
-		new Oara_Curl_Parameter('AIR_sortBy', 'CUSTOMER_NAME'),
+			new Oara_Curl_Parameter('method', 'ALL'),
+			new Oara_Curl_Parameter('currency', 'ALL_CURRENCIES'),
+			new Oara_Curl_Parameter('amount', ''),
+			new Oara_Curl_Parameter('disburserName', ''),
+			new Oara_Curl_Parameter('remitType', 'CAR'),
+			new Oara_Curl_Parameter('CAR_customerName', ''),
+			new Oara_Curl_Parameter('CAR_confirmationNumber', ''),
+			new Oara_Curl_Parameter('CAR_franchiseNumber', ''),
+			new Oara_Curl_Parameter('CAR_remitStartDate', ''),
+			new Oara_Curl_Parameter('CAR_remitEndDate', ''),
+			new Oara_Curl_Parameter('CAR_rentalLocation', ''),
+			new Oara_Curl_Parameter('CAR_agreementNumber', ''),
+			new Oara_Curl_Parameter('CAR_commissionAmount', ''),
+			new Oara_Curl_Parameter('CAR_sortBy', 'CUSTOMER_NAME'),
+			new Oara_Curl_Parameter('submit1', 'Submit'),
+			new Oara_Curl_Parameter('AIR_customerName', ''),
+			new Oara_Curl_Parameter('AIR_confirmationNumber', ''),
+			new Oara_Curl_Parameter('AIR_agreementNumber', ''),
+			new Oara_Curl_Parameter('AIR_issueDate', ''),
+			new Oara_Curl_Parameter('AIR_sortBy', 'CUSTOMER_NAME'),
 
-		new Oara_Curl_Parameter('CRUISE_vesselName', ''),
-		new Oara_Curl_Parameter('CRUISE_customerName', ''),
-		new Oara_Curl_Parameter('CRUISE_confirmationNumber', ''),
-		new Oara_Curl_Parameter('CRUISE_remitStartDate', ''),
-		new Oara_Curl_Parameter('CRUISE_duration', ''),
-		new Oara_Curl_Parameter('CRUISE_commissionAmount', ''),
-		new Oara_Curl_Parameter('CRUISE_sortBy', 'FACILITY_NAME'),
+			new Oara_Curl_Parameter('CRUISE_vesselName', ''),
+			new Oara_Curl_Parameter('CRUISE_customerName', ''),
+			new Oara_Curl_Parameter('CRUISE_confirmationNumber', ''),
+			new Oara_Curl_Parameter('CRUISE_remitStartDate', ''),
+			new Oara_Curl_Parameter('CRUISE_duration', ''),
+			new Oara_Curl_Parameter('CRUISE_commissionAmount', ''),
+			new Oara_Curl_Parameter('CRUISE_sortBy', 'FACILITY_NAME'),
 
-		new Oara_Curl_Parameter('HOTEL_hotelName', ''),
-		new Oara_Curl_Parameter('HOTEL_customerName', ''),
-		new Oara_Curl_Parameter('HOTEL_confirmationNumber', ''),
-		new Oara_Curl_Parameter('HOTEL_remitStartDate', ''),
-		new Oara_Curl_Parameter('HOTEL_duration', ''),
-		new Oara_Curl_Parameter('HOTEL_commissionAmount', ''),
-		new Oara_Curl_Parameter('HOTEL_sortBy', 'FACILITY_NAME')
+			new Oara_Curl_Parameter('HOTEL_hotelName', ''),
+			new Oara_Curl_Parameter('HOTEL_customerName', ''),
+			new Oara_Curl_Parameter('HOTEL_confirmationNumber', ''),
+			new Oara_Curl_Parameter('HOTEL_remitStartDate', ''),
+			new Oara_Curl_Parameter('HOTEL_duration', ''),
+			new Oara_Curl_Parameter('HOTEL_commissionAmount', ''),
+			new Oara_Curl_Parameter('HOTEL_sortBy', 'FACILITY_NAME')
 		);
 
-
-			
 		$this->_exportPaymentParameters = array(
-		new Oara_Curl_Parameter('isDetailReport', 'false'),
-		new Oara_Curl_Parameter('method', 'ALL'),
-		new Oara_Curl_Parameter('currency', 'ALL_CURRENCIES'),
-		new Oara_Curl_Parameter('amount', ''),
-		new Oara_Curl_Parameter('disburserName', ''),
-		new Oara_Curl_Parameter('submit1', 'Submit')
+			new Oara_Curl_Parameter('isDetailReport', 'false'),
+			new Oara_Curl_Parameter('method', 'ALL'),
+			new Oara_Curl_Parameter('currency', 'ALL_CURRENCIES'),
+			new Oara_Curl_Parameter('amount', ''),
+			new Oara_Curl_Parameter('disburserName', ''),
+			new Oara_Curl_Parameter('submit1', 'Submit')
 		);
-			
+
 		$this->_exportPaymentTransactionParameters = array(
-		new Oara_Curl_Parameter('fromNonMigrated', 'false'),
-		new Oara_Curl_Parameter('returnPage', ''),
-		new Oara_Curl_Parameter('mode', ''),
-		new Oara_Curl_Parameter('siteid', ''),
-		new Oara_Curl_Parameter('ssid', '')
+			new Oara_Curl_Parameter('fromNonMigrated', 'false'),
+			new Oara_Curl_Parameter('returnPage', ''),
+			new Oara_Curl_Parameter('mode', ''),
+			new Oara_Curl_Parameter('siteid', ''),
+			new Oara_Curl_Parameter('ssid', '')
 		);
-		
-		
+
 	}
 	/**
 	 * Check the connection
 	 */
-	public function checkConnection(){
+	public function checkConnection() {
 		//If not login properly the construct launch an exception
 		$connection = false;
 		$urls = array();
 		$urls[] = new Oara_Curl_Request('https://secure.paymode.com/paymode/home.jsp?', array());
 		$exportReport = $this->_client->get($urls);
 
-		if (preg_match("/paymode\/logout\.jsp/", $exportReport[0], $matches)){
-				
+		if (preg_match("/paymode\/logout\.jsp/", $exportReport[0], $matches)) {
+
 			$urls = array();
 			$urls[] = new Oara_Curl_Request('https://secure.paymode.com/paymode/reports-pre_commission_history.jsp?', array());
 			$exportReport = $this->_client->get($urls);
 			$dom = new Zend_Dom_Query($exportReport[0]);
 			$results = $dom->query('input[type="checkbox"]');
 			$agentNumber = null;
-			foreach ($results as $result){
+			foreach ($results as $result) {
 				$this->_agentNumber = $result->getAttribute("id");
 			}
-				
+
 			$connection = true;
 		}
 		return $connection;
@@ -147,7 +141,7 @@ class Oara_Network_PayMode extends Oara_Network{
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Interface#getMerchantList()
 	 */
-	public function getMerchantList(){
+	public function getMerchantList() {
 		$merchants = array();
 
 		$obj = array();
@@ -162,7 +156,7 @@ class Oara_Network_PayMode extends Oara_Network{
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null){
+	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
 
 		$totalTransactions = array();
 		$filter = new Zend_Filter_LocalizedToNormalized(array('precision' => 2));
@@ -181,26 +175,28 @@ class Oara_Network_PayMode extends Oara_Network{
 
 		$dom = new Zend_Dom_Query($exportReport[0]);
 		$results = $dom->query('tr[valign="top"]');
-		foreach ($results as $line){
+		foreach ($results as $line) {
 			$transaction = Array();
 			$lineHtml = self::DOMinnerHTML($line);
 			$domLine = new Zend_Dom_Query($lineHtml);
 			$resultsLine = $domLine->query('.rptcontentText');
-			if (count($resultsLine) > 0){
+			if (count($resultsLine) > 0) {
 
 				$transaction['merchantId'] = 1;
 				$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
 				$i = 0;
-				foreach ($resultsLine as $attribute){
-					if ($i == 5){
+				foreach ($resultsLine as $attribute) {
+					if ($i == 5) {
 						$transactionDate = new Zend_Date($attribute->nodeValue, 'MM/dd/yyyy', 'en');
 						$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
-					} else if ($i == 10){
-						$transaction['unique_id'] =  $attribute->nodeValue;
-					} else if ($i == 13){
-						$transaction['amount'] = $filter->filter($attribute->nodeValue);
-						$transaction['commission'] = $filter->filter($attribute->nodeValue);
-					}
+					} else
+						if ($i == 10) {
+							$transaction['unique_id'] = $attribute->nodeValue;
+						} else
+							if ($i == 13) {
+								$transaction['amount'] = $filter->filter($attribute->nodeValue);
+								$transaction['commission'] = $filter->filter($attribute->nodeValue);
+							}
 					$i++;
 				}
 
@@ -208,7 +204,7 @@ class Oara_Network_PayMode extends Oara_Network{
 
 			}
 		}
-			
+
 		return $totalTransactions;
 	}
 
@@ -216,11 +212,11 @@ class Oara_Network_PayMode extends Oara_Network{
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Base#getOverviewList($merchantId, $dStartDate, $dEndDate)
 	 */
-	public function getOverviewList($transactionList = null, $merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null){
+	public function getOverviewList($transactionList = null, $merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
 		$totalOverviews = Array();
 		$transactionArray = Oara_Utilities::transactionMapPerDay($transactionList);
-		foreach ($transactionArray as $merchantId => $merchantTransaction){
-			foreach ($merchantTransaction as $date => $transactionList){
+		foreach ($transactionArray as $merchantId => $merchantTransaction) {
+			foreach ($merchantTransaction as $date => $transactionList) {
 
 				$overview = Array();
 
@@ -231,28 +227,31 @@ class Oara_Network_PayMode extends Oara_Network{
 				$overview['impression_number'] = 0;
 				$overview['transaction_number'] = 0;
 				$overview['transaction_confirmed_value'] = 0;
-				$overview['transaction_confirmed_commission']= 0;
-				$overview['transaction_pending_value']= 0;
-				$overview['transaction_pending_commission']= 0;
-				$overview['transaction_declined_value']= 0;
-				$overview['transaction_declined_commission']= 0;
-				$overview['transaction_paid_value']= 0;
-				$overview['transaction_paid_commission']= 0;
-				foreach ($transactionList as $transaction){
-					$overview['transaction_number'] ++;
-					if ($transaction['status'] == Oara_Utilities::STATUS_CONFIRMED){
+				$overview['transaction_confirmed_commission'] = 0;
+				$overview['transaction_pending_value'] = 0;
+				$overview['transaction_pending_commission'] = 0;
+				$overview['transaction_declined_value'] = 0;
+				$overview['transaction_declined_commission'] = 0;
+				$overview['transaction_paid_value'] = 0;
+				$overview['transaction_paid_commission'] = 0;
+				foreach ($transactionList as $transaction) {
+					$overview['transaction_number']++;
+					if ($transaction['status'] == Oara_Utilities::STATUS_CONFIRMED) {
 						$overview['transaction_confirmed_value'] += $transaction['amount'];
 						$overview['transaction_confirmed_commission'] += $transaction['commission'];
-					} else if ($transaction['status'] == Oara_Utilities::STATUS_PENDING){
-						$overview['transaction_pending_value'] += $transaction['amount'];
-						$overview['transaction_pending_commission'] += $transaction['commission'];
-					} else if ($transaction['status'] == Oara_Utilities::STATUS_DECLINED){
-						$overview['transaction_declined_value'] += $transaction['amount'];
-						$overview['transaction_declined_commission'] += $transaction['commission'];
-					} else if ($transaction['status'] == Oara_Utilities::STATUS_PAID){
-						$overview['transaction_paid_value'] += $transaction['amount'];
-						$overview['transaction_paid_commission'] += $transaction['commission'];
-					}
+					} else
+						if ($transaction['status'] == Oara_Utilities::STATUS_PENDING) {
+							$overview['transaction_pending_value'] += $transaction['amount'];
+							$overview['transaction_pending_commission'] += $transaction['commission'];
+						} else
+							if ($transaction['status'] == Oara_Utilities::STATUS_DECLINED) {
+								$overview['transaction_declined_value'] += $transaction['amount'];
+								$overview['transaction_declined_commission'] += $transaction['commission'];
+							} else
+								if ($transaction['status'] == Oara_Utilities::STATUS_PAID) {
+									$overview['transaction_paid_value'] += $transaction['amount'];
+									$overview['transaction_paid_commission'] += $transaction['commission'];
+								}
 				}
 				$totalOverviews[] = $overview;
 			}
@@ -265,7 +264,7 @@ class Oara_Network_PayMode extends Oara_Network{
 	 * (non-PHPdoc)
 	 * @see Oara/Network/Oara_Network_Base#getPaymentHistory()
 	 */
-	public function getPaymentHistory(){
+	public function getPaymentHistory() {
 
 		$paymentHistory = array();
 
@@ -274,7 +273,7 @@ class Oara_Network_PayMode extends Oara_Network{
 		$endDate = new Zend_Date();
 
 		$dateList = Oara_Utilities::monthsOfDifference($startDate, $endDate);
-		foreach ($dateList as $date){
+		foreach ($dateList as $date) {
 			$monthStartDate = clone $date;
 			$monthEndDate = null;
 
@@ -301,24 +300,27 @@ class Oara_Network_PayMode extends Oara_Network{
 
 			$dom = new Zend_Dom_Query($exportReport[0]);
 			$results = $dom->query('tr[valign="top"]');
-			foreach ($results as $line){
+			foreach ($results as $line) {
 				$payment = Array();
 				$lineHtml = self::DOMinnerHTML($line);
 				$domLine = new Zend_Dom_Query($lineHtml);
 				$resultsLine = $domLine->query('.rptcontentText');
-				if (count($resultsLine) > 0){
+				if (count($resultsLine) > 0) {
 					$i = 0;
-					foreach ($resultsLine as $attribute){
-						if ($i == 0){
+					foreach ($resultsLine as $attribute) {
+						if ($i == 0) {
 							$payment['pid'] = $attribute->nodeValue;
-						} else if ($i == 3){
-							$paymentDate = new Zend_Date($attribute->nodeValue, 'MM/dd/yyyy', 'en');
-							$payment['date'] = $paymentDate->toString("yyyy-MM-dd HH:mm:ss");
-						} else if ($i == 4){
-							$payment['method'] = $attribute->nodeValue;
-						} else if ($i == 6){
-							$payment['value'] = $filter->filter($attribute->nodeValue);
-						}
+						} else
+							if ($i == 3) {
+								$paymentDate = new Zend_Date($attribute->nodeValue, 'MM/dd/yyyy', 'en');
+								$payment['date'] = $paymentDate->toString("yyyy-MM-dd HH:mm:ss");
+							} else
+								if ($i == 4) {
+									$payment['method'] = $attribute->nodeValue;
+								} else
+									if ($i == 6) {
+										$payment['value'] = $filter->filter($attribute->nodeValue);
+									}
 						$i++;
 					}
 
@@ -330,38 +332,38 @@ class Oara_Network_PayMode extends Oara_Network{
 		}
 		return $paymentHistory;
 	}
-	
+
 	/**
 	 *  It returns the transactions for a payment
 	 * @see Oara_Network::paymentTransactions()
 	 */
-    public function paymentTransactions($paymentId, $merchantList, $startDate){
-    	
-   		$paymentTransactionList = array();
+	public function paymentTransactions($paymentId, $merchantList, $startDate) {
+
+		$paymentTransactionList = array();
 		$urls = array();
-		
+
 		$valuesFromExport = $this->_exportPaymentTransactionParameters;
 		$valuesFromExport[] = new Oara_Curl_Parameter('cpid', $paymentId);
-        $urls[] = new Oara_Curl_Request('https://secure.paymode.com/paymode/post-coll_comm_hist_detail.jsp?', $valuesFromExport);
-    	$exportReport = $this->_client->get($urls);
-    	
-    	$urls = array();
+		$urls[] = new Oara_Curl_Request('https://secure.paymode.com/paymode/post-coll_comm_hist_detail.jsp?', $valuesFromExport);
+		$exportReport = $this->_client->get($urls);
+
+		$urls = array();
 		$urls[] = new Oara_Curl_Request('https://secure.paymode.com/paymode/tewf/navGenericReport.jsp?presentation=excel', array());
 		$exportReport = $this->_client->get($urls);
 
 		$dom = new Zend_Dom_Query($exportReport[0]);
 		$results = $dom->query('tr[valign="top"]');
-		foreach ($results as $line){
+		foreach ($results as $line) {
 			$transaction = Array();
 			$lineHtml = self::DOMinnerHTML($line);
 			$domLine = new Zend_Dom_Query($lineHtml);
 			$resultsLine = $domLine->query('.rptcontentText');
-			if (count($resultsLine) > 0){
+			if (count($resultsLine) > 0) {
 
 				$i = 0;
-				foreach ($resultsLine as $attribute){
-					if ($i == 10){
-						$paymentTransactionList[] =  $attribute->nodeValue;
+				foreach ($resultsLine as $attribute) {
+					if ($i == 10) {
+						$paymentTransactionList[] = $attribute->nodeValue;
 						break;
 					}
 					$i++;
@@ -369,26 +371,22 @@ class Oara_Network_PayMode extends Oara_Network{
 
 			}
 		}
-    	
-    	
-    	return $paymentTransactionList;
-    }
 
+		return $paymentTransactionList;
+	}
 
 	/**
 	 *
 	 * Function that returns the inner HTML code
 	 * @param unknown_type $element
 	 */
-	private function DOMinnerHTML($element)
-	{
+	private function DOMinnerHTML($element) {
 		$innerHTML = "";
 		$children = $element->childNodes;
-		foreach ($children as $child)
-		{
+		foreach ($children as $child) {
 			$tmp_dom = new DOMDocument();
 			$tmp_dom->appendChild($tmp_dom->importNode($child, true));
-			$innerHTML.=trim($tmp_dom->saveHTML());
+			$innerHTML .= trim($tmp_dom->saveHTML());
 		}
 		return $innerHTML;
 	}
