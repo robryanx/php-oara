@@ -43,28 +43,29 @@ The list of supported networks so far is:
 * [Daisycon](http://www.daisycon.com)
 * [ClixGalore](http://www.clixgalore.com)
 * [Amazon UK](https://affiliate-program.amazon.co.uk/)
-
-
-We are planning to add more, this is the to-do list:
-
-* ClickBank
-* Google Adwords
-* More Niche
-* Revenue Wire
-* Shopzilla
-* Insurance4carhire
-* IC Breakdown
-* Solution.weborama.com
-* Mysavingsmedia
-* Logical
-* Escalate
-* Skimlinks
-* Impact
-* Pepperjam
-* Netaffiliation
-* Publicidees.com
-* Effiliation.com
-* FluxAds
+* [Amazon US](https://affiliate-program.amazon.com/)
+* [Amazon DE](https://partnernet.amazon.de/)
+* [Amazon FR](https://partenaires.amazon.fr/)
+* [Amazon JP](https://affiliate.amazon.co.jp/)
+* [Amazon CA](https://associates.amazon.ca/)
+* [Amazon CN](https://associates.amazon.cn/)
+* [Amazon IT](https://programma-affiliazione.amazon.it/)
+* [Amazon ES](https://afiliados.amazon.es/)
+* [Ebay Partner Network](https://ebaypartnernetwork.com/files/hub/en-US/index.html)
+* [M4N](http://www.m4n.nl/)
+* [Affiliates United](https://www.affutd.com/)
+* [Bet365](https://www.bet365affiliates.com/ui/pages/affiliates/affiliates.aspx)
+* [Brand Conversions](https://mats.brandconversions.com/Login.aspx?ReturnUrl=/)
+* [Ladbrokers](https://www.ladbrokes.com)
+* [Skimlinks](https://skimlinks.com/)
+* [AutoEurope](https://www.auto-europe.co.uk)
+* [PayMode](http://www.paymode-x.com/)
+* [Effiliation](http://www.effiliation.com/)
+* [NetAffiliation](http://www.netaffiliation.com/)
+* [Publicidees](http://www.publicidees.es/)
+* [ClickBank](http://www.clickbank.com/index.html)
+* [Stream 20](http://www.stream20.com/)
+* [Google Checkout](http://checkout.google.com/sell)
 
 System Requirements
 -------------------
@@ -139,6 +140,7 @@ please pay attention to the next rules:
 	* getTransactionList
 	* getOverviewList
 	* getPaymentHistory
+	* paymentTransactions
 	
 * Add the credentials to the credentials.ini.sample. (Please add also information about how to find your credentials)
 
@@ -155,15 +157,13 @@ It checks if we are succesfully connected to the network
 
 return boolean (true is connected successfully)
 
-### getMerchantList($merchantMap)
-Get the merchants joined for the network
-
-* @param array $merchantMap - An array with the merchants already joined (Array of merchants unique ids), empty array by default
+### getMerchantList()
+Gets the merchants joined for the network
 
 * return Array ( Array of Merchants )
 
-### getTransactionList($merchantList, Zend_Date $dStartDate, Zend_Date $dEndDate)
-Get the transactions for the network, from the "dStartDate" until "dEndDate" for the merchants provided
+### getTransactionList(array $merchantList, Zend_Date $dStartDate, Zend_Date $dEndDate, array $merchantMap)
+Gets the transactions for the network, from the "dStartDate" until "dEndDate" for the merchants provided
 
 * @param array $merchantList - array with the merchants unique id we want to retrieve the data from
 
@@ -171,10 +171,12 @@ Get the transactions for the network, from the "dStartDate" until "dEndDate" for
 
 * @param Zend_Date $dEndDate - end date (included)
 
+* @param array $merchantMap - array with the merchants indexed by name, only in case we can't get the merchant id in the transaction report, we may need to link it by name.
+
 * return Array ( Array of Transactions )
 
-### getOverviewList($transactionList, $merchantList, Zend_Date $dStartDate, Zend_Date $dEndDate)
-Get the overview (a daily summary  of our statistics) for the network and the merchants selected for the date given
+### getOverviewList($transactionList, $merchantList, Zend_Date $dStartDate, Zend_Date $dEndDate, array $merchantMap)
+Gets the overview (a daily summary  of our statistics) for the network and the merchants selected for the date given
 
 * @param array $transactionList - Transaction List
 
@@ -184,12 +186,25 @@ Get the overview (a daily summary  of our statistics) for the network and the me
 
 * @param Zend_Date $dEndDate - end date (included)
 
+* @param array $merchantMap - array with the merchants indexed by name, only in case we can't get the merchant id in the transaction report, we may need to link it by name.
+
 * return Array ( Array of Overview )
 
 ### getPaymentHistory()
-Get the Payments already done for this network
+Gets the Payments already done for this network
 
 * return Array ( Array of Payments )
+
+### paymentTransactions($paymentId, $merchantList, $startDate)
+Gets the Transactions Id for a paymentId
+
+* @param array $paymentId - Payment Id of the payment we want the trasactions unique_id list.
+
+* @param array $merchantList - array with the merchants we want to retrieve the data from
+
+* @param Zend_Date $startDate - start date ,it may be useful to filter the data in some networks
+
+* return Array ( Array of Transcation unique_id )
 
 Merchant 
 ------------
@@ -221,10 +236,11 @@ It's an array with the following keys:
 	* Oara_Utilities::STATUS_CONFIRMED
 	* Oara_Utilities::STATUS_PENDING
 	* Oara_Utilities::STATUS_DECLINED
-	
-* link - Link where the transaction comes from
+	* Oara_Utilities::STATUS_PAID
 
-* website - Website where the transaction comes from
+* unique_id - Unique id for the transaction (string)
+* custom_id - Custom id (or sub id) for the transaction (string), custom param you put on your links to see the performance or who made the sale.
+
 
 Overview 
 ------------
@@ -253,10 +269,9 @@ It's an array with the following keys:
 
 * transaction_declined_commission (not null) -  Transaction commission  (double) with status declined 
 
-* link - Link where the transaction comes from
+* transaction_paid_value (not null) -  Transaction value  (double) with status paid 
 
-* website - Website where the transaction comes from
-
+* transaction_paid_commission (not null) -  Transaction commission  (double) with status paid 
 
 Payment 
 ------------
@@ -272,10 +287,11 @@ It's an array with the next keys:
 * method (not null) - Payment method (BACS, CHEQUE, ...)
 
 
+
 Contact
 ------------
 
 If you have any question, go to the project's [website](http://php-oara.affjet.com/) or
-send an email to carlos@affjet.com
+send an email to support@affjet.com
 	
 
