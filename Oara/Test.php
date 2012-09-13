@@ -38,7 +38,7 @@ class Oara_Test {
 			echo "Total Number of payments: ".count($paymentsList)."\n\n";
 
 			//Get all the Merhcants
-			$merchantList = $network->getMerchantList(array());
+			$merchantList = $network->getMerchantList();
 
 			echo "Number of merchants: ".count($merchantList)."\n\n";
 
