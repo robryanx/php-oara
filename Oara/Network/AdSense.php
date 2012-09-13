@@ -26,9 +26,10 @@ class Oara_Network_AdSense extends Oara_Network{
 	{
 		$client = new apiClient();
 		$client->setApplicationName("AffJet");
-		$client->setClientId('16630800841-enfgglm0okfiafv2ci042r27f0gfik44.apps.googleusercontent.com');
-		$client->setClientSecret('tsZR2ZFiexQl6JN9xs3QuBVL');
+		$client->setClientId($credentials['clientId']);
+		$client->setClientSecret($credentials['clientSecret']);
 		$client->setAccessToken($credentials['oauth2']);
+		$client->setAccessType('offline');
 		$this->_client = $client;
 		$this->_adsense = new apiAdsenseService($client);
 	}
