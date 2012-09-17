@@ -84,7 +84,7 @@ for the different networks.
 
 	1. Create the folder with the clone of the code.
 	
-	git clone git://github.com/paulmaunders/php-oara.git php-oara
+	git clone https://github.com/fubralimited/php-oara.git php-oara
 	
 	2. Change the directory to the root of the project
 	
