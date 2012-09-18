@@ -55,6 +55,7 @@ class Oara_Network_M4n extends Oara_Network {
 	 */
 	public function getMerchantList() {
 		$merchants = array();
+		
 		$xmlLocation = 'https://api.m4n.nl/restful/csv/affiliate/merchants';
 		$merchantData = self::returnApiData($xmlLocation);
 		$merchantData = str_getcsv($merchantData, "\n");
@@ -66,6 +67,7 @@ class Oara_Network_M4n extends Oara_Network {
 			$obj['name'] = $merchantArray[0];
 			$merchants[] = $obj;
 		}
+		
 		return $merchants;
 	}
 

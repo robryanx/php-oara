@@ -26,7 +26,7 @@ class Oara_Network_Publicidees extends Oara_Network {
 		$loginUrl = 'http://affilie.publicidees.com/entree_affilies.php';
 
 		//getting the hidden value
-		$dom = new Zend_Dom_Query(file_get_contents("http://www.publicidees.com/"));
+		$dom = new Zend_Dom_Query(file_get_contents("http://www.publicidees.es/"));
 		$results = $dom->query("input[name='h']");
 
 		$hValue = null;
