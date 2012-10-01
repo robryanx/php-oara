@@ -258,7 +258,8 @@ class Oara_Network_Omg extends Oara_Network {
 	 */
 	public function getOverviewList($transactionList = null, $merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
 		$overviewArray = Array();
-
+		$transactionArray = Oara_Utilities::transactionMapPerDay($transactionList);
+		
 		$overviewExport = Oara_Utilities::cloneArray($this->_exportOverviewParameters);
 		$overviewExport[] = new Oara_Curl_Parameter('StartYear', $dStartDate->get(Zend_Date::YEAR));
 		$overviewExport[] = new Oara_Curl_Parameter('StartMonth', $dStartDate->get(Zend_Date::MONTH));
@@ -273,7 +274,7 @@ class Oara_Network_Omg extends Oara_Network {
 		$exportReport = $this->_client->get($urls);
 		$xml = self::loadXml($exportReport[0]);
 		if (isset($xml->Report->Detail_Collection->Detail)) {
-			$transactionArray = Oara_Utilities::transactionMapPerDay($transactionList);
+			
 			$dateArray = Oara_Utilities::daysOfDifference($dStartDate, $dEndDate);
 			$dateArraySize = sizeof($dateArray);
 			$urls = array();

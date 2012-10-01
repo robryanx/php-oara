@@ -90,13 +90,7 @@ class Oara_Network_WaterImp extends Oara_Network {
 				$details = self::returnApiData("https://checkout.google.com/api/checkout/v2/reports/Merchant/".$this->_user, $body);
 				$detailsXML = simplexml_load_string($details, null, LIBXML_NOERROR | LIBXML_NOWARNING);
 
-				$tax = (double) $detailsXML->notifications->{
-					"new-order-notification"}
-				->{
-					"order-adjustment"}
-				->{
-					"total-tax"}
-				;
+				$tax = (double) $detailsXML->notifications->{"new-order-notification"}->{"order-adjustment"}->{"total-tax"};
 
 				$transaction = Array();
 				$transaction['merchantId'] = 1;

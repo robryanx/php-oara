@@ -47,6 +47,13 @@ class Oara_Test {
 			foreach ($merchantList as $merchant) {
 				$merchantIdList[] = $merchant['cid'];
 			}
+			
+			$merchantMap = array();
+			foreach ($merchantList as $merchant){
+				$merchantMap[$merchant['name']] = $merchant['cid'];
+			}
+			
+			
 			//If we have joined any merchant
 			if (!empty($merchantIdList)) {
 				//Split the dates monthly, Most of the network don't allow us to retrieve more than a month data
@@ -71,11 +78,11 @@ class Oara_Test {
 
 					echo "\n importing from ".$monthStartDate->toString("dd-MM-yyyy HH:mm:ss")." to ".$monthEndDate->toString("dd-MM-yyyy HH:mm:ss")."\n";
 
-					$transactionList = $network->getTransactionList($merchantIdList, $monthStartDate, $monthEndDate);
+					$transactionList = $network->getTransactionList($merchantIdList, $monthStartDate, $monthEndDate, $merchantMap);
 
 					echo "Number of transactions: ".count($transactionList)."\n\n";
 
-					$overviewList = $network->getOverviewList($transactionList, $merchantIdList, $monthStartDate, $monthEndDate);
+					$overviewList = $network->getOverviewList($transactionList, $merchantIdList, $monthStartDate, $monthEndDate, $merchantMap);
 
 					echo "Number register on the overview: ".count($overviewList)."\n\n";
 
@@ -164,6 +171,10 @@ class Oara_Test {
 			}
 			//If we have joined any merchant
 			if (!empty($merchantIdList)) {
+				$merchantMap = array();
+				foreach ($merchantList as $merchant){
+					$merchantMap[$merchant['name']] = $merchant['cid'];
+				}
 				//Split the dates monthly, Most of the network don't allow us to retrieve more than a month data
 				$dateArray = Oara_Utilities::monthsOfDifference($startDate, $endDate);
 
@@ -186,7 +197,7 @@ class Oara_Test {
 
 					fwrite(STDERR, "\n*Importing data from ".$monthStartDate->toString("dd-MM-yyyy HH:mm:ss")." to ".$monthEndDate->toString("dd-MM-yyyy HH:mm:ss")."\n\n");
 					fwrite(STDERR, "Getting transactions, please wait \n\n");
-					$transactionList = $network->getTransactionList($merchantIdList, $monthStartDate, $monthEndDate);
+					$transactionList = $network->getTransactionList($merchantIdList, $monthStartDate, $monthEndDate, $merchantMap);
 
 					if (!isset($arguments['t']) || $arguments['t'] == 'transaction') {
 						fwrite(STDERR, "Number of transactions: ".count($transactionList)."\n\n");
@@ -207,7 +218,7 @@ class Oara_Test {
 
 					if (!isset($arguments['t']) || $arguments['t'] == 'overview') {
 						fwrite(STDERR, "Getting overview, please wait \n\n");
-						$overviewList = $network->getOverviewList($transactionList, $merchantIdList, $monthStartDate, $monthEndDate);
+						$overviewList = $network->getOverviewList($transactionList, $merchantIdList, $monthStartDate, $monthEndDate, $merchantMap);
 						fwrite(STDERR, "Number register on the overview: ".count($overviewList)."\n\n");
 
 						$totalCV = 0;

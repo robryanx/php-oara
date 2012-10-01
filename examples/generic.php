@@ -47,8 +47,8 @@ require realpath(dirname(__FILE__)).'/../settings.php';
  * WowTrk
  * Zanox
  */
-$networkName = "ChooseYourNetwork"; //Ex: AffiliateWindow
-//Retrieving the credentials for AffiliateFuture
+$networkName = "ClixGalore"; //Ex: AffiliateWindow
+//Retrieving the credentials for the network
 $config = Zend_Registry::getInstance()->get('credentialsIni');
 
 $configName = strtolower($networkName);
