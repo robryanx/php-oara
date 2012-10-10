@@ -160,7 +160,7 @@ class Oara_Network_AffiliNet extends Oara_Network {
 
 			while (isset($transactionList->TotalRecords) && $transactionList->TotalRecords > 0 && isset($transactionList->TransactionCollection->Transaction)) {
 				$transactionCollection = array();
-				if ($transactionList->TotalRecords == 1) {
+				if (!is_array($transactionList->TransactionCollection->Transaction)) {
 					$transactionCollection[] = $transactionList->TransactionCollection->Transaction;
 				} else {
 					$transactionCollection = $transactionList->TransactionCollection->Transaction;
