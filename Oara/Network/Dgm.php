@@ -73,7 +73,7 @@ class Oara_Network_Dgm extends Oara_Network {
 
 		$wsdlUrl = 'http://api.dgm-uk.com/Publisher.v1.1/publisher.wsdl';
 		//Setting the apiClient.
-		$this->_apiClient = new Zend_Soap_Client($wsdlUrl, array('login'			 => $user,
+		$this->_apiClient = new Zend_Soap_Client($wsdlUrl, array('login' => $user,
 			'password'		 => $password,
 			'encoding'		 => 'UTF-8',
 			'compression'	 => SOAP_COMPRESSION_ACCEPT | SOAP_COMPRESSION_GZIP | SOAP_COMPRESSION_DEFLATE,

@@ -48,7 +48,7 @@ class Oara_Network_Omg extends Oara_Network {
 	public function __construct($credentials) {
 		$user = $credentials['user'];
 		$password = $credentials['password'];
-
+		
 		$loginUrl = 'https://admin.omgpm.com/en/clientarea/login_welcome.asp';
 
 		$contact = null;
