@@ -54,13 +54,14 @@ class Oara_Network_LinkShare extends Oara_Network {
 						}
 
 		$loginUrl = 'https://cli.linksynergy.com/cli/common/authenticateUser.php';
-
+		
 		$valuesLogin = array(new Oara_Curl_Parameter('front_url', ''),
 			new Oara_Curl_Parameter('postLoginDestination', ''),
+			new Oara_Curl_Parameter('cuserid', ''),
 			new Oara_Curl_Parameter('loginUsername', $user),
 			new Oara_Curl_Parameter('loginPassword', $password),
-			new Oara_Curl_Parameter('x', '66'),
-			new Oara_Curl_Parameter('y', '11')
+			new Oara_Curl_Parameter('x', '28'),
+			new Oara_Curl_Parameter('y', '10')
 		);
 		//Login to the Linkshare Application
 		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
@@ -197,28 +198,36 @@ class Oara_Network_LinkShare extends Oara_Network {
 	public function getMerchantList() {
 		$merchants = array();
 
-		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://cli.linksynergy.com/cli/publisher/programs/carDownload.php', array());
-		$result = $this->_client->get($urls);
-		$exportData = str_getcsv(self::formatCsv($result[0]), "\n");
-
-		$num = count($exportData);
-		for ($i = 1; $i < $num; $i++) {
-			$merchantArray = str_getcsv($exportData[$i], ",");
-
-			$obj = Array();
-
-			if (!isset($merchantArray[2])) {
-				throw new Exception("Error getting merchants");
+		foreach ($this->_siteList as $site){
+			
+			$urls = array();
+			$urls[] = new Oara_Curl_Request($site->url, array());
+			$result = $this->_client->get($urls);
+			
+			$urls = array();
+			$urls[] = new Oara_Curl_Request('http://cli.linksynergy.com/cli/publisher/programs/carDownload.php', array());
+			$result = $this->_client->get($urls);
+			$exportData = str_getcsv(self::formatCsv($result[0]), "\n");
+	
+			$num = count($exportData);
+			for ($i = 1; $i < $num; $i++) {
+				$merchantArray = str_getcsv($exportData[$i], ",");
+	
+				$obj = Array();
+	
+				if (!isset($merchantArray[2])) {
+					throw new Exception("Error getting merchants");
+				}
+	
+				$obj['cid'] = (int) $merchantArray[2];
+				$obj['name'] = $merchantArray[0];
+				$obj['description'] = $merchantArray[3];
+				$obj['url'] = $merchantArray[1];
+				$merchants[] = $obj;
+	
 			}
-
-			$obj['cid'] = (int) $merchantArray[2];
-			$obj['name'] = $merchantArray[0];
-			$obj['description'] = $merchantArray[3];
-			$obj['url'] = $merchantArray[1];
-			$merchants[] = $obj;
-
 		}
+		
 		return $merchants;
 	}
 	/**
@@ -230,7 +239,7 @@ class Oara_Network_LinkShare extends Oara_Network {
 		//$csv = preg_replace('/(?<!,)"(?!,)/', '', $csv);
 		//$csv = preg_replace('/(?<!"),/', '', $csv);
 		//$csv = preg_replace('/(?<!")\n/', '', $csv);
-
+		
 		$csv = preg_replace("/\"\"/", "", $csv);
 		preg_match_all("/,\"([^\"]+?)\"/", $csv, $matches);
 		foreach ($matches[1] as $match) {
@@ -378,10 +387,10 @@ class Oara_Network_LinkShare extends Oara_Network {
 				echo "getting Payment for Site ".$site->id." and year ".$bdate->toString("yyyy")." \n\n";
 
 				$url = "https://reportws.linksynergy.com/downloadreport.php?bdate=".$bdate->toString("yyyyMMdd")."&edate=".$edate->toString("yyyyMMdd")."&token=".$site->secureToken."&nid=".$this->_nid."&reportid=1";
+				$result = file_get_contents($url);
 				if (preg_match("/You cannot request/", $result)) {
 					throw new Exception("Reached the limit");
 				}
-				$result = file_get_contents($url);
 
 				$paymentLines = str_getcsv($result, "\n");
 				$number = count($paymentLines);
