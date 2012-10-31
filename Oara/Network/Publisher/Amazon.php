@@ -509,7 +509,7 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 	 * @param unknown_type $credentials
 	 */
 	private function readCookies($credentials) {
-		$dir = realpath(dirname(__FILE__)).'/../data/curl/'.$credentials['cookiesDir'].'/'.$credentials['cookiesSubDir'].'/';
+		$dir = realpath(dirname(__FILE__)).'/../../data/curl/'.$credentials['cookiesDir'].'/'.$credentials['cookiesSubDir'].'/';
 		$cookieName = $credentials["cookieName"];
 		$cookies = $dir.$cookieName.'_cookies.txt';
 
