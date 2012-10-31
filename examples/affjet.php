@@ -44,6 +44,8 @@ if (isset($argumentsMap['s']) && isset($argumentsMap['e']) && isset($argumentsMa
 
 	//The name of the network, It should be the same that the class inside Oara/Network
 	$credentials['networkName'] = $argumentsMap['n'];
+	//Which point of view "Publisher" or "Advertiser"
+	$credentials['type'] = "Publisher";
 	//The Factory creates the object
 	$network = Oara_Factory::createInstance($credentials);
 
