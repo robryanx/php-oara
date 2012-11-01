@@ -503,7 +503,7 @@ class Oara_Network_Publisher_Stream20 extends Oara_Network {
 			if (preg_match("/(\/report\/published\/(aAffiliateEventBreakdownReport(.*))\.zip)/", $content, $matches)) {
 
 				$file = "http://publisher.tradedoubler.com".$matches[0];
-				$newfile = realpath(dirname(__FILE__)).'/../data/pdf/'.$matches[2].'.zip';
+				$newfile = realpath(dirname(__FILE__)).'/../../data/pdf/'.$matches[2].'.zip';
 
 				if (!copy($file, $newfile)) {
 					throw new Exception('Failing copying the zip file \n\n');
@@ -512,10 +512,10 @@ class Oara_Network_Publisher_Stream20 extends Oara_Network {
 				if ($zip->open($newfile, ZIPARCHIVE::CREATE) !== TRUE) {
 					throw new Exception('Cannot open zip file \n\n');
 				}
-				$zip->extractTo(realpath(dirname(__FILE__)).'/../data/pdf');
+				$zip->extractTo(realpath(dirname(__FILE__)).'/../../data/pdf');
 				$zip->close();
 
-				$unzipFilePath = realpath(dirname(__FILE__)).'/../data/pdf/'.$matches[2];
+				$unzipFilePath = realpath(dirname(__FILE__)).'/../../data/pdf/'.$matches[2];
 				$fileContent = file_get_contents($unzipFilePath);
 				unlink($newfile);
 				unlink($unzipFilePath);

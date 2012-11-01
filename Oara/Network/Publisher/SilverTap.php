@@ -220,6 +220,8 @@ class Oara_Network_Publisher_SilverTap extends Oara_Network {
 					$overview['transaction_pending_commission'] = 0;
 					$overview['transaction_declined_value'] = 0;
 					$overview['transaction_declined_commission'] = 0;
+					$overview['transaction_paid_value'] = 0;
+					$overview['transaction_paid_commission'] = 0;
 					$transactionDateArray = Oara_Utilities::getDayFromArray($overview['merchantId'], $transactionArray, $overviewDate, true);
 					foreach ($transactionDateArray as $transaction) {
 						$overview['transaction_number']++;
@@ -436,7 +438,7 @@ class Oara_Network_Publisher_SilverTap extends Oara_Network {
 					$exportReportUrl = $this->_client->get($urls, 'url');
 					$exportReportUrl = explode('/', $exportReportUrl[0]);
 					$exportReportUrl = $exportReportUrl[count($exportReportUrl) - 1];
-					$dir = realpath(dirname(__FILE__)).'/../data/pdf/';
+					$dir = realpath(dirname(__FILE__)).'/../../data/pdf/';
 					//writing temp pdf
 					$fh = fopen($dir.$exportReportUrl, 'w') or die("can't open file");
 					fwrite($fh, $exportReport[0]);

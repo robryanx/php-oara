@@ -177,7 +177,7 @@ class Oara_Network_Publisher_AutoEurope extends Oara_Network {
 		//writing temp pdf
 		$exportReportUrl = explode('/', $pdfUrl);
 		$exportReportUrl = $exportReportUrl[count($exportReportUrl) - 1];
-		$dir = realpath(dirname(__FILE__)).'/../data/pdf/';
+		$dir = realpath(dirname(__FILE__)).'/../../data/pdf/';
 		$fh = fopen($dir.$exportReportUrl, 'w');
 		fwrite($fh, $exportReport[0]);
 		fclose($fh);

@@ -46,7 +46,7 @@ class Oara_Network_Publisher_NetAffiliation extends Oara_Network {
 
 		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
 
-		$cookieLocalion = realpath(dirname(__FILE__)).'/../data/curl/'.$credentials['cookiesDir'].'/'.$credentials['cookiesSubDir'].'/'.$credentials["cookieName"].'_cookies.txt';
+		$cookieLocalion = realpath(dirname(__FILE__)).'/../../data/curl/'.$credentials['cookiesDir'].'/'.$credentials['cookiesSubDir'].'/'.$credentials["cookieName"].'_cookies.txt';
 		;
 		$cookieContent = file_get_contents($cookieLocalion);
 		$serverNumber = null;
