@@ -3,7 +3,7 @@
  * Export Class
  *
  * @author     Carlos Morillo Merino
- * @category   Oara_Network_Publisher_Cj
+ * @category   Oara_Network_Advertiser_Cj
  * @copyright  Fubra Limited
  * @version    Release: 01.00
  *
