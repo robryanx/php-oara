@@ -6,7 +6,7 @@ require realpath(dirname(__FILE__)).'/../settings.php';
  * 
  * Be sure you have your credential on the credentials.ini.sample before runnig it
  * 
- * 
+ * FOR PUBLISHERS
  * Adsense
  * AffiliateFuture
  * AffiliatesUnited
@@ -21,6 +21,7 @@ require realpath(dirname(__FILE__)).'/../settings.php';
  * ClixGalore
  * CommissionJunction
  * Daisycon
+ * DirectTrack
  * Demo
  * Dgm
  * Ebay
@@ -46,6 +47,10 @@ require realpath(dirname(__FILE__)).'/../settings.php';
  * WebGains
  * WowTrk
  * Zanox
+ * 
+ * FOR ADVERTISERS (be sure of changing the "type" param to "Advertiser")
+ * CommissionJunction
+ * ShareASale
  */
 $networkName = "LinkShare"; //Ex: AffiliateWindow
 //Retrieving the credentials for the network

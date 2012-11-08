@@ -24,6 +24,12 @@ class Oara_Curl_Access {
 	 * @var integer
 	 */
 	private $_threads = 7;
+	/**
+	 * 
+	 * Construct Result
+	 * @var string
+	 */
+	private $_constructResult = null;
 
 	/**
 	 * Constructor and Login.
@@ -133,7 +139,7 @@ class Oara_Curl_Access {
 
 			curl_close($ch);
 		}
-		//echo $result;
+		$this->_constructResult = $result;
 		if ($result == false) {
 			throw new Exception("Failed to connect");
 		} else {
@@ -141,6 +147,14 @@ class Oara_Curl_Access {
 		}
 
 	}
+	/**
+	 * 
+	 * Get the construct result
+	 */
+	public function getConstructResult(){
+		return $this->_constructResult;
+	}
+	
 	/**
 	 * Post request.
 	 * @param $url - Post url request

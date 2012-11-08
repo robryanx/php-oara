@@ -23,8 +23,11 @@ class Oara_Network_Publisher_Publicidees extends Oara_Network {
 
 		$user = $credentials['user'];
 		$password = $credentials['password'];
-		$loginUrl = 'http://affilie.publicidees.com/entree_affilies.php';
+		
+		
+		$loginUrl = 'http://es.publicideas.com/logmein.php';
 
+		/*
 		//getting the hidden value
 		$dom = new Zend_Dom_Query(file_get_contents("http://www.publicidees.es/"));
 		$results = $dom->query("input[name='h']");
@@ -34,10 +37,25 @@ class Oara_Network_Publisher_Publicidees extends Oara_Network {
 			$hValue = $result->getAttribute('value');
 		}
 
-		$valuesLogin = array(new Oara_Curl_Parameter('login', $user),
-			new Oara_Curl_Parameter('pass', $password),
+		*/
+		$valuesLogin = array(new Oara_Curl_Parameter('loginAff', $user),
+			new Oara_Curl_Parameter('passAff', $password),
+			new Oara_Curl_Parameter('userType', 'aff')
+		);
+		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
+		
+		$result =  json_decode($this->_client->getConstructResult());
+		
+		
+		
+		
+		
+		$loginUrl = 'http://affilie.publicidees.com/entree_affilies.php';
+
+		$valuesLogin = array(new Oara_Curl_Parameter('login', $result->login),
+			new Oara_Curl_Parameter('pass', $result->pass),
 			new Oara_Curl_Parameter('submit', 'Ok'),
-			new Oara_Curl_Parameter('h', $hValue)
+			new Oara_Curl_Parameter('h', $result->h)
 		);
 		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
 

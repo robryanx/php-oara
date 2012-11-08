@@ -18,7 +18,7 @@ code contributions from anyone.
 Networks Supported
 -------
 
-The list of supported networks so far is:
+The list of supported networks for Publishers so far is:
 
 
 * [Affiliate Window](http://www.affiliatewindow.com/) 
@@ -66,6 +66,13 @@ The list of supported networks so far is:
 * [ClickBank](http://www.clickbank.com/index.html)
 * [Stream 20](http://www.stream20.com/)
 * [Google Checkout](http://checkout.google.com/sell)
+* [Direct Track](http://www.directtrack.com/)
+
+The list of supported networks for Advertisers so far is:
+
+
+* [Share a Sale](http://www.shareasale.com/)
+* [Commission Junction](http://www.cj.com/)
 
 System Requirements
 -------------------
