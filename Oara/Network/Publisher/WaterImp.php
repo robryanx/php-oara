@@ -109,19 +109,19 @@ class Oara_Network_Publisher_WaterImp extends Oara_Network {
 				$transaction['amount'] = ((double) $filter->filter($transactionArray[4])/1.2);
 				$grossValue = (double) $filter->filter($transactionArray[5]);
 				if ($grossValue != 0) {
-					$oldShipping = new Zend_Date("01-05-2012", "dd-MM-yyyy");
+					//$oldShipping = new Zend_Date("01-05-2012", "dd-MM-yyyy");
 					//Calculate shipping
-					if ($oldShipping->compare($transactionDate) > 0){
+					//if ($oldShipping->compare($transactionDate) > 0){
 						$shipping = 1.68;
 						// From outside EU
 						if ($tax == 0) {
 							$shipping = 5.84;
 						}
-					} else {
+					//} else {
 						//new Shipping
 						//GB US
 						
-					}
+					//}
 					
 
 					$transaction['commission'] = round((($grossValue - $tax) - $shipping) * 0.2, 2);
