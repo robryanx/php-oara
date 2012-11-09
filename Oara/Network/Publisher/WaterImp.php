@@ -88,15 +88,18 @@ class Oara_Network_Publisher_WaterImp extends Oara_Network {
 			       </order-numbers>
 			     </notification-history-request>';
 				$details = self::returnApiData("https://checkout.google.com/api/checkout/v2/reports/Merchant/".$this->_user, $body);
+				
+				
 				$detailsXML = simplexml_load_string($details, null, LIBXML_NOERROR | LIBXML_NOWARNING);
 				
 
 				$tax = (double) $detailsXML->notifications->{"new-order-notification"}->{"order-adjustment"}->{"total-tax"};
+				
 				$countryCode = (string) $detailsXML->notifications->{"new-order-notification"}->{"buyer-shipping-address"}->{"country-code"};			
 
 				$transaction = Array();
 				$transaction['merchantId'] = 1;
-				$transactionDate = new Zend_Date($transactionArray[2], 'dd-MMM-yyyy HH:mm:ss');
+				$transactionDate = new Zend_Date((string) $detailsXML->notifications->{"new-order-notification"}->{"timestamp"}, 'yyyy-MM-ddTHH:mm:ssZ');
 				$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 
 
@@ -109,19 +112,136 @@ class Oara_Network_Publisher_WaterImp extends Oara_Network {
 				$transaction['amount'] = ((double) $filter->filter($transactionArray[4])/1.2);
 				$grossValue = (double) $filter->filter($transactionArray[5]);
 				if ($grossValue != 0) {
-					//$oldShipping = new Zend_Date("01-05-2012", "dd-MM-yyyy");
+					$oldShipping = new Zend_Date("01-05-2012", "dd-MM-yyyy");
 					//Calculate shipping
-					//if ($oldShipping->compare($transactionDate) > 0){
+					if ($oldShipping->compare($transactionDate) > 0){
 						$shipping = 1.68;
 						// From outside EU
 						if ($tax == 0) {
 							$shipping = 5.84;
 						}
-					//} else {
+					} else {
 						//new Shipping
-						//GB US
+						$isEngland = $countryCode == "GB" ? true : false ;
+						$isEurope = ($tax != 0 && !$isEngland) ? true : false ;
+						//America or the rest
+						$isRest = $tax == 0 ? true : false ;
 						
-					//}
+						$items = $detailsXML->notifications->{"new-order-notification"}->{"shopping-cart"}->{"items"};
+						foreach ($items as $item){
+							$name =  html_entity_decode((string)$item->{"item"}->{"item-name"});
+							$quantity = (int)$item->{"item"}->{"quantity"};
+							
+							switch ($name) {
+							    case "THE ELF":
+							        if ($isEngland){
+							        	$shipping = 2.36;
+							        } else if ($isEurope){
+							        	$shipping = 4.42;
+							        } else{
+							        	$shipping = 7.36;
+							        }
+							        break;
+							    case "THE IMP":
+									if ($isEngland){
+							        	$shipping = 2.36;
+							        } else if ($isEurope){
+							        	$shipping = 4.96;
+							        } else{
+							        	$shipping = 7.38;
+							        }
+							        break;
+							    case "THE SUPER IMP":
+									if ($isEngland){
+							        	$shipping = 2.36;
+							        } else if ($isEurope){
+							        	$shipping = 4.96;
+							        } else{
+							        	$shipping = 8.41;
+							        }
+							        break;
+							    case "THE HEAVY DUTY IMP":
+									if ($isEngland){
+							        	$shipping = 2.36;
+							        } else if ($isEurope){
+							        	$shipping = 5.50;
+							        } else{
+							        	$shipping = 9.49;
+							        }
+							    	break;
+							    case "Optional Extension Leads":
+									if ($isEngland){
+							        	$shipping = 0;
+							        } else if ($isEurope){
+							        	$shipping = 0;
+							        } else{
+							        	$shipping = 0;
+							        }
+							        break;
+							    case "2 x ELF UNITS":
+									if ($isEngland){
+							        	$shipping = 3.29;
+							        } else if ($isEurope){
+							        	$shipping = 6.04;
+							        } else{
+							        	$shipping = 10.57;
+							        }
+							        break;
+							    case "1 x ELF & 1 x IMP":
+									if ($isEngland){
+							        	$shipping = 3.29;
+							        } else if ($isEurope){
+							        	$shipping = 6.04;
+							        } else{
+							        	$shipping = 10.57;
+							        }
+							        break;
+						        case "1 x ELF & 1 x SUPER IMP":
+									if ($isEngland){
+							        	$shipping = 3.29;
+							        } else if ($isEurope){
+							        	$shipping = 6.04;
+							        } else{
+							        	$shipping = 10.57;
+							        }
+							        break;
+						        case "2 x IMP UNITS":
+									if ($isEngland){
+							        	$shipping = 3.29;
+							        } else if ($isEurope){
+							        	$shipping = 6.04;
+							        } else{
+							        	$shipping = 10.57;
+							        }
+							        break;
+						        case "1 x IMP & 1 x SUPER IMP":
+									if ($isEngland){
+							        	$shipping = 3.29;
+							        } else if ($isEurope){
+							        	$shipping = 6.04;
+							        } else{
+							        	$shipping = 10.57;
+							        }
+							        break;
+						        case "2 x SUPER IMP":
+									if ($isEngland){
+							        	$shipping = 3.29;
+							        } else if ($isEurope){
+							        	$shipping = 6.04;
+							        } else{
+							        	$shipping = 10.57;
+							        }
+							        break;
+						        default:
+						        	throw new Exception("Item not found");
+						        	break;
+							        
+							}
+								
+						}
+						
+						
+					}
 					
 
 					$transaction['commission'] = round((($grossValue - $tax) - $shipping) * 0.2, 2);
@@ -143,7 +263,6 @@ class Oara_Network_Publisher_WaterImp extends Oara_Network {
 			}
 
 		}
-		$totalTransactions = array();
 		return $totalTransactions;
 	}
 
