@@ -271,7 +271,7 @@ class Oara_Network_Publisher_PayMode extends Oara_Network {
 		$paymentHistory = array();
 
 		$filter = new Zend_Filter_LocalizedToNormalized(array('precision' => 2));
-		$startDate = new Zend_Date("01-10-2012", "dd-MM-yyyy");
+		$startDate = new Zend_Date("01-01-2010", "dd-MM-yyyy");
 		$endDate = new Zend_Date();
 
 		$dateList = Oara_Utilities::monthsOfDifference($startDate, $endDate);
