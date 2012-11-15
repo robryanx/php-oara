@@ -128,7 +128,7 @@ class Oara_Network_Publisher_CommissionJunction extends Oara_Network {
 		} else {
 			return false;
 		}
-
+		
 		$restUrl = 'https://commission-detail.api.cj.com/v3/commissions?date-type=event';
 		$client = new Zend_Http_Client($restUrl);
 		$client->setHeaders('Authorization', $this->_apiPassword);
@@ -136,6 +136,7 @@ class Oara_Network_Publisher_CommissionJunction extends Oara_Network {
 		if ($response->getStatus() != 200) {
 			return false;
 		}
+		
 		return $connection;
 	}
 

@@ -45,7 +45,7 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 	/**
 	 * Constructor and Login
 	 * @param $credentials
-	 * @return Oara_Network_Publisher_Daisycon
+	 * @return Oara_Network_Publisher_Amazon
 	 */
 	public function __construct($credentials) {
 		$this->_credentials = $credentials;
