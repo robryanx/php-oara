@@ -130,7 +130,7 @@ class Oara_Network_Publisher_PayMode extends Oara_Network {
 			$results = $dom->query('input[type="checkbox"]');
 			$agentNumber = array();
 			foreach ($results as $result) {
-				 $agentNumber[] = $result->getAttribute("id");
+				$agentNumber[] = $result->getAttribute("id");
 			}
 			$this->_agentNumber = $agentNumber;
 			$connection = true;
@@ -161,8 +161,70 @@ class Oara_Network_Publisher_PayMode extends Oara_Network {
 		$totalTransactions = array();
 		$filter = new Zend_Filter_LocalizedToNormalized(array('precision' => 2));
 
+		$valuesFromExport = array();
+		$urls = array();
+		$urls[] = new Oara_Curl_Request('https://secure.paymode.com/paymode/reports-baiv2.jsp?', array());
+		$exportReport = $this->_client->get($urls);
+		$dom = new Zend_Dom_Query($exportReport[0]);
+		$results = $dom->query('input[type="hidden"]');
+		foreach ($results as $hidden) {
+			$name = $hidden->getAttribute("name");
+			$value = $hidden->getAttribute("value");
+			$valuesFromExport[] = new Oara_Curl_Parameter($name, $value);
+		}
+		$valuesFromExport[] = new Oara_Curl_Parameter('dataSource', '1');
+		$valuesFromExport[] = new Oara_Curl_Parameter('RA:reports-baiv2.jspCHOOSE', '620541800');
+		$valuesFromExport[] = new Oara_Curl_Parameter('reportFormat', 'csv');
+		$valuesFromExport[] = new Oara_Curl_Parameter('includeCurrencyCodeColumn', 'on');
+		$valuesFromExport[] = new Oara_Curl_Parameter('remitTypeCode', '');
+		$valuesFromExport[] = new Oara_Curl_Parameter('PAYMENT_CURRENCY_TYPE', 'CREDIT');
+		$valuesFromExport[] = new Oara_Curl_Parameter('PAYMENT_CURRENCY_TYPE', 'INSTRUCTION');
+		$valuesFromExport[] = new Oara_Curl_Parameter('subSiteExtID', '');
+		$valuesFromExport[] = new Oara_Curl_Parameter('ediProvider835Version', '5010');
+		$valuesFromExport[] = new Oara_Curl_Parameter('tooManyRowsCheck', 'true');
+		
+		$urls = array();
+		$dateList = Oara_Utilities::daysOfDifference($dStartDate, $dEndDate);
+		foreach ($dateList as $date) {
+			$valuesFromExportTemp = Oara_Utilities::cloneArray($valuesFromExport);
+			$valuesFromExportTemp[] = new Oara_Curl_Parameter('date', $date->toString("MM/dd/yyyy"));
+			
+			$urls[] = new Oara_Curl_Request('https://secure.paymode.com/paymode/reports-do_csv.jsp?closeJQS=true?', $valuesFromExportTemp);
+		}
+
+		
+		$exportReport = $this->_client->get($urls);
+		$j = 0;
+		foreach ($exportReport as $report){
+			$reportParameters = $urls[$j]->getParameters();
+			$reportDate = $reportParameters[count($reportParameters) -1]->getValue();
+			$transactionDate = new Zend_Date($reportDate, 'MM/dd/yyyy', 'en');
+			if (!preg_match("/logout.jsp/", $report)){
+				$exportReportData = str_getcsv($report, "\n");
+				$num = count($exportReportData);
+				for ($i = 1; $i < $num; $i++) {
+					$transactionArray = str_getcsv($exportReportData[$i], ",");
+					if (count($transactionArray) == 30 && $transactionArray[0] == 'D' && $transactionArray[1] == null){
+						$transaction['merchantId'] = 1;
+						$transaction['status'] = Oara_Utilities::STATUS_PAID;
+							
+						$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+							
+						$transaction['unique_id'] = $transactionArray[25];
+						
+						$transaction['amount'] = $filter->filter($transactionArray[24]);
+						$transaction['commission'] = $filter->filter($transactionArray[28]);
+							
+						
+						$totalTransactions[] = $transaction;
+					}
+				}
+			}
+			$j++;
+		}
+
 		$valuesFromExport = Oara_Utilities::cloneArray($this->_exportTransactionParameters);
-		foreach ($this->_agentNumber as $agentNumber){
+		foreach ($this->_agentNumber as $agentNumber) {
 			$valuesFromExport[] = new Oara_Curl_Parameter($agentNumber, "on");
 		}
 		$valuesFromExport[] = new Oara_Curl_Parameter('startDate', $dStartDate->toString("MM/dd/yyyy"));
@@ -291,7 +353,7 @@ class Oara_Network_Publisher_PayMode extends Oara_Network {
 			$valuesFromExport = array();
 			$valuesFromExport[] = new Oara_Curl_Parameter('Begin_Date', $monthStartDate->toString("MM/dd/yyyy"));
 			$valuesFromExport[] = new Oara_Curl_Parameter('End_Date', $monthEndDate->toString("MM/dd/yyyy"));
-			
+
 			$valuesFromExport[] = new Oara_Curl_Parameter('cd', "c");
 			$valuesFromExport[] = new Oara_Curl_Parameter('disb', "false");
 			$valuesFromExport[] = new Oara_Curl_Parameter('coll', "true");
@@ -306,7 +368,7 @@ class Oara_Network_Publisher_PayMode extends Oara_Network {
 			$valuesFromExport[] = new Oara_Curl_Parameter('disbSiteIDManual', "");
 			$valuesFromExport[] = new Oara_Curl_Parameter('collSiteIDManual', "");
 			$valuesFromExport[] = new Oara_Curl_Parameter('agencyid', "");
-			
+
 			$valuesFromExport[] = new Oara_Curl_Parameter('collbankAccount', "");
 			$valuesFromExport[] = new Oara_Curl_Parameter('remitInvoice', "");
 			$valuesFromExport[] = new Oara_Curl_Parameter('remitAccount', "");
@@ -314,16 +376,15 @@ class Oara_Network_Publisher_PayMode extends Oara_Network {
 			$valuesFromExport[] = new Oara_Curl_Parameter('remitCustName', "");
 			$valuesFromExport[] = new Oara_Curl_Parameter('remitVendorNumber', "");
 			$valuesFromExport[] = new Oara_Curl_Parameter('remitVendorName', "");
-			
-			
+
 			$urls = array();
 			$urls[] = new Oara_Curl_Request('https://secure.paymode.com/paymode/payment-DB-search.jsp', $valuesFromExport);
 			$exportReport = $this->_client->post($urls);
-			
+
 			$dom = new Zend_Dom_Query($exportReport[0]);
 			$results = $dom->query('table[cellpadding="2"]');
 			foreach ($results as $table) {
-				
+
 				$tableCsv = self::htmlToCsv(self::DOMinnerHTML($table));
 				$num = count($tableCsv);
 				for ($i = 1; $i < $num; $i++) {
@@ -335,7 +396,7 @@ class Oara_Network_Publisher_PayMode extends Oara_Network {
 					$payment['value'] = Oara_Utilities::parseDouble($paymentArray[10]);
 					$payment['method'] = "BACS";
 					$paymentHistory[] = $payment;
-						
+
 				}
 			}
 
@@ -358,7 +419,7 @@ class Oara_Network_Publisher_PayMode extends Oara_Network {
 		}
 		return $innerHTML;
 	}
-	
+
 	/**
 	 *
 	 * Function that Convert from a table to Csv
