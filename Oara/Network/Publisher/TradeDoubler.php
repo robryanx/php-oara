@@ -609,20 +609,15 @@ class Oara_Network_Publisher_TradeDoubler extends Oara_Network {
 						$obj = array();
 
 						$paymentLine = $paymentLines->item($i)->nodeValue;
-						$paymentLine = htmlentities($paymentLine);
-						$paymentLine = str_replace("&Acirc;&nbsp;", "", $paymentLine);
-						$paymentLine = html_entity_decode($paymentLine);
+						$value = preg_replace("/[^0-9\.,]/", "",substr($paymentLine, 10));
 
 						$date = self::toDate(substr($paymentLine, 0, 10));
 
 						$obj['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
 						$obj['pid'] = $pid;
 						$obj['method'] = 'BACS';
-						if (preg_match("/[-+]?[0-9]*,?[0-9]*\.?[0-9]+/", substr($paymentLine, 10), $matches)) {
-							$obj['value'] = $filter->filter($matches[0]);
-						} else {
-							throw new Exception("Problem reading payments");
-						}
+						$obj['value'] = Oara_Utilities::parseDouble($value);
+
 
 						$paymentHistory[] = $obj;
 					}
