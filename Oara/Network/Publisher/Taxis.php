@@ -145,12 +145,12 @@ class Oara_Network_Publisher_Taxis extends Oara_Network {
 			$monthEndDate->setSecond(59);
 
 			//echo "from ".$monthStartDate->toString("yyyy-MM-dd")." to ".$monthEndDate->toString("yyyy-MM-dd")."\n";
-			$response = $this->_payments->subscriptionList(array('since' => $monthStartDate->toString("yyyy-MM-dd"), 'to'=> $monthEndDate->toString("yyyy-MM-dd"),'state' => 'closed'));
+			$response = $this->_payments->subscriptionList(array('since' => $monthStartDate->toString("yyyy-MM-dd"), 'to' => $monthEndDate->toString("yyyy-MM-dd"), 'state' => 'closed'));
 			$totalTransactions = array_merge($totalTransactions, self::getTransactionFromSubscription($response, $dStartDate, $dEndDate));
-	
-			$response = $this->_payments->subscriptionList(array('since' => $monthStartDate->toString("yyyy-MM-dd"), 'to'=> $monthEndDate->toString("yyyy-MM-dd"), 'state' => 'open'));
+
+			$response = $this->_payments->subscriptionList(array('since' => $monthStartDate->toString("yyyy-MM-dd"), 'to' => $monthEndDate->toString("yyyy-MM-dd"), 'state' => 'open'));
 			$totalTransactions = array_merge($totalTransactions, self::getTransactionFromSubscription($response, $dStartDate, $dEndDate));
-			
+
 		}
 
 		return $totalTransactions;
@@ -197,12 +197,9 @@ class Oara_Network_Publisher_Taxis extends Oara_Network {
 							} else
 								if ($invoice["state"] == "pending") {
 									$transaction['status'] = Oara_Utilities::STATUS_PENDING;
-								} else
-									if ($invoice["state"] == "cancelled") {
-										$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
-									} else {
-										throw new Exception("Status unknown".$invoice['state']);
-									}
+								} else {
+									$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
+								}
 							$transaction['amount'] = Oara_Utilities::parseDouble($invoice["amountNet"]);
 							$transaction['commission'] = Oara_Utilities::parseDouble($invoice["amountNet"]);
 							$totalTransactions[] = $transaction;
