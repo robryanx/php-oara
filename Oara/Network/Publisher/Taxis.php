@@ -123,7 +123,7 @@ class Oara_Network_Publisher_Taxis extends Oara_Network {
 	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = array();
 
-		$dateArray = Oara_Utilities::monthsOfDifference($startDate, $endDate);
+		$dateArray = Oara_Utilities::monthsOfDifference($dStartDate, $dEndDate);
 		for ($i = 0; $i < count($dateArray); $i++) {
 			$monthStartDate = clone $dateArray[$i];
 			$monthEndDate = null;
