@@ -157,7 +157,7 @@ class Oara_Network_Publisher_Taxis extends Oara_Network {
 	}
 
 	private function getTransactionFromSubscription($response, $dStartDate, $dEndDate) {
-		$transactionList = array();
+		$totalTransactions = array();
 		foreach ($response['subscriptions'] as $subscription) {
 
 			if ($subscription["reference"] != null) {
