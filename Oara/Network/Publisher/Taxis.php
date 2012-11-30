@@ -122,8 +122,12 @@ class Oara_Network_Publisher_Taxis extends Oara_Network {
 	 */
 	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = array();
-
-		$dateArray = Oara_Utilities::monthsOfDifference($dStartDate, $dEndDate);
+		$now = new Zend_Date();
+		$now->subDay(1);
+		$now->setHour(23);
+		$now->setMinute(59);
+		$now->setSecond(59);
+		$dateArray = Oara_Utilities::monthsOfDifference($dStartDate, $now);
 		for ($i = 0; $i < count($dateArray); $i++) {
 			$monthStartDate = clone $dateArray[$i];
 			$monthEndDate = null;
@@ -134,14 +138,15 @@ class Oara_Network_Publisher_Taxis extends Oara_Network {
 				$monthEndDate->addMonth(1);
 				$monthEndDate->subDay(1);
 			} else {
-				$monthEndDate = $endDate;
+				$monthEndDate = $now;
 			}
 			$monthEndDate->setHour(23);
 			$monthEndDate->setMinute(59);
 			$monthEndDate->setSecond(59);
 
+			//echo "from ".$monthStartDate->toString("yyyy-MM-dd")." to ".$monthEndDate->toString("yyyy-MM-dd")."\n";
 			$response = $this->_payments->subscriptionList(array('since' => $monthStartDate->toString("yyyy-MM-dd"), 'to'=> $monthEndDate->toString("yyyy-MM-dd"),'state' => 'closed'));
-			$totalTransactions = self::getTransactionFromSubscription($response, $dStartDate, $dEndDate);
+			$totalTransactions = array_merge($totalTransactions, self::getTransactionFromSubscription($response, $dStartDate, $dEndDate));
 	
 			$response = $this->_payments->subscriptionList(array('since' => $monthStartDate->toString("yyyy-MM-dd"), 'to'=> $monthEndDate->toString("yyyy-MM-dd"), 'state' => 'open'));
 			$totalTransactions = array_merge($totalTransactions, self::getTransactionFromSubscription($response, $dStartDate, $dEndDate));
