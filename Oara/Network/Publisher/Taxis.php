@@ -201,7 +201,7 @@ class Oara_Network_Publisher_Taxis extends Oara_Network {
 									if ($invoice["state"] == "cancelled") {
 										$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
 									} else {
-										throw new Exception("Status unknown".$invoice['status']);
+										throw new Exception("Status unknown".$invoice['state']);
 									}
 							$transaction['amount'] = Oara_Utilities::parseDouble($invoice["amountNet"]);
 							$transaction['commission'] = Oara_Utilities::parseDouble($invoice["amountNet"]);
