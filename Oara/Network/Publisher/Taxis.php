@@ -107,7 +107,7 @@ class Oara_Network_Publisher_Taxis extends Oara_Network {
 			if (preg_match("/-airport-guide\.co\.uk/", $profile["name"])) {
 				$obj = array();
 				$obj['cid'] = $profile["id"];
-				$obj['name'] =  array_search($profile["id"], $this->_airportMap);
+				$obj['name'] = array_search($profile["id"], $this->_airportMap);
 				$obj['url'] = $profile["websiteUrl"];
 				$merchants[] = $obj;
 			}
@@ -123,11 +123,30 @@ class Oara_Network_Publisher_Taxis extends Oara_Network {
 	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = array();
 
-		$response = $this->_payments->subscriptionList(array('since' => $dStartDate->toString("yyyy-MM-dd"), 'state' => 'closed'));
-		$totalTransactions = self::getTransactionFromSubscription($response, $dStartDate, $dEndDate);
+		$dateArray = Oara_Utilities::monthsOfDifference($startDate, $endDate);
+		for ($i = 0; $i < count($dateArray); $i++) {
+			$monthStartDate = clone $dateArray[$i];
+			$monthEndDate = null;
 
-		$response = $this->_payments->subscriptionList(array('since' => $dStartDate->toString("yyyy-MM-dd"), 'state' => 'open'));
-		$totalTransactions = array_merge($totalTransactions, self::getTransactionFromSubscription($response, $dStartDate, $dEndDate));
+			if ($i != count($dateArray) - 1) {
+				$monthEndDate = clone $dateArray[$i];
+				$monthEndDate->setDay(1);
+				$monthEndDate->addMonth(1);
+				$monthEndDate->subDay(1);
+			} else {
+				$monthEndDate = $endDate;
+			}
+			$monthEndDate->setHour(23);
+			$monthEndDate->setMinute(59);
+			$monthEndDate->setSecond(59);
+
+			$response = $this->_payments->subscriptionList(array('since' => $monthStartDate->toString("yyyy-MM-dd"), 'to'=> $monthEndDate->toString("yyyy-MM-dd"),'state' => 'closed'));
+			$totalTransactions = self::getTransactionFromSubscription($response, $dStartDate, $dEndDate);
+	
+			$response = $this->_payments->subscriptionList(array('since' => $monthStartDate->toString("yyyy-MM-dd"), 'to'=> $monthEndDate->toString("yyyy-MM-dd"), 'state' => 'open'));
+			$totalTransactions = array_merge($totalTransactions, self::getTransactionFromSubscription($response, $dStartDate, $dEndDate));
+			
+		}
 
 		return $totalTransactions;
 	}
@@ -135,7 +154,7 @@ class Oara_Network_Publisher_Taxis extends Oara_Network {
 	private function getTransactionFromSubscription($response, $dStartDate, $dEndDate) {
 		$transactionList = array();
 		foreach ($response['subscriptions'] as $subscription) {
-			echo $subscription["reference"]."\n";
+
 			if ($subscription["reference"] != null) {
 
 				$invoiceList = $this->_payments->invoiceList(array('reference' => $subscription["reference"], 'since' => $dStartDate->toString("yyyy-MM-dd")));
