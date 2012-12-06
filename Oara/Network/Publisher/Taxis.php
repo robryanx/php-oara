@@ -244,9 +244,9 @@ class Oara_Network_Publisher_Taxis extends Oara_Network {
 						$analyticsData[$row[0]][$merchantId]["clicks"] = 0;
 					}
 					if ($row[1] == "/taxi-transfer.html") {
-						$analyticsData[$row[0]][$merchantId]["impressions"] = $row[3];
+						$analyticsData[$row[0]][$merchantId]["impressions"] += $row[3];
 					} else {
-						$analyticsData[$row[0]][$merchantId]["clicks"] = $row[3];
+						$analyticsData[$row[0]][$merchantId]["clicks"] += $row[3];
 					}
 				}
 			}
