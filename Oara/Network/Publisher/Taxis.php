@@ -147,7 +147,7 @@ class Oara_Network_Publisher_Taxis extends Oara_Network {
 			$monthEndDate->addDay(1);
 
 			
-			echo "from ".$monthStartDate->toString("yyyy-MM-dd")." to ".$monthEndDate->toString("yyyy-MM-dd")."\n";
+			//echo "from ".$monthStartDate->toString("yyyy-MM-dd")." to ".$monthEndDate->toString("yyyy-MM-dd")."\n";
 			$response = $this->_payments->subscriptionList(array('since' => $monthStartDate->toString("yyyy-MM-dd"), 'to' => $monthEndDate->toString("yyyy-MM-dd"), 'state' => 'closed'));
 			$totalTransactions = array_merge($totalTransactions, self::getTransactionFromSubscription($response, $merchantList, $dStartDate, $dEndDate));
 
