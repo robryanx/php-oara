@@ -143,6 +143,7 @@ class Oara_Network_Publisher_Taxis extends Oara_Network {
 			$monthEndDate->setHour(23);
 			$monthEndDate->setMinute(59);
 			$monthEndDate->setSecond(59);
+			$monthEndDate->addDay(1);
 
 			//echo "from ".$monthStartDate->toString("yyyy-MM-dd")." to ".$monthEndDate->toString("yyyy-MM-dd")."\n";
 			$response = $this->_payments->subscriptionList(array('since' => $monthStartDate->toString("yyyy-MM-dd"), 'to' => $monthEndDate->toString("yyyy-MM-dd"), 'state' => 'closed'));
