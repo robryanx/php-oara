@@ -123,10 +123,11 @@ class Oara_Network_Publisher_Taxis extends Oara_Network {
 	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = array();
 		$now = new Zend_Date();
-		$now->subDay(1);
 		$now->setHour(23);
 		$now->setMinute(59);
 		$now->setSecond(59);
+		
+		
 		$dateArray = Oara_Utilities::monthsOfDifference($dStartDate, $now);
 		for ($i = 0; $i < count($dateArray); $i++) {
 			$monthStartDate = clone $dateArray[$i];
@@ -145,19 +146,20 @@ class Oara_Network_Publisher_Taxis extends Oara_Network {
 			$monthEndDate->setSecond(59);
 			$monthEndDate->addDay(1);
 
-			//echo "from ".$monthStartDate->toString("yyyy-MM-dd")." to ".$monthEndDate->toString("yyyy-MM-dd")."\n";
+			
+			echo "from ".$monthStartDate->toString("yyyy-MM-dd")." to ".$monthEndDate->toString("yyyy-MM-dd")."\n";
 			$response = $this->_payments->subscriptionList(array('since' => $monthStartDate->toString("yyyy-MM-dd"), 'to' => $monthEndDate->toString("yyyy-MM-dd"), 'state' => 'closed'));
-			$totalTransactions = array_merge($totalTransactions, self::getTransactionFromSubscription($response, $dStartDate, $dEndDate));
+			$totalTransactions = array_merge($totalTransactions, self::getTransactionFromSubscription($response, $merchantList, $dStartDate, $dEndDate));
 
 			$response = $this->_payments->subscriptionList(array('since' => $monthStartDate->toString("yyyy-MM-dd"), 'to' => $monthEndDate->toString("yyyy-MM-dd"), 'state' => 'open'));
-			$totalTransactions = array_merge($totalTransactions, self::getTransactionFromSubscription($response, $dStartDate, $dEndDate));
+			$totalTransactions = array_merge($totalTransactions, self::getTransactionFromSubscription($response, $merchantList, $dStartDate, $dEndDate));
 
 		}
 
 		return $totalTransactions;
 	}
 
-	private function getTransactionFromSubscription($response, $dStartDate, $dEndDate) {
+	private function getTransactionFromSubscription($response, $merchantList, $dStartDate, $dEndDate) {
 		$totalTransactions = array();
 		foreach ($response['subscriptions'] as $subscription) {
 
@@ -182,7 +184,7 @@ class Oara_Network_Publisher_Taxis extends Oara_Network {
 								}
 							}
 						}
-						if ($merchantId != null) {
+						if (in_array($merchantId, $merchantList)) {
 							$transaction = Array();
 							$transaction['merchantId'] = $merchantId;
 
@@ -204,10 +206,14 @@ class Oara_Network_Publisher_Taxis extends Oara_Network {
 							$transaction['amount'] = Oara_Utilities::parseDouble($invoice["amountNet"]);
 							$transaction['commission'] = Oara_Utilities::parseDouble($invoice["amountNet"]);
 							$totalTransactions[] = $transaction;
+						} else {
+							//echo "Merchant not found\n\n";
 						}
 
 					}
 				}
+			} else {
+				//echo "No Reference\n\n";
 			}
 		}
 		return $totalTransactions;
