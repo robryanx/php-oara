@@ -160,7 +160,7 @@ class Oara_Network_Publisher_Demo extends Oara_Network {
 	 */
 	public function getPaymentHistory() {
 		$paymentHistory = array();
-		$startDate = new Zend_Date('01-01-2009', 'dd-MM-yyyy');
+		$startDate = new Zend_Date('01-01-2011', 'dd-MM-yyyy');
 		$endDate = new Zend_Date();
 		$dateArray = Oara_Utilities::monthsOfDifference($startDate, $endDate);
 		for ($i = 0; $i < count($dateArray); $i++) {
