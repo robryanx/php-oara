@@ -120,12 +120,12 @@ class Oara_Network_Publisher_WowTrk extends Oara_Network {
 
 		$exportData = self::loadXml($exportReport[0]);
 
-		foreach ($exportData->stats as $transaction) {
+		foreach ($exportData->stats->stat as $transaction) {
 			if (isset($merchantMap[(string) $transaction->offer])) {
 				$obj = array();
 				$obj['merchantId'] = $merchantMap[(string) $transaction->offer];
 				$date = new Zend_Date((string) $transaction->date_time, "yyyy-MM-dd HH:mm:ss");
-				$obj['date'] = $transaction->date;
+				$obj['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
 				$obj['status'] = Oara_Utilities::STATUS_CONFIRMED;
 				$obj['customId'] = (string) $transaction->sub_id;
 				$obj['amount'] = Oara_Utilities::parseDouble((string) $transaction->payout);
