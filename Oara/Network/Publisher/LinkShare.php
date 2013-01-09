@@ -80,25 +80,24 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network {
 		if (preg_match("/https:\/\/cli\.linksynergy\.com\/cli\/common\/logout\.php/", $result[0], $matches)) {
 
 			$siteList = array();
-			$urlList = array();
 			//Current Site Id
 			if (preg_match("/helpcenter\.linkshare\.com\/publisher\?sid=(.*)&username/", $result[0], $matches)) {
 				$urlList[] = "https://cli.linksynergy.com/cli/publisher/common/changeCurrentChannel.php?sid=".$matches[1];
 			}
 
 			$dom = new Zend_Dom_Query($result[0]);
-			$results = $dom->query('.headerLoginWebsiteDDLItem a');
-
 			//Other Sites Id
 			$results = $dom->query('.headerLoginWebsiteDDLItem a');
 			$count = count($results); // get number of matches: 4
 			foreach ($results as $result) {
-				$hrefUrl = $result->getAttribute('href');
-				$urlList[] = $hrefUrl;
-			}
-			foreach ($urlList as $url) {
 				$site = new stdClass();
+				
+				$websiteName = $result->nodeValue;
+				$site->website = $websiteName;
+				
+				$url = $result->getAttribute('href');
 				$site->url = $url;
+				
 				$parsedUrl = parse_url($site->url);
 				$attributesArray = explode('&', $parsedUrl['query']);
 				$attributeMap = array();
@@ -220,7 +219,7 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network {
 				}
 	
 				$obj['cid'] = (int) $merchantArray[2];
-				$obj['name'] = $merchantArray[0];
+				$obj['name'] = $merchantArray[0]." (".$site->website.")";
 				$obj['description'] = $merchantArray[3];
 				$obj['url'] = $merchantArray[1];
 				$merchants[] = $obj;
