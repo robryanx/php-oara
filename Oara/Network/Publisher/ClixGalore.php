@@ -191,6 +191,8 @@ class Oara_Network_Publisher_ClixGalore extends Oara_Network {
 
 					if (preg_match("/[0-9]*,?[0-9]*\.?[0-9]+/", $transactionExportArray[4], $matches)) {
 						$transaction['amount'] = Oara_Utilities::parseDouble($matches[0]);
+					}
+					if (preg_match("/[0-9]*,?[0-9]*\.?[0-9]+/", $transactionExportArray[5], $matches)) {
 						$transaction['commission'] = Oara_Utilities::parseDouble($matches[0]);
 					}
 

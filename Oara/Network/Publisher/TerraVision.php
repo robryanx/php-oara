@@ -24,31 +24,46 @@ class Oara_Network_Publisher_TerraVision extends Oara_Network {
 
 		$user = $credentials['user'];
 		$password = $credentials['password'];
-		$loginUrl = 'http://booking.terravision.eu/chkloginp.asp?lng=EN';
+		$loginUrl = 'http://book.terravision.eu/login_check?';
 
-		$valuesLogin = array(new Oara_Curl_Parameter('user', $user),
-			new Oara_Curl_Parameter('password', $password),
-			new Oara_Curl_Parameter('bookLog1', '   Login   '),
+		$valuesLogin = array(new Oara_Curl_Parameter('_username', $user),
+			new Oara_Curl_Parameter('_password', $password),
+			new Oara_Curl_Parameter('_submit', 'Login')
 		);
 
 		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
+
+		$urls = array();
+		$urls[] = new Oara_Curl_Request('http://book.terravision.eu/login', array());
+		$exportReport = $this->_client->get($urls);
+		$dom = new Zend_Dom_Query($exportReport[0]);
+		$results = $dom->query('input[name="_csrf_token"]');
+		$token = null;
+		foreach ($results as $result) {
+			$token = $result->getAttribute("value");
+		}
+
+		$valuesLogin = array(new Oara_Curl_Parameter('_username', $user),
+			new Oara_Curl_Parameter('_password', $password),
+			new Oara_Curl_Parameter('_submit', 'Login'),
+			new Oara_Curl_Parameter('_csrf_token', $token)
+		);
+		$urls = array();
+		$urls[] = new Oara_Curl_Request($loginUrl, $valuesLogin);
+		$exportReport = $this->_client->post($urls);
+
 	}
 	/**
 	 * Check the connection
 	 */
 	public function checkConnection() {
-		$connection = true;
+		$connection = false;
 
-		$date = new Zend_Date();
-		$valuesFormExport = array();
-		$valuesFormExport[] = new Oara_Curl_Parameter('mese', $date->toString("MM"));
-		$valuesFormExport[] = new Oara_Curl_Parameter('anno', $date->toString("yyyy"));
-		$valuesFormExport[] = new Oara_Curl_Parameter('vai', '  Go  ');
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://booking.terravision.eu/statsales.asp?', $valuesFormExport);
-		$exportReport = $this->_client->post($urls);
-		if (preg_match("/login.asp?/", $exportReport[0], $matches)) {
-			$connection = false;
+		$urls[] = new Oara_Curl_Request('http://book.terravision.eu/partner/my/', array());
+		$exportReport = $this->_client->get($urls);
+		if (preg_match("/\/logout/", $exportReport[0], $matches)) {
+			$connection = true;
 		}
 		return $connection;
 	}
@@ -73,23 +88,6 @@ class Oara_Network_Publisher_TerraVision extends Oara_Network {
 	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = Array();
 
-		$exportTransactionList = self::readTransactionTable($dStartDate, $dEndDate);
-		foreach ($exportTransactionList as $exportTransaction) {
-			$transaction = array();
-
-			$transaction['merchantId'] = 1;
-			$transaction['date'] = $exportTransaction->date;
-			$transaction['amount'] = (double) $exportTransaction->amount;
-			$transaction['commission'] = (double) $exportTransaction->commission;
-			if ($transaction['commission'] == 0) {
-				$transaction['status'] = Oara_Utilities::STATUS_PENDING;
-			} else {
-				$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
-			}
-
-			$totalTransactions[] = $transaction;
-		}
-
 		return $totalTransactions;
 
 	}
@@ -101,121 +99,97 @@ class Oara_Network_Publisher_TerraVision extends Oara_Network {
 	public function getOverviewList($transactionList = null, $merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
 		$totalOverviews = Array();
 
-		$valuesFormExport = array();
-		$valuesFormExport[] = new Oara_Curl_Parameter('mese', $dStartDate->toString("MM"));
-		$valuesFormExport[] = new Oara_Curl_Parameter('anno', $dStartDate->toString("yyyy"));
-		$valuesFormExport[] = new Oara_Curl_Parameter('vai', '  Go  ');
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://booking.terravision.eu/statsales.asp?', $valuesFormExport);
+		$urls[] = new Oara_Curl_Request('http://book.terravision.eu/partner/my/stats', array());
+		$exportReport = $this->_client->get($urls);
+		$dom = new Zend_Dom_Query($exportReport[0]);
+		$results = $dom->query('input[name="form[_token]"]');
+		$token = null;
+		foreach ($results as $result) {
+			$token = $result->getAttribute("value");
+		}
+
+		$valuesFormExport = array();
+		$valuesFormExport[] = new Oara_Curl_Parameter('form[year]', $dStartDate->toString("yyyy"));
+		$valuesFormExport[] = new Oara_Curl_Parameter('fform[_token]', $token);
+		$valuesFormExport[] = new Oara_Curl_Parameter('show', 'Show');
+		$urls = array();
+		$urls[] = new Oara_Curl_Request('http://book.terravision.eu/partner/my/stats?', $valuesFormExport);
 		$exportReport = $this->_client->post($urls);
 
+		$stringToFind = $dStartDate->toString("MM-yyyy");
 		/*** load the html into the object ***/
-		$doc = new DOMDocument();
-		libxml_use_internal_errors(true);
-		$doc->validateOnParse = true;
-		$doc->loadHTML($exportReport[0]);
-		$tableList = $doc->getElementsByTagName('table');
-
-		$clickNumber = substr($tableList->item(6)->childNodes->item(0)->childNodes->item(2)->nodeValue, 0, -2);
-
-		$transactionArray = Oara_Utilities::transactionMapPerDay($transactionList);
-		foreach ($transactionArray as $merchantId => $merchantTransaction) {
-			foreach ($merchantTransaction as $date => $transactionList) {
-
+		$dom = new Zend_Dom_Query($exportReport[0]);
+		$results = $dom->query('.frame > table');
+		$exportData = self::htmlToCsv(self::DOMinnerHTML($results->current()));
+		$num = count($exportData);
+		for ($i = 1; $i < $num - 1; $i++) {
+			$overviewExportArray = str_getcsv($exportData[$i], ";");
+			if ($overviewExportArray[0] == $stringToFind){
 				$overview = Array();
 
-				$overview['merchantId'] = $merchantId;
-				$overviewDate = new Zend_Date($date, "yyyy-MM-dd");
-				$overview['date'] = $overviewDate->toString("yyyy-MM-dd HH:mm:ss");
-				if (is_numeric($clickNumber)) {
-					$overview['click_number'] = $clickNumber;
-				} else {
-					$overview['click_number'] = 0;
-				}
+				$overview['merchantId'] = 1;
+				$overview['date'] = $dEndDate->toString("yyyy-MM-dd HH:mm:ss");
+				$overview['click_number'] = 0;
 				$overview['impression_number'] = 0;
-				$overview['transaction_number'] = 0;
-				$overview['transaction_confirmed_value'] = 0;
-				$overview['transaction_confirmed_commission'] = 0;
+				$overview['transaction_number'] = $overviewExportArray[12];
+				$overview['transaction_confirmed_value'] = $overviewExportArray[14];
+				$overview['transaction_confirmed_commission'] = $overviewExportArray[16];
 				$overview['transaction_pending_value'] = 0;
 				$overview['transaction_pending_commission'] = 0;
 				$overview['transaction_declined_value'] = 0;
 				$overview['transaction_declined_commission'] = 0;
 				$overview['transaction_paid_value'] = 0;
 				$overview['transaction_paid_commission'] = 0;
-				foreach ($transactionList as $transaction) {
-					$overview['transaction_number']++;
-					if ($transaction['status'] == Oara_Utilities::STATUS_CONFIRMED) {
-						$overview['transaction_confirmed_value'] += $transaction['amount'];
-						$overview['transaction_confirmed_commission'] += $transaction['commission'];
-					} else
-						if ($transaction['status'] == Oara_Utilities::STATUS_PENDING) {
-							$overview['transaction_pending_value'] += $transaction['amount'];
-							$overview['transaction_pending_commission'] += $transaction['commission'];
-						} else
-							if ($transaction['status'] == Oara_Utilities::STATUS_DECLINED) {
-								$overview['transaction_declined_value'] += $transaction['amount'];
-								$overview['transaction_declined_commission'] += $transaction['commission'];
-							} else
-								if ($transaction['status'] == Oara_Utilities::STATUS_PAID) {
-									$overview['transaction_paid_value'] += $transaction['amount'];
-									$overview['transaction_paid_commission'] += $transaction['commission'];
-								}
-				}
 				$totalOverviews[] = $overview;
 			}
 		}
-
 		return $totalOverviews;
 	}
+
 	/**
-	 * Read the html table in the report
-	 * @param string $htmlReport
-	 * @param Zend_Date $startDate
-	 * @param Zend_Date $endDate
-	 * @param int $iteration
-	 * @return array:
+	 *
+	 * Function that Convert from a table to Csv
+	 * @param unknown_type $html
 	 */
-	public function readTransactionTable($startDate, $endDate) {
-		$transactions = array();
-
-		$valuesFormExport = array();
-		$valuesFormExport[] = new Oara_Curl_Parameter('mese', $startDate->toString("MM"));
-		$valuesFormExport[] = new Oara_Curl_Parameter('anno', $endDate->toString("yyyy"));
-		$valuesFormExport[] = new Oara_Curl_Parameter('vai', '  Go  ');
-		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://booking.terravision.eu/statsales.asp?', $valuesFormExport);
-		$exportReport = $this->_client->post($urls);
-
-		/*** load the html into the object ***/
-		$doc = new DOMDocument();
-		libxml_use_internal_errors(true);
-		$doc->validateOnParse = true;
-		$doc->loadHTML($exportReport[0]);
-		$tableList = $doc->getElementsByTagName('table');
-
-		$clickNumber = substr($tableList->item(6)->childNodes->item(0)->childNodes->item(2)->nodeValue, 0, -2);
-		$transactionNumber = $tableList->item(6)->childNodes->item(2)->childNodes->item(2)->nodeValue;
-		if ($transactionNumber != 0) {
-			$totalAmout = 0;
-			$totalCommission = 0;
-
-			if ($tableList->item(10)->childNodes->item(3) != null) {
-				$totalAmout = str_replace(',', '.', str_replace('.', '', substr($tableList->item(10)->childNodes->item(3)->childNodes->item(2)->nodeValue, 5)));
-				$totalCommission = str_replace(',', '.', str_replace('.', '', substr($tableList->item(10)->childNodes->item(6)->childNodes->item(2)->nodeValue, 4)));
-			}
-
-			$amountPerTransaction = $totalAmout / $transactionNumber;
-			$commissionPerTransaction = $totalCommission / $transactionNumber;
-
-			for ($i = 0; $i < $transactionNumber; $i++) {
-				$obj = new stdClass();
-				$obj->date = $endDate->toString("yyyy-MM-dd HH:mm:ss");
-				$obj->amount = $amountPerTransaction;
-				$obj->commission = $commissionPerTransaction;
-				$transactions[] = $obj;
+	private function htmlToCsv($html) {
+		$html = str_replace(array("\t", "\r", "\n"), "", $html);
+		$csv = "";
+		$dom = new Zend_Dom_Query($html);
+		$results = $dom->query('tr');
+		$count = count($results); // get number of matches: 4
+		foreach ($results as $result) {
+			$tdList = $result->childNodes;
+			$tdNumber = $tdList->length;
+			if ($tdNumber > 0) {
+				for ($i = 0; $i < $tdNumber; $i++) {
+					$value = $tdList->item($i)->nodeValue;
+					if ($i != $tdNumber - 1) {
+						$csv .= trim($value).";";
+					} else {
+						$csv .= trim($value);
+					}
+				}
+				$csv .= "\n";
 			}
 		}
-		return $transactions;
+		$exportData = str_getcsv($csv, "\n");
+		return $exportData;
+	}
+	/**
+	 *
+	 * Function that returns the innet HTML code
+	 * @param unknown_type $element
+	 */
+	private function DOMinnerHTML($element) {
+		$innerHTML = "";
+		$children = $element->childNodes;
+		foreach ($children as $child) {
+			$tmp_dom = new DOMDocument();
+			$tmp_dom->appendChild($tmp_dom->importNode($child, true));
+			$innerHTML .= trim($tmp_dom->saveHTML());
+		}
+		return $innerHTML;
 	}
 
 }

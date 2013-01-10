@@ -109,7 +109,7 @@ class Oara_Network_Publisher_WaterImp extends Oara_Network {
 
 				$transaction['unique_id'] = $transactionArray[0];
 
-				$transaction['amount'] = ((double) $filter->filter($transactionArray[4])/1.2);
+				$transaction['amount'] =  abs(((double) $filter->filter($transactionArray[5]) - $tax));
 				$grossValue = (double) $filter->filter($transactionArray[5]);
 				if ($grossValue != 0) {
 					$oldShipping = new Zend_Date("01-05-2012", "dd-MM-yyyy");
@@ -242,9 +242,8 @@ class Oara_Network_Publisher_WaterImp extends Oara_Network {
 						
 						
 					}
-					
 
-					$transaction['commission'] = round((($grossValue - $tax) - $shipping) * 0.2, 2);
+					$transaction['commission'] = abs(round((($grossValue - $tax) - $shipping) * 0.2, 2));
 				} else {
 					$transaction['commission'] = 0;
 				}
