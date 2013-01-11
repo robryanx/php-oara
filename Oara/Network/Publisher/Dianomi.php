@@ -99,6 +99,7 @@ class Oara_Network_Publisher_Dianomi extends Oara_Network {
 		$valuesFormExport[] = new Oara_Curl_Parameter('subaction', 'RevenueOverTime');
 		$urls = array();
 		$urls[] = new Oara_Curl_Request('https://my.dianomi.com/Campaign-Analysis-378_1.html?', $valuesFormExport);
+		$exportReport = $this->_client->get($urls);
 		$dom = new Zend_Dom_Query($exportReport[0]);
 		$results = $dom->query('.tabular');
 		if (count($results) > 0) {
