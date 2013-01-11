@@ -24,7 +24,7 @@ class Oara_Network_Publisher_Dianomi extends Oara_Network {
 
 		$user = $credentials['user'];
 		$password = $credentials['password'];
-	
+
 		$valuesLogin = array(new Oara_Curl_Parameter('username', $user),
 			new Oara_Curl_Parameter('password', $password),
 			new Oara_Curl_Parameter('app', 'loginbox'),
@@ -32,12 +32,9 @@ class Oara_Network_Publisher_Dianomi extends Oara_Network {
 			new Oara_Curl_Parameter('partner', '1'),
 			new Oara_Curl_Parameter('redir', '')
 		);
-		
+
 		$loginUrl = 'https://my.dianomi.com/index.epl?';
 		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
-
-		
-		
 
 	}
 	/**
@@ -85,19 +82,18 @@ class Oara_Network_Publisher_Dianomi extends Oara_Network {
 	public function getOverviewList($transactionList = null, $merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
 		$totalOverviews = Array();
 
-		
 		$valuesFormExport = array();
 		$valuesFormExport[] = new Oara_Curl_Parameter('periodtype', "fromtolong");
 		$valuesFormExport[] = new Oara_Curl_Parameter('fromday', $dStartDate->toString("dd"));
 		$valuesFormExport[] = new Oara_Curl_Parameter('frommonth', $dStartDate->toString("MM"));
 		$valuesFormExport[] = new Oara_Curl_Parameter('fromyear', $dStartDate->toString("yyyy"));
-		
+
 		$valuesFormExport[] = new Oara_Curl_Parameter('today', $dEndDate->toString("dd"));
 		$valuesFormExport[] = new Oara_Curl_Parameter('tomonth', $dEndDate->toString("MM"));
 		$valuesFormExport[] = new Oara_Curl_Parameter('toyear', $dEndDate->toString("yyyy"));
-		
+
 		$valuesFormExport[] = new Oara_Curl_Parameter('Go', 'Go');
-		
+
 		$valuesFormExport[] = new Oara_Curl_Parameter('partnerId', '326');
 		$valuesFormExport[] = new Oara_Curl_Parameter('action', 'partnerLeads');
 		$valuesFormExport[] = new Oara_Curl_Parameter('subaction', 'RevenueOverTime');
@@ -105,28 +101,30 @@ class Oara_Network_Publisher_Dianomi extends Oara_Network {
 		$urls[] = new Oara_Curl_Request('https://my.dianomi.com/Campaign-Analysis-378_1.html?', $valuesFormExport);
 		$dom = new Zend_Dom_Query($exportReport[0]);
 		$results = $dom->query('.tabular');
-		$exportData = self::htmlToCsv(self::DOMinnerHTML($results->current()));
-		$num = count($exportData);
-		for ($i = 1; $i < $num; $i++) {
-			$overviewExportArray = str_getcsv($exportData[$i], ";");
-			
-			$overview = Array();
+		if (count($results) > 0) {
+			$exportData = self::htmlToCsv(self::DOMinnerHTML($results->current()));
+			$num = count($exportData);
+			for ($i = 1; $i < $num; $i++) {
+				$overviewExportArray = str_getcsv($exportData[$i], ";");
 
-			$overview['merchantId'] = 1;
-			$date = new Zend_Date($overviewExportArray[0], "yyyy-MM-dd");
-			$overview['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
-			$overview['click_number'] = 0;
-			$overview['impression_number'] = 0;
-			$overview['transaction_number'] = 0;
-			$overview['transaction_confirmed_value'] = $overviewExportArray[1];
-			$overview['transaction_confirmed_commission'] = $overviewExportArray[1];
-			$overview['transaction_pending_value'] = 0;
-			$overview['transaction_pending_commission'] = 0;
-			$overview['transaction_declined_value'] = 0;
-			$overview['transaction_declined_commission'] = 0;
-			$overview['transaction_paid_value'] = 0;
-			$overview['transaction_paid_commission'] = 0;
-			$totalOverviews[] = $overview;
+				$overview = Array();
+
+				$overview['merchantId'] = 1;
+				$date = new Zend_Date($overviewExportArray[0], "yyyy-MM-dd");
+				$overview['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
+				$overview['click_number'] = 0;
+				$overview['impression_number'] = 0;
+				$overview['transaction_number'] = 0;
+				$overview['transaction_confirmed_value'] = $overviewExportArray[1];
+				$overview['transaction_confirmed_commission'] = $overviewExportArray[1];
+				$overview['transaction_pending_value'] = 0;
+				$overview['transaction_pending_commission'] = 0;
+				$overview['transaction_declined_value'] = 0;
+				$overview['transaction_declined_commission'] = 0;
+				$overview['transaction_paid_value'] = 0;
+				$overview['transaction_paid_commission'] = 0;
+				$totalOverviews[] = $overview;
+			}
 		}
 		return $totalOverviews;
 	}
