@@ -50,6 +50,7 @@ class Oara_Curl_Access {
 		}
 
 		//Setting cookies
+		$isDianomi = $credentials['networkName'] == "Dianomi" ? true : false;
 		$isOldSMG = $credentials['networkName'] == "Smg" && (strpos($credentials["cookieName"], 'old') !== false);
 		$isTD = ($credentials['networkName'] == "TradeDoubler" || $credentials['networkName'] == "Stream20");
 		//$isAW = $credentials['networkName'] == "AffiliateWindow";
@@ -116,6 +117,10 @@ class Oara_Curl_Access {
 
 		//Close curl session
 		curl_close($ch);
+		
+		if ($isDianomi){
+			$result = true;
+		}
 
 		while (($isOldSMG || $isTD) && ($info['http_code'] == 301 || $info['http_code'] == 302)) {
 			// redirect manually, cookies must be set, which curl does not itself
@@ -195,7 +200,7 @@ class Oara_Curl_Access {
 			if ($threadsRunning == 0 && $urls_id >= count($urls)) {
 				break;
 			}
-			// Let mcurl do it's thing
+			// Let mcurl do its thing
 			curl_multi_select($mcurl);
 			while (($mcRes = curl_multi_exec($mcurl, $mcActive)) == CURLM_CALL_MULTI_PERFORM) {
 				sleep(1);
