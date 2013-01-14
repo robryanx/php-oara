@@ -15,7 +15,7 @@ class Oara_Network_Publisher_CarHireCenter extends Oara_Network {
 	public $_user = null;
 	public $_password = null;
 	
-	public $_merchantMap = array( "ha"=> 1, "tj" => 2, "ag" =>3, "ae" =>4 );
+	public $_merchantMap = array( "ha"=> 1, "tj" => 2, "ag" =>3 );// "ae" =>4
 	/**
 	 * Constructor.
 	 * @param $credentials
@@ -63,12 +63,12 @@ class Oara_Network_Publisher_CarHireCenter extends Oara_Network {
 		$obj['cid'] = 3;
 		$obj['name'] = 'Argus';
 		$merchantList[] = $obj;
-		
+		/*
 		$obj = Array();
 		$obj['cid'] = 4;
 		$obj['name'] = 'Auto Europe';
 		$merchantList[] = $obj;
-		
+		*/
 		return $merchantList;
 	}
 
