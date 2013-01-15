@@ -79,24 +79,37 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network {
 		//Check if the credentials are right
 		if (preg_match("/https:\/\/cli\.linksynergy\.com\/cli\/common\/logout\.php/", $result[0], $matches)) {
 
-			$siteList = array();
-			//Current Site Id
-			if (preg_match("/helpcenter\.linkshare\.com\/publisher\?sid=(.*)&username/", $result[0], $matches)) {
-				$urlList[] = "https://cli.linksynergy.com/cli/publisher/common/changeCurrentChannel.php?sid=".$matches[1];
-			}
-
+			$urls = array();
+			$urls[] = new Oara_Curl_Request('https://cli.linksynergy.com/cli/publisher/my_account/marketingChannels.php', array());
+			$result = $this->_client->get($urls);
+			
 			$dom = new Zend_Dom_Query($result[0]);
-			//Other Sites Id
-			$results = $dom->query('.headerLoginWebsiteDDLItem a');
-			$count = count($results); // get number of matches: 4
-			foreach ($results as $result) {
+			$results = $dom->query('table');
+			foreach ($results as $table) {
+				$tableCsv = self::htmlToCsv(self::DOMinnerHTML($table));
+			}	
+			
+			$resultsSites = array();
+			$num = count($tableCsv);
+			for ($i = 1; $i < $num; $i++) {
+				$payment = Array();
+				$siteArray = str_getcsv($tableCsv[$i], ";");
+				if (count($siteArray) == 7){
+					$result = array();
+					$result["id"] = $siteArray[2];
+					$result["name"] = $siteArray[1];
+					$result["url"] = "https://cli.linksynergy.com/cli/publisher/common/changeCurrentChannel.php?sid=".$result["id"];
+					$resultsSites[] = $result;
+				}
+			}
+			
+			$siteList = array();
+			foreach ($resultsSites as $resultSite) {
 				$site = new stdClass();
 				
-				$websiteName = $result->nodeValue;
-				$site->website = $websiteName;
+				$site->website = $resultSite["name"];
 				
-				$url = $result->getAttribute('href');
-				$site->url = $url;
+				$site->url = $resultSite["url"];
 				
 				$parsedUrl = parse_url($site->url);
 				$attributesArray = explode('&', $parsedUrl['query']);
@@ -110,6 +123,8 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network {
 				$urls = array();
 				$urls[] = new Oara_Curl_Request($site->url, array());
 				$result = $this->_client->get($urls);
+				
+				
 
 				$urls = array();
 				$urls[] = new Oara_Curl_Request('http://cli.linksynergy.com/cli/publisher/links/webServices.php', array());
@@ -432,6 +447,52 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network {
 		}
 
 		return $transactionList;
+	}
+	
+	/**
+	 *
+	 * Function that returns the inner HTML code
+	 * @param unknown_type $element
+	 */
+	private function DOMinnerHTML($element) {
+		$innerHTML = "";
+		$children = $element->childNodes;
+		foreach ($children as $child) {
+			$tmp_dom = new DOMDocument();
+			$tmp_dom->appendChild($tmp_dom->importNode($child, true));
+			$innerHTML .= trim($tmp_dom->saveHTML());
+		}
+		return $innerHTML;
+	}
+
+	/**
+	 *
+	 * Function that Convert from a table to Csv
+	 * @param unknown_type $html
+	 */
+	private function htmlToCsv($html) {
+		$html = str_replace(array("\t", "\r", "\n"), "", $html);
+		$csv = "";
+		$dom = new Zend_Dom_Query($html);
+		$results = $dom->query('tr');
+		$count = count($results); // get number of matches: 4
+		foreach ($results as $result) {
+			$tdList = $result->childNodes;
+			$tdNumber = $tdList->length;
+			if ($tdNumber > 0) {
+				for ($i = 0; $i < $tdNumber; $i++) {
+					$value = $tdList->item($i)->nodeValue;
+					if ($i != $tdNumber - 1) {
+						$csv .= trim($value).";";
+					} else {
+						$csv .= trim($value);
+					}
+				}
+				$csv .= "\n";
+			}
+		}
+		$exportData = str_getcsv($csv, "\n");
+		return $exportData;
 	}
 
 }

@@ -222,7 +222,7 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 
 			for ($j = 0; $j < $dateArraySize; $j++) {
 				//echo "day ".$dateArray[$j]->toString("d")."\n";
-				echo round(memory_get_usage(true) / 1048576, 2)." megabytes \n";
+				//echo round(memory_get_usage(true) / 1048576, 2)." megabytes \n";
 				$try = 0;
 				$done = false;
 				while (!$done && $try < 5) {
