@@ -211,7 +211,7 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network {
 	 */
 	public function getMerchantList() {
 		$merchants = array();
-
+		$merchantIdMap = array();
 		foreach ($this->_siteList as $site){
 			
 			$urls = array();
@@ -226,19 +226,20 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network {
 			$num = count($exportData);
 			for ($i = 1; $i < $num; $i++) {
 				$merchantArray = str_getcsv($exportData[$i], ",");
+				if (!in_array($merchantArray[2], $merchantIdMap)){
+					$obj = Array();
 	
-				$obj = Array();
-	
-				if (!isset($merchantArray[2])) {
-					throw new Exception("Error getting merchants");
+					if (!isset($merchantArray[2])) {
+						throw new Exception("Error getting merchants");
+					}
+		
+					$obj['cid'] = (int) $merchantArray[2];
+					$obj['name'] = $merchantArray[0];
+					$obj['description'] = $merchantArray[3];
+					$obj['url'] = $merchantArray[1];
+					$merchants[] = $obj;
+					$merchantIdMap[] = $obj['cid'];
 				}
-	
-				$obj['cid'] = (int) $merchantArray[2];
-				$obj['name'] = $merchantArray[0]." (".$site->website.")";
-				$obj['description'] = $merchantArray[3];
-				$obj['url'] = $merchantArray[1];
-				$merchants[] = $obj;
-	
 			}
 		}
 		
