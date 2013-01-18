@@ -12,7 +12,7 @@ class Oara_Network_Publisher_AffJetNet extends Oara_Network {
 	//Db user
 	private $_user = null;
 	//Db pass
-	private $_pass = null;
+	private $_password = null;
 	//Db partnerId
 	private $_partnerId = null;
 	//User id
@@ -36,21 +36,20 @@ class Oara_Network_Publisher_AffJetNet extends Oara_Network {
 
 		try {
 			Db_Utilities::initDoctrineAffjetNet();
-			$affjetNetUserRAffjetNetMerchantDao = Dao_Factory_Doctrine::createDoctrineDaoInstance('AffjetNetUserRAffjetNetMerchant');
+			$affjetNetUserDao = Dao_Factory_Doctrine::createDoctrineDaoInstance('AffjetNetUser');
 			$criteriaList = array();
-			$criteriaList[] = new Dao_Doctrine_Criteria_Restriction_Eq('AffjetNetMerchant->AffjetNetPartner->id', $this->_partnerId);
-			$criteriaList[] = new Dao_Doctrine_Criteria_Restriction_Eq('AffjetNetUser->user', $this->_user);
-			$criteriaList[] = new Dao_Doctrine_Criteria_Restriction_Eq('AffjetNetUser->pass', $this->_password);
+			$criteriaList[] = new Dao_Doctrine_Criteria_Restriction_Eq('AffjetNetPartner->id', $this->_partnerId);
+			$criteriaList[] = new Dao_Doctrine_Criteria_Restriction_Eq('user', $this->_user);
+			$criteriaList[] = new Dao_Doctrine_Criteria_Restriction_Eq('pass', $this->_password);
 
-			$affjetNetUserRAffjetNetMerchant = $affjetNetUserRAffjetNetMerchantDao->findBy($criteriaList)->getFirst();
-			if ($affjetNetUserRAffjetNetMerchant == null) {
+			$affjetNetUser = $affjetNetUserDao->findBy($criteriaList)->getFirst();
+			if ($affjetNetUser == null) {
 				$connection = false;
 			} else {
-				$this->_userId = $affjetNetUserRAffjetNetMerchant->affjet_net_user_id;
-				if ($affjetNetUserRAffjetNetMerchant->AffjetNetUser->AffjetNetRole->name == "admin") {
+				$this->_userId = $affjetNetUser->id;
+				if ($affjetNetUser->AffjetNetRole->name == "admin") {
 					$this->_isAdmin = true;
 				}
-
 			}
 		} catch (Exception $e) {
 			$connection = false;
