@@ -609,7 +609,7 @@ class Oara_Network_Publisher_TradeDoubler extends Oara_Network {
 						$obj = array();
 
 						$paymentLine = $paymentLines->item($i)->nodeValue;
-						$value = preg_replace("/[^0-9\.,]/", "",substr($paymentLine, 10));
+						$value = preg_replace("/[^0-9\.,]/", "", substr($paymentLine, 10));
 
 						$date = self::toDate(substr($paymentLine, 0, 10));
 
@@ -617,7 +617,6 @@ class Oara_Network_Publisher_TradeDoubler extends Oara_Network {
 						$obj['pid'] = $pid;
 						$obj['method'] = 'BACS';
 						$obj['value'] = Oara_Utilities::parseDouble($value);
-
 
 						$paymentHistory[] = $obj;
 					}
@@ -689,9 +688,15 @@ class Oara_Network_Publisher_TradeDoubler extends Oara_Network {
 				} else
 					if ($this->_dateFormat == 'tt.MM.uu') {
 						$dateString = $date->toString('dd.MM.yy');
-					} else {
-						throw new Exception("\n Date Format not supported ".$this->_dateFormat."\n");
-					}
+					} else
+						if ($this->_dateFormat == 'jj-MM-aa') {
+							$dateString = $date->toString('dd-MM-yy');
+						} else
+							if ($this->_dateFormat == 'jj/MM/aa') {
+								$dateString = $date->toString('dd/MM/yy');
+							} else {
+								throw new Exception("\n Date Format not supported ".$this->_dateFormat."\n");
+							}
 		return $dateString;
 	}
 	/**
@@ -713,9 +718,15 @@ class Oara_Network_Publisher_TradeDoubler extends Oara_Network {
 				} else
 					if ($this->_dateFormat == 'tt.MM.uu') {
 						$transactionDate = new Zend_Date(trim($dateString), "dd.MM.yy HH:mm:ss");
-					} else {
-						throw new Exception("\n Date Format not supported ".$this->_dateFormat."\n");
-					}
+					} else
+						if ($this->_dateFormat == 'jj-MM-aa') {
+							$transactionDate = new Zend_Date(trim($dateString), "dd-MM-yy HH:mm:ss");
+						} else
+							if ($this->_dateFormat == 'jj/MM/aa') {
+								$transactionDate = new Zend_Date(trim($dateString), "dd/MM/yy HH:mm:ss");
+							} else {
+								throw new Exception("\n Date Format not supported ".$this->_dateFormat."\n");
+							}
 		return $transactionDate;
 	}
 }

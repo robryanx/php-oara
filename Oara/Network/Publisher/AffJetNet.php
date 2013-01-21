@@ -63,22 +63,38 @@ class Oara_Network_Publisher_AffJetNet extends Oara_Network {
 	public function getMerchantList() {
 		$merchants = Array();
 
-		$affjetNetMerchantDao = Dao_Factory_Doctrine::createDoctrineDaoInstance('AffjetNetMerchant');
-		$criteriaList = array();
-		$criteriaList[] = new Dao_Doctrine_Criteria_Restriction_Eq('AffjetNetPartner->id', $this->_partnerId);
-		if (!$this->_isAdmin) {
+		if ($this->_isAdmin) {
+			$affjetNetUserRMerchantDao = Dao_Factory_Doctrine::createDoctrineDaoInstance('AffjetNetUserRAffjetNetMerchant');
+			$criteriaList = array();
+			$criteriaList[] = new Dao_Doctrine_Criteria_Restriction_Eq('AffjetNetMerchant->AffjetNetPartner->id', $this->_partnerId);
+			$affjetNetUserRMerchantList = $affjetNetUserRMerchantDao->findBy($criteriaList);
+			foreach ($affjetNetUserRMerchantList as $affjetNetUserRMerchant) {
+				if ($affjetNetUserRMerchant->AffjetNetUser->AffjetNetRole->name != "admin") {
+					$obj = Array();
+					$obj['cid'] = $affjetNetUserRMerchant->id;
+					$obj['name'] = $affjetNetUserRMerchant->AffjetNetUser->name." (".$affjetNetUserRMerchant->AffjetNetMerchant->name.")";
+					$obj['url'] = $affjetNetUserRMerchant->AffjetNetMerchant->url;
+					$merchants[] = $obj;
+				}
+			}
+
+		} else {
+			$affjetNetMerchantDao = Dao_Factory_Doctrine::createDoctrineDaoInstance('AffjetNetMerchant');
+			$criteriaList = array();
+			$criteriaList[] = new Dao_Doctrine_Criteria_Restriction_Eq('AffjetNetPartner->id', $this->_partnerId);
 			$criteriaList[] = new Dao_Doctrine_Criteria_Restriction_Eq('AffjetNetUserRAffjetNetMerchant->AffjetNetUser->id', $this->_userId);
+
+			$affjetNetMerchantList = $affjetNetMerchantDao->findBy($criteriaList);
+
+			foreach ($affjetNetMerchantList as $affjetNetMerchant) {
+				$obj = Array();
+				$obj['cid'] = $affjetNetMerchant->id;
+				$obj['name'] = $affjetNetMerchant->name;
+				$obj['url'] = $affjetNetMerchant->url;
+				$merchants[] = $obj;
+			}
 		}
 
-		$affjetNetMerchantList = $affjetNetMerchantDao->findBy($criteriaList);
-
-		foreach ($affjetNetMerchantList as $affjetNetMerchant) {
-			$obj = Array();
-			$obj['cid'] = $affjetNetMerchant->id;
-			$obj['name'] = $affjetNetMerchant->name;
-			$obj['url'] = $affjetNetMerchant->url;
-			$merchants[] = $obj;
-		}
 		return $merchants;
 	}
 	/**
@@ -90,11 +106,16 @@ class Oara_Network_Publisher_AffJetNet extends Oara_Network {
 
 		$affjetNetTransactionDao = Dao_Factory_Doctrine::createDoctrineDaoInstance('AffjetNetTransaction');
 		$criteriaList = array();
-		$criteriaList[] = new Dao_Doctrine_Criteria_Restriction_In('AffjetNetClick->AffjetNetUserRAffjetNetMerchant->AffjetNetMerchant->id', $merchantList, false);
-		$criteriaList[] = new Dao_Doctrine_Criteria_Restriction_Eq('AffjetNetClick->AffjetNetUserRAffjetNetMerchant->AffjetNetMerchant->AffjetNetPartner->id', $this->_partnerId);
-		if (!$this->_isAdmin) {
+		if ($this->_isAdmin) {
+			$criteriaList[] = new Dao_Doctrine_Criteria_Restriction_Select('AffjetNetClick->AffjetNetUserRAffjetNetMerchant->id', "_merchantId");
+			$criteriaList[] = new Dao_Doctrine_Criteria_Restriction_In('AffjetNetClick->AffjetNetUserRAffjetNetMerchant->id', $merchantList, false);
+		} else {
+			$criteriaList[] = new Dao_Doctrine_Criteria_Restriction_Select('AffjetNetClick->AffjetNetUserRAffjetNetMerchant->AffjetNetMerchant->id', "_merchantId");
+			$criteriaList[] = new Dao_Doctrine_Criteria_Restriction_In('AffjetNetClick->AffjetNetUserRAffjetNetMerchant->AffjetNetMerchant->id', $merchantList, false);
 			$criteriaList[] = new Dao_Doctrine_Criteria_Restriction_Eq('AffjetNetClick->AffjetNetUserRAffjetNetMerchant->AffjetNetUser->id', $this->_userId);
 		}
+
+		$criteriaList[] = new Dao_Doctrine_Criteria_Restriction_Eq('AffjetNetClick->AffjetNetUserRAffjetNetMerchant->AffjetNetMerchant->AffjetNetPartner->id', $this->_partnerId);
 		$criteriaList[] = new Dao_Doctrine_Criteria_Restriction_Ge('date', $dStartDate->toString("yyyy-MM-dd HH:mm:ss"));
 		$criteriaList[] = new Dao_Doctrine_Criteria_Restriction_Le('date', $dEndDate->toString("yyyy-MM-dd HH:mm:ss"));
 		$affjetNetTransactionList = $affjetNetTransactionDao->findBy($criteriaList);
@@ -103,7 +124,7 @@ class Oara_Network_Publisher_AffJetNet extends Oara_Network {
 
 			$object = array();
 			$object['unique_id'] = $transaction->order_id;
-			$object['merchantId'] = $transaction->AffjetNetClick->AffjetNetUserRAffjetNetMerchant->AffjetNetMerchant->id;
+			$object['merchantId'] = $transaction->_merchantId;
 			$object['date'] = $transaction->date;
 			$object['amount'] = $transaction->amount;
 			$object['commission'] = $transaction->commission;
@@ -128,19 +149,26 @@ class Oara_Network_Publisher_AffJetNet extends Oara_Network {
 		$affjetNetClickDao = Dao_Factory_Doctrine::createDoctrineDaoInstance('AffjetNetClick');
 		$criteriaList = array();
 
-		$criteriaList[] = new Dao_Doctrine_Criteria_Restriction_Select('AffjetNetUserRAffjetNetMerchant->AffjetNetMerchant->id', "_merchantId");
+		if ($this->_isAdmin) {
+			$criteriaList[] = new Dao_Doctrine_Criteria_Restriction_Select('AffjetNetUserRAffjetNetMerchant->id', "_merchantId");
+			$criteriaList[] = new Dao_Doctrine_Criteria_Restriction_In('AffjetNetUserRAffjetNetMerchant->id', $merchantList, false);
+			$criteriaList[] = new Dao_Doctrine_Criteria_Restriction_Groupby('AffjetNetUserRAffjetNetMerchant->id');
+		} else {
+			
+			$criteriaList[] = new Dao_Doctrine_Criteria_Restriction_Select('AffjetNetUserRAffjetNetMerchant->AffjetNetMerchant->id', "_merchantId");
+			$criteriaList[] = new Dao_Doctrine_Criteria_Restriction_In('AffjetNetUserRAffjetNetMerchant->AffjetNetMerchant->id', $merchantList, false);
+			$criteriaList[] = new Dao_Doctrine_Criteria_Restriction_Eq('AffjetNetUserRAffjetNetMerchant->AffjetNetUser->id', $this->_userId);
+			$criteriaList[] = new Dao_Doctrine_Criteria_Restriction_Groupby('AffjetNetUserRAffjetNetMerchant->AffjetNetMerchant->id');
+		}
+		
 		$criteriaList[] = new Dao_Doctrine_Criteria_Restriction_Select('date', "_date");
 		$criteriaList[] = new Dao_Doctrine_Criteria_Restriction_Select('COUNT(*)', "_clickNumber", true);
-
-		$criteriaList[] = new Dao_Doctrine_Criteria_Restriction_In('AffjetNetUserRAffjetNetMerchant->AffjetNetMerchant->id', $merchantList, false);
 		$criteriaList[] = new Dao_Doctrine_Criteria_Restriction_Eq('AffjetNetUserRAffjetNetMerchant->AffjetNetMerchant->AffjetNetPartner->id', $this->_partnerId);
-		if (!$this->_isAdmin) {
-			$criteriaList[] = new Dao_Doctrine_Criteria_Restriction_Eq('AffjetNetUserRAffjetNetMerchant->AffjetNetUser->id', $this->_userId);
-		}
+		
+		
 		$criteriaList[] = new Dao_Doctrine_Criteria_Restriction_Ge('date', $dStartDate->toString("yyyy-MM-dd HH:mm:ss"));
 		$criteriaList[] = new Dao_Doctrine_Criteria_Restriction_Le('date', $dEndDate->toString("yyyy-MM-dd HH:mm:ss"));
 
-		$criteriaList[] = new Dao_Doctrine_Criteria_Restriction_Groupby('AffjetNetUserRAffjetNetMerchant->AffjetNetMerchant->id');
 		$criteriaList[] = new Dao_Doctrine_Criteria_Restriction_Groupby('date', 'DAY');
 		$criteriaList[] = new Dao_Doctrine_Criteria_Restriction_Groupby('date', 'MONTH');
 		$criteriaList[] = new Dao_Doctrine_Criteria_Restriction_Groupby('date', 'YEAR');
