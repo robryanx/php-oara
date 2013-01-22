@@ -19,6 +19,8 @@ class Oara_Network_Publisher_AffJetNet extends Oara_Network {
 	private $_userId = null;
 	//Is admin of the partnership?
 	private $_isAdmin = false;
+	
+	private $_isUser = false;
 	/**
 	 * Constructor and Login
 	 * @param $credentials
@@ -49,12 +51,35 @@ class Oara_Network_Publisher_AffJetNet extends Oara_Network {
 				$this->_userId = $affjetNetUser->id;
 				if ($affjetNetUser->AffjetNetRole->name == "admin") {
 					$this->_isAdmin = true;
+				} else {
+					$this->_isUser = true;
 				}
 			}
 		} catch (Exception $e) {
 			$connection = false;
 		}
 		return $connection;
+	}
+	
+	/**
+	 * IsAdmin
+	 */
+	public function isAdmin() {
+		return $this->_isAdmin;
+	}
+	
+	/**
+	 * IsUser
+	 */
+	public function isUser() {
+		return $this->_isUser;
+	}
+	
+	/**
+	 * getUserId
+	 */
+	public function getUserId() {
+		return $this->_userId;
 	}
 	/**
 	 * (non-PHPdoc)

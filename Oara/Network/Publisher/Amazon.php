@@ -142,7 +142,7 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 		$urls = array();
 		$urls[] = new Oara_Curl_Request($this->_networkServer."/gp/flex/sign-in/select.html?", $valuesLogin);
 		$contentList = $this->_client->post($urls);
-		var_dump($contentList[0]);
+		
 		$valuesLogin = array(
 			new Oara_Curl_Parameter('combinedReports', 'on'),
 			new Oara_Curl_Parameter('refURL', '/gp/associates/network/reports/report.html?reportType=earningsReport')
