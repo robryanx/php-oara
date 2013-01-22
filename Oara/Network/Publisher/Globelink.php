@@ -105,6 +105,7 @@ class Oara_Network_Publisher_Globelink extends Oara_Network {
 			$valuesFormExport[] = new Oara_Curl_Parameter('count', 20);
 			$urls[] = new Oara_Curl_Request($commmisionUrl, $valuesFormExport);
 			$exportReport = $this->_client->get($urls);
+			var_dump($exportReport[0]);
 			$dom = new Zend_Dom_Query($exportReport[0]);
 			$results = $dom->query('.affs-list-r');
 			
@@ -118,7 +119,8 @@ class Oara_Network_Publisher_Globelink extends Oara_Network {
 				}
 				$auxTransactionList[] = $auxTransaction;
 			}
-			if (count($auxTransactionList) % 20 != 0){
+			
+			if (preg_match("/<li><span>&raquo;<\/span><\/li>/",$exportReport[0])){
 				$exit = true;
 			}
 			$page++;
