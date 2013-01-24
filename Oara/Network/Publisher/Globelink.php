@@ -111,9 +111,11 @@ class Oara_Network_Publisher_Globelink extends Oara_Network {
 			foreach ($results as $line){
 				$auxTransaction = array();
 				foreach($line->childNodes as $attribute){
-					$value = $attribute->nodeValue;
-					if ($value != null){
-						$auxTransaction[] = $attribute->nodeValue;
+					$value = trim((string)$attribute->nodeValue);
+					if (strlen($value) > 0){
+						if ($value != "n/a"){
+							$auxTransaction[] = $value;
+						}
 					}
 				}
 				$auxTransactionList[] = $auxTransaction;
@@ -126,25 +128,25 @@ class Oara_Network_Publisher_Globelink extends Oara_Network {
 		}
 		
 		foreach  ($auxTransactionList as $auxTransaction) {
-			$transactionDate = new Zend_Date($auxTransaction[1], "yyyy-MM-dd HH:mm:ss");
+			$transactionDate = new Zend_Date($auxTransaction[0], "yyyy-MM-dd HH:mm:ss");
 			
 			if ($dStartDate->compare($transactionDate) <= 0 && $dEndDate->compare($transactionDate) >= 0) {
 				$transaction = Array();
 				$transaction['merchantId'] = 1;
 				
 				$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
-				$transaction['unique_id'] = $auxTransaction[3];
+				$transaction['unique_id'] = $auxTransaction[1];
 				
 
-				if (strstr($auxTransaction[12], 'No')) {
+				if (strstr($auxTransaction[5], 'No')) {
 					$transaction['status'] = Oara_Utilities::STATUS_PENDING;
 				} else
-					if (strstr($auxTransaction[12], 'Yes')) {
+					if (strstr($auxTransaction[5], 'Yes')) {
 						$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
 					}
 					
-				$transaction['amount'] = $auxTransaction[6];
-				$transaction['commission'] = $auxTransaction[8];
+				$transaction['amount'] = $auxTransaction[2];
+				$transaction['commission'] = $auxTransaction[3];
 				$totalTransactions[] = $transaction;
 			}
 		}
