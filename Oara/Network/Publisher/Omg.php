@@ -200,10 +200,10 @@ class Oara_Network_Publisher_Omg extends Oara_Network {
 			foreach ($xml->Report->Report_Details_Group_Collection->Report_Details_Group as $transaction) {
 				$date = new Zend_Date(self::findAttribute($transaction, 'TransactionTime'), "yyyy-MM-ddTHH:mm:ss");
 
-				if (in_array((int) self::findAttribute($transaction, 'MID'), $merchantList) && $date->compare($dStartDate) >= 0 && $date->compare($dEndDate) <= 0) {
+				if (in_array((int) self::findAttribute($transaction, 'PID'), $merchantList) && $date->compare($dStartDate) >= 0 && $date->compare($dEndDate) <= 0) {
 
 					$obj['unique_id'] = self::findAttribute($transaction, 'TransactionId');
-					$obj['merchantId'] = self::findAttribute($transaction, 'MID');
+					$obj['merchantId'] = self::findAttribute($transaction, 'PID');
 					$obj['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
 
 					$obj['amount'] = 0;
@@ -260,107 +260,6 @@ class Oara_Network_Publisher_Omg extends Oara_Network {
 		$overviewArray = Array();
 		$transactionArray = Oara_Utilities::transactionMapPerDay($transactionList);
 		
-		$overviewExport = Oara_Utilities::cloneArray($this->_exportOverviewParameters);
-		$overviewExport[] = new Oara_Curl_Parameter('StartYear', $dStartDate->get(Zend_Date::YEAR));
-		$overviewExport[] = new Oara_Curl_Parameter('StartMonth', $dStartDate->get(Zend_Date::MONTH));
-		$overviewExport[] = new Oara_Curl_Parameter('StartDay', $dStartDate->get(Zend_Date::DAY));
-		$overviewExport[] = new Oara_Curl_Parameter('EndYear', $dEndDate->get(Zend_Date::YEAR));
-		$overviewExport[] = new Oara_Curl_Parameter('EndMonth', $dEndDate->get(Zend_Date::MONTH));
-		$overviewExport[] = new Oara_Curl_Parameter('EndDay', $dEndDate->get(Zend_Date::DAY));
-		$overviewExport[] = new Oara_Curl_Parameter('Merchant', '0');
-
-		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://admin.omgpm.com/v2/Reports/Affiliate/DailyExport.aspx?', $overviewExport);
-		$exportReport = $this->_client->get($urls);
-		$xml = self::loadXml($exportReport[0]);
-		if (isset($xml->Report->Detail_Collection->Detail)) {
-			
-			$dateArray = Oara_Utilities::daysOfDifference($dStartDate, $dEndDate);
-			$dateArraySize = sizeof($dateArray);
-			$urls = array();
-			for ($i = 0; $i < $dateArraySize; $i++) {
-				$overviewExport = Oara_Utilities::cloneArray($this->_exportOverviewParameters);
-				$overviewExport[] = new Oara_Curl_Parameter('StartYear', $dateArray[$i]->get(Zend_Date::YEAR));
-				$overviewExport[] = new Oara_Curl_Parameter('StartMonth', $dateArray[$i]->get(Zend_Date::MONTH));
-				$overviewExport[] = new Oara_Curl_Parameter('StartDay', $dateArray[$i]->get(Zend_Date::DAY));
-				$overviewExport[] = new Oara_Curl_Parameter('EndYear', $dateArray[$i]->get(Zend_Date::YEAR));
-				$overviewExport[] = new Oara_Curl_Parameter('EndMonth', $dateArray[$i]->get(Zend_Date::MONTH));
-				$overviewExport[] = new Oara_Curl_Parameter('EndDay', $dateArray[$i]->get(Zend_Date::DAY));
-				$overviewExport[] = new Oara_Curl_Parameter('Merchant', '0');
-				$urls[] = new Oara_Curl_Request('http://admin.omgpm.com/v2/Reports/Affiliate/DailyExport.aspx?', $overviewExport);
-			}
-			$exportReport = $this->_client->get($urls);
-			$exportReportNumber = count($exportReport);
-
-			for ($i = 0; $i < $exportReportNumber; $i++) {
-				$groupMerchantOverview = array();
-				$xml = self::loadXml($exportReport[$i]);
-				if (isset($xml->Report->Detail_Collection->Detail)) {
-					$overviewList = $xml->Report->Detail_Collection->Detail;
-					$overviewListAux = $xml->Report->Detail_Collection->Detail;
-					foreach ($overviewList as $overview) {
-						if (isset($merchantMap[self::findAttribute($overview, 'Merchant')]) && in_array((int) $merchantMap[self::findAttribute($overview, 'Merchant')], $merchantList)) {
-
-							$merchantId = $merchantMap[self::findAttribute($overview, 'Merchant')];
-							if (!in_array($merchantId, $groupMerchantOverview)) {
-								$groupMerchantOverview[] = $merchantId;
-
-								$obj = array();
-								$obj['merchantId'] = $merchantId;
-								$obj['date'] = $dateArray[$i]->toString("yyyy-MM-dd HH:mm:ss");
-
-								$obj['impression_number'] = 0;
-								$obj['click_number'] = 0;
-								foreach ($overviewListAux as $overviewAux) {
-									if (isset($merchantMap[self::findAttribute($overviewAux, 'Merchant')]) && in_array((int) $merchantMap[self::findAttribute($overviewAux, 'Merchant')], $merchantList)) {
-
-										$merchantIdAux = $merchantMap[self::findAttribute($overviewAux, 'Merchant')];
-										if ($merchantId == $merchantIdAux) {
-											$obj['impression_number'] += self::findAttribute($overviewAux, 'Impressions');
-											$obj['click_number'] += self::findAttribute($overviewAux, 'Clicks');
-										}
-									}
-								}
-								$obj['transaction_number'] = 0;
-
-								$obj['transaction_confirmed_commission'] = 0;
-								$obj['transaction_confirmed_value'] = 0;
-								$obj['transaction_pending_commission'] = 0;
-								$obj['transaction_pending_value'] = 0;
-								$obj['transaction_declined_commission'] = 0;
-								$obj['transaction_declined_value'] = 0;
-								$obj['transaction_paid_commission'] = 0;
-								$obj['transaction_paid_value'] = 0;
-
-								$transactionDateArray = Oara_Utilities::getDayFromArray($obj['merchantId'], $transactionArray, $dateArray[$i], true);
-								foreach ($transactionDateArray as $transaction) {
-									$obj['transaction_number']++;
-									if ($transaction['status'] == Oara_Utilities::STATUS_CONFIRMED) {
-										$obj['transaction_confirmed_commission'] += (double) $transaction['commission'];
-										$obj['transaction_confirmed_value'] += (double) $transaction['amount'];
-									} else
-										if ($transaction['status'] == Oara_Utilities::STATUS_PENDING) {
-											$obj['transaction_pending_commission'] += (double) $transaction['commission'];
-											$obj['transaction_pending_value'] += (double) $transaction['amount'];
-										} else
-											if ($transaction['status'] == Oara_Utilities::STATUS_DECLINED) {
-												$obj['transaction_declined_commission'] += (double) $transaction['commission'];
-												$obj['transaction_declined_value'] += (double) $transaction['amount'];
-											} else
-												if ($transaction['status'] == Oara_Utilities::STATUS_PAID) {
-													$overview['transaction_paid_value'] += (double) $transaction['amount'];
-													$overview['transaction_paid_commission'] += (double) $transaction['commission'];
-												}
-								}
-								if (Oara_Utilities::checkRegister($obj)) {
-									$overviewArray[] = $obj;
-								}
-							}
-						}
-					}
-				}
-			}
-		}
 
 		foreach ($transactionArray as $merchantId => $merchantTransaction) {
 			foreach ($merchantTransaction as $date => $transactionList) {
@@ -369,7 +268,6 @@ class Oara_Network_Publisher_Omg extends Oara_Network {
 				$overview['merchantId'] = $merchantId;
 				$overviewDate = new Zend_Date($date, "yyyy-MM-dd");
 				$overview['date'] = $overviewDate->toString("yyyy-MM-dd HH:mm:ss");
-				unset($overviewDate);
 				$overview['click_number'] = 0;
 				$overview['impression_number'] = 0;
 				$overview['transaction_number'] = 0;
@@ -453,7 +351,7 @@ class Oara_Network_Publisher_Omg extends Oara_Network {
 				$i = 0;
 				while (!$enc && $i < count($parameters)) {
 					$parameterValue = explode('=', $parameters[$i]);
-					if ($parameterValue[0] == 'MID') {
+					if ($parameterValue[0] == 'PID') {
 						$obj['cid'] = $parameterValue[1];
 						$enc = true;
 					}
@@ -463,7 +361,7 @@ class Oara_Network_Publisher_Omg extends Oara_Network {
 					throw new Exception('Merchant without MID');
 				}
 				if (!isset($merchantsAux[$obj['cid']])) {
-					$obj['name'] = self::findAttribute($merchantData, 'MerchantName');
+					$obj['name'] = self::findAttribute($merchantData, 'ProductName')." (".self::findAttribute($merchantData, 'MerchantName').")";
 					$obj['description'] = self::findAttribute($merchantData, 'ProductDescription');
 					$obj['url'] = self::findAttribute($merchantData, 'WebsiteURL');
 					$obj['sector'] = self::findAttribute($merchantData, 'Sector');
@@ -580,7 +478,6 @@ class Oara_Network_Publisher_Omg extends Oara_Network {
 		$valuesFromExport[] = new Oara_Curl_Parameter('InvoicePayoutID', "$paymentId,");
 		$urls[] = new Oara_Curl_Request('https://admin.omgpm.com/v2/reports/affiliate/leads/leadsbyinvoiceexport.aspx?', $valuesFromExport);
 		$exportReport = $this->_client->get($urls);
-		echo($exportReport[0]);
 		$xml = self::loadXml($exportReport[0]);
 		if (isset($xml->Leads->Detail_Collection)) {
 			foreach ($xml->Leads->Detail_Collection->Detail as $detail) {
