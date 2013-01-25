@@ -63,14 +63,15 @@ class Oara_Network_Publisher_Omg extends Oara_Network {
 		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
 
 		$this->_exportMerchantParameters = array(new Oara_Curl_Parameter('searchcampaigns', ''),
-			new Oara_Curl_Parameter('ProductTypeID', '1'),
+			new Oara_Curl_Parameter('ProductTypeID', '0'),
 			new Oara_Curl_Parameter('SectorID', '0'),
 			new Oara_Curl_Parameter('CountryIDProgs', '1'),
-			new Oara_Curl_Parameter('ProgammeStatus', ''),
+			new Oara_Curl_Parameter('ProgammeStatus', 'live'),
 			new Oara_Curl_Parameter('geturl', 'Get+URL'),
 			new Oara_Curl_Parameter('ExportFormat', 'XML')
 		);
 
+		
 		$valuesFromExport = $this->_exportMerchantParameters;
 		$urls = array();
 		$urls[] = new Oara_Curl_Request('https://admin.omgpm.com/en/clientarea/affiliates/affiliate_campaigns.asp?', $valuesFromExport);
