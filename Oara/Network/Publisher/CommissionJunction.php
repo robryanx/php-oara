@@ -123,7 +123,7 @@ class Oara_Network_Publisher_CommissionJunction extends Oara_Network {
 		$urls = array();
 		$urls[] = new Oara_Curl_Request('https://members.cj.com/member/publisher/home.do', array());
 		$result = $this->_client->get($urls);
-		if (preg_match("/a href=\"\/member\/(.*)?\/foundation/", $result[0], $matches)) {
+		if (preg_match("/a href=\"\/member\/(.*)?\/publisher/", $result[0], $matches)) {
 			$this->_memberId = trim($matches[1]);
 		} else {
 			return false;
