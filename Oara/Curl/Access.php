@@ -333,7 +333,7 @@ class Oara_Curl_Access {
 	 * @param array $data
 	 * @return unknown_type
 	 */
-	private function getPostFields(array $data) {
+	public function getPostFields(array $data) {
 
 		$return = array();
 
