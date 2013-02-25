@@ -109,7 +109,7 @@ class Oara_Network_Publisher_Ebay extends Oara_Network {
 		self::logIn();
 		$totalTransactions = array();
 		
-		
+		/*
 		$epcStartDate = clone $dStartDate;
 		$epcStartDate->addDay(1);
 		$epcEndDate = clone $dEndDate;
@@ -149,7 +149,7 @@ class Oara_Network_Publisher_Ebay extends Oara_Network {
 			$transaction['commission'] = Oara_Utilities::parseDouble($transactionExportArray[6]);
 			$totalTransactions[] = $transaction;
 		}
-
+		*/
 		self::logIn();
 		
 		$valuesFromExport = Oara_Utilities::cloneArray($this->_exportTransactionParameters);
@@ -176,19 +176,23 @@ class Oara_Network_Publisher_Ebay extends Oara_Network {
 		$num = count($exportData);
 		for ($i = 1; $i < $num; $i++) {
 			$transactionExportArray = str_getcsv($exportData[$i], "\t");
-			$transaction = Array();
-			$transaction['merchantId'] = 1;
-			$transactionDate = new Zend_Date($transactionExportArray[1], 'yyyy-MM-dd', 'en');
-			$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
-			unset($transactionDate);
-			if ($transactionExportArray[10] != null) {
-				$transaction['custom_id'] = $transactionExportArray[10];
+			if ($transactionExportArray[3] != "1"){
+			
+				$transaction = Array();
+				$transaction['merchantId'] = 1;
+				$transactionDate = new Zend_Date($transactionExportArray[0], 'yyyy-MM-dd', 'en');
+				$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+				unset($transactionDate);
+				if ($transactionExportArray[10] != null) {
+					$transaction['custom_id'] = $transactionExportArray[10];
+				}
+	
+				$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
+				
+				$transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[3]);
+				$transaction['commission'] = Oara_Utilities::parseDouble($transactionExportArray[3]);
+				$totalTransactions[] = $transaction;
 			}
-
-			$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
-			$transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[3]);
-			$transaction['commission'] = Oara_Utilities::parseDouble($transactionExportArray[3]);
-			$totalTransactions[] = $transaction;
 		}
 
 		return $totalTransactions;
