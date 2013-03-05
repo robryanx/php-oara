@@ -150,8 +150,6 @@ class Oara_Network_Publisher_Ebay extends Oara_Network {
 			$totalTransactions[] = $transaction;
 		}
 		*/
-		self::logIn();
-		
 		$valuesFromExport = Oara_Utilities::cloneArray($this->_exportTransactionParameters);
 		$valuesFromExport[] = new Oara_Curl_Parameter('start_date', $dStartDate->toString("M/d/yy"));
 		$valuesFromExport[] = new Oara_Curl_Parameter('start_date_month', $dStartDate->toString("MM"));
@@ -176,20 +174,20 @@ class Oara_Network_Publisher_Ebay extends Oara_Network {
 		$num = count($exportData);
 		for ($i = 1; $i < $num; $i++) {
 			$transactionExportArray = str_getcsv($exportData[$i], "\t");
-			if ($transactionExportArray[3] != "1"){
+			if ($transactionExportArray[2] == "Winning Bid (Revenue)"){
 			
 				$transaction = Array();
 				$transaction['merchantId'] = 1;
-				$transactionDate = new Zend_Date($transactionExportArray[0], 'yyyy-MM-dd', 'en');
+				$transactionDate = new Zend_Date($transactionExportArray[1], 'yyyy-MM-dd', 'en');
 				$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 				unset($transactionDate);
-				if ($transactionExportArray[10] != null) {
-					$transaction['custom_id'] = $transactionExportArray[10];
+				if ($transactionExportArray[12] != null) {
+					$transaction['custom_id'] = $transactionExportArray[12];
 				}
 	
 				$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
 				
-				$transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[3]);
+				$transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[15]);
 				$transaction['commission'] = Oara_Utilities::parseDouble($transactionExportArray[3]);
 				$totalTransactions[] = $transaction;
 			}
