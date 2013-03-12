@@ -173,6 +173,7 @@ class Oara_Network_Publisher_Taxis extends Oara_Network {
 					if ($invoiceDate->compare($dStartDate) >= 0 && $invoiceDate->compare($dEndDate) <= 0) {
 
 						$merchantId = null;
+						echo $invoice["name"]."\n\n";
 						if (preg_match("/various/", $invoice["name"])) {
 							$merchantId = $this->_airportMap["Various"];
 						} else {
