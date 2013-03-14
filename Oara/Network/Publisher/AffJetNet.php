@@ -265,6 +265,7 @@ class Oara_Network_Publisher_AffJetNet extends Oara_Network {
 
 		foreach ($affjetNetPaymentList as $payment) {
 			$obj = Array();
+			$obj['pid'] = $payment->id;
 			$obj['date'] = $payment->date;
 			$obj['value'] = $payment->value;
 			$obj['method'] = $payment->method;
