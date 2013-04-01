@@ -160,35 +160,45 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 		$urls = array();
 		$urls[] = new Oara_Curl_Request($this->_networkServer."/gp/associates/network/main.html", array());
 		$exportReport = $this->_client->get($urls);
-		
 		$dom = new Zend_Dom_Query($exportReport[0]);
-		$results = $dom->query('#sign-in');
+		
+		$results = $dom->query('#ap_signin_form');
 		$count = count($results);
 		if ($count != 0) {
 			$connection = false;
 		} else {
-			$results = $dom->query('#identitybox');
-			$idBox = array();
-
-			$results = $dom->query('select[name="idbox_store_id"]');
+			$results = $dom->query('#sign-in');
 			$count = count($results);
-			if ($count == 0) {
-				$idBox[] = "";
+			if ($count != 0) {
+				$connection = false;
 			} else {
-				foreach ($results as $result) {
-					$optionList = $result->childNodes;
-					$optionNumber = $optionList->length;
-					for ($i = 0; $i < $optionNumber; $i++) {
-						$idBoxName = $optionList->item($i)->attributes->getNamedItem("value")->nodeValue;
-						if (!in_array($idBoxName, $idBox)) {
-							$idBox[] = $idBoxName;
+				$results = $dom->query('#identitybox');
+				$idBox = array();
+	
+				$results = $dom->query('select[name="idbox_store_id"]');
+				$count = count($results);
+				if ($count == 0) {
+					$idBox[] = "";
+				} else {
+					foreach ($results as $result) {
+						$optionList = $result->childNodes;
+						$optionNumber = $optionList->length;
+						for ($i = 0; $i < $optionNumber; $i++) {
+							$idBoxName = $optionList->item($i)->attributes->getNamedItem("value")->nodeValue;
+							if (!in_array($idBoxName, $idBox)) {
+								$idBox[] = $idBoxName;
+							}
 						}
 					}
 				}
+	
+				$this->_idBox = $idBox;
 			}
-
-			$this->_idBox = $idBox;
+			
 		}
+		
+		
+		
 		return $connection;
 	}
 	/**
@@ -455,7 +465,7 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 
 				}
 			} else {
-				throw new Exception('Problem getting the payments');
+				//throw new Exception('Problem getting the payments');
 			}
 		}
 		return $paymentHistory;
