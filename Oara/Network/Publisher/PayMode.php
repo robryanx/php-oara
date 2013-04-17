@@ -393,7 +393,7 @@ class Oara_Network_Publisher_PayMode extends Oara_Network {
 					$payment['pid'] = $paymentArray[0];
 					$paymentDate = new Zend_Date($paymentArray[3], 'MM/dd/yyyy', 'en');
 					$payment['date'] = $paymentDate->toString("yyyy-MM-dd HH:mm:ss");
-					$payment['value'] = Oara_Utilities::parseDouble($paymentArray[10]);
+					$payment['value'] = Oara_Utilities::parseDouble($paymentArray[9]);
 					$payment['method'] = "BACS";
 					$paymentHistory[] = $payment;
 

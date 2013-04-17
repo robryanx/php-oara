@@ -51,8 +51,8 @@ class Oara_Network_Publisher_FubraWorldSales extends Oara_Network {
 	 */
 	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = array();
-		$invoiceList = $this->_cbService->listInvoices(0, "sales", "unpaid", $dStartDate->toString("yyyy-MM-dd HH:mm:ss"));
-		$invoiceList = array_merge($invoiceList, $this->_cbService->listInvoices(0, "sales", "paid", $dStartDate->toString("yyyy-MM-dd HH:mm:ss")));
+		$invoiceList = $this->_cbService->listInvoices(0, "sales", "unpaid", $dStartDate->toString("yyyy-MM-dd"));
+		$invoiceList = array_merge($invoiceList, $this->_cbService->listInvoices(0, "sales", "paid", $dStartDate->toString("yyyy-MM-dd")));
 		foreach ($invoiceList as $invoice){
 			if (substr($invoice->reference,0,3) == "FWS"){
 				$invoiceDate = new Zend_Date($invoice->dateCreated, "yyyy-MM-dd");
