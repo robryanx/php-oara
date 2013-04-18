@@ -386,9 +386,13 @@ class Oara_Utilities {
 		$str = str_replace("&amp", "&", $str);
 		$pairs = explode("&", $str);
 		foreach ($pairs as $pair) {
-			list($k, $v) = @array_map("urldecode", explode("=", $pair));
-			$op[$k] = $v;
-			
+			$values = explode("=", $pair);
+			if (isset($values[0])){
+				$op[urldecode($values[0])] = "";
+			}
+			if (isset($values[1])){
+				$op[urldecode($values[0])] = urldecode($values[1]);
+			}
 		}
 		return $op;
 	}
