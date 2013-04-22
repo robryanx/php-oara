@@ -269,22 +269,28 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 		$num = count($exportData);
 		for ($i = 2; $i < $num; $i++) {
 			$transactionExportArray = str_getcsv(str_replace("\"", "", $exportData[$i]), "\t");
-			$transaction = Array();
-			$transaction['merchantId'] = 1;
-			if (!isset($transactionExportArray[5])) {
-				throw new Exception("Request failed");
-			}
 			$transactionDate = new Zend_Date($transactionExportArray[5], 'MMMM d,yyyy', 'en');
-			$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
-			unset($transactionDate);
-			if ($transactionExportArray[4] != null) {
-				$transaction['custom_id'] = $transactionExportArray[4];
+			if ($date->toString("yyyy-MM-dd") == $transactionDate->toString("yyyy-MM-dd")){
+				$transaction = Array();
+				$transaction['merchantId'] = 1;
+				if (!isset($transactionExportArray[5])) {
+					throw new Exception("Request failed");
+				}
+				
+				$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+				unset($transactionDate);
+				if ($transactionExportArray[4] != null) {
+					$transaction['custom_id'] = $transactionExportArray[4];
+				}
+	
+				$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
+				$transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[9]);
+				$transaction['commission'] = Oara_Utilities::parseDouble($transactionExportArray[10]);
+				$totalTransactions[] = $transaction;
+				
+				
 			}
-
-			$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
-			$transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[9]);
-			$transaction['commission'] = Oara_Utilities::parseDouble($transactionExportArray[10]);
-			$totalTransactions[] = $transaction;
+		
 		}
 		return $totalTransactions;
 	}
