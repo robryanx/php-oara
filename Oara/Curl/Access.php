@@ -86,9 +86,10 @@ class Oara_Curl_Access {
 			CURLOPT_HTTPAUTH => CURLAUTH_ANY,
 			CURLOPT_AUTOREFERER => true,
 			CURLOPT_SSL_VERIFYPEER => false,
+			CURLOPT_HEADER => false,
 			//CURLOPT_VERBOSE => true,
 		);
-
+		
 		//Init curl
 		$ch = curl_init();
 		$options = $this->_options;

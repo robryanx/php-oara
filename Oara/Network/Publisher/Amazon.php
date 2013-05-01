@@ -81,75 +81,127 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 		$password = $this->_credentials['password'];
 		$network = $this->_credentials['network'];
 
+		$extension = "";
 		$this->_networkServer = "";
 		switch ($network) {
 		case "uk":
 			$this->_networkServer = "https://affiliate-program.amazon.co.uk";
+			$extension = ".co.uk";
 			break;
 		case "es":
 			$this->_networkServer = "https://afiliados.amazon.es";
+			$extension = ".es";
 			break;
 		case "us":
 			$this->_networkServer = "https://affiliate-program.amazon.com";
+			$extension = ".com";
 			break;
 		case "ca":
 			$this->_networkServer = "https://associates.amazon.ca";
+			$extension = ".ca";
 			break;
 		case "de":
 			$this->_networkServer = "https://partnernet.amazon.de";
+			$extension = ".de";
 			break;
 		case "fr":
 			$this->_networkServer = "https://partenaires.amazon.fr";
+			$extension = ".fr";
 			break;
 		case "it":
 			$this->_networkServer = "https://programma-affiliazione.amazon.it";
+			$extension = ".it";
 			break;
 		case "jp":
 			$this->_networkServer = "https://affiliate.amazon.co.jp";
+			$extension = ".co.jp";
 			break;
 		case "cn":
 			$this->_networkServer = "https://associates.amazon.cn";
+			$extension = ".cn";
 			break;
 		}
 
-		//Get html after Js
-		$hiddenParams = array();
-		if ($network == "us") {
-			$loginUrl = $this->_networkServer;
-			$this->_client = new Oara_Curl_Access($loginUrl, array(), $this->_credentials);
-			$cookies = self::readCookies($this->_credentials);
-			$hiddenParams['sessionId'] = $cookies['session-id'];
-			$hiddenParams['query'] = "/gp/associates/join/landing/main.html";
-			$hiddenParams['path'] = "/gp/associates/login/login.html";
-			$hiddenParams['action'] = "sign-in";
-			$hiddenParams['mode'] = "1";
-
-		} else {
-			$hiddenParams = self::getHiddenParamsAfterJs($this->_credentials);
-		}
-
-		$valuesLogin = array(
-			new Oara_Curl_Parameter('email', $user),
-			new Oara_Curl_Parameter('password', $password),
-			new Oara_Curl_Parameter('x', '33'),
-			new Oara_Curl_Parameter('y', '10')
-		);
-
-		foreach ($hiddenParams as $hiddenParamName => $hiddenParamValue) {
-			$valuesLogin[] = new Oara_Curl_Parameter($hiddenParamName, $hiddenParamValue);
-		}
-
-		$urls = array();
-		$urls[] = new Oara_Curl_Request($this->_networkServer."/gp/flex/sign-in/select.html?", $valuesLogin);
-		$contentList = $this->_client->post($urls);
+		$this->_client = new Oara_Curl_Access($this->_networkServer."/gp/associates/network/main.html", array(), $this->_credentials);
 		
-		$valuesLogin = array(
-			new Oara_Curl_Parameter('combinedReports', 'on'),
-			new Oara_Curl_Parameter('refURL', '/gp/associates/network/reports/report.html?reportType=earningsReport')
-		);
-		$urls = array();
-		$urls[] = new Oara_Curl_Request($this->_networkServer."/gp/associates/x-site/combinedReports.html?", $valuesLogin);
-		$this->_client->get($urls);
+		// initial login page which redirects to correct sign in page, sets some cookies
+		$URL = "https://www.amazon$extension/ap/signin?openid.assoc_handle=amzn_associates_$network&openid.return_to={$this->_networkServer}&openid.mode=checkid_setup&openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0&openid.claimed_id=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.pape.max_auth_age=0&openid.ns.pape=http%3A%2F%2Fspecs.openid.net%2Fextensions%2Fpape%2F1.0&openid.identity=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select";
+		
+		$ch = curl_init();
+		
+		if (!isset($this->_credentials["cookiesDir"])) {
+			$this->_credentials["cookiesDir"] = "Oara";
+		}
+		if (!isset($this->_credentials["cookiesSubDir"])) {
+			$this->_credentials["cookiesSubDir"] = "Import";
+		}
+		if (!isset($this->_credentials["cookieName"])) {
+			$this->_credentials["cookieName"] = "default";
+		}
+		
+		$dir = realpath(dirname(__FILE__)).'/../../data/curl/'.$this->_credentials['cookiesDir'].'/'.$this->_credentials['cookiesSubDir'].'/';
+
+		$cookieName = $this->_credentials["cookieName"];
+
+		$cookies = $dir.$cookieName.'_cookies.txt';
+
+		curl_setopt($ch, CURLOPT_URL, $URL);
+		curl_setopt($ch, CURLOPT_COOKIEJAR, $cookies);
+		curl_setopt($ch, CURLOPT_COOKIEFILE, $cookies);
+		curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.2.13) Gecko/20101206 Ubuntu/10.10 (maverick) Firefox/3.6.13');
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		curl_setopt($ch, CURLOPT_HEADER, 0);
+		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+
+		$page = curl_exec($ch);
+		
+		// try to find the actual login form
+		if (!preg_match('/<form name="signIn".*?<\/form>/is', $page, $form)) {
+			die('Failed to find log in form!');
+		}
+
+		$form = $form[0];
+
+		// find the action of the login form
+		if (!preg_match('/action="([^"]+)"/i', $form, $action)) {
+			die('Failed to find login form url');
+		}
+
+		$URL2 = $action[1]; // this is our new post url
+
+		// find all hidden fields which we need to send with our login, this includes security tokens
+		$count = preg_match_all('/<input type="hidden"\s*name="([^"]*)"\s*value="([^"]*)"/i', $form, $hiddenFields);
+
+		$postFields = array();
+
+		// turn the hidden fields into an array
+		for ($i = 0; $i < $count; ++$i) {
+			$postFields[$hiddenFields[1][$i]] = $hiddenFields[2][$i];
+		}
+
+		// add our login values
+		$postFields['email'] = $user;
+		$postFields['create'] = 0;
+		$postFields['password'] = $password;
+
+		$post = '';
+
+		// convert to string, this won't work as an array, form will not accept multipart/form-data, only application/x-www-form-urlencoded
+		foreach ($postFields as $key => $value) {
+			$post .= $key.'='.urlencode($value).'&';
+		}
+
+		$post = substr($post, 0, -1);
+
+		// set additional curl options using our previous options
+		curl_setopt($ch, CURLOPT_URL, $URL2);
+		curl_setopt($ch, CURLOPT_REFERER, $URL);
+		curl_setopt($ch, CURLOPT_POST, 1);
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
+
+		curl_exec($ch); // make request
+		
+
 	}
 	/**
 	 * Check the connection
@@ -161,7 +213,7 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 		$urls[] = new Oara_Curl_Request($this->_networkServer."/gp/associates/network/main.html", array());
 		$exportReport = $this->_client->get($urls);
 		$dom = new Zend_Dom_Query($exportReport[0]);
-		
+
 		$results = $dom->query('#ap_signin_form');
 		$count = count($results);
 		if ($count != 0) {
@@ -174,7 +226,7 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 			} else {
 				$results = $dom->query('#identitybox');
 				$idBox = array();
-	
+
 				$results = $dom->query('select[name="idbox_store_id"]');
 				$count = count($results);
 				if ($count == 0) {
@@ -191,14 +243,12 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 						}
 					}
 				}
-	
+
 				$this->_idBox = $idBox;
 			}
-			
+
 		}
-		
-		
-		
+
 		return $connection;
 	}
 	/**
@@ -270,27 +320,26 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 		for ($i = 2; $i < $num; $i++) {
 			$transactionExportArray = str_getcsv(str_replace("\"", "", $exportData[$i]), "\t");
 			$transactionDate = new Zend_Date($transactionExportArray[5], 'MMMM d,yyyy', 'en');
-			if ($date->toString("yyyy-MM-dd") == $transactionDate->toString("yyyy-MM-dd")){
+			if ($date->toString("yyyy-MM-dd") == $transactionDate->toString("yyyy-MM-dd")) {
 				$transaction = Array();
 				$transaction['merchantId'] = 1;
 				if (!isset($transactionExportArray[5])) {
 					throw new Exception("Request failed");
 				}
-				
+
 				$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 				unset($transactionDate);
 				if ($transactionExportArray[4] != null) {
 					$transaction['custom_id'] = $transactionExportArray[4];
 				}
-	
+
 				$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
 				$transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[9]);
 				$transaction['commission'] = Oara_Utilities::parseDouble($transactionExportArray[10]);
 				$totalTransactions[] = $transaction;
-				
-				
+
 			}
-		
+
 		}
 		return $totalTransactions;
 	}
@@ -472,7 +521,7 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 				}
 			} else {
 				//throw new Exception('Problem getting the payments');
-			}
+				}
 		}
 		return $paymentHistory;
 	}
@@ -518,133 +567,5 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 		}
 		return $innerHTML;
 	}
-	/**
-	 *
-	 * Gets the cookies value for this network
-	 * @param unknown_type $credentials
-	 */
-	private function readCookies($credentials) {
-		$dir = realpath(dirname(__FILE__)).'/../../data/curl/'.$credentials['cookiesDir'].'/'.$credentials['cookiesSubDir'].'/';
-		$cookieName = $credentials["cookieName"];
-		$cookies = $dir.$cookieName.'_cookies.txt';
-
-		$aCookies = array();
-		$aLines = file($cookies);
-		foreach ($aLines as $line) {
-			if ('#' == $line {
-				0})
-					continue;
-				$arr = explode("\t", $line);
-				if (isset($arr[5]) && isset($arr[6]))
-					$aCookies[$arr[5]] = str_replace("\n", "", $arr[6]);
-			}
-			return $aCookies;
-		}
-		/**
-		 *
-		 * Get the HTML after executing Java Script
-		 */
-		private function getHiddenParamsAfterJs($credentials) {
-			$hiddenParams = array();
-
-			$loginUrl = $this->_networkServer;
-			$this->_client = new Oara_Curl_Access($loginUrl, array(), $credentials);
-
-			$cookies = self::readCookies($credentials);
-			$cookiesString = "";
-			$cookiesNumber = count($cookies);
-			$i = 0;
-			foreach ($cookies as $cookieName => $cookieValue) {
-				$cookiesString .= $cookieName."=".$cookieValue;
-				if ($i != (count($cookies) - 1)) {
-					$cookiesString .= "&";
-				}
-				$i++;
-			}
-			//AffJet's way to call the JAR FILE, if you are a PHP-OARA user you need to use the other methong, calling java directly
-			if (isset($credentials["httpLogin"])) {
-				$amazonServiceHttpLogin = $credentials["httpLogin"];
-				$amazonJavaServer = $credentials["javaServer"];
-				$amazonServiceParseUrl = $this->_networkServer."/";
-
-				$amazonServiceUrl = "$amazonJavaServer?&url=$amazonServiceParseUrl&cookie=".urlencode($cookiesString);
-
-				$it = 0;
-
-				while (count($hiddenParams) < 5 && $it != 5) {
-					$hiddenParams = array();
-					$curlSession = curl_init($amazonServiceUrl);
-					curl_setopt_array($curlSession, array(
-						CURLOPT_USERAGENT => "Mozilla/5.0 (X11; U; Linux i686; es-CL; rv:1.9.2.17) Gecko/20110422 Ubuntu/10.10 (maverick) Firefox/3.6.17",
-						CURLOPT_FAILONERROR => true,
-						CURLOPT_RETURNTRANSFER => true,
-						CURLOPT_HTTPAUTH => CURLAUTH_ANY,
-						CURLOPT_AUTOREFERER => true,
-						CURLOPT_SSL_VERIFYPEER => false,
-						CURLOPT_USERPWD => $amazonServiceHttpLogin
-					));
-					$htmlAfterJs = curl_exec($curlSession);
-					curl_close($curlSession);
-
-					$hiddenParamList = explode("\n", $htmlAfterJs);
-					foreach ($hiddenParamList as $hiddenParam) {
-						$characterNumber = strpos($hiddenParam, ":");
-						$hiddenName = substr($hiddenParam, 0, $characterNumber);
-						$hiddenValue = substr($hiddenParam, $characterNumber + 1);
-						$hiddenParams[$hiddenName] = $hiddenValue;
-					}
-
-					$it++;
-				}
-
-				if ($it == 5) {
-					throw new Exception("Couldn't read the hidden parameters");
-				}
-
-			} else {
-				$descriptorspec = array(
-					0 => array('pipe', 'r'),
-					1 => array('pipe', 'w'),
-					2 => array('pipe', 'w')
-				);
-
-				$url = $this->_networkServer."/";
-				$jarPath = realpath(dirname(__FILE__)).'/Amazon/amazon.jar ';
-				$metadataReader = proc_open("java -jar $jarPath $url \"$cookiesString\"", $descriptorspec, $pipes, null, null);
-				$htmlAfterJs = '';
-				$error = '';
-				if (is_resource($metadataReader)) {
-
-					$stdin = $pipes[0];
-
-					$stdout = $pipes[1];
-
-					$stderr = $pipes[2];
-
-					while (!feof($stdout)) {
-						$htmlAfterJs .= fgets($stdout);
-					}
-
-					while (!feof($stderr)) {
-						$error .= fgets($stderr);
-					}
-
-					fclose($stdin);
-					fclose($stdout);
-					fclose($stderr);
-				}
-
-				$exit_code = proc_close($metadataReader);
-
-				$dom = new Zend_Dom_Query($htmlAfterJs);
-				$results = $dom->query('input[type="hidden"]');
-				$count = count($results);
-				foreach ($results as $result) {
-					$hiddenName = $result->attributes->getNamedItem("name")->nodeValue;
-					$hiddenValue = $result->attributes->getNamedItem("value")->nodeValue;
-					$hiddenParams[$hiddenName] = $hiddenValue;
-				}
-			}
-			return $hiddenParams;
-		}
+	
 	}
