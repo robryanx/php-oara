@@ -76,7 +76,6 @@ class Oara_Network_Publisher_AffiliateGateway extends Oara_Network {
 		$urls = array();
 		$urls[] = new Oara_Curl_Request('https://www.tagpm.com/affiliate_home.html', array());
 		$exportReport = $this->_client->get($urls);
-
 		$dom = new Zend_Dom_Query($exportReport[0]);
 		$results = $dom->query('.logout-a');
 		if (count($results) > 0) {
@@ -131,36 +130,41 @@ class Oara_Network_Publisher_AffiliateGateway extends Oara_Network {
 
 		$urls = array();
 		$urls[] = new Oara_Curl_Request('https://www.tagpm.com/affiliate_statistic_transaction.html?', $valuesFromExport);
-		$exportReport = $this->_client->post($urls);
-		$exportData = str_getcsv($exportReport[0], "\n");
-		$num = count($exportData);
-		for ($i = 1; $i < $num; $i++) {
-			$transactionExportArray = str_getcsv($exportData[$i], ",");
-			if (isset($merchantMap[$transactionExportArray[2]])) {
-				$merchantId = $merchantMap[$transactionExportArray[2]];
-				if (in_array($merchantId, $merchantList)) {
+		try {
 
-					$transaction = Array();
-					$transaction['merchantId'] = $merchantId;
-					$transactionDate = new Zend_Date($transactionExportArray[4], 'dd/MM/yyyy HH:mm:ss', 'en');
-					$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
-					$transaction['unique_id'] = $transactionExportArray[0];
-					$transaction['custom_id'] = $transactionExportArray[8];
+			$exportReport = $this->_client->get($urls);
+			$exportData = str_getcsv($exportReport[0], "\n");
+			$num = count($exportData);
+			for ($i = 1; $i < $num; $i++) {
+				$transactionExportArray = str_getcsv($exportData[$i], ",");
+				if (isset($merchantMap[$transactionExportArray[2]])) {
+					$merchantId = $merchantMap[$transactionExportArray[2]];
+					if (in_array($merchantId, $merchantList)) {
 
-					if ($transactionExportArray[9] == "Approved") {
-						$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
-					} else
-						if ($transactionExportArray[9] == "Pending") {
-							$transaction['status'] = Oara_Utilities::STATUS_PENDING;
+						$transaction = Array();
+						$transaction['merchantId'] = $merchantId;
+						$transactionDate = new Zend_Date($transactionExportArray[4], 'dd/MM/yyyy HH:mm:ss', 'en');
+						$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+						$transaction['unique_id'] = $transactionExportArray[0];
+						$transaction['custom_id'] = $transactionExportArray[8];
+
+						if ($transactionExportArray[11] == "Approved") {
+							$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
 						} else
-							if ($transactionExportArray[9] == "Declined") {
-								$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
-							}
-					$transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[5]);
-					$transaction['commission'] = Oara_Utilities::parseDouble($transactionExportArray[6]);
-					$totalTransactions[] = $transaction;
+							if ($transactionExportArray[11] == "Pending") {
+								$transaction['status'] = Oara_Utilities::STATUS_PENDING;
+							} else
+								if ($transactionExportArray[11] == "Declined") {
+									$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
+								}
+						$transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[7]);
+						$transaction['commission'] = Oara_Utilities::parseDouble($transactionExportArray[8]);
+						$totalTransactions[] = $transaction;
+					}
 				}
+
 			}
+		} catch (Exception $e) {
 
 		}
 

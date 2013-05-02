@@ -82,50 +82,60 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 		$network = $this->_credentials['network'];
 
 		$extension = "";
+		$handle = "";
 		$this->_networkServer = "";
 		switch ($network) {
 		case "uk":
 			$this->_networkServer = "https://affiliate-program.amazon.co.uk";
 			$extension = ".co.uk";
+			$handle = "gb";
 			break;
 		case "es":
 			$this->_networkServer = "https://afiliados.amazon.es";
 			$extension = ".es";
+			$handle = "es";
 			break;
 		case "us":
 			$this->_networkServer = "https://affiliate-program.amazon.com";
 			$extension = ".com";
+			$handle = "us";
 			break;
 		case "ca":
 			$this->_networkServer = "https://associates.amazon.ca";
 			$extension = ".ca";
+			$handle = "ca";
 			break;
 		case "de":
 			$this->_networkServer = "https://partnernet.amazon.de";
 			$extension = ".de";
+			$handle = "de";
 			break;
 		case "fr":
 			$this->_networkServer = "https://partenaires.amazon.fr";
 			$extension = ".fr";
+			$handle = "fr";
 			break;
 		case "it":
 			$this->_networkServer = "https://programma-affiliazione.amazon.it";
 			$extension = ".it";
+			$handle = "it";
 			break;
 		case "jp":
 			$this->_networkServer = "https://affiliate.amazon.co.jp";
 			$extension = ".co.jp";
+			$handle = "jp";
 			break;
 		case "cn":
 			$this->_networkServer = "https://associates.amazon.cn";
 			$extension = ".cn";
+			$handle = "cn";
 			break;
 		}
 
 		$this->_client = new Oara_Curl_Access($this->_networkServer."/gp/associates/network/main.html", array(), $this->_credentials);
 		
 		// initial login page which redirects to correct sign in page, sets some cookies
-		$URL = "https://www.amazon$extension/ap/signin?openid.assoc_handle=amzn_associates_$network&openid.return_to={$this->_networkServer}&openid.mode=checkid_setup&openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0&openid.claimed_id=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.pape.max_auth_age=0&openid.ns.pape=http%3A%2F%2Fspecs.openid.net%2Fextensions%2Fpape%2F1.0&openid.identity=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select";
+		$URL = "https://www.amazon$extension/ap/signin?openid.assoc_handle=amzn_associates_$handle&openid.return_to={$this->_networkServer}&openid.mode=checkid_setup&openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0&openid.claimed_id=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.pape.max_auth_age=0&openid.ns.pape=http%3A%2F%2Fspecs.openid.net%2Fextensions%2Fpape%2F1.0&openid.identity=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select";
 		
 		$ch = curl_init();
 		
