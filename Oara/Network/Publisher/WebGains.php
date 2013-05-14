@@ -17,6 +17,11 @@ class Oara_Network_Publisher_WebGains extends Oara_Network {
 	 * Web client.
 	 */
 	private $_webClient = null;
+	
+	/**
+	 * Server.
+	 */
+	private $_server = null;
 	/**
 	 * Export Merchant Parameters
 	 * @var array
@@ -73,20 +78,49 @@ class Oara_Network_Publisher_WebGains extends Oara_Network {
 			'password'		 => $password,
 			'compression'	 => SOAP_COMPRESSION_ACCEPT | SOAP_COMPRESSION_GZIP | SOAP_COMPRESSION_DEFLATE,
 			'soap_version'	 => SOAP_1_1));
-
-		$loginUrl = 'https://www.webgains.com/loginform.html?action=login';
-
+		
+		$serverArray = array();
+		$serverArray["uk"] = 'www.webgains.com';
+		$serverArray["fr"] = 'www.webgains.fr';
+		$serverArray["us"] = 'us.webgains.com';
+		$serverArray["de"] = 'www.webgains.de';
+		$serverArray["fr"] = 'www.webgains.fr';
+		$serverArray["nl"] = 'www.webgains.nl';
+		$serverArray["dk"] = 'www.webgains.dk';
+		$serverArray["se"] = 'www.webgains.se';
+		$serverArray["es"] = 'www.webgains.es';
+		$serverArray["ie"] = 'www.webgains.ie';
+		$serverArray["it"] = 'www.webgains.it';
+		
+		$loginUrlArray = array();
+		$loginUrlArray["uk"] = 'https://www.webgains.com/loginform.html?action=login';
+		$loginUrlArray["fr"] = 'https://www.webgains.fr/loginform.html?action=login';
+		$loginUrlArray["us"] = 'https://us.webgains.com/loginform.html?action=login';
+		$loginUrlArray["de"] = 'https://www.webgains.de/loginform.html?action=login';
+		$loginUrlArray["fr"] = 'https://www.webgains.fr/loginform.html?action=login';
+		$loginUrlArray["nl"] = 'https://www.webgains.nl/loginform.html?action=login';
+		$loginUrlArray["dk"] = 'https://www.webgains.dk/loginform.html?action=login';
+		$loginUrlArray["se"] = 'https://www.webgains.se/loginform.html?action=login';
+		$loginUrlArray["es"] = 'https://www.webgains.es/loginform.html?action=login';
+		$loginUrlArray["ie"] = 'https://www.webgains.ie/loginform.html?action=login';
+		$loginUrlArray["it"] = 'https://www.webgains.it/loginform.html?action=login';
+		
 		$valuesLogin = array(
-			new Oara_Curl_Parameter('screenwidth', 1280),
-			new Oara_Curl_Parameter('screenheight', 768),
-			new Oara_Curl_Parameter('colourdepth', 32),
 			new Oara_Curl_Parameter('user_type', 'affiliateuser'),
 			new Oara_Curl_Parameter('username', $user),
-			new Oara_Curl_Parameter('password', $password),
-			new Oara_Curl_Parameter('submitbutton', 'PLS WAIT')
+			new Oara_Curl_Parameter('password', $password)
 		);
+		
+		foreach ($loginUrlArray as $country => $url){
+			$this->_webClient = new Oara_Curl_Access($url, $valuesLogin, $credentials);
+			if (preg_match("/\/affiliates\/logout\.html/", $this->_webClient->getConstructResult())) {
+				$this->_server = $serverArray[$country];
+				break;
+			}
+		}
+		
 
-		$this->_webClient = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
+		
 
 		$this->_exportMerchantParameters = array('username'	 => $user,
 			'password'	 => $password
@@ -104,10 +138,7 @@ class Oara_Network_Publisher_WebGains extends Oara_Network {
 	 */
 	public function checkConnection() {
 		$connection = false;
-		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://www.webgains.com/affiliates/index.html', array());
-		$exportReport = $this->_webClient->get($urls);
-		if (preg_match("/\/affiliates\/logout\.html/", $exportReport[0])) {
+		if ($this->_server != null){
 			$connection = true;
 		}
 		return $connection;
@@ -237,7 +268,7 @@ class Oara_Network_Publisher_WebGains extends Oara_Network {
 	private function getCampaignMap() {
 		$campaingMap = array();
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://www.webgains.com/affiliates/report.html?f=0&action=sf', array());
+		$urls[] = new Oara_Curl_Request("http://{$this->_server}/affiliates/report.html?f=0&action=sf", array());
 		$exportReport = $this->_webClient->get($urls);
 		$matches = array();
 		if (preg_match("/<select name=\"campaignswitchid\" class=\"formelement\" style=\"width:134px\">([^\t]*)<\/select>/", $exportReport[0], $matches)) {
@@ -268,7 +299,7 @@ class Oara_Network_Publisher_WebGains extends Oara_Network {
 
 		$urls = array();
 
-		$urls[] = new Oara_Curl_Request('https://www.webgains.com/affiliates/payment.html', array());
+		$urls[] = new Oara_Curl_Request("https://{$this->_server}/affiliates/payment.html", array());
 		$exportReport = $this->_webClient->get($urls);
 
 		/*** load the html into the object ***/

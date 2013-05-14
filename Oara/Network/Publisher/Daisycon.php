@@ -9,26 +9,7 @@
  *
  */
 class Oara_Network_Publisher_Daisycon extends Oara_Network {
-	/**
-	 * Export Merchants Parameters
-	 * @var array
-	 */
-	private $_exportMerchantParameters = null;
-	/**
-	 * Export Transaction Parameters
-	 * @var array
-	 */
-	private $_exportTransactionParameters = null;
-	/**
-	 * Export Overview Parameters
-	 * @var array
-	 */
-	private $_exportOverviewParameters = null;
-	/**
-	 * Export Payment Parameters
-	 * @var array
-	 */
-	private $_exportPaymentParameters = null;
+
 	/**
 	 * Client
 	 * @var unknown_type
@@ -45,43 +26,16 @@ class Oara_Network_Publisher_Daisycon extends Oara_Network {
 		$this->_credentials = $credentials;
 		$user = $credentials['user'];
 		$password = $credentials['password'];
-		$merchantAuth = $credentials['merchantAuth'];
-		$transactionAuth = $credentials['transactionAuth'];
-		$overviewAuth = $credentials['overviewAuth'];
 
-		$loginUrl = 'http://login.daisycon.com/en/index/';
-
-		$valuesLogin = array(new Oara_Curl_Parameter('login[username]', $user),
-			new Oara_Curl_Parameter('login[password]', $password)
+		$sWsdl = "http://api.daisycon.com/publisher/soap/program/wsdl/";
+		$aOptions = array(
+			'login'		 => $this->_credentials["user"],
+			'password'	 => md5($this->_credentials["password"]),
+			'features'	 => SOAP_SINGLE_ELEMENT_ARRAYS,
+			'encoding'	 => 'utf-8',
+			'trace'		 => 1,
 		);
-
-		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
-
-		$this->_exportMerchantParameters = array(new Oara_Curl_Parameter('export', 'true'),
-			new Oara_Curl_Parameter('username', $user),
-			new Oara_Curl_Parameter('auth', $merchantAuth),
-			new Oara_Curl_Parameter('filename', 'programs'),
-			new Oara_Curl_Parameter('filetype', 'csv'),
-			new Oara_Curl_Parameter('headers', 'true')
-		);
-
-		$this->_exportTransactionParameters = array(new Oara_Curl_Parameter('export', 'true'),
-			new Oara_Curl_Parameter('username', $user),
-			new Oara_Curl_Parameter('auth', $transactionAuth),
-			new Oara_Curl_Parameter('filename', 'programs'),
-			new Oara_Curl_Parameter('filetype', 'csv'),
-			new Oara_Curl_Parameter('headers', 'true')
-		);
-
-		$this->_exportOverviewParameters = array(new Oara_Curl_Parameter('export', 'true'),
-			new Oara_Curl_Parameter('username', $user),
-			new Oara_Curl_Parameter('auth', $overviewAuth),
-			new Oara_Curl_Parameter('filename', 'programs'),
-			new Oara_Curl_Parameter('filetype', 'csv'),
-			new Oara_Curl_Parameter('headers', 'true')
-		);
-
-		$this->_exportPaymentParameters = array();
+		$this->_client = new SoapClient($sWsdl, $aOptions);
 
 	}
 	/**
@@ -90,16 +44,13 @@ class Oara_Network_Publisher_Daisycon extends Oara_Network {
 	public function checkConnection() {
 		//If not login properly the construct launch an exception
 		$connection = true;
-		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://publisher.daisycon.com/en/affiliatemarketing/welcome/', array());
-		$exportReport = $this->_client->get($urls);
+		$aFilter = array(
+			'limitCount' => 1,
+		);
 
-		$dom = new Zend_Dom_Query($exportReport[0]);
-
-		$results = $dom->query('#loginForm');
-
-		$count = count($results); // get number of matches: 4
-		if ($count > 0) {
+		try {
+			$mResult = $this->_client->getSubscriptions($aFilter);
+		} catch (Exception $e) {
 			$connection = false;
 		}
 		return $connection;
@@ -110,21 +61,47 @@ class Oara_Network_Publisher_Daisycon extends Oara_Network {
 	 */
 	public function getMerchantList() {
 		$merchants = array();
+		$merchantList = array();
 
-		$valuesFromExport = $this->_exportMerchantParameters;
-		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://publisher.daisycon.com/en/affiliatemarketing/programs/myprograms/?', $valuesFromExport);
-		$exportReport = $this->_client->get($urls);
-		$exportData = str_getcsv($exportReport[0], "\r\n");
-		$merchantReportList = Array();
-		$num = count($exportData);
-		for ($i = 2; $i < $num; $i++) {
-			$merchantExportArray = str_getcsv($exportData[$i], ";");
-			$obj = array();
-			$obj['cid'] = $merchantExportArray[0];
-			$obj['name'] = $merchantExportArray[1];
-			$obj['url'] = $merchantExportArray[2];
-			$merchants[] = $obj;
+		$aFilter = array(
+			'offset'	 => 0,
+			'limitCount' => 100,
+		);
+		$mResult = $this->_client->getSubscriptions($aFilter);
+		foreach ($mResult["return"] as $merchant) {
+			$merchantList[] = $merchant->program_id;
+		}
+		$resposeInfo = $mResult["responseInfo"];
+		$numberIterations = self::calculeIterationNumber($resposeInfo->totalResults, 100);
+
+		for ($i = 1; $i < ($numberIterations - 1); $i++) {
+
+			$aFilter = array(
+				'offset' => $i * 100,
+				'limit'	 => 100,
+			);
+			$mResult = $this->_client->getSubscriptions($aFilter);
+			foreach ($mResult["return"] as $merchant) {
+				$merchantList[] = $merchant->program_id;
+			}
+		}
+
+		$i = 0;
+		while ($slice = array_slice($merchantList, $i * 100, 100)) {
+			if (count($slice) > 0) {
+				$aFilter = array(
+					'program_id' => $slice
+				);
+				$mResult = $this->_client->getPrograms($aFilter);
+				foreach ($mResult["return"] as $merchant) {
+					$obj = Array();
+					$obj['cid'] = $merchant->program_id;
+					$obj['name'] = $merchant->name;
+					$merchants[] = $obj;
+				}
+			}
+
+			$i++;
 		}
 
 		return $merchants;
@@ -135,47 +112,71 @@ class Oara_Network_Publisher_Daisycon extends Oara_Network {
 	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
 	 */
 	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
-
 		$totalTransactions = array();
 
-		$valuesFromExport = Oara_Utilities::cloneArray($this->_exportTransactionParameters);
-		$valuesFromExport[] = new Oara_Curl_Parameter('period', $dStartDate->toString("yyyyMMdd")."-".$dEndDate->toString("yyyyMMdd"));
+		$sWsdl = "http://api.daisycon.com/publisher/soap/transaction/wsdl/";
+		$aOptions = array(
+			'login'		 => $this->_credentials["user"],
+			'password'	 => md5($this->_credentials["password"]),
+			'features'	 => SOAP_SINGLE_ELEMENT_ARRAYS,
+			'encoding'	 => 'utf-8',
+			'trace'		 => 1,
+		);
+		$this->_client = new SoapClient($sWsdl, $aOptions);
 
-		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://publisher.daisycon.com/en/affiliatemarketing/stats/transactions/?', $valuesFromExport);
-		$exportReport = $this->_client->get($urls);
+		$aFilter = array(
+			'offset'			 => 0,
+			'limitCount'		 => 1,
+			'program_ids'		 => $merchantList,
+			'selection_start'	 => $dStartDate->toString("yyyy-MM-dd"),
+			'selection_end'		 => $dEndDate->toString("yyyy-MM-dd")
+		);
+		$mResult = $this->_client->getTransactions($aFilter);
+		$resposeInfo = $mResult["responseInfo"];
+		$numberIterations = self::calculeIterationNumber($resposeInfo->totalResults, 1000);
 
-		$exportData = str_getcsv($exportReport[0], "\r\n");
-		$num = count($exportData);
-		for ($i = 1; $i < $num; $i++) {
-			$transactionExportArray = str_getcsv($exportData[$i], ";");
-			if (in_array((int) $transactionExportArray[12], $merchantList)) {
-				$transaction = Array();
-				$transaction['unique_id'] = $transactionExportArray[0];
-				$merchantId = (int) $transactionExportArray[12];
-				$transaction['merchantId'] = $merchantId;
-				$transactionDate = new Zend_Date($transactionExportArray[3], 'MM-dd-yyyy HH:mm:ss');
-				$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+		for ($i = 0; $i < $numberIterations; $i++) {
+			$aFilter = array('offset'			 => 0,
+				'limitCount'		 => 1000,
+				'program_ids'		 => $merchantList,
+				'selection_start'	 => $dStartDate->toString("yyyy-MM-dd"),
+				'selection_end'		 => $dEndDate->toString("yyyy-MM-dd")
+			);
 
-				if ($transactionExportArray[10] != null) {
-					$transaction['custom_id'] = $transactionExportArray[10];
-				}
-				if ($transactionExportArray[7] == 'approved') {
-					$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
-				} else
-					if ($transactionExportArray[7] == 'pending' || $transactionExportArray[7] == 'potential' || $transactionExportArray[7] == 'open') {
-						$transaction['status'] = Oara_Utilities::STATUS_PENDING;
+			$mResult = $this->_client->getTransactions($aFilter);
+			foreach ($mResult["return"] as $transactionObject) {
+				$merchantId = $transactionObject->program_id;
+				if (in_array($merchantId, $merchantList)) {
+
+					$transaction = Array();
+					$transaction['unique_id'] = $transactionObject->affiliatemarketing_id;
+
+					$transaction['merchantId'] = $merchantId;
+					$transactionDate = new Zend_Date($transactionObject->date_transaction, 'MM-dd-yyyy HH:mm:ss');
+					$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+
+					if ($transactionObject->sub_id != null) {
+						$transaction['custom_id'] = $transactionObject->sub_id;
+					}
+					if ($transactionObject->status == 'approved') {
+						$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
 					} else
-						if ($transactionExportArray[7] == 'disapproved' || $transactionExportArray[7] == 'incasso') {
-							$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
-						} else {
-							throw new Exception("New status $transactionExportArray[7]");
-						}
-				$transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[18]);
-				$transaction['commission'] = Oara_Utilities::parseDouble($transactionExportArray[9]);
-				$totalTransactions[] = $transaction;
+						if ($transactionObject->status == 'pending' || $transactionObject->status == 'potential' || $transactionObject->status == 'open') {
+							$transaction['status'] = Oara_Utilities::STATUS_PENDING;
+						} else
+							if ($transactionObject->status == 'disapproved' || $transactionObject->status == 'incasso') {
+								$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
+							} else {
+								throw new Exception("New status {$transactionObject->status}");
+							}
+					$transaction['amount'] = Oara_Utilities::parseDouble($transactionObject->revenue);
+
+					$transaction['commission'] = Oara_Utilities::parseDouble($transactionObject->commision);
+					$totalTransactions[] = $transaction;
+				}
 			}
 		}
+
 		return $totalTransactions;
 	}
 
@@ -186,70 +187,6 @@ class Oara_Network_Publisher_Daisycon extends Oara_Network {
 	public function getOverviewList($transactionList = null, $merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
 		$overviewArray = Array();
 		$transactionArray = Oara_Utilities::transactionMapPerDay($transactionList);
-		$urls = array();
-		foreach ($merchantList as $merchantId) {
-
-			$overviewExport = Oara_Utilities::cloneArray($this->_exportOverviewParameters);
-			$overviewExport[] = new Oara_Curl_Parameter('program', $merchantId);
-			$overviewExport[] = new Oara_Curl_Parameter('period', $dStartDate->toString("yyyyMMdd")."-".$dEndDate->toString("yyyyMMdd"));
-			$urls[] = new Oara_Curl_Request('http://publisher.daisycon.com/en/affiliatemarketing/stats/month/?', $overviewExport);
-		}
-		$exportReport = $this->_client->get($urls);
-		for ($i = 1; $i < count($exportReport); $i++) {
-			$exportData = str_getcsv($exportReport[$i], "\r\n");
-			$num = count($exportData);
-			$overviewDate = clone $dStartDate;
-			$overviewDate->setHour(0);
-			$overviewDate->setMinute(0);
-			$overviewDate->setSecond(0);
-			for ($j = 1; $j < $num; $j++) {
-
-				$overviewExportArray = str_getcsv($exportData[$j], ";");
-
-				$obj = array();
-				$urlParams = $urls[$i]->getParameters();
-				$obj['merchantId'] = $urlParams[6]->getValue();
-
-				$overviewDate->setDay($overviewExportArray[0]);
-				$obj['date'] = $overviewDate->toString("yyyy-MM-dd HH:mm:ss");
-
-				$obj['impression_number'] = 0;
-				$obj['click_number'] = $overviewExportArray[1];
-				$obj['transaction_number'] = 0;
-
-				$obj['transaction_confirmed_commission'] = 0;
-				$obj['transaction_confirmed_value'] = 0;
-				$obj['transaction_pending_commission'] = 0;
-				$obj['transaction_pending_value'] = 0;
-				$obj['transaction_declined_commission'] = 0;
-				$obj['transaction_declined_value'] = 0;
-				$obj['transaction_paid_commission'] = 0;
-				$obj['transaction_paid_value'] = 0;
-				$transactionDateArray = Oara_Utilities::getDayFromArray($obj['merchantId'], $transactionArray, $overviewDate, true);
-				foreach ($transactionDateArray as $transaction) {
-					$obj['transaction_number']++;
-					if ($transaction['status'] == Oara_Utilities::STATUS_CONFIRMED) {
-						$obj['transaction_confirmed_value'] += $transaction['amount'];
-						$obj['transaction_confirmed_commission'] += $transaction['commission'];
-					} else
-						if ($transaction['status'] == Oara_Utilities::STATUS_PENDING) {
-							$obj['transaction_pending_value'] += $transaction['amount'];
-							$obj['transaction_pending_commission'] += $transaction['commission'];
-						} else
-							if ($transaction['status'] == Oara_Utilities::STATUS_DECLINED) {
-								$obj['transaction_declined_value'] += $transaction['amount'];
-								$obj['transaction_declined_commission'] += $transaction['commission'];
-							} else
-								if ($transaction['status'] == Oara_Utilities::STATUS_PAID) {
-									$obj['transaction_paid_value'] += $transaction['amount'];
-									$obj['transaction_paid_commission'] += $transaction['commission'];
-								}
-				}
-				if (Oara_Utilities::checkRegister($obj)) {
-					$overviewArray[] = $obj;
-				}
-			}
-		}
 
 		foreach ($transactionArray as $merchantId => $merchantTransaction) {
 			foreach ($merchantTransaction as $date => $transactionList) {
@@ -301,110 +238,20 @@ class Oara_Network_Publisher_Daisycon extends Oara_Network {
 	 */
 	public function getPaymentHistory() {
 		$paymentHistory = array();
-
-		$user = $this->_credentials['user'];
-		$password = $this->_credentials['password'];
-
-		$loginUrl = 'http://login.daisycon.com/en/index/';
-
-		$valuesLogin = array(new Oara_Curl_Parameter('login[username]', $user),
-			new Oara_Curl_Parameter('login[password]', $password)
-		);
-
-		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $this->_credentials);
-
-		$urls = array();
-		$urls[] = new Oara_Curl_Request("http://publishers.daisycon.com/en/financial/payments", array());
-		$exportReport = $this->_client->get($urls);
-
-		$dom = new Zend_Dom_Query($exportReport[0]);
-		$results = $dom->query('#year');
-		$count = count($results);
-		$yearArray = array();
-		if ($count == 1) {
-			$selectNode = $results->current();
-			$yearLines = $selectNode->childNodes;
-			for ($i = 0; $i < $yearLines->length; $i++) {
-				$yearArray[] = $yearLines->item($i)->attributes->getNamedItem("value")->nodeValue;
-			}
-
-			foreach ($yearArray as $year) {
-				$valuesFromExport = array();
-				$valuesFromExport[] = new Oara_Curl_Parameter('_filtername', 'filter');
-				$valuesFromExport[] = new Oara_Curl_Parameter('post', 'Filter');
-				$valuesFromExport[] = new Oara_Curl_Parameter('year', $year);
-				$urls = array();
-				$urls[] = new Oara_Curl_Request('http://publishers.daisycon.com/en/financial/payments', $valuesFromExport);
-				$exportReport = $this->_client->post($urls);
-				$dom = new Zend_Dom_Query($exportReport[0]);
-				$payments = $dom->query('.baseBody table');
-				foreach ($payments as $payment) {
-					$paymentReport = self::htmlToCsv(self::DOMinnerHTML($payment));
-					for ($j = 2; $j < count($paymentReport) - 2; $j++) {
-						$paymentExportArray = str_getcsv($paymentReport[$j], ";");
-						if ($paymentExportArray[4] != "-") {
-							$obj = array();
-							$paymentDate = new Zend_Date($paymentExportArray[4], "dd MMMM yyyy", "en");
-							$obj['date'] = $paymentDate->toString("yyyy-MM-dd HH:mm:ss");
-							$obj['pid'] = (double) $paymentExportArray[5];
-							$obj['method'] = 'BACS';
-							if (preg_match("/[-+]?[0-9]*,?[0-9]*\.?[0-9]+/", $paymentExportArray[3], $matches)) {
-								$obj['value'] = Oara_Utilities::parseDouble($matches[0]);
-							} else {
-								throw new Exception("Problem reading payments");
-							}
-
-							$paymentHistory[] = $obj;
-						}
-					}
-				}
-			}
-
-		} else {
-			throw new Exception('Problem getting the payments');
-		}
 		return $paymentHistory;
 	}
+
 	/**
-	 *
-	 * Function that Convert from a table to Csv
-	 * @param unknown_type $html
+	 * Calculate the number of iterations needed
+	 * @param $rowAvailable
+	 * @param $rowsReturned
 	 */
-	private function htmlToCsv($html) {
-		$html = str_replace(array("\t", "\r", "\n"), "", $html);
-		$csv = "";
-		$dom = new Zend_Dom_Query($html);
-		$results = $dom->query('tr');
-		$count = count($results); // get number of matches: 4
-		foreach ($results as $result) {
-			$tdList = $result->childNodes;
-			$tdNumber = $tdList->length;
-			for ($i = 0; $i < $tdNumber; $i++) {
-				$value = $tdList->item($i)->nodeValue;
-				if ($i != $tdNumber - 1) {
-					$csv .= trim($value).";";
-				} else {
-					$csv .= trim($value);
-				}
-			}
-			$csv .= "\n";
+	private function calculeIterationNumber($rowAvailable, $rowsReturned) {
+		$iterationDouble = (double) ($rowAvailable / $rowsReturned);
+		$iterationInt = (int) ($rowAvailable / $rowsReturned);
+		if ($iterationDouble > $iterationInt) {
+			$iterationInt++;
 		}
-		$exportData = str_getcsv($csv, "\n");
-		return $exportData;
-	}
-	/**
-	 *
-	 * Function that returns the inner HTML code
-	 * @param unknown_type $element
-	 */
-	private function DOMinnerHTML($element) {
-		$innerHTML = "";
-		$children = $element->childNodes;
-		foreach ($children as $child) {
-			$tmp_dom = new DOMDocument();
-			$tmp_dom->appendChild($tmp_dom->importNode($child, true));
-			$innerHTML .= trim($tmp_dom->saveHTML());
-		}
-		return $innerHTML;
+		return $iterationInt;
 	}
 }

@@ -61,7 +61,7 @@ class Oara_Network_Publisher_GoogleAffiliateNetwork extends Oara_Network {
 		$advertisers = $this->_gan->publishers->listAdvertisers("advertisers", $this->_advertiserId);
 		$obj = array();
 		$obj['cid'] = 1;
-		$obj['name'] = "Google AdSense";
+		$obj['name'] = "Google Affiliate Network";
 		$obj['url'] = "www.google.com";
 		$merchants[] = $obj;
 
