@@ -52,155 +52,155 @@ class Oara_Network_Publisher_TradeDoubler extends Oara_Network {
 		self::login();
 
 		$this->_exportMerchantParameters = array(new Oara_Curl_Parameter('reportName', 'aAffiliateMyProgramsReport'),
-			new Oara_Curl_Parameter('tabMenuName', ''),
-			new Oara_Curl_Parameter('isPostBack', ''),
-			new Oara_Curl_Parameter('showAdvanced', 'true'),
-			new Oara_Curl_Parameter('showFavorite', 'false'),
-			new Oara_Curl_Parameter('run_as_organization_id', ''),
-			new Oara_Curl_Parameter('minRelativeIntervalStartTime', '0'),
-			new Oara_Curl_Parameter('maxIntervalSize', '0'),
-			new Oara_Curl_Parameter('interval', 'MONTHS'),
-			new Oara_Curl_Parameter('reportPrograms', ''),
-			new Oara_Curl_Parameter('reportTitleTextKey', 'REPORT3_SERVICE_REPORTS_AAFFILIATEMYPROGRAMSREPORT_TITLE'),
-			new Oara_Curl_Parameter('setColumns', 'true'),
-			new Oara_Curl_Parameter('latestDayToExecute', '0'),
-			new Oara_Curl_Parameter('affiliateId', ''),
-			new Oara_Curl_Parameter('includeWarningColumn', 'true'),
-			new Oara_Curl_Parameter('sortBy', 'orderDefault'),
-			new Oara_Curl_Parameter('autoCheckbox', 'columns'),
-			new Oara_Curl_Parameter('autoCheckbox', 'columns'),
-			new Oara_Curl_Parameter('columns', 'programId'),
-			new Oara_Curl_Parameter('autoCheckbox', 'columns'),
-			new Oara_Curl_Parameter('autoCheckbox', 'columns'),
-			new Oara_Curl_Parameter('autoCheckbox', 'columns'),
-			new Oara_Curl_Parameter('autoCheckbox', 'columns'),
-			new Oara_Curl_Parameter('autoCheckbox', 'columns'),
-			new Oara_Curl_Parameter('autoCheckbox', 'columns'),
-			new Oara_Curl_Parameter('autoCheckbox', 'columns'),
-			new Oara_Curl_Parameter('autoCheckbox', 'columns'),
-			new Oara_Curl_Parameter('autoCheckbox', 'columns'),
-			new Oara_Curl_Parameter('autoCheckbox', 'columns'),
-			new Oara_Curl_Parameter('columns', 'affiliateId'),
-			new Oara_Curl_Parameter('autoCheckbox', 'columns'),
-			new Oara_Curl_Parameter('columns', 'applicationDate'),
-			new Oara_Curl_Parameter('autoCheckbox', 'columns'),
-			new Oara_Curl_Parameter('columns', 'status'),
-			new Oara_Curl_Parameter('autoCheckbox', 'useMetricColumn'),
-			new Oara_Curl_Parameter('customKeyMetricCount', '0'),
-			new Oara_Curl_Parameter('metric1.name', ''),
-			new Oara_Curl_Parameter('metric1.midFactor', ''),
-			new Oara_Curl_Parameter('metric1.midOperator', '/'),
-			new Oara_Curl_Parameter('metric1.columnName1', 'programId'),
-			new Oara_Curl_Parameter('metric1.operator1', '/'),
-			new Oara_Curl_Parameter('metric1.columnName2', 'programId'),
-			new Oara_Curl_Parameter('metric1.lastOperator', '/'),
-			new Oara_Curl_Parameter('metric1.factor', ''),
-			new Oara_Curl_Parameter('metric1.summaryType', 'NONE'),
-			new Oara_Curl_Parameter('format', 'CSV'),
-			new Oara_Curl_Parameter('separator', ','),
-			new Oara_Curl_Parameter('dateType', '0'),
-			new Oara_Curl_Parameter('favoriteId', ''),
-			new Oara_Curl_Parameter('favoriteName', ''),
-			new Oara_Curl_Parameter('favoriteDescription', '')
+		new Oara_Curl_Parameter('tabMenuName', ''),
+		new Oara_Curl_Parameter('isPostBack', ''),
+		new Oara_Curl_Parameter('showAdvanced', 'true'),
+		new Oara_Curl_Parameter('showFavorite', 'false'),
+		new Oara_Curl_Parameter('run_as_organization_id', ''),
+		new Oara_Curl_Parameter('minRelativeIntervalStartTime', '0'),
+		new Oara_Curl_Parameter('maxIntervalSize', '0'),
+		new Oara_Curl_Parameter('interval', 'MONTHS'),
+		new Oara_Curl_Parameter('reportPrograms', ''),
+		new Oara_Curl_Parameter('reportTitleTextKey', 'REPORT3_SERVICE_REPORTS_AAFFILIATEMYPROGRAMSREPORT_TITLE'),
+		new Oara_Curl_Parameter('setColumns', 'true'),
+		new Oara_Curl_Parameter('latestDayToExecute', '0'),
+		new Oara_Curl_Parameter('affiliateId', ''),
+		new Oara_Curl_Parameter('includeWarningColumn', 'true'),
+		new Oara_Curl_Parameter('sortBy', 'orderDefault'),
+		new Oara_Curl_Parameter('autoCheckbox', 'columns'),
+		new Oara_Curl_Parameter('autoCheckbox', 'columns'),
+		new Oara_Curl_Parameter('columns', 'programId'),
+		new Oara_Curl_Parameter('autoCheckbox', 'columns'),
+		new Oara_Curl_Parameter('autoCheckbox', 'columns'),
+		new Oara_Curl_Parameter('autoCheckbox', 'columns'),
+		new Oara_Curl_Parameter('autoCheckbox', 'columns'),
+		new Oara_Curl_Parameter('autoCheckbox', 'columns'),
+		new Oara_Curl_Parameter('autoCheckbox', 'columns'),
+		new Oara_Curl_Parameter('autoCheckbox', 'columns'),
+		new Oara_Curl_Parameter('autoCheckbox', 'columns'),
+		new Oara_Curl_Parameter('autoCheckbox', 'columns'),
+		new Oara_Curl_Parameter('autoCheckbox', 'columns'),
+		new Oara_Curl_Parameter('columns', 'affiliateId'),
+		new Oara_Curl_Parameter('autoCheckbox', 'columns'),
+		new Oara_Curl_Parameter('columns', 'applicationDate'),
+		new Oara_Curl_Parameter('autoCheckbox', 'columns'),
+		new Oara_Curl_Parameter('columns', 'status'),
+		new Oara_Curl_Parameter('autoCheckbox', 'useMetricColumn'),
+		new Oara_Curl_Parameter('customKeyMetricCount', '0'),
+		new Oara_Curl_Parameter('metric1.name', ''),
+		new Oara_Curl_Parameter('metric1.midFactor', ''),
+		new Oara_Curl_Parameter('metric1.midOperator', '/'),
+		new Oara_Curl_Parameter('metric1.columnName1', 'programId'),
+		new Oara_Curl_Parameter('metric1.operator1', '/'),
+		new Oara_Curl_Parameter('metric1.columnName2', 'programId'),
+		new Oara_Curl_Parameter('metric1.lastOperator', '/'),
+		new Oara_Curl_Parameter('metric1.factor', ''),
+		new Oara_Curl_Parameter('metric1.summaryType', 'NONE'),
+		new Oara_Curl_Parameter('format', 'CSV'),
+		new Oara_Curl_Parameter('separator', ','),
+		new Oara_Curl_Parameter('dateType', '0'),
+		new Oara_Curl_Parameter('favoriteId', ''),
+		new Oara_Curl_Parameter('favoriteName', ''),
+		new Oara_Curl_Parameter('favoriteDescription', '')
 		);
 
 		$this->_exportTransactionParameters = array(new Oara_Curl_Parameter('reportName', 'aAffiliateEventBreakdownReport'),
-			new Oara_Curl_Parameter('columns', 'programId'),
-			new Oara_Curl_Parameter('columns', 'timeOfVisit'),
-			new Oara_Curl_Parameter('columns', 'timeOfEvent'),
-			new Oara_Curl_Parameter('columns', 'timeInSession'),
-			new Oara_Curl_Parameter('columns', 'lastModified'),
-			new Oara_Curl_Parameter('columns', 'epi1'),
-			new Oara_Curl_Parameter('columns', 'eventName'),
-			new Oara_Curl_Parameter('columns', 'pendingStatus'),
-			new Oara_Curl_Parameter('columns', 'siteName'),
-			new Oara_Curl_Parameter('columns', 'graphicalElementName'),
-			new Oara_Curl_Parameter('columns', 'graphicalElementId'),
-			new Oara_Curl_Parameter('columns', 'productName'),
-			new Oara_Curl_Parameter('columns', 'productNrOf'),
-			new Oara_Curl_Parameter('columns', 'productValue'),
-			new Oara_Curl_Parameter('columns', 'affiliateCommission'),
-			new Oara_Curl_Parameter('columns', 'link'),
-			new Oara_Curl_Parameter('columns', 'leadNR'),
-			new Oara_Curl_Parameter('columns', 'orderNR'),
-			new Oara_Curl_Parameter('columns', 'pendingReason'),
-			new Oara_Curl_Parameter('columns', 'orderValue'),
-			new Oara_Curl_Parameter('isPostBack', ''),
-			new Oara_Curl_Parameter('metric1.lastOperator', '/'),
-			new Oara_Curl_Parameter('interval', ''),
-			new Oara_Curl_Parameter('favoriteDescription', ''),
-			new Oara_Curl_Parameter('event_id', '0'),
-			new Oara_Curl_Parameter('pending_status', '1'),
-			new Oara_Curl_Parameter('run_as_organization_id', ''),
-			new Oara_Curl_Parameter('minRelativeIntervalStartTime', '0'),
-			new Oara_Curl_Parameter('includeWarningColumn', 'true'),
-			new Oara_Curl_Parameter('metric1.summaryType', 'NONE'),
-			new Oara_Curl_Parameter('metric1.operator1', '/'),
-			new Oara_Curl_Parameter('latestDayToExecute', '0'),
-			new Oara_Curl_Parameter('showAdvanced', 'true'),
-			new Oara_Curl_Parameter('breakdownOption', '1'),
-			new Oara_Curl_Parameter('metric1.midFactor', ''),
-			new Oara_Curl_Parameter('reportTitleTextKey', 'REPORT3_SERVICE_REPORTS_AAFFILIATEEVENTBREAKDOWNREPORT_TITLE'),
-			new Oara_Curl_Parameter('setColumns', 'true'),
-			new Oara_Curl_Parameter('metric1.columnName1', 'orderValue'),
-			new Oara_Curl_Parameter('metric1.columnName2', 'orderValue'),
-			new Oara_Curl_Parameter('reportPrograms', ''),
-			new Oara_Curl_Parameter('metric1.midOperator', '/'),
-			new Oara_Curl_Parameter('dateSelectionType', '1'),
-			new Oara_Curl_Parameter('favoriteName', ''),
-			new Oara_Curl_Parameter('affiliateId', ''),
-			new Oara_Curl_Parameter('dateType', '1'),
-			new Oara_Curl_Parameter('period', 'custom_period'),
-			new Oara_Curl_Parameter('tabMenuName', ''),
-			new Oara_Curl_Parameter('maxIntervalSize', '0'),
-			new Oara_Curl_Parameter('favoriteId', ''),
-			new Oara_Curl_Parameter('sortBy', 'timeOfEvent'),
-			new Oara_Curl_Parameter('metric1.name', ''),
-			new Oara_Curl_Parameter('customKeyMetricCount', '0'),
-			new Oara_Curl_Parameter('metric1.factor', ''),
-			new Oara_Curl_Parameter('showFavorite', 'false'),
-			new Oara_Curl_Parameter('separator', ','),
-			new Oara_Curl_Parameter('format', 'CSV')
+		new Oara_Curl_Parameter('columns', 'programId'),
+		new Oara_Curl_Parameter('columns', 'timeOfVisit'),
+		new Oara_Curl_Parameter('columns', 'timeOfEvent'),
+		new Oara_Curl_Parameter('columns', 'timeInSession'),
+		new Oara_Curl_Parameter('columns', 'lastModified'),
+		new Oara_Curl_Parameter('columns', 'epi1'),
+		new Oara_Curl_Parameter('columns', 'eventName'),
+		new Oara_Curl_Parameter('columns', 'pendingStatus'),
+		new Oara_Curl_Parameter('columns', 'siteName'),
+		new Oara_Curl_Parameter('columns', 'graphicalElementName'),
+		new Oara_Curl_Parameter('columns', 'graphicalElementId'),
+		new Oara_Curl_Parameter('columns', 'productName'),
+		new Oara_Curl_Parameter('columns', 'productNrOf'),
+		new Oara_Curl_Parameter('columns', 'productValue'),
+		new Oara_Curl_Parameter('columns', 'affiliateCommission'),
+		new Oara_Curl_Parameter('columns', 'link'),
+		new Oara_Curl_Parameter('columns', 'leadNR'),
+		new Oara_Curl_Parameter('columns', 'orderNR'),
+		new Oara_Curl_Parameter('columns', 'pendingReason'),
+		new Oara_Curl_Parameter('columns', 'orderValue'),
+		new Oara_Curl_Parameter('isPostBack', ''),
+		new Oara_Curl_Parameter('metric1.lastOperator', '/'),
+		new Oara_Curl_Parameter('interval', ''),
+		new Oara_Curl_Parameter('favoriteDescription', ''),
+		new Oara_Curl_Parameter('event_id', '0'),
+		new Oara_Curl_Parameter('pending_status', '1'),
+		new Oara_Curl_Parameter('run_as_organization_id', ''),
+		new Oara_Curl_Parameter('minRelativeIntervalStartTime', '0'),
+		new Oara_Curl_Parameter('includeWarningColumn', 'true'),
+		new Oara_Curl_Parameter('metric1.summaryType', 'NONE'),
+		new Oara_Curl_Parameter('metric1.operator1', '/'),
+		new Oara_Curl_Parameter('latestDayToExecute', '0'),
+		new Oara_Curl_Parameter('showAdvanced', 'true'),
+		new Oara_Curl_Parameter('breakdownOption', '1'),
+		new Oara_Curl_Parameter('metric1.midFactor', ''),
+		new Oara_Curl_Parameter('reportTitleTextKey', 'REPORT3_SERVICE_REPORTS_AAFFILIATEEVENTBREAKDOWNREPORT_TITLE'),
+		new Oara_Curl_Parameter('setColumns', 'true'),
+		new Oara_Curl_Parameter('metric1.columnName1', 'orderValue'),
+		new Oara_Curl_Parameter('metric1.columnName2', 'orderValue'),
+		new Oara_Curl_Parameter('reportPrograms', ''),
+		new Oara_Curl_Parameter('metric1.midOperator', '/'),
+		new Oara_Curl_Parameter('dateSelectionType', '1'),
+		new Oara_Curl_Parameter('favoriteName', ''),
+		new Oara_Curl_Parameter('affiliateId', ''),
+		new Oara_Curl_Parameter('dateType', '1'),
+		new Oara_Curl_Parameter('period', 'custom_period'),
+		new Oara_Curl_Parameter('tabMenuName', ''),
+		new Oara_Curl_Parameter('maxIntervalSize', '0'),
+		new Oara_Curl_Parameter('favoriteId', ''),
+		new Oara_Curl_Parameter('sortBy', 'timeOfEvent'),
+		new Oara_Curl_Parameter('metric1.name', ''),
+		new Oara_Curl_Parameter('customKeyMetricCount', '0'),
+		new Oara_Curl_Parameter('metric1.factor', ''),
+		new Oara_Curl_Parameter('showFavorite', 'false'),
+		new Oara_Curl_Parameter('separator', ','),
+		new Oara_Curl_Parameter('format', 'CSV')
 		);
 
 		$this->_exportOverviewParameters = array(new Oara_Curl_Parameter('reportName', 'aAffiliateProgramOverviewReport'),
-			new Oara_Curl_Parameter('tabMenuName', ''),
-			new Oara_Curl_Parameter('isPostBack', ''),
-			new Oara_Curl_Parameter('showAdvanced', 'true'),
-			new Oara_Curl_Parameter('showFavorite', 'false'),
-			new Oara_Curl_Parameter('run_as_organization_id', ''),
-			new Oara_Curl_Parameter('minRelativeIntervalStartTime', '0'),
-			new Oara_Curl_Parameter('maxIntervalSize', '12'),
-			new Oara_Curl_Parameter('interval', 'MONTHS'),
-			new Oara_Curl_Parameter('reportPrograms', ''),
-			new Oara_Curl_Parameter('reportTitleTextKey', 'REPORT3_SERVICE_REPORTS_AAFFILIATEPROGRAMOVERVIEWREPORT_TITLE'),
-			new Oara_Curl_Parameter('setColumns', 'true'),
-			new Oara_Curl_Parameter('latestDayToExecute', '0'),
-			new Oara_Curl_Parameter('programTypeId', ''),
-			new Oara_Curl_Parameter('includeWarningColumn', 'true'),
-			new Oara_Curl_Parameter('programId', ''),
-			new Oara_Curl_Parameter('period', 'custom_period'),
-			new Oara_Curl_Parameter('columns', 'programId'),
-			new Oara_Curl_Parameter('columns', 'impNrOf'),
-			new Oara_Curl_Parameter('columns', 'clickNrOf'),
-			new Oara_Curl_Parameter('autoCheckbox', 'columns'),
-			new Oara_Curl_Parameter('autoCheckbox', 'useMetricColumn'),
-			new Oara_Curl_Parameter('customKeyMetricCount', '0'),
-			new Oara_Curl_Parameter('metric1.name', ''),
-			new Oara_Curl_Parameter('metric1.midFactor', ''),
-			new Oara_Curl_Parameter('metric1.midOperator', '/'),
-			new Oara_Curl_Parameter('metric1.columnName1', 'programId'),
-			new Oara_Curl_Parameter('metric1.operator1', '/'),
-			new Oara_Curl_Parameter('metric1.columnName2', 'programId'),
-			new Oara_Curl_Parameter('metric1.lastOperator', '/'),
-			new Oara_Curl_Parameter('metric1.factor', ''),
-			new Oara_Curl_Parameter('metric1.summaryType', 'NONE'),
-			new Oara_Curl_Parameter('format', 'CSV'),
-			new Oara_Curl_Parameter('separator', ';'),
-			new Oara_Curl_Parameter('dateType', '1'),
-			new Oara_Curl_Parameter('favoriteId', ''),
-			new Oara_Curl_Parameter('favoriteName', ''),
-			new Oara_Curl_Parameter('favoriteDescription', '')
+		new Oara_Curl_Parameter('tabMenuName', ''),
+		new Oara_Curl_Parameter('isPostBack', ''),
+		new Oara_Curl_Parameter('showAdvanced', 'true'),
+		new Oara_Curl_Parameter('showFavorite', 'false'),
+		new Oara_Curl_Parameter('run_as_organization_id', ''),
+		new Oara_Curl_Parameter('minRelativeIntervalStartTime', '0'),
+		new Oara_Curl_Parameter('maxIntervalSize', '12'),
+		new Oara_Curl_Parameter('interval', 'MONTHS'),
+		new Oara_Curl_Parameter('reportPrograms', ''),
+		new Oara_Curl_Parameter('reportTitleTextKey', 'REPORT3_SERVICE_REPORTS_AAFFILIATEPROGRAMOVERVIEWREPORT_TITLE'),
+		new Oara_Curl_Parameter('setColumns', 'true'),
+		new Oara_Curl_Parameter('latestDayToExecute', '0'),
+		new Oara_Curl_Parameter('programTypeId', ''),
+		new Oara_Curl_Parameter('includeWarningColumn', 'true'),
+		new Oara_Curl_Parameter('programId', ''),
+		new Oara_Curl_Parameter('period', 'custom_period'),
+		new Oara_Curl_Parameter('columns', 'programId'),
+		new Oara_Curl_Parameter('columns', 'impNrOf'),
+		new Oara_Curl_Parameter('columns', 'clickNrOf'),
+		new Oara_Curl_Parameter('autoCheckbox', 'columns'),
+		new Oara_Curl_Parameter('autoCheckbox', 'useMetricColumn'),
+		new Oara_Curl_Parameter('customKeyMetricCount', '0'),
+		new Oara_Curl_Parameter('metric1.name', ''),
+		new Oara_Curl_Parameter('metric1.midFactor', ''),
+		new Oara_Curl_Parameter('metric1.midOperator', '/'),
+		new Oara_Curl_Parameter('metric1.columnName1', 'programId'),
+		new Oara_Curl_Parameter('metric1.operator1', '/'),
+		new Oara_Curl_Parameter('metric1.columnName2', 'programId'),
+		new Oara_Curl_Parameter('metric1.lastOperator', '/'),
+		new Oara_Curl_Parameter('metric1.factor', ''),
+		new Oara_Curl_Parameter('metric1.summaryType', 'NONE'),
+		new Oara_Curl_Parameter('format', 'CSV'),
+		new Oara_Curl_Parameter('separator', ';'),
+		new Oara_Curl_Parameter('dateType', '1'),
+		new Oara_Curl_Parameter('favoriteId', ''),
+		new Oara_Curl_Parameter('favoriteName', ''),
+		new Oara_Curl_Parameter('favoriteDescription', '')
 		);
 	}
 	/**
@@ -213,7 +213,7 @@ class Oara_Network_Publisher_TradeDoubler extends Oara_Network {
 		$loginUrl = 'http://publisher.tradedoubler.com/pan/login';
 
 		$valuesLogin = array(new Oara_Curl_Parameter('j_username', $user),
-			new Oara_Curl_Parameter('j_password', $password)
+		new Oara_Curl_Parameter('j_password', $password)
 		);
 
 		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $this->_credentials);
@@ -357,11 +357,11 @@ class Oara_Network_Publisher_TradeDoubler extends Oara_Network {
 				if ($transactionExportArray[8] != '') {
 					$transaction['unique_id'] = $transactionExportArray[8];
 				} else
-					if ($transactionExportArray[7] != '') {
-						$transaction['unique_id'] = $transactionExportArray[7];
-					} else {
-						throw new Exception("No Identifier");
-					}
+				if ($transactionExportArray[7] != '') {
+					$transaction['unique_id'] = $transactionExportArray[7];
+				} else {
+					throw new Exception("No Identifier");
+				}
 				if ($transactionExportArray[9] != '') {
 					$transaction['custom_id'] = $transactionExportArray[9];
 				}
@@ -369,12 +369,12 @@ class Oara_Network_Publisher_TradeDoubler extends Oara_Network {
 				if ($transactionExportArray[11] == 'A') {
 					$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
 				} else
-					if ($transactionExportArray[11] == 'P') {
-						$transaction['status'] = Oara_Utilities::STATUS_PENDING;
-					} else
-						if ($transactionExportArray[11] == 'D') {
-							$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
-						}
+				if ($transactionExportArray[11] == 'P') {
+					$transaction['status'] = Oara_Utilities::STATUS_PENDING;
+				} else
+				if ($transactionExportArray[11] == 'D') {
+					$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
+				}
 
 				if ($transactionExportArray[19] != '') {
 					$transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[19]);
@@ -460,18 +460,18 @@ class Oara_Network_Publisher_TradeDoubler extends Oara_Network {
 							$overview['transaction_confirmed_value'] += $transaction['amount'];
 							$overview['transaction_confirmed_commission'] += $transaction['commission'];
 						} else
-							if ($transaction['status'] == Oara_Utilities::STATUS_PENDING) {
-								$overview['transaction_pending_value'] += $transaction['amount'];
-								$overview['transaction_pending_commission'] += $transaction['commission'];
-							} else
-								if ($transaction['status'] == Oara_Utilities::STATUS_DECLINED) {
-									$overview['transaction_declined_value'] += $transaction['amount'];
-									$overview['transaction_declined_commission'] += $transaction['commission'];
-								} else
-									if ($transaction['status'] == Oara_Utilities::STATUS_PAID) {
-										$overview['transaction_paid_value'] += $transaction['amount'];
-										$overview['transaction_paid_commission'] += $transaction['commission'];
-									}
+						if ($transaction['status'] == Oara_Utilities::STATUS_PENDING) {
+							$overview['transaction_pending_value'] += $transaction['amount'];
+							$overview['transaction_pending_commission'] += $transaction['commission'];
+						} else
+						if ($transaction['status'] == Oara_Utilities::STATUS_DECLINED) {
+							$overview['transaction_declined_value'] += $transaction['amount'];
+							$overview['transaction_declined_commission'] += $transaction['commission'];
+						} else
+						if ($transaction['status'] == Oara_Utilities::STATUS_PAID) {
+							$overview['transaction_paid_value'] += $transaction['amount'];
+							$overview['transaction_paid_commission'] += $transaction['commission'];
+						}
 					}
 					if (Oara_Utilities::checkRegister($overview)) {
 						$totalOverviews[] = $overview;
@@ -506,18 +506,18 @@ class Oara_Network_Publisher_TradeDoubler extends Oara_Network {
 						$overview['transaction_confirmed_value'] += $transaction['amount'];
 						$overview['transaction_confirmed_commission'] += $transaction['commission'];
 					} else
-						if ($transaction['status'] == Oara_Utilities::STATUS_PENDING) {
-							$overview['transaction_pending_value'] += $transaction['amount'];
-							$overview['transaction_pending_commission'] += $transaction['commission'];
-						} else
-							if ($transaction['status'] == Oara_Utilities::STATUS_DECLINED) {
-								$overview['transaction_declined_value'] += $transaction['amount'];
-								$overview['transaction_declined_commission'] += $transaction['commission'];
-							} else
-								if ($transaction['status'] == Oara_Utilities::STATUS_PAID) {
-									$overview['transaction_paid_value'] += $transaction['amount'];
-									$overview['transaction_paid_commission'] += $transaction['commission'];
-								}
+					if ($transaction['status'] == Oara_Utilities::STATUS_PENDING) {
+						$overview['transaction_pending_value'] += $transaction['amount'];
+						$overview['transaction_pending_commission'] += $transaction['commission'];
+					} else
+					if ($transaction['status'] == Oara_Utilities::STATUS_DECLINED) {
+						$overview['transaction_declined_value'] += $transaction['amount'];
+						$overview['transaction_declined_commission'] += $transaction['commission'];
+					} else
+					if ($transaction['status'] == Oara_Utilities::STATUS_PAID) {
+						$overview['transaction_paid_value'] += $transaction['amount'];
+						$overview['transaction_paid_commission'] += $transaction['commission'];
+					}
 				}
 				$totalOverviews[] = $overview;
 			}
@@ -555,20 +555,20 @@ class Oara_Network_Publisher_TradeDoubler extends Oara_Network {
 			throw new Exception('Report too big \n\n');
 
 		} else
-			if (preg_match("/ error/", $content, $matches)) {
-				$urls = array();
-				$urls[] = $request;
-				$exportReport = $this->_client->get($urls);
-				$try++;
-				if ($try < 5) {
-					return self::checkReportError($exportReport[0], $request, $try);
-				} else {
-					throw new Exception('Problem checking report\n\n');
-				}
-
+		if (preg_match("/ error/", $content, $matches)) {
+			$urls = array();
+			$urls[] = $request;
+			$exportReport = $this->_client->get($urls);
+			$try++;
+			if ($try < 5) {
+				return self::checkReportError($exportReport[0], $request, $try);
 			} else {
-				return $content;
+				throw new Exception('Problem checking report\n\n');
 			}
+
+		} else {
+			return $content;
+		}
 
 	}
 
@@ -657,11 +657,11 @@ class Oara_Network_Publisher_TradeDoubler extends Oara_Network {
 				if ($transactionArray[8] != '') {
 					$transactionList[] = $transactionArray[8];
 				} else
-					if ($transactionArray[7] != '') {
-						$transactionList[] = $transactionArray[7];
-					} else {
-						throw new Exception("No Identifier");
-					}
+				if ($transactionArray[7] != '') {
+					$transactionList[] = $transactionArray[7];
+				} else {
+					throw new Exception("No Identifier");
+				}
 			}
 		}
 
@@ -680,23 +680,26 @@ class Oara_Network_Publisher_TradeDoubler extends Oara_Network {
 		if ($this->_dateFormat == 'dd/MM/yy') {
 			$dateString = $date->toString('dd/MM/yyyy');
 		} else
-			if ($this->_dateFormat == 'M/d/yy') {
-				$dateString = $date->toString('M/d/yy');
-			} else
-				if ($this->_dateFormat == 'd/MM/yy') {
-					$dateString = $date->toString('d/MM/yy');
-				} else
-					if ($this->_dateFormat == 'tt.MM.uu') {
-						$dateString = $date->toString('dd.MM.yy');
-					} else
-						if ($this->_dateFormat == 'jj-MM-aa') {
-							$dateString = $date->toString('dd-MM-yy');
-						} else
-							if ($this->_dateFormat == 'jj/MM/aa') {
-								$dateString = $date->toString('dd/MM/yy');
-							} else {
-								throw new Exception("\n Date Format not supported ".$this->_dateFormat."\n");
-							}
+		if ($this->_dateFormat == 'M/d/yy') {
+			$dateString = $date->toString('M/d/yy');
+		} else
+		if ($this->_dateFormat == 'd/MM/yy') {
+			$dateString = $date->toString('d/MM/yy');
+		} else
+		if ($this->_dateFormat == 'tt.MM.uu') {
+			$dateString = $date->toString('dd.MM.yy');
+		} else
+		if ($this->_dateFormat == 'jj-MM-aa') {
+			$dateString = $date->toString('dd-MM-yy');
+		} else
+		if ($this->_dateFormat == 'jj/MM/aa') {
+			$dateString = $date->toString('dd/MM/yy');
+		} else
+		if ($this->_dateFormat == 'dd.MM.yy') {
+			$dateString = $date->toString('dd.MM.yy');
+		} else {
+			throw new Exception("\n Date Format not supported ".$this->_dateFormat."\n");
+		}
 		return $dateString;
 	}
 	/**
@@ -710,23 +713,26 @@ class Oara_Network_Publisher_TradeDoubler extends Oara_Network {
 		if ($this->_dateFormat == 'dd/MM/yy') {
 			$transactionDate = new Zend_Date(trim($dateString), "dd/MM/yy HH:mm:ss");
 		} else
-			if ($this->_dateFormat == 'M/d/yy') {
-				$transactionDate = new Zend_Date(trim($dateString), "M/d/yy HH:mm:ss");
-			} else
-				if ($this->_dateFormat == 'd/MM/yy') {
-					$transactionDate = new Zend_Date(trim($dateString), "d/MM/yy HH:mm:ss");
-				} else
-					if ($this->_dateFormat == 'tt.MM.uu') {
-						$transactionDate = new Zend_Date(trim($dateString), "dd.MM.yy HH:mm:ss");
-					} else
-						if ($this->_dateFormat == 'jj-MM-aa') {
-							$transactionDate = new Zend_Date(trim($dateString), "dd-MM-yy HH:mm:ss");
-						} else
-							if ($this->_dateFormat == 'jj/MM/aa') {
-								$transactionDate = new Zend_Date(trim($dateString), "dd/MM/yy HH:mm:ss");
-							} else {
-								throw new Exception("\n Date Format not supported ".$this->_dateFormat."\n");
-							}
+		if ($this->_dateFormat == 'M/d/yy') {
+			$transactionDate = new Zend_Date(trim($dateString), "M/d/yy HH:mm:ss");
+		} else
+		if ($this->_dateFormat == 'd/MM/yy') {
+			$transactionDate = new Zend_Date(trim($dateString), "d/MM/yy HH:mm:ss");
+		} else
+		if ($this->_dateFormat == 'tt.MM.uu') {
+			$transactionDate = new Zend_Date(trim($dateString), "dd.MM.yy HH:mm:ss");
+		} else
+		if ($this->_dateFormat == 'jj-MM-aa') {
+			$transactionDate = new Zend_Date(trim($dateString), "dd-MM-yy HH:mm:ss");
+		} else
+		if ($this->_dateFormat == 'jj/MM/aa') {
+			$transactionDate = new Zend_Date(trim($dateString), "dd/MM/yy HH:mm:ss");
+		} else
+		if ($this->_dateFormat == 'dd.MM.yy') {
+			$transactionDate = new Zend_Date(trim($dateString), "dd.MM.yy HH:mm:ss");
+		} else {
+			throw new Exception("\n Date Format not supported ".$this->_dateFormat."\n");
+		}
 		return $transactionDate;
 	}
 }
