@@ -119,7 +119,6 @@ class Oara_Network_Publisher_Publicidees extends Oara_Network {
 		$filter = new Zend_Filter_LocalizedToNormalized(array('precision' => 2, 'locale' => 'fr'));
 		$dateArray = Oara_Utilities::daysOfDifference($dStartDate, $dEndDate);
 		$dateArraySize = sizeof($dateArray);
-
 		foreach ($merchantList as $merchantId) {
 			$urls = array();
 			for ($i = 0; $i < $dateArraySize; $i++) {
