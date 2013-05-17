@@ -82,7 +82,7 @@ class Oara_Network_Publisher_Publicidees extends Oara_Network {
 	 */
 	public function getMerchantList() {
 		$merchants = array();
-
+		/*
 		$valuesFromExport = array();
 		$valuesFromExport[] = new Oara_Curl_Parameter('action', "myprograms");
 
@@ -107,6 +107,12 @@ class Oara_Network_Publisher_Publicidees extends Oara_Network {
 			$obj['url'] = (string) $merchant->program_url;
 			$merchants[] = $obj;
 		}
+		*/
+		
+		$obj = array();
+		$obj['cid'] = 1;
+		$obj['name'] = "Publicidees";
+		$merchants[] = $obj;
 		return $merchants;
 	}
 
@@ -119,12 +125,12 @@ class Oara_Network_Publisher_Publicidees extends Oara_Network {
 		$filter = new Zend_Filter_LocalizedToNormalized(array('precision' => 2, 'locale' => 'fr'));
 		$dateArray = Oara_Utilities::daysOfDifference($dStartDate, $dEndDate);
 		$dateArraySize = sizeof($dateArray);
-		foreach ($merchantList as $merchantId) {
+		//foreach ($merchantList as $merchantId) {
 			$urls = array();
 			for ($i = 0; $i < $dateArraySize; $i++) {
 				$valuesFromExport = array();
 				$valuesFromExport[] = new Oara_Curl_Parameter('action', "moreallstats");
-				$valuesFromExport[] = new Oara_Curl_Parameter('progid', $merchantId);
+				$valuesFromExport[] = new Oara_Curl_Parameter('progid', 0);
 				$valuesFromExport[] = new Oara_Curl_Parameter('dD', $dateArray[$i]->toString("dd/MM/yyyy"));
 				$valuesFromExport[] = new Oara_Curl_Parameter('dF', $dateArray[$i]->toString("dd/MM/yyyy"));
 				$valuesFromExport[] = new Oara_Curl_Parameter('periode', "0");
@@ -165,7 +171,7 @@ class Oara_Network_Publisher_Publicidees extends Oara_Network {
 
 						for ($z = 0; $z < $confirmedTransactions; $z++) {
 							$transaction = Array();
-							$transaction['merchantId'] = $merchantId;
+							$transaction['merchantId'] = 1;
 							$parameters = $urls[$i]->getParameters();
 							$transactionDate = new Zend_Date($parameters[2]->getValue(), "dd/MM/yyyy");
 							$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
@@ -177,7 +183,7 @@ class Oara_Network_Publisher_Publicidees extends Oara_Network {
 
 						for ($z = 0; $z < $pendingTransactions; $z++) {
 							$transaction = Array();
-							$transaction['merchantId'] = $merchantId;
+							$transaction['merchantId'] = 1;
 							$transaction['date'] = $dateArray[$i]->toString("yyyy-MM-dd HH:mm:ss");
 							$transaction['amount'] = ((double) $filter->filter(substr($transactionExportArray[$headerMap["pendingCA"]], 0, -2)) / $pendingTransactions);
 							$transaction['commission'] = ((double) $filter->filter(substr($transactionExportArray[$headerMap["pendingCA"]], 0, -2)) / $pendingTransactions);
@@ -188,7 +194,7 @@ class Oara_Network_Publisher_Publicidees extends Oara_Network {
 					}
 				}
 			}
-		}
+		//}
 
 		return $totalTransactions;
 	}
