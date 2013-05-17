@@ -136,7 +136,6 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 		
 		// initial login page which redirects to correct sign in page, sets some cookies
 		$URL = "https://www.amazon$extension/ap/signin?openid.assoc_handle=amzn_associates_$handle&openid.return_to={$this->_networkServer}&openid.mode=checkid_setup&openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0&openid.claimed_id=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.pape.max_auth_age=0&openid.ns.pape=http%3A%2F%2Fspecs.openid.net%2Fextensions%2Fpape%2F1.0&openid.identity=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select";
-		
 		$ch = curl_init();
 		
 		if (!isset($this->_credentials["cookiesDir"])) {
