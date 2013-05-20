@@ -223,6 +223,7 @@ class Oara_Network_Publisher_PayMode extends Oara_Network {
 			$j++;
 		}
 
+		/*
 		$valuesFromExport = Oara_Utilities::cloneArray($this->_exportTransactionParameters);
 		foreach ($this->_agentNumber as $agentNumber) {
 			$valuesFromExport[] = new Oara_Curl_Parameter($agentNumber, "on");
@@ -269,6 +270,7 @@ class Oara_Network_Publisher_PayMode extends Oara_Network {
 			}
 		}
 
+		*/
 		return $totalTransactions;
 	}
 
