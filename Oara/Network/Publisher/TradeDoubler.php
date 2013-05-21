@@ -247,12 +247,15 @@ class Oara_Network_Publisher_TradeDoubler extends Oara_Network {
 		$exportData = str_getcsv($merchantReport, "\r\n");
 		$merchantReportList = Array();
 		$num = count($exportData);
+		$websiteMap = array();
 		for ($i = 3; $i < $num; $i++) {
 			$merchantExportArray = str_getcsv($exportData[$i], ",");
 
 			if ($merchantExportArray[2] != '' && $merchantExportArray[4] != '') {
 				$merchantReportList[$merchantExportArray[4]] = $merchantExportArray[2];
+				$websiteMap[$merchantExportArray[0]] = "";
 			}
+			
 		}
 		return $merchantReportList;
 	}
@@ -396,89 +399,6 @@ class Oara_Network_Publisher_TradeDoubler extends Oara_Network {
 		$totalOverviews = Array();
 		self::login();
 		$transactionArray = Oara_Utilities::transactionMapPerDay($transactionList);
-
-		$mothOverviewUrls = array();
-		$valuesFormExport = Oara_Utilities::cloneArray($this->_exportOverviewParameters);
-		$valuesFormExport[] = new Oara_Curl_Parameter('startDate', self::formatDate($dStartDate));
-		$valuesFormExport[] = new Oara_Curl_Parameter('endDate', self::formatDate($dEndDate));
-
-		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://publisher.tradedoubler.com/pan/aReport3Internal.action?', $valuesFormExport);
-		$exportReport = $this->_client->get($urls);
-		$exportReport[0] = self::checkReportError($exportReport[0], $urls[0]);
-		$exportData = str_getcsv($exportReport[0], "\r\n");
-		$num = count($exportData);
-
-		if ($num > 3) {
-
-			$dateArray = Oara_Utilities::daysOfDifference($dStartDate, $dEndDate);
-			$dateArraySize = sizeof($dateArray);
-			for ($i = 0; $i < $dateArraySize; $i++) {
-				$valuesFormExport = Oara_Utilities::cloneArray($this->_exportOverviewParameters);
-				$valuesFormExport[] = new Oara_Curl_Parameter('startDate', self::formatDate($dateArray[$i]));
-				$valuesFormExport[] = new Oara_Curl_Parameter('endDate', self::formatDate($dateArray[$i]));
-				$mothOverviewUrls[] = new Oara_Curl_Request('http://publisher.tradedoubler.com/pan/aReport3Internal.action?', $valuesFormExport);
-			}
-		}
-
-		//First get the clicks and Impressions
-		$exportReport = $this->_client->get($mothOverviewUrls);
-		$exportReportNumber = count($exportReport);
-		for ($i = 0; $i < $exportReportNumber; $i++) {
-			$exportReport[$i] = self::checkReportError($exportReport[$i], $mothOverviewUrls[$i]);
-			$exportData = str_getcsv($exportReport[$i], "\r\n");
-			$num = count($exportData);
-			for ($j = 2; $j < $num - 1; $j++) {
-				$overviewExportArray = str_getcsv($exportData[$j], ";");
-				$parameter = $mothOverviewUrls[$i]->getParameter(39);
-				$overviewDate = self::toDate($parameter->getValue());
-
-				if (!isset($overviewExportArray[2])) {
-					throw new Exception('Problem getting overview\n\n');
-				}
-
-				if ($overviewDate->compare($dStartDate) >= 0 && $overviewDate->compare($dEndDate) <= 0 && isset($overviewExportArray[2]) && in_array((int) $overviewExportArray[2], $merchantList)) {
-
-					$overview = Array();
-					$overview['merchantId'] = (int) $overviewExportArray[2];
-					$overview['date'] = $overviewDate->toString("yyyy-MM-dd HH:mm:ss");
-					$overview['click_number'] = (int) $overviewExportArray[4];
-					$overview['impression_number'] = (int) $overviewExportArray[3];
-					$overview['transaction_number'] = 0;
-					$overview['transaction_confirmed_value'] = 0;
-					$overview['transaction_confirmed_commission'] = 0;
-					$overview['transaction_pending_value'] = 0;
-					$overview['transaction_pending_commission'] = 0;
-					$overview['transaction_declined_value'] = 0;
-					$overview['transaction_declined_commission'] = 0;
-					$overview['transaction_paid_value'] = 0;
-					$overview['transaction_paid_commission'] = 0;
-					$transactionDateArray = Oara_Utilities::getDayFromArray($overview['merchantId'], $transactionArray, $overviewDate, true);
-					foreach ($transactionDateArray as $transaction) {
-						$overview['transaction_number']++;
-						if ($transaction['status'] == Oara_Utilities::STATUS_CONFIRMED) {
-							$overview['transaction_confirmed_value'] += $transaction['amount'];
-							$overview['transaction_confirmed_commission'] += $transaction['commission'];
-						} else
-						if ($transaction['status'] == Oara_Utilities::STATUS_PENDING) {
-							$overview['transaction_pending_value'] += $transaction['amount'];
-							$overview['transaction_pending_commission'] += $transaction['commission'];
-						} else
-						if ($transaction['status'] == Oara_Utilities::STATUS_DECLINED) {
-							$overview['transaction_declined_value'] += $transaction['amount'];
-							$overview['transaction_declined_commission'] += $transaction['commission'];
-						} else
-						if ($transaction['status'] == Oara_Utilities::STATUS_PAID) {
-							$overview['transaction_paid_value'] += $transaction['amount'];
-							$overview['transaction_paid_commission'] += $transaction['commission'];
-						}
-					}
-					if (Oara_Utilities::checkRegister($overview)) {
-						$totalOverviews[] = $overview;
-					}
-				}
-			}
-		}
 
 		//get the transactions that left
 		foreach ($transactionArray as $merchantId => $merchantTransaction) {
