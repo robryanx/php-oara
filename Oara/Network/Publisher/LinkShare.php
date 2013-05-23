@@ -76,14 +76,15 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network {
 		$urls = array();
 		$urls[] = new Oara_Curl_Request('http://cli.linksynergy.com/cli/publisher/home.php', array());
 		$result = $this->_client->get($urls);
+		
 		//Check if the credentials are right
 		if (preg_match("/https:\/\/cli\.linksynergy\.com\/cli\/common\/logout\.php/", $result[0], $matches)) {
 
 			$urls = array();
 			$urls[] = new Oara_Curl_Request('https://cli.linksynergy.com/cli/publisher/my_account/marketingChannels.php', array());
-			$result = $this->_client->get($urls);
+			$resultHtml = $this->_client->get($urls);
 			
-			$dom = new Zend_Dom_Query($result[0]);
+			$dom = new Zend_Dom_Query($resultHtml[0]);
 			$results = $dom->query('table');
 			foreach ($results as $table) {
 				$tableCsv = self::htmlToCsv(self::DOMinnerHTML($table));
@@ -102,6 +103,22 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network {
 					$resultsSites[] = $result;
 				}
 			}
+			
+			$results = $dom->query("#headerLoginWebsiteDDLContent .headerLoginWebsiteDDLItem");
+			if (count($results) == 0){
+				preg_match("/sid=(.+?)&/", $resultHtml[0], $matches);
+				$site = null;
+				foreach ($resultsSites as $result){
+					if ($result["id"] == $matches[1]){
+						$site = $result;
+					}
+				}
+				
+				$resultsSites = array();
+				$resultsSites[] = $site;
+			}
+			
+			
 			
 			$siteList = array();
 			foreach ($resultsSites as $resultSite) {
