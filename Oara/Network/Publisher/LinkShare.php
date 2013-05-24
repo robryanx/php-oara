@@ -95,7 +95,7 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network {
 			for ($i = 1; $i < $num; $i++) {
 				$payment = Array();
 				$siteArray = str_getcsv($tableCsv[$i], ";");
-				if (count($siteArray) == 7){
+				if (isset($siteArray[2]) && is_numeric($siteArray[2])){
 					$result = array();
 					$result["id"] = $siteArray[2];
 					$result["name"] = $siteArray[1];
@@ -103,6 +103,7 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network {
 					$resultsSites[] = $result;
 				}
 			}
+			
 			
 			$results = $dom->query("#headerLoginWebsiteDDLContent .headerLoginWebsiteDDLItem");
 			if (count($results) == 0){
