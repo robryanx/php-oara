@@ -3,12 +3,12 @@
  * Export Class
  *
  * @author     Carlos Morillo Merino
- * @category   Oara_Network_Publisher_Td
+ * @category   Oara_Network_Publisher_Wehkamp
  * @copyright  Fubra Limited
  * @version    Release: 01.00
  *
  */
-class Oara_Network_Publisher_TradeDoubler extends Oara_Network {
+class Oara_Network_Publisher_Wehkamp extends Oara_Network {
 	/**
 	 * Export client.
 	 * @var Oara_Curl_Access
@@ -210,7 +210,7 @@ class Oara_Network_Publisher_TradeDoubler extends Oara_Network {
 	private function login() {
 		$user = $this->_credentials['user'];
 		$password = $this->_credentials['password'];
-		$loginUrl = 'http://publisher.tradedoubler.com/pan/login';
+		$loginUrl = 'https://affiliates.wehkamp.nl/pan/login';
 
 		$valuesLogin = array(new Oara_Curl_Parameter('j_username', $user),
 		new Oara_Curl_Parameter('j_password', $password)
@@ -224,62 +224,18 @@ class Oara_Network_Publisher_TradeDoubler extends Oara_Network {
 	 */
 	public function checkConnection() {
 		$connection = false;
-
+		$this->_dateFormat = "d-M-yy";
+		
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://publisher.tradedoubler.com/pan/aReport3Selection.action?reportName=aAffiliateProgramOverviewReport', array());
+		$urls[] = new Oara_Curl_Request('https://affiliates.wehkamp.nl/pan/aReport3Selection.action?reportName=aAffiliateProgramOverviewReport', array());
 		$exportReport = $this->_client->get($urls);
-		if (preg_match("/\(([a-zA-Z]{0,2}[\/\.][a-zA-Z]{0,2}[\/\.][a-zA-Z]{0,2})\)/", $exportReport[0], $match)) {
-			$this->_dateFormat = $match[1];
-		}
-
-		if ($this->_dateFormat != null) {
+		
+		
+		if (preg_match("/publisher\/jsp\/general\/logout\.jsp/", $exportReport[0], $match)) {	
 			$connection = true;
 		}
 		return $connection;
 	}
-	/**
-	 * It returns the Merchant CVS report.
-	 * @return $exportReport
-	 */
-	private function getExportMerchantReport($content) {
-		$merchantReport = self::formatCsv($content);
-
-		$exportData = str_getcsv($merchantReport, "\r\n");
-		$merchantReportList = Array();
-		$num = count($exportData);
-		$websiteMap = array();
-		for ($i = 3; $i < $num; $i++) {
-			$merchantExportArray = str_getcsv($exportData[$i], ",");
-
-			if ($merchantExportArray[2] != '' && $merchantExportArray[4] != '') {
-				$merchantReportList[$merchantExportArray[4]] = $merchantExportArray[2];
-				$websiteMap[$merchantExportArray[0]] = "";
-			}
-			
-		}
-		return $merchantReportList;
-	}
-	/**
-	 *
-	 * Format Csv
-	 * @param unknown_type $csv
-	 */
-	private function formatCsv($csv) {
-		preg_match_all("/\"([^\"]+?)\",/", $csv, $matches);
-		foreach ($matches[1] as $match) {
-			if (preg_match("/,/", $match)) {
-				$rep = preg_replace("/,/", "", $match);
-				$csv = str_replace($match, $rep, $csv);
-				$match = $rep;
-			}
-			if (preg_match("/\n/", $match)) {
-				$rep = preg_replace("/\n/", "", $match);
-				$csv = str_replace($match, $rep, $csv);
-			}
-		}
-		return $csv;
-	}
-
 	/**
 	 * It returns an array with the different merchants
 	 * @return array
@@ -290,7 +246,7 @@ class Oara_Network_Publisher_TradeDoubler extends Oara_Network {
 		$valuesFormExport = $this->_exportMerchantParameters;
 		$valuesFormExport[] = new Oara_Curl_Parameter('programAffiliateStatusId', '3');
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://publisher.tradedoubler.com/pan/aReport3Internal.action?', $valuesFormExport);
+		$urls[] = new Oara_Curl_Request('https://affiliates.wehkamp.nl/pan/aReport3Internal.action?', $valuesFormExport);
 		$exportReport = $this->_client->post($urls);
 		$exportReport[0] = self::checkReportError($exportReport[0], $urls[0]);
 		$merchantReportList = self::getExportMerchantReport($exportReport[0]);
@@ -298,7 +254,7 @@ class Oara_Network_Publisher_TradeDoubler extends Oara_Network {
 		$valuesFormExport = $this->_exportMerchantParameters;
 		$valuesFormExport[] = new Oara_Curl_Parameter('programAffiliateStatusId', '4');
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://publisher.tradedoubler.com/pan/aReport3Internal.action?', $valuesFormExport);
+		$urls[] = new Oara_Curl_Request('https://affiliates.wehkamp.nl/pan/aReport3Internal.action?', $valuesFormExport);
 		$exportReport = $this->_client->post($urls);
 		$exportReport[0] = self::checkReportError($exportReport[0], $urls[0]);
 		$merchantReportListAux = self::getExportMerchantReport($exportReport[0]);
@@ -313,15 +269,11 @@ class Oara_Network_Publisher_TradeDoubler extends Oara_Network {
 	 * @see library/Oara/Network/Oara_Network_Publisher_Base#getMerchantList()
 	 */
 	public function getMerchantList() {
-		$merchantReportList = self::getMerchantReportList();
 		$merchants = Array();
-		foreach ($merchantReportList as $key => $value) {
-			$obj = Array();
-			$obj['cid'] = $key;
-			$obj['name'] = $value;
-			$merchants[] = $obj;
-		}
-
+		$obj = Array();
+		$obj['cid'] = "209839";
+		$obj['name'] = "Wehkamp";
+		$merchants[] = $obj;
 		return $merchants;
 	}
 
@@ -338,7 +290,7 @@ class Oara_Network_Publisher_TradeDoubler extends Oara_Network {
 		$valuesFormExport[] = new Oara_Curl_Parameter('startDate', self::formatDate($dStartDate));
 		$valuesFormExport[] = new Oara_Curl_Parameter('endDate', self::formatDate($dEndDate));
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://publisher.tradedoubler.com/pan/aReport3Internal.action?', $valuesFormExport);
+		$urls[] = new Oara_Curl_Request('https://affiliates.wehkamp.nl/pan/aReport3Internal.action?', $valuesFormExport);
 		$exportReport = $this->_client->get($urls);
 		$exportReport[0] = self::checkReportError($exportReport[0], $urls[0]);
 		$exportData = str_getcsv($exportReport[0], "\r\n");
@@ -452,7 +404,7 @@ class Oara_Network_Publisher_TradeDoubler extends Oara_Network {
 			//report too big, we have to download it and read it
 			if (preg_match("/(\/report\/published\/(aAffiliateEventBreakdownReport(.*))\.zip)/", $content, $matches)) {
 
-				$file = "http://publisher.tradedoubler.com".$matches[0];
+				$file = "https://affiliates.wehkamp.nl".$matches[0];
 				$newfile = realpath(dirname(__FILE__)).'/../../data/pdf/'.$matches[2].'.zip';
 
 				if (!copy($file, $newfile)) {
@@ -501,7 +453,7 @@ class Oara_Network_Publisher_TradeDoubler extends Oara_Network {
 		$paymentHistory = array();
 
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://publisher.tradedoubler.com/pan/reportSelection/Payment?', array());
+		$urls[] = new Oara_Curl_Request('https://affiliates.wehkamp.nl/pan/reportSelection/Payment?', array());
 		$exportReport = $this->_client->get($urls);
 		/*** load the html into the object ***/
 		$doc = new DOMDocument();
@@ -558,7 +510,7 @@ class Oara_Network_Publisher_TradeDoubler extends Oara_Network {
 		$valuesFormExport = array();
 		$valuesFormExport[] = new Oara_Curl_Parameter('popup', 'true');
 		$valuesFormExport[] = new Oara_Curl_Parameter('payment_id', $paymentId);
-		$urls[] = new Oara_Curl_Request('http://publisher.tradedoubler.com/pan/reports/Payment.html?', $valuesFormExport);
+		$urls[] = new Oara_Curl_Request('https://affiliates.wehkamp.nl/pan/reports/Payment.html?', $valuesFormExport);
 		$exportReport = $this->_client->get($urls);
 		$dom = new Zend_Dom_Query($exportReport[0]);
 		$results = $dom->query('a');
@@ -566,7 +518,7 @@ class Oara_Network_Publisher_TradeDoubler extends Oara_Network {
 		$urls = array();
 		foreach ($results as $result) {
 			$url = $result->getAttribute('href');
-			$urls[] = new Oara_Curl_Request("http://publisher.tradedoubler.com".$url."&format=CSV", array());
+			$urls[] = new Oara_Curl_Request("https://affiliates.wehkamp.nl".$url."&format=CSV", array());
 		}
 		$exportReportList = $this->_client->get($urls);
 		foreach ($exportReportList as $exportReport) {
@@ -617,6 +569,9 @@ class Oara_Network_Publisher_TradeDoubler extends Oara_Network {
 		} else
 		if ($this->_dateFormat == 'dd.MM.yy') {
 			$dateString = $date->toString('dd.MM.yy');
+		} else
+		if ($this->_dateFormat == 'd-M-yy') {
+			$dateString = $date->toString('d-M-yy');
 		} else {
 			throw new Exception("\n Date Format not supported ".$this->_dateFormat."\n");
 		}
@@ -650,6 +605,9 @@ class Oara_Network_Publisher_TradeDoubler extends Oara_Network {
 		} else
 		if ($this->_dateFormat == 'dd.MM.yy') {
 			$transactionDate = new Zend_Date(trim($dateString), "dd.MM.yy HH:mm:ss");
+		} else
+		if ($this->_dateFormat == 'd-M-yy') {
+			$transactionDate = new Zend_Date(trim($dateString), "d-M-yy HH:mm:ss");
 		} else {
 			throw new Exception("\n Date Format not supported ".$this->_dateFormat."\n");
 		}
