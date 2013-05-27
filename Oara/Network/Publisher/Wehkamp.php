@@ -210,7 +210,7 @@ class Oara_Network_Publisher_Wehkamp extends Oara_Network {
 	private function login() {
 		$user = $this->_credentials['user'];
 		$password = $this->_credentials['password'];
-		$loginUrl = 'https://affiliates.wehkamp.nl/pan/login';
+		$loginUrl = 'https://affiliates.wehkamp.nl/pan/login?';
 
 		$valuesLogin = array(new Oara_Curl_Parameter('j_username', $user),
 		new Oara_Curl_Parameter('j_password', $password)

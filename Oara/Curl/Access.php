@@ -52,7 +52,7 @@ class Oara_Curl_Access {
 		//Setting cookies
 		$isDianomi = $credentials['networkName'] == "Dianomi" ? true : false;
 		$isOldSMG = $credentials['networkName'] == "Smg" && (strpos($credentials["cookieName"], 'old') !== false);
-		$isTD = ($credentials['networkName'] == "TradeDoubler" || $credentials['networkName'] == "Stream20");
+		$isTD = ($credentials['networkName'] == "TradeDoubler" || $credentials['networkName'] == "Stream20" || $credentials['networkName'] == "Wehkamp");
 		//$isAW = $credentials['networkName'] == "AffiliateWindow";
 		$dir = realpath(dirname(__FILE__)).'/../data/curl/'.$credentials['cookiesDir'].'/'.$credentials['cookiesSubDir'].'/';
 
