@@ -86,6 +86,7 @@ class Oara_Curl_Access {
 			CURLOPT_HTTPAUTH => CURLAUTH_ANY,
 			CURLOPT_AUTOREFERER => true,
 			CURLOPT_SSL_VERIFYPEER => false,
+			CURLOPT_SSL_VERIFYHOST => false,
 			CURLOPT_HEADER => false,
 			//CURLOPT_VERBOSE => true,
 		);
@@ -122,7 +123,7 @@ class Oara_Curl_Access {
 		if ($isDianomi){
 			$result = true;
 		}
-
+		
 		while (($isOldSMG || $isTD) && ($info['http_code'] == 301 || $info['http_code'] == 302)) {
 			// redirect manually, cookies must be set, which curl does not itself
 
