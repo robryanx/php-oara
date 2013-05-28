@@ -178,8 +178,10 @@ class Oara_Network_Publisher_DirectTrack extends Oara_Network {
 					
 					$total_sales = substr(trim($stats->total_sales), 1);
 					$total = substr(trim($stats->total), 1);
-
-					$overview['transaction_confirmed_value'] = $total_sales;
+					if ($total_sales != null){
+						$overview['transaction_confirmed_value'] = $total_sales;
+					}
+					
 					$overview['transaction_confirmed_commission'] = $total;
 
 					

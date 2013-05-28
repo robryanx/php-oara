@@ -103,7 +103,6 @@ class Oara_Network_Publisher_Bol extends Oara_Network {
 			
 			for ($row = 2; $row <= $highestRow; ++$row) {
 
-			  for ($col = 0; $col <= $highestColumnIndex; ++$col) {
 			    $value =  $objWorksheet->getCellByColumnAndRow(3, $row)->getValue();
 			   	$commission = $objWorksheet->getCellByColumnAndRow(4, $row)->getValue();
 			    
@@ -117,7 +116,6 @@ class Oara_Network_Publisher_Bol extends Oara_Network {
 				$transaction['commission'] = Oara_Utilities::parseDouble($commission);
 				$totalTransactions[] = $transaction;
 			    
-			  }
 			}
 			unlink($my_file);
 		}

@@ -185,28 +185,30 @@ class Oara_Network_Publisher_WebGains extends Oara_Network {
 			$transactionList = $this->_soapClient->getDetailedEarnings($dStartDate->getIso(), $dEndDate->getIso(), $campaignKey, $this->_exportTransactionParameters['username'], $this->_exportTransactionParameters['password']);
 			foreach ($transactionList as $transaction) {
 				if (in_array($transaction->programID, $merchantList)) {
-
-					$transaction->merchantId = $transaction->programID;
+					$obj = array();
+					$obj["merchantId"] = $transaction->programID;
+					$obj["amount"] = (float)$transaction->saleValue;
+					$obj["commission"] = (float)$transaction->commission;
+					$obj["custom_id"] = $transaction->clickRef;
+					
 					if ($transaction->status == 'confirmed') {
-						$transaction->status = Oara_Utilities::STATUS_CONFIRMED;
+						$obj["status"] = Oara_Utilities::STATUS_CONFIRMED;
 					} else
 						if ($transaction->status == 'delayed') {
-							$transaction->status = Oara_Utilities::STATUS_PENDING;
+							$obj["status"] = Oara_Utilities::STATUS_PENDING;
 						} else
 							if ($transaction->status == 'cancelled') {
-								$transaction->status = Oara_Utilities::STATUS_DECLINED;
+								$obj["status"] = Oara_Utilities::STATUS_DECLINED;
 							} else {
 								throw new Exception('Error in the transaction status');
 							}
 					$transactionDate = new Zend_Date($transaction->date, "yyyy-MM-ddTHH:mm:ss");
-					$transaction->date = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
-					$totalTransactions[] = $transaction;
+					$obj["date"] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+					$totalTransactions[] = $obj;
 				}
 			}
-
 		}
-
-		$totalTransactions = Oara_Utilities::soapConverter($totalTransactions, $this->_transactionConverterConfiguration);
+		
 		return $totalTransactions;
 	}
 	/**
