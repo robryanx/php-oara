@@ -335,7 +335,7 @@ class Oara_Network_Publisher_WebGains extends Oara_Network {
 			$parameters = explode('&', $parseUrl['query']);
 			foreach ($parameters as $parameter) {
 				$parameterValue = explode('=', $parameter);
-				if ($parameterValue[0] == 'payment') {
+				if ($parameterValue[0] == 'payment' || $parameterValue[0] == 'creditnoteid') {
 					$obj['pid'] = $parameterValue[1];
 				}
 			}
