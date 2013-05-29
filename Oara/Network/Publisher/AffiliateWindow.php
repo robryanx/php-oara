@@ -148,7 +148,6 @@ class Oara_Network_Publisher_AffiliateWindow extends Oara_Network {
 			$arrayMerchantIds = Array();
 			foreach ($merchants as $merchant) {
 				$arrayMerchantIds[] = $merchant->iId;
-				$arrayCountry[$merchant->oPrimaryRegion->sCountryCode] = "";
 			}
 
 			$merchants = self::getMerchant($arrayMerchantIds);
