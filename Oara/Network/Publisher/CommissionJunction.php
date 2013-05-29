@@ -222,7 +222,7 @@ class Oara_Network_Publisher_CommissionJunction extends Oara_Network {
 			foreach ($xml->commissions->commission as $singleTransaction) {
 
 				if (in_array((int) self::findAttribute($singleTransaction, 'cid'), $merchantList)) {
-
+					
 					$transaction = Array();
 					$transaction['merchantId'] = self::findAttribute($singleTransaction, 'cid');
 					$transactionDate = new Zend_Date(self::findAttribute($singleTransaction, 'event-date'), 'yyyy-MM-ddTHH:mm:ss');
