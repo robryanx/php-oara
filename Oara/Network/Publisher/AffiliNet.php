@@ -120,15 +120,6 @@ class Oara_Network_Publisher_AffiliNet extends Oara_Network {
 	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = array();
 
-		$dStartDate = clone $dStartDate;
-		$dStartDate->setHour("00");
-		$dStartDate->setMinute("00");
-		$dStartDate->setSecond("00");
-		$dEndDate = clone $dEndDate;
-		$dEndDate->setHour("23");
-		$dEndDate->setMinute("59");
-		$dEndDate->setSecond("59");
-
 		//Set the webservice
 		$publisherStatisticsServiceUrl = 'https://api.affili.net/V2.0/PublisherStatistics.svc?wsdl';
 		$publisherStatisticsService = new Oara_Import_Soap_Client($publisherStatisticsServiceUrl, array('compression'	 => SOAP_COMPRESSION_ACCEPT | SOAP_COMPRESSION_GZIP | SOAP_COMPRESSION_DEFLATE,
@@ -141,6 +132,7 @@ class Oara_Network_Publisher_AffiliNet extends Oara_Network {
 			foreach ($merchantListSlice as $merchant) {
 				$merchantListAux[] = (string) $merchant;
 			}
+			
 
 			//Call the function
 			$params = array(
@@ -170,6 +162,8 @@ class Oara_Network_Publisher_AffiliNet extends Oara_Network {
 
 				foreach ($transactionList as $transaction) {
 					//$transaction['merchantId'] = 3901;
+					$tDate = new Zend_Date($transaction["date"],"yyyy-MM-ddTHH:mm:ss");
+					$transaction["date"] = $tDate->toString("yyyy-MM-dd HH:mm:ss");
 					if ($transaction['status'] == 'Confirmed') {
 						$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
 					} else
