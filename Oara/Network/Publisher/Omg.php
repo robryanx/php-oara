@@ -48,7 +48,7 @@ class Oara_Network_Publisher_Omg extends Oara_Network {
 	public function __construct($credentials) {
 		$user = $credentials['user'];
 		$password = $credentials['password'];
-		
+
 		$loginUrl = 'https://admin.omgpm.com/en/clientarea/login_welcome.asp';
 
 		$contact = null;
@@ -56,22 +56,22 @@ class Oara_Network_Publisher_Omg extends Oara_Network {
 		$exportPass = null;
 
 		$valuesLogin = array(new Oara_Curl_Parameter('emailaddress', $user),
-			new Oara_Curl_Parameter('password', $password),
-			new Oara_Curl_Parameter('Submit', 'Sign in')
+		new Oara_Curl_Parameter('password', $password),
+		new Oara_Curl_Parameter('Submit', 'Sign in')
 		);
 
 		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
 
 		$this->_exportMerchantParameters = array(new Oara_Curl_Parameter('searchcampaigns', ''),
-			new Oara_Curl_Parameter('ProductTypeID', '0'),
-			new Oara_Curl_Parameter('SectorID', '0'),
-			new Oara_Curl_Parameter('CountryIDProgs', '1'),
-			new Oara_Curl_Parameter('ProgammeStatus', 'live'),
-			new Oara_Curl_Parameter('geturl', 'Get+URL'),
-			new Oara_Curl_Parameter('ExportFormat', 'XML')
+		new Oara_Curl_Parameter('ProductTypeID', '0'),
+		new Oara_Curl_Parameter('SectorID', '0'),
+		new Oara_Curl_Parameter('CountryIDProgs', '1'),
+		new Oara_Curl_Parameter('ProgammeStatus', 'live'),
+		new Oara_Curl_Parameter('geturl', 'Get+URL'),
+		new Oara_Curl_Parameter('ExportFormat', 'XML')
 		);
 
-		
+
 		$valuesFromExport = $this->_exportMerchantParameters;
 		$urls = array();
 		$urls[] = new Oara_Curl_Request('https://admin.omgpm.com/en/clientarea/affiliates/affiliate_campaigns.asp?', $valuesFromExport);
@@ -108,41 +108,24 @@ class Oara_Network_Publisher_Omg extends Oara_Network {
 		}
 
 		$this->_exportTransactionParameters = array(new Oara_Curl_Parameter('Contact', $contact),
-			new Oara_Curl_Parameter('Country', '1'),
-			new Oara_Curl_Parameter('Agency', '1'),
-			new Oara_Curl_Parameter('Status', '-1'),
-			new Oara_Curl_Parameter('DateType', '0'),
-			new Oara_Curl_Parameter('Sort', 'CompletionDate'),
-			new Oara_Curl_Parameter('Login', $exportPass),
-			new Oara_Curl_Parameter('Format', 'XML'),
-			new Oara_Curl_Parameter('RestrictURL', '0')
-		);
-
-		$this->_exportOverviewParameters = array(new Oara_Curl_Parameter('Agency', '1'),
-			new Oara_Curl_Parameter('ReportMode', 'affiliate'),
-			new Oara_Curl_Parameter('Affiliate', $contact),
-			new Oara_Curl_Parameter('Product', '0'),
-			new Oara_Curl_Parameter('Language', 'en-US'),
-			new Oara_Curl_Parameter('Country', '1'),
-			new Oara_Curl_Parameter('domains', 'https://admin.omgpm.com/'),
-			new Oara_Curl_Parameter('Currency', '1'),
-			new Oara_Curl_Parameter('ShowAffiliateRewardColumns', 'False'),
-			new Oara_Curl_Parameter('Format', 'XML'),
-			new Oara_Curl_Parameter('AuthHash', $exportPass),
-			new Oara_Curl_Parameter('AuthAgency', '1'),
-			new Oara_Curl_Parameter('AuthContact', $contact)
+		new Oara_Curl_Parameter('Country', '1'),
+		new Oara_Curl_Parameter('Agency', '1'),
+		new Oara_Curl_Parameter('Status', '-1'),
+		new Oara_Curl_Parameter('DateType', '2'),
+		new Oara_Curl_Parameter('Login', $exportPass),
+		new Oara_Curl_Parameter('Format', 'CSV')
 		);
 
 		$this->_exportPaymentParameters = array(new Oara_Curl_Parameter('ctl00$Uc_Navigation1$ddlNavSelectMerchant', '0'),
-			new Oara_Curl_Parameter('ctl00$ContentPlaceHolder1$ddlMonth', '0'),
-			new Oara_Curl_Parameter('ctl00$ContentPlaceHolder1$ddlStatus', 'All'),
-			new Oara_Curl_Parameter('ctl00$ContentPlaceHolder1$btnSearch', 'Search'),
+		new Oara_Curl_Parameter('ctl00$ContentPlaceHolder1$ddlMonth', '0'),
+		new Oara_Curl_Parameter('ctl00$ContentPlaceHolder1$ddlStatus', 'All'),
+		new Oara_Curl_Parameter('ctl00$ContentPlaceHolder1$btnSearch', 'Search'),
 		);
 
 		$this->_exportPaymentTransactionParameters = array(new Oara_Curl_Parameter('Contact', $contact),
-			new Oara_Curl_Parameter('Agency', '1'),
-			new Oara_Curl_Parameter('Login', $exportPass),
-			new Oara_Curl_Parameter('Format', 'XML')
+		new Oara_Curl_Parameter('Agency', '1'),
+		new Oara_Curl_Parameter('Login', $exportPass),
+		new Oara_Curl_Parameter('Format', 'XML')
 		);
 	}
 	/**
@@ -193,63 +176,55 @@ class Oara_Network_Publisher_Omg extends Oara_Network {
 		$valuesFromExport[] = new Oara_Curl_Parameter('EndDay', $dEndDate->get(Zend_Date::DAY));
 		$transactions = Array();
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('https://admin.omgpm.com/v2/reports/affiliate/leads/leadsummaryexport.aspx?', $valuesFromExport);
+		$urls[] = new Oara_Curl_Request('https://admin.omgpm.com/v2/reports/affiliate/leads/leadbreakdownexport.aspx?', $valuesFromExport);
 		$exportReport = $this->_client->get($urls);
-		$xml = self::loadXml($exportReport[0]);
+		$exportData = str_getcsv($exportReport[0], "\n");
 
-		if (isset($xml->Report->Report_Details_Group_Collection->Report_Details_Group)) {
-			foreach ($xml->Report->Report_Details_Group_Collection->Report_Details_Group as $transaction) {
-				$date = new Zend_Date(self::findAttribute($transaction, 'TransactionTime'), "yyyy-MM-ddTHH:mm:ss");
+		$rowNumber = 0;
+		foreach ($exportData as $exportRow) {
+			if ($rowNumber > 0){
+				$row = str_getcsv($exportRow, ",");
+				$date = new Zend_Date($row[5], "dd-MM-yyyy HH:mm:ss");
+				
+				if (in_array((int) $row[9], $merchantList)) {
 
-				if (in_array((int) self::findAttribute($transaction, 'PID'), $merchantList) && $date->compare($dStartDate) >= 0 && $date->compare($dEndDate) <= 0) {
-
-					$obj['unique_id'] = self::findAttribute($transaction, 'TransactionId');
-					$obj['merchantId'] = self::findAttribute($transaction, 'PID');
+					$obj['unique_id'] = $row[1];
+					$obj['merchantId'] = $row[9];
 					$obj['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
 
 					$obj['amount'] = 0;
 					$obj['commission'] = 0;
 
-					if (self::findAttribute($transaction, 'UID') != null) {
-						$obj['custom_id'] = self::findAttribute($transaction, 'UID');
+					if ($row[2] != null) {
+						$obj['custom_id'] = $row[2];
 					}
 
-					if (self::findAttribute($transaction, 'Status') == 'Validated') {
+					if ($row[10] != null){
+						$obj['amount'] = $row[10];
+					}
+					if ($row[12] != null){
+						$obj['commission'] = $row[12];
+					}
+					
+					if ($row[11] == 'Validated') {
 						$obj['status'] = Oara_Utilities::STATUS_CONFIRMED;
-
-						if (self::findAttribute($transaction, 'TransactionValue') != null) {
-							$obj['amount'] = self::findAttribute($transaction, 'TransactionValue');
-						}
-						if (self::findAttribute($transaction, 'VR') != null) {
-							$obj['commission'] = self::findAttribute($transaction, 'VR');
-						}
+					} else
+					if ($row[11] == 'Pending') {
+						$obj['status'] = Oara_Utilities::STATUS_PENDING;
 
 					} else
-						if (self::findAttribute($transaction, 'Status') == 'Pending') {
-							$obj['status'] = Oara_Utilities::STATUS_PENDING;
+					if ($row[11] == 'Rejected') {
+						$obj['status'] = Oara_Utilities::STATUS_DECLINED;
 
-							if (self::findAttribute($transaction, 'NVR') != null) {
-								$obj['commission'] = self::findAttribute($transaction, 'NVR');
-							}
-						} else
-							if (self::findAttribute($transaction, 'Status') == 'Rejected') {
-								$obj['status'] = Oara_Utilities::STATUS_DECLINED;
-
-								if (self::findAttribute($transaction, 'TransactionValue') != null) {
-									$obj['amount'] = self::findAttribute($transaction, 'TransactionValue');
-								}
-								if (self::findAttribute($transaction, 'VR') != null) {
-									$obj['commission'] = self::findAttribute($transaction, 'VR');
-								}
-							} else {
-								throw new Exception('Problem with the status');
-							}
+					}
 
 					$transactions[] = $obj;
+				} else {
+					//echo "Merchant:".$row[7]."(".$row[6].")"." Product:".$row[8]."(".$row[9].")\n\n";
 				}
 			}
+			$rowNumber++;
 		}
-
 		return $transactions;
 	}
 
@@ -260,7 +235,7 @@ class Oara_Network_Publisher_Omg extends Oara_Network {
 	public function getOverviewList($transactionList = null, $merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
 		$overviewArray = Array();
 		$transactionArray = Oara_Utilities::transactionMapPerDay($transactionList);
-		
+
 
 		foreach ($transactionArray as $merchantId => $merchantTransaction) {
 			foreach ($merchantTransaction as $date => $transactionList) {
@@ -286,18 +261,18 @@ class Oara_Network_Publisher_Omg extends Oara_Network {
 						$overview['transaction_confirmed_value'] += $transaction['amount'];
 						$overview['transaction_confirmed_commission'] += $transaction['commission'];
 					} else
-						if ($transaction['status'] == Oara_Utilities::STATUS_PENDING) {
-							$overview['transaction_pending_value'] += $transaction['amount'];
-							$overview['transaction_pending_commission'] += $transaction['commission'];
-						} else
-							if ($transaction['status'] == Oara_Utilities::STATUS_DECLINED) {
-								$overview['transaction_declined_value'] += $transaction['amount'];
-								$overview['transaction_declined_commission'] += $transaction['commission'];
-							} else
-								if ($transaction['status'] == Oara_Utilities::STATUS_PAID) {
-									$overview['transaction_paid_value'] += $transaction['amount'];
-									$overview['transaction_paid_commission'] += $transaction['commission'];
-								}
+					if ($transaction['status'] == Oara_Utilities::STATUS_PENDING) {
+						$overview['transaction_pending_value'] += $transaction['amount'];
+						$overview['transaction_pending_commission'] += $transaction['commission'];
+					} else
+					if ($transaction['status'] == Oara_Utilities::STATUS_DECLINED) {
+						$overview['transaction_declined_value'] += $transaction['amount'];
+						$overview['transaction_declined_commission'] += $transaction['commission'];
+					} else
+					if ($transaction['status'] == Oara_Utilities::STATUS_PAID) {
+						$overview['transaction_paid_value'] += $transaction['amount'];
+						$overview['transaction_paid_commission'] += $transaction['commission'];
+					}
 				}
 				$overviewArray[] = $overview;
 			}

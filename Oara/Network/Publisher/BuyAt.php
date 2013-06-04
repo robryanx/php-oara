@@ -168,8 +168,9 @@ class Oara_Network_Publisher_BuyAt extends Oara_Network {
 		$merchants = Array();
 		$urls = array();
 		$urls[] = new Oara_Curl_Request('http://users.buy.at/ma/index.php/affiliateProgrammes/programmes?', $valuesFromExport);
-
+		
 		$exportReport = $this->_client->get($urls);
+		echo $exportReport[0];
 		$xml = new SimpleXMLElement($exportReport[0]);
 		$list = $xml->body->resultset;
 		foreach ($list as $merchant) {
