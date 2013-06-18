@@ -193,36 +193,21 @@ class Oara_Network_Publisher_PerformanceHorizon extends Oara_Network {
 		$paymentHistory = array();
 
 		foreach ($this->_publisherList as $publisherId => $publisherName){
-			$page = 0;
-			$import = true;
-			while ($import){
+			$url = "https://{$this->_pass}@api.performancehorizon.com/user/publisher/$publisherId/selfbill.json?";
+			$result = file_get_contents($url);
+			$paymentList = json_decode($result, true);
 
-				$offset = ($page*300);
-
-				$url = "https://{$this->_pass}@api.performancehorizon.com/user/publisher/$publisherId/selfbill.json?";
-				$url .= "&offset=".$offset;
-				$result = file_get_contents($url);
-				$paymentList = json_decode($result, true);
-
-					
-
-				foreach ($paymentList["selfbills"] as $selfbill){
-					$selfbill = $selfbill["selfbill"];
-					$obj = array();
-					$date = new Zend_Date($selfbill["payment_date"], "yyyy-MM-dd HH:mm:ss");
-					$obj['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
-					$obj['pid'] = intval($selfbill["publisher_self_bill_id"]);
-					$obj['value'] = $selfbill["total_value"];
-					$obj['method'] = "BACS";
-					$paymentHistory[] = $obj;
-				}
-
-				if (((int)$paymentList["count"]) < $offset){
-					$import = false;
-				}
-				$page++;
-
+			foreach ($paymentList["selfbills"] as $selfbill){
+				$selfbill = $selfbill["selfbill"];
+				$obj = array();
+				$date = new Zend_Date($selfbill["payment_date"], "yyyy-MM-dd HH:mm:ss");
+				$obj['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
+				$obj['pid'] = intval($selfbill["publisher_self_bill_id"]);
+				$obj['value'] = $selfbill["total_value"];
+				$obj['method'] = "BACS";
+				$paymentHistory[] = $obj;
 			}
+
 		}
 
 		return $paymentHistory;
