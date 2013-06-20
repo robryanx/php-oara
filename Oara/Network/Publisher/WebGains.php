@@ -208,7 +208,8 @@ class Oara_Network_Publisher_WebGains extends Oara_Network {
 				}
 			}
 		}
-		
+		//Sleep it to don't reach the limit of the 60 request per minute
+		sleep(20);
 		return $totalTransactions;
 	}
 	/**

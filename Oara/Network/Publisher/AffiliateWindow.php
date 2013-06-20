@@ -334,7 +334,7 @@ class Oara_Network_Publisher_AffiliateWindow extends Oara_Network {
 						foreach ($attrs as $attrName => $attrNode) {
 							if ($attrName = 'href') {
 								$parseUrl = trim($attrNode->nodeValue);
-								if (preg_match("/\/region\/gb\/paymentId\/(.+)/", $parseUrl, $matches)) {
+								if (preg_match("/\/paymentId\/(.+)/", $parseUrl, $matches)) {
 									$obj['pid'] = $matches[1];
 								}
 							}
