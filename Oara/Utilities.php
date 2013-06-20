@@ -327,6 +327,7 @@ class Oara_Utilities {
 	 * @return double
 	 */
 	public static function parseDouble($data) {
+		$data = str_replace(" ", "", trim($data));
 		$double = 0;
 		if ($data != null) {
 
