@@ -187,7 +187,7 @@ class Oara_Network_Publisher_Smg extends Oara_Network {
 					$transaction['custom_id'] = (string) $action->SharedId;
 				}
 
-				$status = (string) $action->CampaignId;
+				$status = (string) $action->Status;
 				if ($status == 'APPROVED') {
 					$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
 				} else
