@@ -169,13 +169,13 @@ class Oara_Network_Publisher_Belboon extends Oara_Network {
 		$this->_client = new SoapClient('http://api.belboon.com/?wsdl', array('login' => $this->_user, 'password' => $this->_password, 'trace' => true));
 		$result = $this->_client->getAccountInfo();
 
-		$oSmartFeed= new SoapClient("http://smartfeeds.belboon.com/SmartFeedServices.php?wsdl");
+		$oSmartFeed = new SoapClient("http://smartfeeds.belboon.com/SmartFeedServices.php?wsdl");
 
-		$oSessionHash= $oSmartFeed->login($this->_user, $this->_password);
+		$oSessionHash = $oSmartFeed->login($this->_user, $this->_password);
 
 		if(!$oSessionHash->HasError){
 
-			$sSessionHash=$oSessionHash->Records['sessionHash'];
+			$sSessionHash = $oSessionHash->Records['sessionHash'];
 
 			$aResult = $oSmartFeed->getPlatforms($sSessionHash);
 			$platformList = array();

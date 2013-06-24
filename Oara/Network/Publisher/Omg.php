@@ -200,10 +200,10 @@ class Oara_Network_Publisher_Omg extends Oara_Network {
 					}
 
 					if ($row[10] != null){
-						$obj['amount'] = $row[10];
+						$obj['amount'] = Oara_Utilities::parseDouble($row[10]);
 					}
 					if ($row[12] != null){
-						$obj['commission'] = $row[12];
+						$obj['commission'] = Oara_Utilities::parseDouble($row[12]);
 					}
 					
 					if ($row[11] == 'Validated') {
