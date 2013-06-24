@@ -188,7 +188,8 @@ class Oara_Network_Publisher_Smg extends Oara_Network {
 				}
 
 				$status = (string) $action->Status;
-				if ($status == 'APPROVED') {
+				$statusArray[$status] = "";
+				if ($status == 'APPROVED' || $status == 'DEFAULT') {
 					$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
 				} else
 				if ($status == 'REJECTED') {
