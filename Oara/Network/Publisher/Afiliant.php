@@ -131,7 +131,7 @@ class Oara_Network_Publisher_Afiliant extends Oara_Network {
 					if ($transactionExportArray[6] == 'oczekuje') {
 						$transaction['status'] = Oara_Utilities::STATUS_PENDING;
 					} else
-					if ($transactionExportArray[6] == 'odrzucone') {
+					if ($transactionExportArray[6] == 'odrzucona') {
 						$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
 					}
 					$transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[4]);
