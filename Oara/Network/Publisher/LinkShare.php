@@ -239,11 +239,15 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network {
 			$urls = array();
 			$urls[] = new Oara_Curl_Request('http://cli.linksynergy.com/cli/publisher/programs/carDownload.php', array());
 			$result = $this->_client->get($urls);
-			$exportData = str_getcsv(self::formatCsv($result[0]), "\n");
+			
+			
+			$result[0] = file_get_contents("/home/carlos/Downloads/caReport.csv");
+			$result[0] = str_replace("Baseline TrueLock\"\n", "Baseline TrueLock\",\n", $result[0]);
+			$exportData = explode(",\n", $result[0]);
 	
 			$num = count($exportData);
-			for ($i = 1; $i < $num; $i++) {
-				$merchantArray = str_getcsv($exportData[$i], ",");
+			for ($i = 1; $i < $num - 1; $i++) {
+				$merchantArray = str_getcsv($exportData[$i], ",", '"');
 				if (!in_array($merchantArray[2], $merchantIdMap)){
 					$obj = Array();
 	
@@ -263,31 +267,7 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network {
 		
 		return $merchants;
 	}
-	/**
-	 *
-	 * Format Csv
-	 * @param unknown_type $csv
-	 */
-	private function formatCsv($csv) {
-		//$csv = preg_replace('/(?<!,)"(?!,)/', '', $csv);
-		//$csv = preg_replace('/(?<!"),/', '', $csv);
-		//$csv = preg_replace('/(?<!")\n/', '', $csv);
-		
-		$csv = preg_replace("/\"\"/", "", $csv);
-		preg_match_all("/,\"([^\"]+?)\"/", $csv, $matches);
-		foreach ($matches[1] as $match) {
-			if (preg_match("/,/", $match)) {
-				$rep = preg_replace("/,/", "", $match);
-				$csv = str_replace($match, $rep, $csv);
-				$match = $rep;
-			}
-			if (preg_match("/\n/", $match)) {
-				$rep = preg_replace("/\n/", "", $match);
-				$csv = str_replace($match, $rep, $csv);
-			}
-		}
-		return $csv;
-	}
+
 
 	/**
 	 * (non-PHPdoc)
