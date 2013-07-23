@@ -240,8 +240,6 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network {
 			$urls[] = new Oara_Curl_Request('http://cli.linksynergy.com/cli/publisher/programs/carDownload.php', array());
 			$result = $this->_client->get($urls);
 			
-			
-			$result[0] = file_get_contents("/home/carlos/Downloads/caReport.csv");
 			$result[0] = str_replace("Baseline TrueLock\"\n", "Baseline TrueLock\",\n", $result[0]);
 			$exportData = explode(",\n", $result[0]);
 	
