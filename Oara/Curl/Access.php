@@ -51,6 +51,7 @@ class Oara_Curl_Access {
 
 		//Setting cookies
 		$isDianomi = $credentials['networkName'] == "Dianomi" ? true : false;
+		
 		$isTD = ($credentials['networkName'] == "TradeDoubler" || $credentials['networkName'] == "Stream20" || $credentials['networkName'] == "Wehkamp");
 		//$isAW = $credentials['networkName'] == "AffiliateWindow";
 		$dir = realpath(dirname(__FILE__)).'/../data/curl/'.$credentials['cookiesDir'].'/'.$credentials['cookiesSubDir'].'/';
@@ -76,12 +77,11 @@ class Oara_Curl_Access {
 		$cookies = $dir.$cookieName.'_cookies.txt';
 
 		$this->_options = array(
-			CURLOPT_USERAGENT => "Mozilla/5.0 (X11; Linux i686; rv:7.0.1) Gecko/20100101 Firefox/7.0.1",
+			CURLOPT_USERAGENT => "Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:22.0) Gecko/20100101 Firefox/22.0",
 			CURLOPT_RETURNTRANSFER => true,
 			CURLOPT_FAILONERROR => true,
 			CURLOPT_COOKIEJAR => $cookies,
 			CURLOPT_COOKIEFILE => $cookies,
-			CURLOPT_FAILONERROR => true,
 			CURLOPT_HTTPAUTH => CURLAUTH_ANY,
 			CURLOPT_AUTOREFERER => true,
 			CURLOPT_SSL_VERIFYPEER => false,
@@ -97,6 +97,8 @@ class Oara_Curl_Access {
 		$options[CURLOPT_POST] = true;
 
 		$options[CURLOPT_FOLLOWLOCATION] = true;
+		
+		
 
 		// Login form fields
 		$arg = self::getPostFields($valuesLogin);
@@ -109,6 +111,7 @@ class Oara_Curl_Access {
 			$options[CURLOPT_HEADER] = true;
 		}
 
+		
 		curl_setopt_array($ch, $options);
 
 		$result = curl_exec($ch);

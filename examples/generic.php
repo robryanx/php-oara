@@ -52,14 +52,12 @@ require realpath(dirname(__FILE__)).'/../settings.php';
  * CommissionJunction
  * ShareASale
  */
-$networkName = "LinkShare"; //Ex: AffiliateWindow
+$networkName = "AffiliateWindow"; //Ex: AffiliateWindow
 //Retrieving the credentials for the network
 $config = Zend_Registry::getInstance()->get('credentialsIni');
 
 $configName = strtolower($networkName);
-$credentials = $config->$configName->toArray();
-
-
+$credentials = array();
 
 //Path for the cookie located inside the Oara/data/curl folder
 $credentials["cookiesDir"] = "example";

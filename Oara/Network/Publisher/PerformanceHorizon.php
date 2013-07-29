@@ -56,7 +56,7 @@ class Oara_Network_Publisher_PerformanceHorizon extends Oara_Network {
 			foreach ($merchantList["campaigns"] as $merchant){
 				$merchant = $merchant["campaign"];
 				$obj = Array();
-				$obj['cid'] = $merchant["campaign_id"];
+				$obj['cid'] = str_replace("l", "", $merchant["campaign_id"]);
 				$obj['name'] = $merchant["title"];
 				$merchants[] = $obj;
 			}
@@ -92,6 +92,7 @@ class Oara_Network_Publisher_PerformanceHorizon extends Oara_Network {
 
 				foreach ($conversionList["conversions"] as $conversion){
 					$conversion = $conversion["conversion_data"];
+					$conversion["campaign_id"] = str_replace("l", "", $conversion["campaign_id"]);
 					if (in_array($conversion["campaign_id"], $merchantList)){
 						$transaction = Array();
 						$transaction['unique_id'] = $conversion["conversion_id"];

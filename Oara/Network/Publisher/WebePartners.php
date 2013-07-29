@@ -34,13 +34,87 @@ class Oara_Network_Publisher_WebePartners extends Oara_Network {
 		$user = $credentials['user'];
 		$password = $credentials['password'];
 		
-		$valuesLogin = array(
-			new Oara_Curl_Parameter('login', $user),
-			new Oara_Curl_Parameter('password', $password),
-			new Oara_Curl_Parameter('rememberMe', 'false')
+		$url = "http://panel.webepartners.pl/Account/Login";
+		
+		$dir = realpath(dirname(__FILE__)).'/../../data/curl/'.$credentials['cookiesDir'].'/'.$credentials['cookiesSubDir'].'/';
+		
+		$cookieName = $credentials["cookieName"];
+		$cookies = $dir.$cookieName.'_cookies.txt';
+		
+		if ($handle = opendir($dir)) {
+			while (false !== ($file = readdir($handle))) {
+				if ($credentials['cookieName'] == strstr($file, '_', true)) {
+					unlink($dir.$file);
+					break;
+				}
+			}
+			closedir($handle);
+		}
+		
+		$this->_client = array(
+			CURLOPT_USERAGENT => "Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:22.0) Gecko/20100101 Firefox/22.0",
+			CURLOPT_RETURNTRANSFER => true,
+			CURLOPT_FAILONERROR => true,
+			CURLOPT_COOKIEJAR => $cookies,
+			CURLOPT_COOKIEFILE => $cookies,
+			CURLOPT_AUTOREFERER => true,
+			CURLOPT_SSL_VERIFYPEER => false,
+			CURLOPT_SSL_VERIFYHOST => false,
+			CURLOPT_HEADER => false,
 		);
-		$loginUrl = 'http://www.webepartners.pl/zaloguj';
-		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
+		
+		//Init curl
+		$ch = curl_init();
+		$options = $this->_client;
+		$options[CURLOPT_URL] = $url;
+		$options[CURLOPT_FOLLOWLOCATION] = true;
+		curl_setopt_array($ch, $options);
+		$result = curl_exec($ch);
+		$err = curl_errno($ch);
+		$errmsg = curl_error($ch);
+		$info = curl_getinfo($ch);
+		
+		
+		$dom = new Zend_Dom_Query($result);
+		$results = $dom->query('input[type="hidden"]');
+		$hiddenValue = null;
+		foreach ($results as $result){
+			$name = $result->attributes->getNamedItem("name")->nodeValue;
+			if ($name == "__RequestVerificationToken"){
+				$hiddenValue = $result->attributes->getNamedItem("value")->nodeValue;
+			}
+		}
+		if ($hiddenValue == null){
+			throw new Exception("hidden value not found");
+		}
+		
+		$valuesLogin = array(
+			new Oara_Curl_Parameter('__RequestVerificationToken', $hiddenValue),
+			new Oara_Curl_Parameter('Login', $user),
+			new Oara_Curl_Parameter('Password', $password),
+		);
+		
+		
+		// Login form fields
+		$return = array();
+		foreach ($valuesLogin as $parameter) {
+			$return[] = $parameter->getKey().'='.urlencode($parameter->getValue());
+		}
+		$arg = implode('&', $return);
+		
+		//Init curl
+		$ch = curl_init();
+		$options = $this->_client;
+		$options[CURLOPT_URL] = $url;
+		$options[CURLOPT_FOLLOWLOCATION] = true;
+		$options[CURLOPT_POSTFIELDS] = $arg;
+		$options[CURLOPT_POST] = true;
+		curl_setopt_array($ch, $options);
+		
+		$result = curl_exec($ch);
+		$err = curl_errno($ch);
+		$errmsg = curl_error($ch);
+		$info = curl_getinfo($ch);
 		
 		
 		$this->_user = urlencode($user);
@@ -56,16 +130,13 @@ class Oara_Network_Publisher_WebePartners extends Oara_Network {
 		
 		$this->_pass = urlencode(strtoupper($apiPassword));
 		
-		$valuesLogin = array(
-			new Oara_Curl_Parameter('login', $user),
-			new Oara_Curl_Parameter('j_password', $password)
-		);
+		
 	}
 	/**
 	 * Check the connection
 	 */
 	public function checkConnection() {
-		
+		$connection = false;
 		$loginUrl = "http://api.webepartners.pl/wydawca/Authorize?login={$this->_user}&password={$this->_pass}";
 		
 		$context = stream_context_create(array(
