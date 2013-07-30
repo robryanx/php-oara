@@ -61,7 +61,7 @@ class Oara_Network_Publisher_PrivateInternetAccess extends Oara_Network {
 			CURLOPT_SSL_VERIFYPEER => false,
 			CURLOPT_SSL_VERIFYHOST => false,
 			CURLOPT_HEADER => false,
-			CURLOPT_VERBOSE => true,
+			//CURLOPT_VERBOSE => true,
 		);
 		
 		//Init curl
@@ -118,8 +118,6 @@ class Oara_Network_Publisher_PrivateInternetAccess extends Oara_Network {
 		$err = curl_errno($ch);
 		$errmsg = curl_error($ch);
 		$info = curl_getinfo($ch);
-		
-		echo $result;
 		
 	
 		
