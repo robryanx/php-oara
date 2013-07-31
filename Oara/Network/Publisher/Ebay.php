@@ -130,11 +130,12 @@ class Oara_Network_Publisher_Ebay extends Oara_Network {
 		} catch (Exception $e){
 			
 		}
-		
 		$num = count($exportData);
 		for ($i = 1; $i < $num; $i++) {
 			$transactionExportArray = str_getcsv($exportData[$i], "\t");
+			
 			if ($transactionExportArray[2] == "Winning Bid (Revenue)"){
+				
 			
 				$transaction = Array();
 				$transaction['merchantId'] = 1;
@@ -152,7 +153,6 @@ class Oara_Network_Publisher_Ebay extends Oara_Network {
 				$totalTransactions[] = $transaction;
 			}
 		}
-
 		return $totalTransactions;
 	}
 
