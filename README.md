@@ -67,6 +67,9 @@ The list of supported networks for Publishers so far is:
 * [Stream 20](http://www.stream20.com/)
 * [Google Checkout](http://checkout.google.com/sell)
 * [Direct Track](http://www.directtrack.com/)
+* [PepperJam Network / eBay Enterprise Affiliate Network](http://www.pepperjamnetwork.com)
+* [HideMyAss](http://www.hidemyass.com)
+* [PureVPN](http://www.purevpn.com)
 
 The list of supported networks for Advertisers so far is:
 
