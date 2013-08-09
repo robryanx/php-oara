@@ -15,26 +15,6 @@ class Oara_Network_Publisher_PrivateInternetAccess extends Oara_Network {
 	 * @var unknown_type
 	 */
 	private $_client = null;
-	/**
-	 * User
-	 * @var unknown_type
-	 */
-	private $_user = null;
-	/**
-	 * Pass
-	 * @var unknown_type
-	 */
-	private $_pass = null;
-	/**
-	 * Webpage
-	 * @var unknown_type
-	 */
-	private $_page = null;
-	/**
-	 * Webpage info
-	 * @var unknown_type
-	 */
-	private $_info = null;
 
 	/**
 	 * Constructor and Login
@@ -166,7 +146,7 @@ class Oara_Network_Publisher_PrivateInternetAccess extends Oara_Network {
 	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
 	 */
 	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
-
+		$totalTransactions = array();
 		$dateArray = Oara_Utilities::daysOfDifference($dStartDate, $dEndDate);
 		$dateArraySize = sizeof($dateArray);
 
