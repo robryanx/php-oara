@@ -109,7 +109,7 @@ class Oara_Network_Publisher_MyPcBackUP extends Oara_Network {
 			if ($transactionExportArray[4] == "Sale"){
 				$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
 			} else if ($transactionExportArray[4] == "Refund"){
-				$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
+				$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
 				$transaction['amount'] = -$transaction['amount'];
 				$transaction['commission'] = -$transaction['commission'];
 			}
