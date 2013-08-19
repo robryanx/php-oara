@@ -18,6 +18,12 @@ class Oara_Network_Publisher_VpnAffiliates extends Oara_Network {
 	private $_client = null;
 	
 	/**
+	 * Security Code
+	 * @var unknown_type
+	 */
+	private $_s = null;
+	
+	/**
 	 * Login Result
 	 * @var unknown_type
 	 */
@@ -38,11 +44,18 @@ class Oara_Network_Publisher_VpnAffiliates extends Oara_Network {
 		self::logIn();
 
 	}
-
+	
 	private function logIn() {
+		
+		
+		
+		$html = file_get_contents('https://vpnaffiliates.com/affiliates/affiliates/login.php#login');
+		if (preg_match("/\"S\\\\\",\\\\\"(.*?)\\\\\"/", $html, $matches)){
+			$this->_s = $matches[1];
+		}
 
 		$valuesLogin = array(
-		new Oara_Curl_Parameter('D', '{"C":"Gpf_Rpc_Server", "M":"run", "requests":[{"C":"Gpf_Auth_Service", "M":"authenticate", "fields":[["name","value"],["Id",""],["username","'.$this->_credentials["user"].'"],["password","'.$this->_credentials["password"].'"],["rememberMe","Y"],["language","en-US"]]}], "S":"go2okqmaol11mba5164f2fut56"}'),
+		new Oara_Curl_Parameter('D', '{"C":"Gpf_Rpc_Server", "M":"run", "requests":[{"C":"Gpf_Auth_Service", "M":"authenticate", "fields":[["name","value"],["Id",""],["username","'.$this->_credentials["user"].'"],["password","'.$this->_credentials["password"].'"],["rememberMe","Y"],["language","en-US"]]}], "S":"'.$this->_s.'"}'),
 		);
 
 		$loginUrl = 'https://vpnaffiliates.com/affiliates/scripts/server.php?';
@@ -88,7 +101,7 @@ class Oara_Network_Publisher_VpnAffiliates extends Oara_Network {
 		if ($this->_transactionList == null){
 			$urls = array();
 			$valuesExport = array(
-			new Oara_Curl_Parameter('D', '{"C":"Pap_Affiliates_Reports_TransactionsGrid", "M":"getCSVFile", "S":"go2okqmaol11mba5164f2fut56", "FormResponse":"Y", "sort_col":"dateinserted", "sort_asc":false, "offset":0, "limit":30, "columns":[["id"],["id"],["commission"],["totalcost"],["fixedcost"],["t_orderid"],["productid"],["dateinserted"],["name"],["rtype"],["tier"],["commissionTypeName"],["rstatus"],["merchantnote"],["channel"]]}'),
+			new Oara_Curl_Parameter('D', '{"C":"Pap_Affiliates_Reports_TransactionsGrid", "M":"getCSVFile", "S":"'.$this->_s.'", "FormResponse":"Y", "sort_col":"dateinserted", "sort_asc":false, "offset":0, "limit":30, "columns":[["id"],["id"],["commission"],["totalcost"],["fixedcost"],["t_orderid"],["productid"],["dateinserted"],["name"],["rtype"],["tier"],["commissionTypeName"],["rstatus"],["merchantnote"],["channel"]]}'),
 			);
 			$urls[] = new Oara_Curl_Request('https://vpnaffiliates.com/affiliates/scripts/server.php?', $valuesExport);
 			$exportReport = array();

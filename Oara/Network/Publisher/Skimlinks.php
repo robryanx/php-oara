@@ -76,6 +76,13 @@ class Oara_Network_Publisher_Skimlinks extends Oara_Network {
 	public function checkConnection() {
 		//If not login properly the construct launch an exception
 		$connection = false;
+		
+		$urls = array();
+		$urls[] = new Oara_Curl_Request('https://hub.skimlinks.com/go/full', array());
+		$exportReport = $this->_client->get($urls);
+		
+		
+		
 		$urls = array();
 		$urls[] = new Oara_Curl_Request('https://accounts.skimlinks.com/', array());
 		$exportReport = $this->_client->get($urls);
@@ -135,7 +142,11 @@ class Oara_Network_Publisher_Skimlinks extends Oara_Network {
 			$num = count($exportData);
 			for ($j = 1; $j < $num - 5; $j++) {
 				$transactionExportArray = str_getcsv($exportData[$j], ",");
-				if (Oara_Utilities::parseDouble($transactionExportArray[2]) != 0 && isset($merchantMap[$transactionExportArray[0]]) && in_array($merchantMap[$transactionExportArray[0]], $merchantList)) {
+				$revenue = 0;
+				if (preg_match("/[-+]?[0-9]*,?[0-9]*\.?[0-9]+/", $transactionExportArray[6], $matches)) {
+					$revenue = Oara_Utilities::parseDouble($matches[0]);
+				}
+				if ($revenue != 0 && isset($merchantMap[$transactionExportArray[0]]) && in_array($merchantMap[$transactionExportArray[0]], $merchantList)) {
 
 					$transaction = Array();
 					$transaction['merchantId'] = $merchantMap[$transactionExportArray[0]];
@@ -147,9 +158,7 @@ class Oara_Network_Publisher_Skimlinks extends Oara_Network {
 					if (preg_match("/[-+]?[0-9]*,?[0-9]*\.?[0-9]+/", $transactionExportArray[3], $matches)) {
 						$transaction['amount'] = Oara_Utilities::parseDouble($matches[0]);
 					}
-					if (preg_match("/[-+]?[0-9]*,?[0-9]*\.?[0-9]+/", $transactionExportArray[6], $matches)) {
-						$transaction['commission'] = Oara_Utilities::parseDouble($matches[0]);
-					}
+					$transaction['commission'] = $revenue;
 					$totalTransactions[] = $transaction;
 				}
 			}
@@ -163,70 +172,51 @@ class Oara_Network_Publisher_Skimlinks extends Oara_Network {
 	 * @see library/Oara/Network/Oara_Network_Publisher_Base#getOverviewList($merchantId, $dStartDate, $dEndDate)
 	 */
 	public function getOverviewList($transactionList = null, $merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
-		$overviewArray = Array();
+		$overviewArray = array();
+
 		$transactionArray = Oara_Utilities::transactionMapPerDay($transactionList);
 
-		$mothOverviewUrls = array();
-		$dateArray = Oara_Utilities::daysOfDifference($dStartDate, $dEndDate);
-		$dateArraySize = sizeof($dateArray);
-		for ($i = 0; $i < $dateArraySize; $i++) {
-			$valuesFormExport = Oara_Utilities::cloneArray($this->_exportTransactionParameters);
-			$valuesFormExport[] = new Oara_Curl_Parameter('datefrom', $dateArray[$i]->toString("yyyy-MM-dd"));
-			$valuesFormExport[] = new Oara_Curl_Parameter('dateto', $dateArray[$i]->toString("yyyy-MM-dd"));
-			$mothUrls[] = new Oara_Curl_Request('https://accounts.skimlinks.com/reports_export.php?', $valuesFormExport);
-		}
-		$exportReport = $this->_client->get($mothUrls);
-		$exportReportNumber = count($exportReport);
-		for ($i = 0; $i < $exportReportNumber; $i++) {
-			$exportData = str_getcsv($exportReport[$i], "\n");
-			$num = count($exportData);
-			for ($j = 1; $j < $num - 5; $j++) {
-				$overviewExportArray = str_getcsv($exportData[$j], ",");
-				if (Oara_Utilities::parseDouble($overviewExportArray[2]) != 0 && isset($merchantMap[$overviewExportArray[0]]) && in_array($merchantMap[$overviewExportArray[0]], $merchantList)) {
+		foreach ($transactionArray as $merchantId => $merchantTransaction) {
+			foreach ($merchantTransaction as $date => $transactionList) {
 
-					$overview = Array();
-					$overview['merchantId'] = $merchantMap[$overviewExportArray[0]];
-					$overviewDate = new Zend_Date($mothUrls[$i]->getParameter(5)->getValue(), 'yyyy-MM-dd', 'en');
-					$overview['date'] = $overviewDate->toString("yyyy-MM-dd HH:mm:ss");
+				$overview = Array();
 
-					$overview['click_number'] = (int) $overviewExportArray[1];
-					$overview['impression_number'] = 0;
-					$overview['transaction_number'] = 0;
-					$overview['transaction_confirmed_value'] = 0;
-					$overview['transaction_confirmed_commission'] = 0;
-					$overview['transaction_pending_value'] = 0;
-					$overview['transaction_pending_commission'] = 0;
-					$overview['transaction_declined_value'] = 0;
-					$overview['transaction_declined_commission'] = 0;
-					$overview['transaction_paid_value'] = 0;
-					$overview['transaction_paid_commission'] = 0;
-					$transactionDateArray = Oara_Utilities::getDayFromArray($overview['merchantId'], $transactionArray, $overviewDate, true);
-					foreach ($transactionDateArray as $transaction) {
-						$overview['transaction_number']++;
-						if ($transaction['status'] == Oara_Utilities::STATUS_CONFIRMED) {
-							$overview['transaction_confirmed_value'] += $transaction['amount'];
-							$overview['transaction_confirmed_commission'] += $transaction['commission'];
+				$overview['merchantId'] = $merchantId;
+				$overviewDate = new Zend_Date($date, "yyyy-MM-dd");
+				$overview['date'] = $overviewDate->toString("yyyy-MM-dd HH:mm:ss");
+				$overview['click_number'] = 0;
+				$overview['impression_number'] = 0;
+				$overview['transaction_number'] = 0;
+				$overview['transaction_confirmed_value'] = 0;
+				$overview['transaction_confirmed_commission'] = 0;
+				$overview['transaction_pending_value'] = 0;
+				$overview['transaction_pending_commission'] = 0;
+				$overview['transaction_declined_value'] = 0;
+				$overview['transaction_declined_commission'] = 0;
+				$overview['transaction_paid_value'] = 0;
+				$overview['transaction_paid_commission'] = 0;
+				foreach ($transactionList as $transaction) {
+					$overview['transaction_number']++;
+					if ($transaction['status'] == Oara_Utilities::STATUS_CONFIRMED) {
+						$overview['transaction_confirmed_value'] += $transaction['amount'];
+						$overview['transaction_confirmed_commission'] += $transaction['commission'];
+					} else
+						if ($transaction['status'] == Oara_Utilities::STATUS_PENDING) {
+							$overview['transaction_pending_value'] += $transaction['amount'];
+							$overview['transaction_pending_commission'] += $transaction['commission'];
 						} else
-							if ($transaction['status'] == Oara_Utilities::STATUS_PENDING) {
-								$overview['transaction_pending_value'] += $transaction['amount'];
-								$overview['transaction_pending_commission'] += $transaction['commission'];
+							if ($transaction['status'] == Oara_Utilities::STATUS_DECLINED) {
+								$overview['transaction_declined_value'] += $transaction['amount'];
+								$overview['transaction_declined_commission'] += $transaction['commission'];
 							} else
-								if ($transaction['status'] == Oara_Utilities::STATUS_DECLINED) {
-									$overview['transaction_declined_value'] += $transaction['amount'];
-									$overview['transaction_declined_commission'] += $transaction['commission'];
-								} else
-									if ($transaction['status'] == Oara_Utilities::STATUS_PAID) {
-										$overview['transaction_paid_value'] += $transaction['amount'];
-										$overview['transaction_paid_commission'] += $transaction['commission'];
-									}
-					}
-					if (Oara_Utilities::checkRegister($overview)) {
-						$overviewArray[] = $overview;
-					}
+								if ($transaction['status'] == Oara_Utilities::STATUS_PAID) {
+									$overview['transaction_paid_value'] += $transaction['amount'];
+									$overview['transaction_paid_commission'] += $transaction['commission'];
+								}
 				}
+				$overviewArray[] = $overview;
 			}
 		}
-
 		return $overviewArray;
 	}
 	/**
