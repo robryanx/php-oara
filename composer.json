@@ -1,0 +1,16 @@
+{
+    "name": "fubralimited/php-oara",
+    "description": "The goal of the Open Affiliate Report Aggregator (OARA) is to develop a set of PHP classes that can download affiliate reports from a number of affiliate networks, and store the data in a common format.",
+
+    "require": {
+        "php": ">=5.3.0",
+        "zendframework/zendframework1": "1.12.*@dev"
+    },
+
+    "autoload": {
+        "psr-0" : {
+            "Oara" : "",
+            "PHPExcel" : ""
+        }
+    }
+}
