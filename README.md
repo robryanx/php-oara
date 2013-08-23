@@ -100,13 +100,11 @@ for the different networks.
 	
 	cd php-oara
 	
-	3. Initialise the submodules (ZendFramework)
+	3. Initialise composer
 	
-	git submodule init
-	
-	4. Update the submodules (ZendFramework)
-	
-	git submodule update
+	curl -s https://getcomposer.org/installer | php --
+	php composer.phar self-update
+	php composer.phar install
 	
 	5. Credentials.ini.sample
 	
