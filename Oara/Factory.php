@@ -11,14 +11,16 @@
 class Oara_Factory {
 	/**
 	 * Factory create instance function, It returns the specific Affiliate Network
-	 * @param $affiliateNetwork
-	 * @return Oara_Factory_Interface
+	 *
+	 * @param $credentials
+	 * @return Oara_Network
+	 * @throws Exception
 	 */
 	public static function createInstance($credentials) {
 
 		$affiliate = null;
+		$networkName = $credentials['networkName'];
 		try {
-			$networkName = $credentials['networkName'];
 			$networkClassName = 'Oara_Network_'.$credentials["type"].'_'.$networkName;
 			$affiliate = new $networkClassName($credentials);
 		} catch (Exception $e) {
