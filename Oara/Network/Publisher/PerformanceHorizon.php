@@ -100,8 +100,8 @@ class Oara_Network_Publisher_PerformanceHorizon extends Oara_Network {
 						$transactionDate = new Zend_Date($conversion["conversion_time"], 'yyyy-MM-dd HH:mm:ss');
 						$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 
-						if ($conversion["conversion_reference"] != null) {
-							$transaction['custom_id'] = $conversion["conversion_reference"];
+						if ($conversion["publisher_reference"] != null) {
+							$transaction['custom_id'] = $conversion["publisher_reference"];
 						}
 
 						if ($conversion["conversion_value"]["conversion_status"] == 'approved') {

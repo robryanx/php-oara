@@ -52,24 +52,24 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 
 		self::logIn();
 		$this->_exportTransactionParameters = array(
-			new Oara_Curl_Parameter('tag', ''),
-			new Oara_Curl_Parameter('reportType', 'earningsReport'),
-			new Oara_Curl_Parameter('program', 'all'),
-			new Oara_Curl_Parameter('preSelectedPeriod', 'monthToDate'),
-			new Oara_Curl_Parameter('periodType', 'exact'),
-			new Oara_Curl_Parameter('submit.download_CSV.x', '106'),
-			new Oara_Curl_Parameter('submit.download_CSV.y', '11'),
-			new Oara_Curl_Parameter('submit.download_CSV', 'Download report (CSV)')
+		new Oara_Curl_Parameter('tag', ''),
+		new Oara_Curl_Parameter('reportType', 'earningsReport'),
+		new Oara_Curl_Parameter('program', 'all'),
+		new Oara_Curl_Parameter('preSelectedPeriod', 'monthToDate'),
+		new Oara_Curl_Parameter('periodType', 'exact'),
+		new Oara_Curl_Parameter('submit.download_CSV.x', '106'),
+		new Oara_Curl_Parameter('submit.download_CSV.y', '11'),
+		new Oara_Curl_Parameter('submit.download_CSV', 'Download report (CSV)')
 		);
 
 		$this->_exportOverviewParameters = array(
-			new Oara_Curl_Parameter('tag', ''),
-			new Oara_Curl_Parameter('reportType', 'trendsReport'),
-			new Oara_Curl_Parameter('preSelectedPeriod', 'monthToDate'),
-			new Oara_Curl_Parameter('periodType', 'exact'),
-			new Oara_Curl_Parameter('submit.download_CSV.x', '106'),
-			new Oara_Curl_Parameter('submit.download_CSV.y', '11'),
-			new Oara_Curl_Parameter('submit.download_CSV', 'Download report (CSV)')
+		new Oara_Curl_Parameter('tag', ''),
+		new Oara_Curl_Parameter('reportType', 'trendsReport'),
+		new Oara_Curl_Parameter('preSelectedPeriod', 'monthToDate'),
+		new Oara_Curl_Parameter('periodType', 'exact'),
+		new Oara_Curl_Parameter('submit.download_CSV.x', '106'),
+		new Oara_Curl_Parameter('submit.download_CSV.y', '11'),
+		new Oara_Curl_Parameter('submit.download_CSV', 'Download report (CSV)')
 		);
 
 		$this->_exportPaymentParameters = array();
@@ -85,59 +85,59 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 		$handle = "";
 		$this->_networkServer = "";
 		switch ($network) {
-		case "uk":
-			$this->_networkServer = "https://affiliate-program.amazon.co.uk";
-			$extension = ".co.uk";
-			$handle = "gb";
-			break;
-		case "es":
-			$this->_networkServer = "https://afiliados.amazon.es";
-			$extension = ".es";
-			$handle = "es";
-			break;
-		case "us":
-			$this->_networkServer = "https://affiliate-program.amazon.com";
-			$extension = ".com";
-			$handle = "us";
-			break;
-		case "ca":
-			$this->_networkServer = "https://associates.amazon.ca";
-			$extension = ".ca";
-			$handle = "ca";
-			break;
-		case "de":
-			$this->_networkServer = "https://partnernet.amazon.de";
-			$extension = ".de";
-			$handle = "de";
-			break;
-		case "fr":
-			$this->_networkServer = "https://partenaires.amazon.fr";
-			$extension = ".fr";
-			$handle = "fr";
-			break;
-		case "it":
-			$this->_networkServer = "https://programma-affiliazione.amazon.it";
-			$extension = ".it";
-			$handle = "it";
-			break;
-		case "jp":
-			$this->_networkServer = "https://affiliate.amazon.co.jp";
-			$extension = ".co.jp";
-			$handle = "jp";
-			break;
-		case "cn":
-			$this->_networkServer = "https://associates.amazon.cn";
-			$extension = ".cn";
-			$handle = "cn";
-			break;
+			case "uk":
+				$this->_networkServer = "https://affiliate-program.amazon.co.uk";
+				$extension = ".co.uk";
+				$handle = "gb";
+				break;
+			case "es":
+				$this->_networkServer = "https://afiliados.amazon.es";
+				$extension = ".es";
+				$handle = "es";
+				break;
+			case "us":
+				$this->_networkServer = "https://affiliate-program.amazon.com";
+				$extension = ".com";
+				$handle = "us";
+				break;
+			case "ca":
+				$this->_networkServer = "https://associates.amazon.ca";
+				$extension = ".ca";
+				$handle = "ca";
+				break;
+			case "de":
+				$this->_networkServer = "https://partnernet.amazon.de";
+				$extension = ".de";
+				$handle = "de";
+				break;
+			case "fr":
+				$this->_networkServer = "https://partenaires.amazon.fr";
+				$extension = ".fr";
+				$handle = "fr";
+				break;
+			case "it":
+				$this->_networkServer = "https://programma-affiliazione.amazon.it";
+				$extension = ".it";
+				$handle = "it";
+				break;
+			case "jp":
+				$this->_networkServer = "https://affiliate.amazon.co.jp";
+				$extension = ".co.jp";
+				$handle = "jp";
+				break;
+			case "cn":
+				$this->_networkServer = "https://associates.amazon.cn";
+				$extension = ".cn";
+				$handle = "cn";
+				break;
 		}
 
 		$this->_client = new Oara_Curl_Access($this->_networkServer."/gp/associates/network/main.html", array(), $this->_credentials);
-		
+
 		// initial login page which redirects to correct sign in page, sets some cookies
 		$URL = "https://www.amazon$extension/ap/signin?openid.assoc_handle=amzn_associates_$handle&openid.return_to={$this->_networkServer}&openid.mode=checkid_setup&openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0&openid.claimed_id=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.pape.max_auth_age=0&openid.ns.pape=http%3A%2F%2Fspecs.openid.net%2Fextensions%2Fpape%2F1.0&openid.identity=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select";
 		$ch = curl_init();
-		
+
 		if (!isset($this->_credentials["cookiesDir"])) {
 			$this->_credentials["cookiesDir"] = "Oara";
 		}
@@ -147,7 +147,7 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 		if (!isset($this->_credentials["cookieName"])) {
 			$this->_credentials["cookieName"] = "default";
 		}
-		
+
 		$dir = realpath(dirname(__FILE__)).'/../../data/curl/'.$this->_credentials['cookiesDir'].'/'.$this->_credentials['cookiesSubDir'].'/';
 
 		$cookieName = $this->_credentials["cookieName"];
@@ -163,7 +163,7 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
 
 		$page = curl_exec($ch);
-		
+
 		// try to find the actual login form
 		if (!preg_match('/<form name="signIn".*?<\/form>/is', $page, $form)) {
 			die('Failed to find log in form!');
@@ -209,7 +209,7 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 		curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
 
 		curl_exec($ch); // make request
-		
+
 
 	}
 	/**
@@ -285,73 +285,82 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 		$totalTransactions = array();
 		foreach ($this->_idBox as $id) {
 
-			$dateArray = Oara_Utilities::daysOfDifference($dStartDate, $dEndDate);
-			$dateArraySize = sizeof($dateArray);
+			//$dateArray = Oara_Utilities::daysOfDifference($dStartDate, $dEndDate);
+			//$dateArraySize = sizeof($dateArray);
 
-			
-			for ($j = 0; $j < $dateArraySize; $j++) {
-				//echo "day ".$dateArray[$j]->toString("d")."\n";
-				//echo round(memory_get_usage(true) / 1048576, 2)." megabytes \n";
-				$try = 0;
-				$done = false;
-				while (!$done && $try < 5) {
-					try {
-						
-						$totalTransactions = array_merge($totalTransactions, self::getTransactionReportRecursive($id, $dateArray[$j]));
-						$done = true;
-						
-					} catch (Exception $e) {
-						$try++;
-					}
-				}
-				if ($try == 5) {
-					throw new Exception("Couldn't get data for the date ".$dateArray[$j]->toString("dd-MM-yyyy"));
-				}
+				
+			//for ($j = 0; $j < $dateArraySize; $j++) {
+			//echo "day ".$dateArray[$j]->toString("d")."\n";
+			//echo round(memory_get_usage(true) / 1048576, 2)." megabytes \n";
+			$try = 0;
+			$done = false;
+			while (!$done && $try < 5) {
+				try {
 
+					$totalTransactions = array_merge($totalTransactions, self::getTransactionReportRecursive($id, $dStartDate, $dEndDate));
+					$done = true;
+
+				} catch (Exception $e) {
+					$try++;
+				}
 			}
+			if ($try == 5) {
+				throw new Exception("Couldn't get data for the date ");
+			}
+
+			//}
 		}
-		
+
 		return $totalTransactions;
 	}
 
-	private function getTransactionReportRecursive($id, $date) {
+	private function getTransactionReportRecursive($id, $startDate, $endDate) {
 		$totalTransactions = array();
 		$valuesFromExport = Oara_Utilities::cloneArray($this->_exportTransactionParameters);
-		$valuesFromExport[] = new Oara_Curl_Parameter('startDay', $date->toString("d"));
-		$valuesFromExport[] = new Oara_Curl_Parameter('startMonth', (int) $date->toString("M") - 1);
-		$valuesFromExport[] = new Oara_Curl_Parameter('startYear', $date->toString("yyyy"));
-		$valuesFromExport[] = new Oara_Curl_Parameter('endDay', $date->toString("d"));
-		$valuesFromExport[] = new Oara_Curl_Parameter('endMonth', (int) $date->toString("M") - 1);
-		$valuesFromExport[] = new Oara_Curl_Parameter('endYear', $date->toString("yyyy"));
+		$valuesFromExport[] = new Oara_Curl_Parameter('startDay', $startDate->toString("d"));
+		$valuesFromExport[] = new Oara_Curl_Parameter('startMonth', (int) $startDate->toString("M") - 1);
+		$valuesFromExport[] = new Oara_Curl_Parameter('startYear', $startDate->toString("yyyy"));
+		$valuesFromExport[] = new Oara_Curl_Parameter('endDay', $endDate->toString("d"));
+		$valuesFromExport[] = new Oara_Curl_Parameter('endMonth', (int) $endDate->toString("M") - 1);
+		$valuesFromExport[] = new Oara_Curl_Parameter('endYear', $endDate->toString("yyyy"));
 		$valuesFromExport[] = new Oara_Curl_Parameter('idbox_store_id', $id);
 
 		$urls = array();
 		$urls[] = new Oara_Curl_Request($this->_networkServer."/gp/associates/network/reports/report.html?", $valuesFromExport);
 		$exportReport = $this->_client->get($urls);
+		if (preg_match("/Account Closed/", $exportReport[0])){
+			return array();
+		}
 		$exportData = str_getcsv($exportReport[0], "\n");
+		
+		$index = 2;
+		try{
+			$transactionExportArray = str_getcsv(str_replace("\"", "", $exportData[$index]), "\t");
+			$transactionDate = new Zend_Date($transactionExportArray[5], 'MMMM d,yyyy', 'en');
+		} catch (Exception $e){
+			$index = 3;
+		}
+		
 		$num = count($exportData);
-		for ($i = 2; $i < $num; $i++) {
+		for ($i = $index; $i < $num; $i++) {
 			$transactionExportArray = str_getcsv(str_replace("\"", "", $exportData[$i]), "\t");
 			$transactionDate = new Zend_Date($transactionExportArray[5], 'MMMM d,yyyy', 'en');
-			if ($date->toString("yyyy-MM-dd") == $transactionDate->toString("yyyy-MM-dd")) {
-				$transaction = Array();
-				$transaction['merchantId'] = 1;
-				if (!isset($transactionExportArray[5])) {
-					throw new Exception("Request failed");
-				}
-
-				$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
-				unset($transactionDate);
-				if ($transactionExportArray[4] != null) {
-					$transaction['custom_id'] = $transactionExportArray[4];
-				}
-
-				$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
-				$transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[9]);
-				$transaction['commission'] = Oara_Utilities::parseDouble($transactionExportArray[10]);
-				$totalTransactions[] = $transaction;
-
+			$transaction = Array();
+			$transaction['merchantId'] = 1;
+			if (!isset($transactionExportArray[5])) {
+				throw new Exception("Request failed");
 			}
+
+			$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+			unset($transactionDate);
+			if ($transactionExportArray[4] != null) {
+				$transaction['custom_id'] = $transactionExportArray[4];
+			}
+
+			$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
+			$transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[9]);
+			$transaction['commission'] = Oara_Utilities::parseDouble($transactionExportArray[10]);
+			$totalTransactions[] = $transaction;
 
 		}
 		return $totalTransactions;
@@ -389,18 +398,18 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 						$overview['transaction_confirmed_value'] += $transaction['amount'];
 						$overview['transaction_confirmed_commission'] += $transaction['commission'];
 					} else
-						if ($transaction['status'] == Oara_Utilities::STATUS_PENDING) {
-							$overview['transaction_pending_value'] += $transaction['amount'];
-							$overview['transaction_pending_commission'] += $transaction['commission'];
-						} else
-							if ($transaction['status'] == Oara_Utilities::STATUS_DECLINED) {
-								$overview['transaction_declined_value'] += $transaction['amount'];
-								$overview['transaction_declined_commission'] += $transaction['commission'];
-							} else
-								if ($transaction['status'] == Oara_Utilities::STATUS_PAID) {
-									$overview['transaction_paid_value'] += $transaction['amount'];
-									$overview['transaction_paid_commission'] += $transaction['commission'];
-								}
+					if ($transaction['status'] == Oara_Utilities::STATUS_PENDING) {
+						$overview['transaction_pending_value'] += $transaction['amount'];
+						$overview['transaction_pending_commission'] += $transaction['commission'];
+					} else
+					if ($transaction['status'] == Oara_Utilities::STATUS_DECLINED) {
+						$overview['transaction_declined_value'] += $transaction['amount'];
+						$overview['transaction_declined_commission'] += $transaction['commission'];
+					} else
+					if ($transaction['status'] == Oara_Utilities::STATUS_PAID) {
+						$overview['transaction_paid_value'] += $transaction['amount'];
+						$overview['transaction_paid_commission'] += $transaction['commission'];
+					}
 				}
 				$totalOverviews[] = $overview;
 			}
@@ -443,7 +452,7 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 				}
 			} else {
 				//throw new Exception('Problem getting the payments');
-				}
+			}
 		}
 		return $paymentHistory;
 	}
@@ -489,5 +498,5 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 		}
 		return $innerHTML;
 	}
-	
-	}
+
+}

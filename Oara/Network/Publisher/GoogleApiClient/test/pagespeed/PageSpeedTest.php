@@ -15,24 +15,24 @@
  * limitations under the License.
  */
 
-require_once '../src/contrib/apiPagespeedonlineService.php';
+require_once '../src/contrib/Google_PagespeedonlineService.php';
 
 class PageSpeedTest extends BaseTest {
-	public $service;
-	public function __construct() {
-		parent::__construct();
-		$this->service = new apiPagespeedonlineService(BaseTest::$client);
-	}
+  public $service;
+  public function __construct() {
+    parent::__construct();
+    $this->service = new Google_PagespeedonlineService(BaseTest::$client);
+  }
 
-	public function testPageSpeed() {
-		$psapi = $this->service->pagespeedapi;
-		$result = $psapi->runpagespeed('http://code.google.com');
-		$this->assertArrayHasKey('kind', $result);
-		$this->assertArrayHasKey('id', $result);
-		$this->assertArrayHasKey('responseCode', $result);
-		$this->assertArrayHasKey('title', $result);
-		$this->assertArrayHasKey('score', $result);
-		$this->assertArrayHasKey('pageStats', $result);
-		$this->assertArrayHasKey('version', $result);
-	}
+  public function testPageSpeed() {
+    $psapi = $this->service->pagespeedapi;
+    $result = $psapi->runpagespeed('http://code.google.com');
+    $this->assertArrayHasKey('kind', $result);
+    $this->assertArrayHasKey('id', $result);
+    $this->assertArrayHasKey('responseCode', $result);
+    $this->assertArrayHasKey('title', $result);
+    $this->assertArrayHasKey('score', $result);
+    $this->assertArrayHasKey('pageStats', $result);
+    $this->assertArrayHasKey('version', $result);
+  }
 }

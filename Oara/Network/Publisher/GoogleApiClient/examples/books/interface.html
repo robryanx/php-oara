@@ -15,12 +15,12 @@
  * limitations under the License.
 -->
 <head>
-<meta charset="utf-8" />
-<title>Books Data API Browser in PHP</title>
-<link href="books_browser.css" type="text/css" rel="stylesheet" />
-<script type="text/javascript" src="http://www.google.com/jsapi">
+  <meta charset="utf-8" />
+  <title>Books Data API Browser in PHP</title>
+  <link href="books_browser.css" type="text/css" rel="stylesheet"/>
+  <script type="text/javascript" src="http://www.google.com/jsapi">
   </script>
-<script type="text/javascript">
+  <script type="text/javascript">
     function load_viewport(identifier, viewport_div_id) {
       var viewport_div = document.getElementById(viewport_div_id);
       var rightpane_div = viewport_div.parentNode;
@@ -45,28 +45,29 @@
 
 </head>
 <body>
-<script>
+  <script>
   </script>
 <div id="titleBar">
-<div id="titleText">
-<h1>Books Data API Browser in PHP</h1>
-</div>
-<br />
+  <div id="titleText"><h1>Books Data API Browser in PHP</h1></div>
+  <br />
 </div>
 <br clear="all" />
 <div id="mainSearchBox">
-<h2>Search Books:</h2>
-<form id="mainSearchForm" action="index.php"><select
-	name="queryType">
-	<option value="all" selected="true">All Books</option>
-	<option value="partial_view">Limited preview and full view</option>
-	<option value="full_view">Full view books only</option>
-</select> <input name="maxResults" type="hidden" value="6"> <input
-	name="searchTerm" type="text" value=""> <input type="submit"
-	value="Search"> <a href="http://www.google.com"> <img
-	src="http://books.google.com/googlebooks/images/poweredby.png"
-	border="0" width="62" height="30" align="absbottom"
-	style="position: relative; top: 6px; padding-left: 10px"></a></form>
+  <h2>Search Books:</h2>
+  <form id="mainSearchForm" action="index.php">
+    <select name="queryType">
+      <option value="all" selected="true">All Books</option>
+      <option value="partial_view">Limited preview and full view</option>
+      <option value="full_view">Full view books only</option>
+    </select>
+    <input name="maxResults" type="hidden" value="6">
+    <input name="searchTerm" type="text" value="">
+    <input type="submit" value="Search">
+    <a href="http://www.google.com">
+      <img src="http://books.google.com/googlebooks/images/poweredby.png"
+      border="0" width="62" height="30" align="absbottom"
+      style="position:relative; top: 6px; padding-left: 10px"></a>
+  </form>
 </div>
 <br>
 <br clear="all" />

@@ -15,84 +15,101 @@
  * limitations under the License.
  */
 
-require_once "io/apiREST.php";
+require_once "io/Google_REST.php";
 
 class RestTest extends BaseTest {
-	private $rest;
+  /**
+   * @var Google_Rest $rest
+   */
+  private $rest;
+  
+  public function setUp() {
+    $this->rest = new Google_REST();
+  }
 
-	public function setUp() {
-		$this->rest = new apiREST();
-	}
+  public function testDecodeResponse() {
+    $url = 'http://localhost';
+    
+    $response = new Google_HttpRequest($url);
+    $response->setResponseHttpCode(204);
+    $decoded = $this->rest->decodeHttpResponse($response);
+    $this->assertEquals(null, $decoded);
 
-	public function testDecodeResponse() {
-		$url = 'http://localhost';
 
-		$response = new apiHttpRequest($url);
-		$response->setResponseHttpCode(204);
-		$decoded = $this->rest->decodeHttpResponse($response);
-		$this->assertEquals(null, $decoded);
+    foreach (array(200, 201) as $code) {
+      $headers = array('foo', 'bar');
+      $response = new Google_HttpRequest($url, 'GET', $headers);
+      $response->setResponseBody('{"a": 1}');
 
-		foreach (array(200, 201) as $code) {
-			$headers = array('foo', 'bar');
-			$response = new apiHttpRequest($url, 'GET', $headers);
-			$response->setResponseBody('{"a": 1}');
+      $response->setResponseHttpCode($code);
+      $decoded = $this->rest->decodeHttpResponse($response);
+      $this->assertEquals(array("a" => 1), $decoded);
+    }
 
-			$response->setResponseHttpCode($code);
-			$decoded = $this->rest->decodeHttpResponse($response);
-			$this->assertEquals(array("a" => 1), $decoded);
-		}
+    $response = new Google_HttpRequest($url);
+    $response->setResponseHttpCode(500);
 
-		$response = new apiHttpRequest($url);
-		$response->setResponseHttpCode(500);
+    $error = "";
+    try {
+      $this->rest->decodeHttpResponse($response);
+    } catch (Exception $e) {
+      $error = $e->getMessage();
 
-		$error = "";
-		try {
-			$this->rest->decodeHttpResponse($response);
-		} catch (Exception $e) {
-			$error = $e->getMessage();
+    }
+    $this->assertEquals(trim($error), "Error calling GET http://localhost: (500)");
+  }
 
-		}
-		$this->assertEquals(trim($error), "Error calling GET http://localhost: (500)");
-	}
 
-	public function testCreateRequestUri() {
-		$basePath = "http://localhost";
-		$restPath = "/plus/{u}";
+  public function testDecodeEmptyResponse() {
+    $url = 'http://localhost';
 
-		// Test Path
-		$params = array();
-		$params['u']['type'] = 'string';
-		$params['u']['location'] = 'path';
-		$params['u']['value'] = 'me';
-		$value = $this->rest->createRequestUri($basePath, $restPath, $params);
-		$this->assertEquals("http://localhost/plus/me", $value);
+    $response = new Google_HttpRequest($url, 'GET', array());
+    $response->setResponseBody('{}');
 
-		// Test Query
-		$params = array();
-		$params['u']['type'] = 'string';
-		$params['u']['location'] = 'query';
-		$params['u']['value'] = 'me';
-		$value = $this->rest->createRequestUri($basePath, '/plus', $params);
-		$this->assertEquals("http://localhost/plus?u=me", $value);
+    $response->setResponseHttpCode(200);
+    $decoded = $this->rest->decodeHttpResponse($response);
+    $this->assertEquals(array(), $decoded);
+  }
 
-		// Test Booleans
-		$params = array();
-		$params['u']['type'] = 'boolean';
-		$params['u']['location'] = 'path';
-		$params['u']['value'] = '1';
-		$value = $this->rest->createRequestUri($basePath, $restPath, $params);
-		$this->assertEquals("http://localhost/plus/true", $value);
+  public function testCreateRequestUri() {
+    $basePath = "http://localhost";
+    $restPath = "/plus/{u}";
+    
+    // Test Path
+    $params = array();
+    $params['u']['type'] = 'string';
+    $params['u']['location'] = 'path';
+    $params['u']['value'] = 'me';
+    $value = $this->rest->createRequestUri($basePath, $restPath, $params);
+    $this->assertEquals("http://localhost/plus/me", $value);
 
-		$params['u']['location'] = 'query';
-		$value = $this->rest->createRequestUri($basePath, '/plus', $params);
-		$this->assertEquals("http://localhost/plus?u=true", $value);
+    // Test Query
+    $params = array();
+    $params['u']['type'] = 'string';
+    $params['u']['location'] = 'query';
+    $params['u']['value'] = 'me';
+    $value = $this->rest->createRequestUri($basePath, '/plus', $params);
+    $this->assertEquals("http://localhost/plus?u=me", $value);
 
-		// Test encoding
-		$params = array();
-		$params['u']['type'] = 'string';
-		$params['u']['location'] = 'query';
-		$params['u']['value'] = '@me/';
-		$value = $this->rest->createRequestUri($basePath, '/plus', $params);
-		$this->assertEquals("http://localhost/plus?u=%40me%2F", $value);
-	}
+    // Test Booleans
+    $params = array();
+    $params['u']['type'] = 'boolean';
+    $params['u']['location'] = 'path';
+    $params['u']['value'] = '1';
+    $value = $this->rest->createRequestUri($basePath, $restPath, $params);
+    $this->assertEquals("http://localhost/plus/true", $value);
+
+    $params['u']['location'] = 'query';
+    $value = $this->rest->createRequestUri($basePath, '/plus', $params);
+    $this->assertEquals("http://localhost/plus?u=true", $value);
+    
+    // Test encoding
+    $params = array();
+    $params['u']['type'] = 'string';
+    $params['u']['location'] = 'query';
+    $params['u']['value'] = '@me/';
+    $value = $this->rest->createRequestUri($basePath, '/plus', $params);
+    $this->assertEquals("http://localhost/plus?u=%40me%2F", $value);
+  }
 }
+ 

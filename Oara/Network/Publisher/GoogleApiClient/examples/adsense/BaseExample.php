@@ -18,7 +18,7 @@
 /**
  * Include the AdSense service class and the HTML generation functions.
  */
-require_once "../../src/contrib/apiAdsenseService.php";
+require_once "../../src/contrib/Google_AdSenseService.php";
 require_once "htmlHelper.php";
 
 /**
@@ -28,39 +28,40 @@ require_once "htmlHelper.php";
  * @author Silvano Luciani <silvano.luciani@gmail.com>
  */
 abstract class BaseExample {
-	protected $adSenseService;
-	protected $dateFormat = 'Y-m-d';
+  protected $adSenseService;
+  protected $dateFormat = 'Y-m-d';
 
-	/**
-	 * Inject the dependency.
-	 * @param apiAdsenseService $adSenseService an authenticated instance
-	 *     of apiAdsenseService
-	 */
-	public function __construct(apiAdsenseService $adSenseService) {
-		$this->adSenseService = $adSenseService;
-	}
+  /**
+   * Inject the dependency.
+   * @param Google_AdsenseService $adSenseService an authenticated instance
+   *     of Google_AdsenseService
+   */
+  public function __construct(Google_AdsenseService $adSenseService) {
+    $this->adSenseService = $adSenseService;
+  }
 
-	/**
-	 * Get the date for the instant of the call.
-	 * @return string the date in the format expressed by $this->dateFormat
-	 */
-	protected function getNow() {
-		$now = new DateTime();
-		return $now->format($this->dateFormat);
-	}
+  /**
+   * Get the date for the instant of the call.
+   * @return string the date in the format expressed by $this->dateFormat
+   */
+  protected function getNow() {
+    $now = new DateTime();
+    return $now->format($this->dateFormat);
+  }
 
-	/**
-	 * Get the date six month before the instant of the call.
-	 * @return string the date in the format expressed by $this->dateFormat
-	 */
-	protected function getSixMonthsBeforeNow() {
-		$sixMonthsAgo = new DateTime('-6 months');
-		return $sixMonthsAgo->format($this->dateFormat);
-	}
+  /**
+   * Get the date six month before the instant of the call.
+   * @return string the date in the format expressed by $this->dateFormat
+   */
+  protected function getSixMonthsBeforeNow() {
+    $sixMonthsAgo = new DateTime('-6 months');
+    return $sixMonthsAgo->format($this->dateFormat);
+  }
 
-	/**
-	 * Implemented in the specific example class.
-	 */
-	abstract public function render();
+  /**
+   * Implemented in the specific example class.
+   */
+  abstract public function render();
 
 }
+

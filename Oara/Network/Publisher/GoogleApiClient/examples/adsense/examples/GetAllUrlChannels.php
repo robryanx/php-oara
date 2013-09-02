@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2011 Google Inc.
+ * Copyright 2012 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,40 +16,42 @@
  */
 
 // Require the base class.
-require_once __DIR__."/../BaseExample.php";
+require_once __DIR__ . "/../BaseExample.php";
 
 /**
  * Gets all URL channels in an ad client.
  *
- * To get ad clients, run getAllAdClients.py.
+ * To get ad clients, see GetAllAdClients.php.
  * Tags: urlchannels.list
  *
  * @author Silvano Luciani <silvano.luciani@gmail.com>
  */
 class GetAllUrlChannels extends BaseExample {
-	public function render() {
-		$adClientId = AD_CLIENT_ID;
-		$optParams['maxResults'] = AD_MAX_PAGE_SIZE;
-		$listClass = 'list';
-		printListHeader($listClass);
-		$pageToken = null;
-		do {
-			$optParams['pageToken'] = $pageToken;
-			// Retrieve URL channels list and display it.
-			$result = $this->adSenseService->urlchannels
-			->listUrlchannels($adClientId, $optParams);
-			$urlChannels = $result['items'];
-			if (isset($urlChannels)) {
-				foreach ($urlChannels as $urlChannel) {
-					$format = 'URL channel with URL pattern "%s" was found.';
-					$content = sprintf($format, $urlChannel['urlPattern']);
-					printListElement($content);
-				}
-				$pageToken = isset($result['nextPageToken']) ? $result['nextPageToken'] : null;
-			} else {
-				printNoResultForList();
-			}
-		} while ($pageToken);
-		printListFooter();
-	}
+  public function render() {
+    $adClientId = AD_CLIENT_ID;
+    $optParams['maxResults'] = AD_MAX_PAGE_SIZE;
+    $listClass = 'list';
+    printListHeader($listClass);
+    $pageToken = null;
+    do {
+      $optParams['pageToken'] = $pageToken;
+      // Retrieve URL channels list and display it.
+      $result = $this->adSenseService->urlchannels
+          ->listUrlchannels($adClientId, $optParams);
+      $urlChannels = $result['items'];
+      if (empty($urlChannels)) {
+        foreach ($urlChannels as $urlChannel) {
+          $format = 'URL channel with URL pattern "%s" was found.';
+          $content = sprintf($format, $urlChannel['urlPattern']);
+          printListElement($content);
+        }
+        $pageToken = isset($result['nextPageToken']) ? $result['nextPageToken']
+            : null;
+      } else {
+        printNoResultForList();
+      }
+    } while ($pageToken);
+    printListFooter();
+  }
 }
+

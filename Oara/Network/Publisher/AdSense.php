@@ -1,6 +1,6 @@
 <?php
-require_once "GoogleApiClient/src/apiClient.php";
-require_once "GoogleApiClient/src/contrib/apiAdsenseService.php";
+require_once "GoogleApiClient/src/Google_Client.php";
+require_once "GoogleApiClient/src/contrib/Google_AdSenseService.php";
 /**
  * API Class
  *
@@ -23,14 +23,14 @@ class Oara_Network_Publisher_AdSense extends Oara_Network {
 	 * @return Oara_Network_Publisher_Buy_Api
 	 */
 	public function __construct($credentials) {
-		$client = new apiClient();
+		$client = new Google_Client();
 		$client->setApplicationName("AffJet");
 		$client->setClientId($credentials['clientId']);
 		$client->setClientSecret($credentials['clientSecret']);
 		$client->setAccessToken($credentials['oauth2']);
 		$client->setAccessType('offline');
 		$this->_client = $client;
-		$this->_adsense = new apiAdsenseService($client);
+		$this->_adsense = new Google_AdSenseService($client);
 	}
 	/**
 	 * Check the connection
@@ -82,38 +82,41 @@ class Oara_Network_Publisher_AdSense extends Oara_Network {
 		$firstDayMonth->setHour("00");
 		$firstDayMonth->setMinute("00");
 		$firstDayMonth->setSecond("00");
-		foreach ($report["rows"] as $row) {
-			$obj = array();
-			$obj['merchantId'] = 1;
-			$overviewDate = new Zend_Date($row[0], "yyyy-MM-dd");
-			$overviewDate->setHour("00");
-			$overviewDate->setMinute("00");
-			$overviewDate->setSecond("00");
-			$obj['date'] = $overviewDate->toString("yyyy-MM-dd HH:mm:ss");
+		if (isset($report["rows"])){
+			foreach ($report["rows"] as $row) {
+				$obj = array();
+				$obj['merchantId'] = 1;
+				$overviewDate = new Zend_Date($row[0], "yyyy-MM-dd");
+				$overviewDate->setHour("00");
+				$overviewDate->setMinute("00");
+				$overviewDate->setSecond("00");
+				$obj['date'] = $overviewDate->toString("yyyy-MM-dd HH:mm:ss");
 
-			$obj['transaction_number'] = 0;
-			$obj['transaction_confirmed_commission'] = 0;
-			$obj['transaction_confirmed_value'] = 0;
-			$obj['transaction_pending_commission'] = 0;
-			$obj['transaction_pending_value'] = 0;
-			$obj['transaction_declined_commission'] = 0;
-			$obj['transaction_declined_value'] = 0;
-			$obj['transaction_paid_commission'] = 0;
-			$obj['transaction_paid_value'] = 0;
+				$obj['transaction_number'] = 0;
+				$obj['transaction_confirmed_commission'] = 0;
+				$obj['transaction_confirmed_value'] = 0;
+				$obj['transaction_pending_commission'] = 0;
+				$obj['transaction_pending_value'] = 0;
+				$obj['transaction_declined_commission'] = 0;
+				$obj['transaction_declined_value'] = 0;
+				$obj['transaction_paid_commission'] = 0;
+				$obj['transaction_paid_value'] = 0;
 
-			$obj['impression_number'] = (int) Oara_Utilities::parseDouble($row[1]);
-			$obj['click_number'] = Oara_Utilities::parseDouble($row[2]);
-			if ($firstDayMonth->compare($overviewDate) <= 0) {
-				$obj['transaction_pending_commission'] = Oara_Utilities::parseDouble($row[3]);
-				$obj['transaction_pending_value'] = Oara_Utilities::parseDouble($row[3]);
-			} else {
-				$obj['transaction_confirmed_commission'] = Oara_Utilities::parseDouble($row[3]);
-				$obj['transaction_confirmed_value'] = Oara_Utilities::parseDouble($row[3]);
+				$obj['impression_number'] = (int) Oara_Utilities::parseDouble($row[1]);
+				$obj['click_number'] = Oara_Utilities::parseDouble($row[2]);
+				if ($firstDayMonth->compare($overviewDate) <= 0) {
+					$obj['transaction_pending_commission'] = Oara_Utilities::parseDouble($row[3]);
+					$obj['transaction_pending_value'] = Oara_Utilities::parseDouble($row[3]);
+				} else {
+					$obj['transaction_confirmed_commission'] = Oara_Utilities::parseDouble($row[3]);
+					$obj['transaction_confirmed_value'] = Oara_Utilities::parseDouble($row[3]);
+				}
+
+				if (Oara_Utilities::checkRegister($obj)) {
+					$overviewArray[] = $obj;
+				}
 			}
-
-			if (Oara_Utilities::checkRegister($obj)) {
-				$overviewArray[] = $obj;
-			}
+				
 		}
 
 		return $overviewArray;

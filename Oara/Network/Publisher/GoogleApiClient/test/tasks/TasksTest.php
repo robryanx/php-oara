@@ -15,65 +15,64 @@
  * limitations under the License.
  */
 
-require_once '../src/contrib/apiTasksService.php';
+require_once '../src/contrib/Google_TasksService.php';
 
 class TasksTest extends BaseTest {
-	public $taskService;
+  /** @var Google_TasksService */
+  public $taskService;
 
-	public function __construct() {
-		parent::__construct();
-		$this->taskService = new apiTasksService(BaseTest::$client);
-	}
+  public function __construct() {
+    parent::__construct();
+    $this->taskService = new Google_TasksService(BaseTest::$client);
+  }
+  
+  public function testInsertTask() {
+    $list = $this->createTaskList('List: ' . __METHOD__);
+    $task = $this->createTask('Task: '.__METHOD__, $list['id']);
+    $this->assertIsTask($task);
+  }
 
-	public function testInsertTask() {
-		$list = $this->createTaskList('List: '.__METHOD__);
-		$task = $this->createTask('Task: '.__METHOD__, $list['id']);
-		$this->assertIsTask($task);
-	}
+  public function testGetTask() {
+    $tasks = $this->taskService->tasks;
+    $list = $this->createTaskList('List: ' . __METHOD__);
+    $task = $this->createTask('Task: '. __METHOD__, $list['id']);
 
-	public function testGetTask() {
-		$tasks = $this->taskService->tasks;
-		$list = $this->createTaskList('List: '.__METHOD__);
-		$task = $this->createTask('Task: '.__METHOD__, $list['id']);
+    $task = $tasks->get($list['id'], $task['id']);
+    $this->assertIsTask($task);
+  }
 
-		$task = $tasks->get($list['id'], $task['id']);
-		$this->assertIsTask($task);
-	}
+  public function testListTask() {
+    $tasks = $this->taskService->tasks;
+    $list = $this->createTaskList('List: ' . __METHOD__);
 
-	public function testListTask() {
-		$tasks = $this->taskService->tasks;
-		$list = $this->createTaskList('List: '.__METHOD__);
+    for ($i=0; $i<4; $i++) {
+      $this->createTask("Task: $i ".__METHOD__, $list['id']);
+    }
 
-		for ($i = 0; $i < 4; $i++) {
-			$this->createTask("Task: $i ".__METHOD__, $list['id']);
-		}
+    $tasksArray = $tasks->listTasks($list['id']);
+    $this->assertTrue(sizeof($tasksArray) > 1);
+    foreach ($tasksArray['items'] as $task) {
+      $this->assertIsTask($task);
+    }
+  }
 
-		$tasksArray = $tasks->listTasks($list['id']);
-		$this->assertTrue(sizeof($tasksArray) > 1);
-		foreach ($tasksArray['items'] as $task) {
-			$this->assertIsTask($task);
-		}
-	}
+  private function createTaskList($name) {
+    $list = new Google_TaskList();
+    $list->title = $name;
+    return $this->taskService->tasklists->insert($list);
+  }
 
-	private function createTaskList($name) {
-		$taskList = $this->taskService->tasklists;
-		$list = new TaskList();
+  private function createTask($title, $listId) {
+    $tasks = $this->taskService->tasks;
+    $task = new Google_Task();
+    $task->title = $title;
+    return $tasks->insert($listId, $task);
+  }
 
-		$list->title = $name;
-		return $taskList->insert($list);
-	}
-
-	private function createTask($title, $listId) {
-		$tasks = $this->taskService->tasks;
-		$task = new Task();
-		$task->title = $title;
-		return $tasks->insert($listId, $task);
-	}
-
-	private function assertIsTask($task) {
-		$this->assertArrayHasKey('title', $task);
-		$this->assertArrayHasKey('kind', $task);
-		$this->assertArrayHasKey('id', $task);
-		$this->assertArrayHasKey('position', $task);
-	}
+  private function assertIsTask($task) {
+    $this->assertArrayHasKey('title', $task);
+    $this->assertArrayHasKey('kind', $task);
+    $this->assertArrayHasKey('id', $task);
+    $this->assertArrayHasKey('position', $task);
+  }
 }

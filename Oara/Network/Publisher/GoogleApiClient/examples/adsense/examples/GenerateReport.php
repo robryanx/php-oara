@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2011 Google Inc.
+ * Copyright 2012 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,41 +16,42 @@
  */
 
 // Require the base class.
-require_once __DIR__."/../BaseExample.php";
+require_once __DIR__ . "/../BaseExample.php";
 
 /**
  * Retrieves a report for the specified ad client.
  *
- * To get ad clients, run getAllAdClients.
+ * To get ad clients, see GetAllAdClients.php.
  * Tags: reports.generate
  *
  * @author Silvano Luciani <silvano.luciani@gmail.com>
  */
 class GenerateReport extends BaseExample {
-	public function render() {
-		$startDate = $this->getSixMonthsBeforeNow();
-		$endDate = $this->getNow();
-		$optParams = array(
-			'metric'	 => array(
-				'PAGE_VIEWS', 'AD_REQUESTS', 'AD_REQUESTS_COVERAGE',
-				'CLICKS', 'AD_REQUESTS_CTR', 'COST_PER_CLICK', 'AD_REQUESTS_RPM',
-				'EARNINGS'),
-			'dimension'	 => 'DATE',
-			'sort'		 => 'DATE',
-			'filter'	 => array(
-				'AD_CLIENT_ID=='.AD_CLIENT_ID
-			)
-		);
-		// Retrieve report.
-		$report = $this->adSenseService->reports
-		->generate($startDate, $endDate, $optParams);
+  public function render() {
+    $startDate = $this->getSixMonthsBeforeNow();
+    $endDate = $this->getNow();
+    $optParams = array(
+      'metric' => array(
+        'PAGE_VIEWS', 'AD_REQUESTS', 'AD_REQUESTS_COVERAGE',
+        'CLICKS', 'AD_REQUESTS_CTR', 'COST_PER_CLICK', 'AD_REQUESTS_RPM',
+        'EARNINGS'),
+      'dimension' => 'DATE',
+      'sort' => 'DATE',
+      'filter' => array(
+        'AD_CLIENT_ID==' . AD_CLIENT_ID
+      )
+    );
+    // Retrieve report.
+    $report = $this->adSenseService->reports
+        ->generate($startDate, $endDate, $optParams);
 
-		if (isset($report['rows'])) {
-			printReportTableHeader($report['headers']);
-			printReportTableRows($report['rows']);
-			printReportTableFooter();
-		} else {
-			printNoResultForTable(count($report['headers']));
-		}
-	}
+    if (isset($report['rows'])) {
+      printReportTableHeader($report['headers']);
+      printReportTableRows($report['rows']);
+      printReportTableFooter();
+    } else {
+      printNoResultForTable(count($report['headers']));
+    }
+  }
 }
+

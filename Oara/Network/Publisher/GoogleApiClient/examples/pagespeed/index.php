@@ -15,45 +15,42 @@
  * limitations under the License.
  */
 session_start();
-require_once '../../src/apiClient.php';
-require_once '../../src/contrib/apiPagespeedonlineService.php';
+require_once '../../src/Google_Client.php';
+require_once '../../src/contrib/Google_PagespeedonlineService.php';
 
-$client = new apiClient();
+$client = new Google_Client();
 $client->setApplicationName("PageSpeedOnline_Example_App");
-$service = new apiPagespeedonlineService($client);
+$service = new Google_PagespeedonlineService($client);
 
 if (isset($_GET['url'])) {
-	$result = $service->pagespeedapi->runpagespeed($_GET['url']);
+  $result = $service->pagespeedapi->runpagespeed($_GET['url']);
 }
 ?>
 <!doctype html>
 <html>
-<head>
-<link rel='stylesheet' href='style.css' />
-</head>
+<head><link rel='stylesheet' href='style.css' /></head>
 <body>
-<header>
-<h1>Google Page Speed Sample App</h1>
-</header>
+<header><h1>Google Page Speed Sample App</h1></header>
 <div class="box">
-<div id="search">
-<form id="url" method="GET" action="index.php"><input name="url"
-	class="url" type="text"> <input type="submit"
-	value="Analyze Performance"></form>
-</div>
+  <div id="search">
+    <form id="url" method="GET" action="index.php">
+      <input name="url" class="url" type="text">
+      <input type="submit" value="Analyze Performance">
+    </form>
+  </div>
 
-<?php if (isset($result)) : ?>
-<div class="result">
-<h3>Summary</h3>
-<?php print $result['title']; ?> got a PageSpeed Score of <b><?php print $result['score']; ?></b>
-(out of 100).
-<div>Title: <?php print $result['title']; ?></div>
-<div>Score: <?php print $result['score']; ?></div>
-<div>Number of Resources: <?php print $result['pageStats']['numberResources']; ?></div>
-<div>Number of Hosts: <?php print $result['pageStats']['numberHosts']; ?></div>
-<div>Total Request Bytes: <?php print $result['pageStats']['totalRequestBytes']; ?></div>
-<div>Number of Static Resources: <?php print $result['pageStats']['numberStaticResources']; ?></div>
-<pre><?php var_dump($result); ?></pre></div>
-<? endif ?></div>
-</body>
-</html>
+  <?php if (isset($result)): ?>
+    <div class="result">
+      <h3>Summary</h3>
+      <?php print $result['title']; ?> got a PageSpeed Score of <b><?php print $result['score']; ?></b> (out of 100).
+      <div>Title: <?php print $result['title']; ?></div>
+      <div>Score: <?php print $result['score']; ?></div>
+      <div>Number of Resources: <?php print $result['pageStats']['numberResources']; ?></div>
+      <div>Number of Hosts: <?php print $result['pageStats']['numberHosts']; ?></div>
+      <div>Total Request Bytes: <?php print $result['pageStats']['totalRequestBytes']; ?></div>
+      <div>Number of Static Resources: <?php print $result['pageStats']['numberStaticResources']; ?></div>
+      <pre><?php var_dump($result); ?></pre>
+    </div>
+  <?php endif ?>
+</div>
+</body></html>

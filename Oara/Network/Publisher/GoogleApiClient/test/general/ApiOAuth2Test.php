@@ -18,27 +18,58 @@
  * under the License.
  */
 
-require_once "io/apiREST.php";
+require_once "../src/Google_Client.php";
+require_once "BaseTest.php";
+require_once "io/Google_REST.php";
 
 class ApiOAuth2Test extends BaseTest {
-	/** @var apiOAuth2 $auth */
-	private $auth;
 
-	public function setUp() {
-		$this->auth = new apiOAuth2();
+  public function testSign() {
+    $oauth = new Google_OAuth2();
 
-		$this->auth->developerKey = "devKey";
-		$this->auth->clientId = "clientId1";
-		$this->auth->clientSecret = "clientSecret1";
-		$this->auth->redirectUri = "http://localhost";
+    $oauth->developerKey = "devKey";
+    $oauth->clientId = "clientId1";
+    $oauth->clientSecret = "clientSecret1";
+    $oauth->redirectUri = "http://localhost";
+    $oauth->approvalPrompt = 'force';
+    $oauth->accessType = "offline";
 
-		$this->auth->approvalPrompt = 'force';
-		$this->auth->accessType = "offline";
-	}
+    $req = new Google_HttpRequest('http://localhost');
+    $req = $oauth->sign($req);
 
-	public function testCreateAuthUrl() {
-		$authUrl = $this->auth->createAuthUrl("http://googleapis.com/scope/foo");
-		$expected = "https://accounts.google.com/o/oauth2/auth"."?response_type=code"."&redirect_uri=http%3A%2F%2Flocalhost"."&client_id=clientId1"."&scope=http%3A%2F%2Fgoogleapis.com%2Fscope%2Ffoo"."&access_type=offline"."&approval_prompt=force";
-		$this->assertEquals($expected, $authUrl);
-	}
+    $this->assertEquals('http://localhost?key=devKey', $req->getUrl());
+
+    // test accessToken
+    $oauth->token = array(
+        'access_token' => 'ACCESS_TOKEN',
+        'created' => time(),
+        'expires_in' => '3600'
+    );
+
+    $req = $oauth->sign($req);
+    $auth = $req->getRequestHeader('authorization');
+    $this->assertEquals('Bearer ACCESS_TOKEN', $auth);
+  }
+
+  public function testCreateAuthUrl() {
+    $oauth = new Google_OAuth2();
+
+    $oauth->developerKey = "devKey";
+    $oauth->clientId = "clientId1";
+    $oauth->clientSecret = "clientSecret1";
+    $oauth->redirectUri = "http://localhost";
+    $oauth->approvalPrompt = 'force';
+    $oauth->accessType = "offline";
+
+    $authUrl = $oauth->createAuthUrl("http://googleapis.com/scope/foo");
+    $expected = "https://accounts.google.com/o/oauth2/auth"
+        . "?response_type=code"
+        . "&redirect_uri=http%3A%2F%2Flocalhost"
+        . "&client_id=clientId1"
+        . "&scope=http%3A%2F%2Fgoogleapis.com%2Fscope%2Ffoo"
+        . "&access_type=offline"
+        . "&approval_prompt=force";
+    $this->assertEquals($expected, $authUrl);
+  }
 }
+ 

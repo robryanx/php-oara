@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-require_once '../../src/apiClient.php';
-require_once '../../src/contrib/apiGanService.php';
+require_once '../../src/Google_Client.php';
+require_once '../../src/contrib/Google_GanService.php';
 
 session_start();
 
-$client = new apiClient();
+$client = new Google_Client();
 $client->setApplicationName("Google GAN PHP Starter Application");
 // Visit https://code.google.com/apis/console?api=gan to generate your
 // oauth2_client_id, oauth2_client_secret, and to register your oauth2_redirect_uri.
@@ -27,40 +27,37 @@ $client->setApplicationName("Google GAN PHP Starter Application");
 // $client->setClientSecret('insert_your_oauth2_client_secret');
 // $client->setRedirectUri('insert_your_oauth2_redirect_uri');
 // $client->setDeveloperKey('insert_your_simple_api_key');
-$gan = new apiGanService($client);
+$gan = new Google_GanService($client);
 
 if (isset($_REQUEST['logout'])) {
-	unset($_SESSION['access_token']);
+  unset($_SESSION['access_token']);
 }
 
 if (isset($_GET['code'])) {
-	$client->authenticate();
-	$_SESSION['access_token'] = $client->getAccessToken();
-	$redirect = 'http://'.$_SERVER['HTTP_HOST'].$_SERVER['PHP_SELF'];
-	header('Location: '.filter_var($redirect, FILTER_SANITIZE_URL));
+  $client->authenticate();
+  $_SESSION['access_token'] = $client->getAccessToken();
+  $redirect = 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'];
+  header('Location: ' . filter_var($redirect, FILTER_SANITIZE_URL));
 }
 
 if (isset($_SESSION['access_token'])) {
-	$client->setAccessToken($_SESSION['access_token']);
+  $client->setAccessToken($_SESSION['access_token']);
 }
 
 if ($client->getAccessToken()) {
-	$publishers = $gan->publishers->listPublishers("advertisers", "INSERT_ROLE_ID" /* The ID of the requesting advertiser or publisher */);
-	$advertisers = $gan->advertisers->listAdvertisers("publishers", "INSERT_ROLE_ID" /* The ID of the requesting advertiser or publisher */);
-	print "<pre>".print_r($publishers, true)."</pre>";
-	print "<pre>".print_r($advertisers, true)."</pre>";
+  $publishers = $gan->publishers->listPublishers("advertisers", "INSERT_ROLE_ID" /* The ID of the requesting advertiser or publisher */);
+  $advertisers = $gan->advertisers->listAdvertisers("publishers", "INSERT_ROLE_ID" /* The ID of the requesting advertiser or publisher */);
+  print "<pre>" . print_r($publishers, true) . "</pre>";
+  print "<pre>" . print_r($advertisers, true) . "</pre>";
 
-	// The access token may have been updated lazily.
-	$_SESSION['access_token'] = $client->getAccessToken();
+  // The access token may have been updated lazily.
+  $_SESSION['access_token'] = $client->getAccessToken();
 } else {
-	$authUrl = $client->createAuthUrl();
+  $authUrl = $client->createAuthUrl();
 }
-?>
 
-<?php
-if (isset($authUrl)) {
-	print "<a class='login' href='$authUrl'>Connect Me!</a>";
+if(isset($authUrl)) {
+  print "<a class='login' href='$authUrl'>Connect Me!</a>";
 } else {
-	print "<a class='logout' href='?logout'>Logout</a>";
+ print "<a class='logout' href='?logout'>Logout</a>";
 }
-?>

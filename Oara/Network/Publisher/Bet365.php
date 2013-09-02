@@ -132,24 +132,29 @@ class Oara_Network_Publisher_Bet365 extends Oara_Network {
 		$urls = array();
 		$urls[] = new Oara_Curl_Request('https://www.bet365affiliates.com/Members/Members/Statistics/Print.aspx?', $valuesFromExport);
 		$exportReport = $this->_client->get($urls);
+
 		$dom = new Zend_Dom_Query($exportReport[0]);
 		$tableList = $dom->query('#Results');
-		$exportData = self::htmlToCsv(self::DOMinnerHTML($tableList->current()));
-		$num = count($exportData);
-		for ($i = 2; $i < $num - 1; $i++) {
-			$transactionExportArray = str_getcsv($exportData[$i], ";");
+		if (!preg_match("/No results exist/", $exportReport[0])){
 				
 
-			$transaction = Array();
-			$transaction['merchantId'] = 1;
-			$transactionDate = new Zend_Date($transactionExportArray[1], 'dd-MM-yyyy', 'en');
-			$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+			$exportData = self::htmlToCsv(self::DOMinnerHTML($tableList->current()));
+			$num = count($exportData);
+			for ($i = 2; $i < $num - 1; $i++) {
+				$transactionExportArray = str_getcsv($exportData[$i], ";");
 
-			$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
-			$transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[27]);
-			$transaction['commission'] = Oara_Utilities::parseDouble($transactionExportArray[32]);
-			if ($transaction['amount'] != 0 && $transaction['commission'] != 0) {
-				$totalTransactions[] = $transaction;
+
+				$transaction = Array();
+				$transaction['merchantId'] = 1;
+				$transactionDate = new Zend_Date($transactionExportArray[1], 'dd-MM-yyyy', 'en');
+				$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+
+				$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
+				$transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[27]);
+				$transaction['commission'] = Oara_Utilities::parseDouble($transactionExportArray[32]);
+				if ($transaction['amount'] != 0 && $transaction['commission'] != 0) {
+					$totalTransactions[] = $transaction;
+				}
 			}
 		}
 

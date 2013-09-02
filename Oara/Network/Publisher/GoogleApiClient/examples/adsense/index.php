@@ -37,60 +37,62 @@ define('AD_ROW_LIMIT', 5000);
 
 // Include the dependencies and die if any is not met.
 try {
-	require_once "AdSenseAuth.php";
-	require_once "BaseExample.php";
-	require_once "htmlHelper.php";
+  require_once "AdSenseAuth.php";
+  require_once "BaseExample.php";
+  require_once "htmlHelper.php";
 } catch (Exception $e) {
-	die('Missing requirement: '.$e->getMessage()."\n");
+  die('Missing requirement: ' . $e->getMessage() . "\n");
 }
 
 try {
-	// Build the list of supported actions.
-	$actions = getSupportedActions();
-	// Go through API authentication.
-	$auth = new AdSenseAuth();
-	$auth->authenticate('sample_user');
-	// To get rid of the code in the URL after the authentication.
-	if (isset($_GET['code'])) {
-		header('Location: http://'.$_SERVER['HTTP_HOST'].$_SERVER['PHP_SELF']);
-	}
-	// If the action is set dispatch the action if supported
-	if (isset($_GET["action"])) {
-		$action = $_GET["action"];
-		if (!in_array($action, $actions)) {
-			die('Unsupported action:'.$action."\n");
-		}
-		// Render the required action.
-		require_once 'examples/'.$action.'.php';
-		$class = ucfirst($action);
-		$example = new $class($auth->getAdSenseService());
-		$title = actionNameToWords($action).' example';
-		printHtmlHeader($title);
-		$example->render();
-		printHtmlFooter();
-		$auth->refreshToken();
-	} else {
-		// Show the list of links to supported actions.
-		printHtmlHeader('AdSense Management API PHP usage examples.');
-		printIndex($actions);
-		printHtmlFooter();
-	}
+  // Build the list of supported actions.
+  $actions = getSupportedActions();
+  // Go through API authentication.
+  $auth = new AdSenseAuth();
+  $auth->authenticate('sample_user');
+  // To get rid of the code in the URL after the authentication.
+  if (isset($_GET['code'])) {
+    header('Location: http://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF']);
+  }
+  // If the action is set dispatch the action if supported
+  if (isset($_GET["action"])) {
+    $action = $_GET["action"];
+    if (!in_array($action, $actions)) {
+      die('Unsupported action:' . $action . "\n");
+    }
+    // Render the required action.
+    require_once 'examples/' . $action . '.php';
+    $class = ucfirst($action);
+    $example = new $class($auth->getAdSenseService());
+    $title = actionNameToWords($action) . ' example';
+    printHtmlHeader($title);
+    $example->render();
+    printHtmlFooter();
+    $auth->refreshToken();
+  } else {
+    // Show the list of links to supported actions.
+    printHtmlHeader('AdSense Management API PHP usage examples.');
+    printIndex($actions);
+    printHtmlFooter();
+  }
 } catch (Exception $e) {
-	die('Runtime error: '.$e->getMessage()."\n".$e->getTraceAsString());
+  die('Runtime error: ' . $e->getMessage() . "\n" . $e->getTraceAsString());
 }
 
 /**
  * Builds an array containing the supported actions.
+ * @return array
  */
 function getSupportedActions() {
-	$actions = array();
-	$dirHandler = opendir('examples');
-	while ($actionFile = readdir($dirHandler)) {
-		if (preg_match('/\.php$/', $actionFile)) {
-			$action = preg_replace('/\.php$/', '', $actionFile);
-			$actions[] = $action;
-		}
-	}
-	closedir($dirHandler);
-	return $actions;
+  $actions = array();
+  $dirHandler = opendir('examples');
+  while ($actionFile = readdir($dirHandler)) {
+    if (preg_match('/\.php$/', $actionFile)) {
+      $action = preg_replace('/\.php$/', '', $actionFile);
+      $actions[] = $action;
+    }
+  }
+  closedir($dirHandler);
+  return $actions;
 }
+

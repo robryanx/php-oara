@@ -16,42 +16,47 @@
  */
 
 // Require the base class
-require_once __DIR__."/../BaseExample.php";
+require_once __DIR__ . "/../BaseExample.php";
 
 /**
  * Gets all ad units corresponding to a specified custom channel.
  *
- * To get custom channels, run GetAllCustomChannels.
+ * To get custom channels, see GetAllCustomChannels.php.
  * Tags: accounts.customchannels.adunits.list
  *
  * @author Silvano Luciani <silvano.luciani@gmail.com>
  */
 class GetAllAdUnitsForCustomChannel extends BaseExample {
-	public function render() {
-		$adClientId = AD_CLIENT_ID;
-		$accountId = ACCOUNT_ID;
-		$customChannelId = CUSTOM_CHANNEL_ID;
-		$optParams['maxResults'] = AD_MAX_PAGE_SIZE;
-		$listClass = 'list';
-		printListHeader($listClass);
-		$pageToken = null;
-		do {
-			$optParams['pageToken'] = $pageToken;
-			// Retrieve ad unit list, and display it.
-			$result = $this->adSenseService->accounts_customchannels_adunits
-			->listAccountsCustomchannelsAdunits($accountId, $adClientId, $customChannelId);
-			$adUnits = $result['items'];
-			if (isset($adUnits)) {
-				foreach ($adUnits as $adUnit) {
-					$format = 'Ad unit with code "%s", name "%s" and status "%s" was found.';
-					$content = sprintf($format, $adUnit['code'], $adUnit['name'], $adUnit['status']);
-					printListElement($content);
-				}
-				$pageToken = isset($result['nextPageToken']) ? $result['nextPageToken'] : null;
-			} else {
-				printNoResultForList();
-			}
-		} while ($pageToken);
-		printListFooter();
-	}
+  public function render() {
+    $adClientId = AD_CLIENT_ID;
+    $accountId = ACCOUNT_ID;
+    $customChannelId = CUSTOM_CHANNEL_ID;
+    $optParams['maxResults'] = AD_MAX_PAGE_SIZE;
+    $listClass = 'list';
+    printListHeader($listClass);
+    $pageToken = null;
+    do {
+      $optParams['pageToken'] = $pageToken;
+      // Retrieve ad unit list, and display it.
+      $result = $this->adSenseService->accounts_customchannels_adunits
+          ->listAccountsCustomchannelsAdunits(
+              $accountId, $adClientId, $customChannelId);
+      $adUnits = $result['items'];
+      if (isset($adUnits)) {
+        foreach ($adUnits as $adUnit) {
+          $format =
+              'Ad unit with code "%s", name "%s" and status "%s" was found.';
+          $content = sprintf(
+              $format, $adUnit['code'], $adUnit['name'], $adUnit['status']);
+          printListElement($content);
+        }
+        $pageToken = isset($result['nextPageToken']) ? $result['nextPageToken']
+            : null;
+      } else {
+        printNoResultForList();
+      }
+    } while ($pageToken);
+    printListFooter();
+  }
 }
+

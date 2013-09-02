@@ -15,27 +15,33 @@
  * limitations under the License.
  */
 
-require_once '../src/apiClient.php';
+// Make sure that the tests are being executed from the current working dir
+chdir(__DIR__);
+
+require_once '../src/Google_Client.php';
 class BaseTest extends PHPUnit_Framework_TestCase {
-	/**
-	 * @var apiClient
-	 */
-	public static $client;
-	public function __construct() {
-		parent::__construct();
-		if (!BaseTest::$client) {
-			global $apiConfig;
-			$apiConfig['ioFileCache_directory'] = '/tmp/google-api-php-client/tests';
+  /**
+   * @var Google_Client
+   */
+  public static $client;
+  public function __construct() {
+    parent::__construct();
+    if (!BaseTest::$client) {
+      global $apiConfig;
+      $apiConfig['ioFileCache_directory'] = '/tmp/google-api-php-client/tests';
+      $apiConfig['cacheClass'] = 'Google_FileCache';
 
-			BaseTest::$client = new apiClient();
-			if (!BaseTest::$client->getAccessToken()) {
-				BaseTest::$client->setAccessToken($apiConfig['oauth_test_token']);
-			}
-		}
-	}
+      BaseTest::$client = new Google_Client();
+      if (!BaseTest::$client->getAccessToken()) {
+        if (isset($apiConfig['oauth_test_token'])) {
+          BaseTest::$client->setAccessToken($apiConfig['oauth_test_token']);
+        }
+      }
+    }
+  }
 
-	public function __destruct() {
-		global $apiConfig;
-		$apiConfig['oauth_test_token'] = self::$client->getAccessToken();
-	}
+  public function __destruct() {
+    global $apiConfig;
+    $apiConfig['oauth_test_token'] = self::$client->getAccessToken();
+  }
 }

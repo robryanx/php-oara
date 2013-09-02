@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright 2011 Google Inc.
+ * Copyright 2012 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
  */
 
 // Require the base class.
-require_once __DIR__."/../BaseExample.php";
+require_once __DIR__ . "/../BaseExample.php";
 
 /**
  * Generates a Pie Chart for a report.
@@ -24,29 +24,32 @@ require_once __DIR__."/../BaseExample.php";
  * @author Silvano Luciani <silvano.luciani@gmail.com>
  */
 class GeneratePieChart extends BaseExample {
-	public function render() {
-		$startDate = $this->getSixMonthsBeforeNow();
-		$endDate = $this->getNow();
-		$optParams = array(
-			'metric'	 => array('AD_REQUESTS'),
-			'dimension'	 => array('AD_CLIENT_ID'),
-			'sort'		 => 'AD_CLIENT_ID'
-		);
-		// Retrieve report.
-		$report = $this->adSenseService->reports
-		->generate($startDate, $endDate, $optParams);
-		$data = $report['rows'];
-		// We need to convert the metrics to numeric values for the chart.
-		foreach ($data as & $row) {
-			$row[1] = (int) $row[1];
-		}
-		$data = json_encode($data);
-		$columns = array(
-			array('string', 'Ad client id'),
-			array('number', 'Ad requests')
-		);
-		$type = 'PieChart';
-		$options = json_encode(array('title' => 'Ads requests per ad client id'));
-		print generateChartHtml($data, $columns, $type, $options);
-	}
+  public function render() {
+    $startDate = $this->getSixMonthsBeforeNow();
+    $endDate = $this->getNow();
+    $optParams = array(
+        'metric' => array('AD_REQUESTS'),
+        'dimension' => array('AD_CLIENT_ID'),
+        'sort' => 'AD_CLIENT_ID'
+    );
+    // Retrieve report.
+    $report = $this->adSenseService->reports
+        ->generate($startDate, $endDate, $optParams);
+    $data = $report['rows'];
+    // We need to convert the metrics to numeric values for the chart.
+    foreach ($data as &$row) {
+      $row[1] = (int)$row[1];
+    }
+    $data = json_encode($data);
+    $columns = array(
+      array('string', 'Ad client id'),
+      array('number', 'Ad requests')
+    );
+    $type = 'PieChart';
+    $options = json_encode(
+      array('title' => 'Ads requests per ad client id')
+    );
+    print generateChartHtml($data, $columns, $type, $options);
+  }
 }
+

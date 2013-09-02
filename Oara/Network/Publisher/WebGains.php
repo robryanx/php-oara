@@ -181,8 +181,14 @@ class Oara_Network_Publisher_WebGains extends Oara_Network {
 			$dEndDate->setSecond("59");
 
 			foreach ($this->_campaignMap as $campaignKey => $campaignValue) {
-
-				$transactionList = $this->_soapClient->getDetailedEarnings($dStartDate->getIso(), $dEndDate->getIso(), $campaignKey, $this->_exportTransactionParameters['username'], $this->_exportTransactionParameters['password']);
+				try{
+					$transactionList = $this->_soapClient->getDetailedEarnings($dStartDate->getIso(), $dEndDate->getIso(), $campaignKey, $this->_exportTransactionParameters['username'], $this->_exportTransactionParameters['password']);
+				} catch(Exception $e){
+					if (preg_match("/60 requests/", $e->getMessage())){
+						sleep(60);
+						$transactionList = $this->_soapClient->getDetailedEarnings($dStartDate->getIso(), $dEndDate->getIso(), $campaignKey, $this->_exportTransactionParameters['username'], $this->_exportTransactionParameters['password']);
+					}
+				}
 				foreach ($transactionList as $transactionObject) {
 					if (in_array($transactionObject->programID, $merchantList)) {
 							
