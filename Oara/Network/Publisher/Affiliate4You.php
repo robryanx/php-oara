@@ -116,7 +116,12 @@ class Oara_Network_Publisher_Affiliate4You extends Oara_Network {
 			$valuesFromExport[] = new Oara_Curl_Parameter('limit', $totalRows);
 			$valuesFromExport[] = new Oara_Curl_Parameter('page', $page);
 			$urls[] = new Oara_Curl_Request("http://api.affiliate4you.nl/1.0/orders.csv?", $valuesFromExport);
-			$result = $this->_client->get($urls);
+			try{
+				$result = $this->_client->get($urls);
+			} catch (Exception $e){
+				return $transactions;
+			}
+			
 			$exportData = str_getcsv($result[0], "\n");
 
 

@@ -217,45 +217,33 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 	 */
 	public function checkConnection() {
 		//If not login properly the construct launch an exception
-		$connection = true;
+		$connection = false;
 		$urls = array();
 		$urls[] = new Oara_Curl_Request($this->_networkServer."/gp/associates/network/main.html", array());
 		$exportReport = $this->_client->get($urls);
-		$dom = new Zend_Dom_Query($exportReport[0]);
 
-		$results = $dom->query('#ap_signin_form');
-		$count = count($results);
-		if ($count != 0) {
-			$connection = false;
-		} else {
-			$results = $dom->query('#sign-in');
+		if (preg_match("/logout%26openid.ns/", $exportReport[0])) {
+			$dom = new Zend_Dom_Query($exportReport[0]);
+			$idBox = array();
+			$results = $dom->query('select[name="idbox_store_id"]');
 			$count = count($results);
-			if ($count != 0) {
-				$connection = false;
+			if ($count == 0) {
+				$idBox[] = "";
 			} else {
-				$results = $dom->query('#identitybox');
-				$idBox = array();
-
-				$results = $dom->query('select[name="idbox_store_id"]');
-				$count = count($results);
-				if ($count == 0) {
-					$idBox[] = "";
-				} else {
-					foreach ($results as $result) {
-						$optionList = $result->childNodes;
-						$optionNumber = $optionList->length;
-						for ($i = 0; $i < $optionNumber; $i++) {
-							$idBoxName = $optionList->item($i)->attributes->getNamedItem("value")->nodeValue;
-							if (!in_array($idBoxName, $idBox)) {
-								$idBox[] = $idBoxName;
-							}
+				foreach ($results as $result) {
+					$optionList = $result->childNodes;
+					$optionNumber = $optionList->length;
+					for ($i = 0; $i < $optionNumber; $i++) {
+						$idBoxName = $optionList->item($i)->attributes->getNamedItem("value")->nodeValue;
+						if (!in_array($idBoxName, $idBox)) {
+							$idBox[] = $idBoxName;
 						}
 					}
 				}
-
-				$this->_idBox = $idBox;
 			}
 
+			$this->_idBox = $idBox;
+			$connection = true;
 		}
 
 		return $connection;
@@ -288,7 +276,7 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 			//$dateArray = Oara_Utilities::daysOfDifference($dStartDate, $dEndDate);
 			//$dateArraySize = sizeof($dateArray);
 
-				
+
 			//for ($j = 0; $j < $dateArraySize; $j++) {
 			//echo "day ".$dateArray[$j]->toString("d")."\n";
 			//echo round(memory_get_usage(true) / 1048576, 2)." megabytes \n";
@@ -328,11 +316,12 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 		$urls = array();
 		$urls[] = new Oara_Curl_Request($this->_networkServer."/gp/associates/network/reports/report.html?", $valuesFromExport);
 		$exportReport = $this->_client->get($urls);
+		echo $exportReport[0];
 		if (preg_match("/Account Closed/", $exportReport[0])){
 			return array();
 		}
 		$exportData = str_getcsv($exportReport[0], "\n");
-		
+
 		$index = 2;
 		try{
 			$transactionExportArray = str_getcsv(str_replace("\"", "", $exportData[$index]), "\t");
@@ -340,7 +329,7 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 		} catch (Exception $e){
 			$index = 3;
 		}
-		
+
 		$num = count($exportData);
 		for ($i = $index; $i < $num; $i++) {
 			$transactionExportArray = str_getcsv(str_replace("\"", "", $exportData[$i]), "\t");

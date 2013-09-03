@@ -1,6 +1,4 @@
 <?php
-require_once "GoogleApiClient/src/Google_Client.php";
-require_once "GoogleApiClient/src/contrib/Google_StorageService.php";
 /**
  * API Class
  *
@@ -16,29 +14,55 @@ class Oara_Network_Publisher_GoogleAndroidPublisher extends Oara_Network {
 	 * Adsense Client
 	 * @var unknown_type
 	 */
-	private $_android = null;
+	private $_bucket = null;
 	/**
 	 * Constructor and Login
 	 * @param $buy
 	 * @return Oara_Network_Publisher_Buy_Api
 	 */
 	public function __construct($credentials) {
-		$client = new Google_Client();
-		$client->setApplicationName("AffJet");
-		$client->setClientId($credentials['clientId']);
-		$client->setClientSecret($credentials['clientSecret']);
-		$client->setAccessToken($credentials['oauth2']);
-		$client->setAccessType('offline');
-		$this->_client = $client;
-		$this->_android = new Google_StorageService($client);
+		$this->_bucket = $credentials["user"];
 	}
 	/**
 	 * Check the connection
 	 */
 	public function checkConnection() {
 		$connection = false;
-		if ($this->_client->getAccessToken()) {
-			$connection = true;
+		
+		$pathGsutil = realpath(dirname(__FILE__)).'/../../../../../gsutil/gsutil';
+		$dirDestination = realpath(dirname(__FILE__)).'/../../data/pdf';
+
+		$file = "{$this->_bucket}";
+
+		$pipes = null;
+		$descriptorspec = array(
+		0 => array('pipe', 'r'),
+		1 => array('pipe', 'w'),
+		2 => array('pipe', 'w')
+		);
+		$gsUtilReader = proc_open("$pathGsutil ls $file ", $descriptorspec, $pipes, null, null);
+		if (is_resource($gsUtilReader)) {
+			$pdfContent = '';
+			$error = '';
+			$stdin = $pipes[0];
+			$stdout = $pipes[1];
+			$stderr = $pipes[2];
+
+			while (!feof($stdout)) {
+				$pdfContent .= fgets($stdout);
+			}
+
+			while (!feof($stderr)) {
+				$error .= fgets($stderr);
+			}
+			fclose($stdin);
+			fclose($stdout);
+			fclose($stderr);
+			$exit_code = proc_close($gsUtilReader);
+			
+			if ($exit_code == 0){
+				$connection = true;
+			}
 		}
 		return $connection;
 	}
@@ -66,17 +90,75 @@ class Oara_Network_Publisher_GoogleAndroidPublisher extends Oara_Network {
 	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = array();
 
+		$pathGsutil = realpath(dirname(__FILE__)).'/../../../../../gsutil/gsutil';
+		$dirDestination = realpath(dirname(__FILE__)).'/../../data/pdf';
 
-		//$objects = $this->_android->objects->listObjects("gs://pubsite_prod_rev_06182089191095104578");
+		$file = "{$this->_bucket}/sales/salesreport_".$dStartDate->toString("yyyyMM").".zip";
 
+		$pipes = null;
+		$descriptorspec = array(
+		0 => array('pipe', 'r'),
+		1 => array('pipe', 'w'),
+		2 => array('pipe', 'w')
+		);
+		$gsUtilReader = proc_open("$pathGsutil cp $file ".$dirDestination."/report.zip", $descriptorspec, $pipes, null, null);
+		if (is_resource($gsUtilReader)) {
+			$pdfContent = '';
+			$error = '';
+			$stdin = $pipes[0];
+			$stdout = $pipes[1];
+			$stderr = $pipes[2];
 
-		/**
-		 * Google Cloud Storage API request to retrieve a bucket from your
-		 * Google Cloud Storage project.
-		 */
-		$bucket = $this->_android->buckets->get("pubsite_prod_rev_06182089191095104578");
-		$getBucketMarkup = generateMarkup('Get Bucket', $bucket);
+			while (!feof($stdout)) {
+				$pdfContent .= fgets($stdout);
+			}
 
+			while (!feof($stderr)) {
+				$error .= fgets($stderr);
+			}
+			fclose($stdin);
+			fclose($stdout);
+			fclose($stderr);
+			$exit_code = proc_close($gsUtilReader);
+		}
+		$zip = new \ZipArchive;
+		if ($zip->open($dirDestination."/report.zip") === TRUE) {
+			$zip->extractTo($dirDestination);
+			$zip->close();
+		} else {
+			return $totalTransactions;
+		}
+		unlink($dirDestination."/report.zip");
+		$salesReport = file_get_contents($dirDestination."/salesreport_".$dStartDate->toString("yyyyMM").".csv");
+		$salesReport = explode("\n", $salesReport);
+		for ($i = 1; $i < count($salesReport) - 1; $i++) {
+
+			$row = str_getcsv($salesReport[$i], ",");
+			$obj = array();
+			$obj['unique_id'] = $row[0].$row[3];
+			$obj['merchantId'] = "1";
+			$obj['date'] = $row[1]." 00:00:00";
+			$obj['custom_id'] = $row[5];
+			if ($row[6] == "com.petrolprices.app"){
+				$obj['amount'] = Oara_Utilities::parseDouble(2.99);
+				$obj['commission'] = Oara_Utilities::parseDouble(2.99);
+			} else if ($row[6] == "com.fubra.wac"){
+				if ($obj['date'] < "2013-04-23 00:00:00"){
+					$obj['amount'] = Oara_Utilities::parseDouble(0.69);
+					$obj['commission'] = Oara_Utilities::parseDouble(0.69);
+				} else {
+					$obj['amount'] = Oara_Utilities::parseDouble(1.49);
+					$obj['commission'] = Oara_Utilities::parseDouble(1.49);
+				}
+			}
+				
+				
+				
+			$obj['status'] = Oara_Utilities::STATUS_CONFIRMED;
+
+			$totalTransactions[] = $obj;
+		}
+		unlink($dirDestination."/salesreport_".$dStartDate->toString("yyyyMM").".csv");
 
 
 		return $totalTransactions;

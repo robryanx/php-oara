@@ -161,6 +161,7 @@ class Oara_Network_Publisher_CommissionJunction extends Oara_Network {
 	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($idMerchant, $dStartDate, $dEndDate)
 	 */
 	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+		
 		$totalTransactions = Array();
 		//The end data for the API has to be one day more
 		$iteration = self::calculeIterationNumber(count($merchantList), '20');

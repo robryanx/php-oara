@@ -77,31 +77,31 @@ class Oara_Network_Publisher_Belboon extends Oara_Network {
 
 
 		foreach ($result->handler->events as $event) {
-			if (in_array($event->programid,$merchantList)){
+			if (in_array($event["programid"],$merchantList)){
 				
 			
 				$transaction = Array();
-				$transaction['unique_id'] = $event->eventid;
-				$transaction['merchantId'] = $event->programid;
-				$transaction['date'] = $event->eventdate;
+				$transaction['unique_id'] = $event["eventid"];
+				$transaction['merchantId'] = $event["programid"];
+				$transaction['date'] = $event["eventdate"];
 
-				if ($event->subid != null) {
-					$transaction['custom_id'] = $event->subid;
+				if ($event["subid"] != null) {
+					$transaction['custom_id'] = $event["subid"];
 				}
 
-				if ($event->status == 'APPROVED') {
+				if ($event["eventstatus"] == 'APPROVED') {
 					$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
 				} else
-					if ($event->status == 'PENDING') {
+					if ($event["eventstatus"] == 'PENDING') {
 						$transaction['status'] = Oara_Utilities::STATUS_PENDING;
 					} else
-						if ($event->status == 'REJECTED') {
+						if ($event["eventstatus"] == 'REJECTED') {
 							$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
 						}
 
-				$transaction['amount'] = $event->netvalue;
+				$transaction['amount'] = $event["netvalue"];
 
-				$transaction['commission'] = $event->eventcommission;
+				$transaction['commission'] = $event["eventcommission"];
 				$totalTransactions[] = $transaction;
 			}
 		}

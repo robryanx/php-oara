@@ -1,6 +1,7 @@
 <?php
-require_once "GoogleApiClient/src/apiClient.php";
-require_once "GoogleApiClient/src/contrib/apiAnalyticsService.php";
+
+require_once "GoogleApiClient/src/Google_Client.php";
+require_once "GoogleApiClient/src/contrib/Google_AnalyticsService.php";
 /**
  * API Class
  *
@@ -64,14 +65,14 @@ class Oara_Network_Publisher_Taxis extends Oara_Network {
 	 * @return Oara_Network_Publisher_Taxis
 	 */
 	public function __construct($credentials) {
-		$client = new apiClient();
+		$client = new Google_Client();
 		$client->setApplicationName("AffJet");
 		$client->setClientId($credentials['clientId']);
 		$client->setClientSecret($credentials['clientSecret']);
 		$client->setAccessToken($credentials['oauth2']);
 		$client->setAccessType('offline');
 		$this->_client = $client;
-		$this->_analytics = new apiAnalyticsService($client);
+		$this->_analytics = new Google_AnalyticsService($client);
 
 		$clientOptions = array('url' => $credentials["paymentsUrl"], 'user' => $credentials["paymentsUser"], 'auth' => $credentials["paymentsAuth"]);
 
