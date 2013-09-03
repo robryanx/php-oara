@@ -15,11 +15,14 @@ class Oara_Network_Publisher_ItunesConnect extends Oara_Network {
 	 * @var unknown_type
 	 */
 	private $_client = null;
+	private $_constructResult = null;
+	private $_user = null;
+	private $_password = null;
 
 	/**
 	 * Constructor and Login
 	 * @param $credentials
-	 * @return Oara_Network_Publisher_Daisycon
+	 * @return Oara_Network_Publisher_itunesConnect
 	 */
 	public function __construct($credentials) {
 		$user = $credentials['user'];
@@ -35,7 +38,11 @@ class Oara_Network_Publisher_ItunesConnect extends Oara_Network {
 		new Oara_Curl_Parameter('theAuxValue', ""),
 		);
 
+		$this->_user = $user;
+		$this->_password = $password;
+		$this->_apiPassword = $credentials['apiPassword'];
 		$this->_client = new Oara_Curl_Access($url, $valuesLogin, $credentials);
+		$this->_constructResult =  $this->_client->getConstructResult();
 	}
 	/**
 	 * Check the connection
@@ -43,12 +50,8 @@ class Oara_Network_Publisher_ItunesConnect extends Oara_Network {
 	public function checkConnection() {
 
 		$connection = false;
-		$valuesFormExport = array();
-		$urls = array();
-		$urls[] = new Oara_Curl_Request('https://itunesconnect.apple.com/WebObjects/iTunesConnect.woa/wo/4.0', $valuesFormExport);
-		$exportReport = $this->_client->get($urls);
 
-		if (preg_match("/Sign Out/",$exportReport[0])) {
+		if (preg_match("/Sign Out/", $this->_constructResult)) {
 			$connection = true;
 		}
 		return $connection;
@@ -75,70 +78,221 @@ class Oara_Network_Publisher_ItunesConnect extends Oara_Network {
 	 */
 	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = array();
-		$dateArray = Oara_Utilities::daysOfDifference($dStartDate, $dEndDate);
-		$dateArraySize = sizeof($dateArray);
-		
-		$urls = array();
-		$urls[] = new Oara_Curl_Request('https://reportingitc.apple.com/dashboard.faces', array());
-		$exportReport = $this->_client->get($urls);
-		echo $exportReport[0];
 
 
-		/*
-		 theForm:listOfArrayVal=2013/09/01,2013/08/31,2013/08/30,2013/08/29,2013/08/28,2013/08/27,2013/08/26,2013/08/25,2013/08/24,2013/08/23,2013/08/22,2013/08/21,2013/08/20,2013/08/19,2013/08/18,2013/08/17,2013/08/16,2013/08/15,2013/08/14,2013/08/13,2013/08/12,2013/08/11,2013/08/10,2013/08/09,2013/08/08,2013/08/07,2013/08/06,2013/08/05,2013/08/04,2013/08/03
-		 theForm:weeklyDates=Aug 26 - Sep 01, 2013:2013/08/26;2013/09/01|Aug 19 - Aug 25, 2013:2013/08/19;2013/08/25|Aug 12 - Aug 18, 2013:2013/08/12;2013/08/18|Aug 05 - Aug 11, 2013:2013/08/05;2013/08/11|Jul 29 - Aug 04, 2013:2013/07/29;2013/08/04|Jul 22 - Jul 28, 2013:2013/07/22;2013/07/28|Jul 15 - Jul 21, 2013:2013/07/15;2013/07/21|Jul 08 - Jul 14, 2013:2013/07/08;2013/07/14|Jul 01 - Jul 07, 2013:2013/07/01;2013/07/07|Jun 24 - Jun 30, 2013:2013/06/24;2013/06/30|Jun 17 - Jun 23, 2013:2013/06/17;2013/06/23|Jun 10 - Jun 16, 2013:2013/06/10;2013/06/16|Jun 03 - Jun 09, 2013:2013/06/03;2013/06/09|May 27 - Jun 02, 2013:2013/05/27;2013/06/02|May 20 - May 26, 2013:2013/05/20;2013/05/26|May 13 - May 19, 2013:2013/05/13;2013/05/19|May 06 - May 12, 2013:2013/05/06;2013/05/12|Apr 29 - May 05, 2013:2013/04/29;2013/05/05|Apr 22 - Apr 28, 2013:2013/04/22;2013/04/28|Apr 15 - Apr 21, 2013:2013/04/15;2013/04/21|Apr 08 - Apr 14, 2013:2013/04/08;2013/04/14|Apr 01 - Apr 07, 2013:2013/04/01;2013/04/07|Mar 25 - Mar 31, 2013:2013/03/25;2013/03/31|Mar 18 - Mar 24, 2013:2013/03/18;2013/03/24|Mar 11 - Mar 17, 2013:2013/03/11;2013/03/17|Mar 04 - Mar 10, 2013:2013/03/04;2013/03/10
-		 theForm:monthlyDates=Jul 2013:2013/07/31,Jun 2013:2013/06/30,May 2013:2013/05/31,Apr 2013:2013/04/30,Mar 2013:2013/03/31,Feb 2013:2013/02/28,Jan 2013:2013/01/31,Dec 2012:2012/12/31,Nov 2012:2012/11/30,Oct 2012:2012/10/31,Sep 2012:2012/09/30,Aug 2012:2012/08/31
-		 theForm:yearlyDates=2012:2012/12/31,2011:2011/12/31,2010:2010/12/31,2009:2009/12/31,2008:2008/12/31
+		$pathAutoIngestion = realpath(dirname(__FILE__)).'/ItunesConnect';
+		$dirDestination = realpath(dirname(__FILE__)).'/../../data/pdf';
+
+		$now = new Zend_Date();
+		if ($now->toString("yyyy-MM") != $dStartDate->toString("yyyy-MM")){
 
 
-		 */
 
-		for ($j = 0; $j < $dateArraySize; $j++) {
-			$valuesFormExport = array();
-			$valuesFormExport[] = new Oara_Curl_Parameter('theForm', 'theForm');
-			$valuesFormExport[] = new Oara_Curl_Parameter('theForm:dateItem', $dateArray[$j]->toString("yyyy/MM/dd"));
-			$valuesFormExport[] = new Oara_Curl_Parameter('theForm:displayDate', $dateArray[$j]->toString("yyyy/MM/dd"));
-			$valuesFormExport[] = new Oara_Curl_Parameter('theForm:periodType', "1");
-			$valuesFormExport[] = new Oara_Curl_Parameter('theForm:listOfArrayVal', '2013/09/01,2013/08/31,2013/08/30,2013/08/29,2013/08/28,2013/08/27,2013/08/26,2013/08/25,2013/08/24,2013/08/23,2013/08/22,2013/08/21,2013/08/20,2013/08/19,2013/08/18,2013/08/17,2013/08/16,2013/08/15,2013/08/14,2013/08/13,2013/08/12,2013/08/11,2013/08/10,2013/08/09,2013/08/08,2013/08/07,2013/08/06,2013/08/05,2013/08/04,2013/08/03');
-			$valuesFormExport[] = new Oara_Curl_Parameter('theForm:fstWeekRange', '2013/03/04');
-			$valuesFormExport[] = new Oara_Curl_Parameter('theForm:selectedWeekFstDate', '');
-			$valuesFormExport[] = new Oara_Curl_Parameter('theForm:lastWeekRange', $dateArray[$j]->toString("yyyy/MM/dd"));
-			$valuesFormExport[] = new Oara_Curl_Parameter('theForm:weeklyDates', 'Aug 26 - Sep 01, 2013:2013/08/26;2013/09/01|Aug 19 - Aug 25, 2013:2013/08/19;2013/08/25|Aug 12 - Aug 18, 2013:2013/08/12;2013/08/18|Aug 05 - Aug 11, 2013:2013/08/05;2013/08/11|Jul 29 - Aug 04, 2013:2013/07/29;2013/08/04|Jul 22 - Jul 28, 2013:2013/07/22;2013/07/28|Jul 15 - Jul 21, 2013:2013/07/15;2013/07/21|Jul 08 - Jul 14, 2013:2013/07/08;2013/07/14|Jul 01 - Jul 07, 2013:2013/07/01;2013/07/07|Jun 24 - Jun 30, 2013:2013/06/24;2013/06/30|Jun 17 - Jun 23, 2013:2013/06/17;2013/06/23|Jun 10 - Jun 16, 2013:2013/06/10;2013/06/16|Jun 03 - Jun 09, 2013:2013/06/03;2013/06/09|May 27 - Jun 02, 2013:2013/05/27;2013/06/02|May 20 - May 26, 2013:2013/05/20;2013/05/26|May 13 - May 19, 2013:2013/05/13;2013/05/19|May 06 - May 12, 2013:2013/05/06;2013/05/12|Apr 29 - May 05, 2013:2013/04/29;2013/05/05|Apr 22 - Apr 28, 2013:2013/04/22;2013/04/28|Apr 15 - Apr 21, 2013:2013/04/15;2013/04/21|Apr 08 - Apr 14, 2013:2013/04/08;2013/04/14|Apr 01 - Apr 07, 2013:2013/04/01;2013/04/07|Mar 25 - Mar 31, 2013:2013/03/25;2013/03/31|Mar 18 - Mar 24, 2013:2013/03/18;2013/03/24|Mar 11 - Mar 17, 2013:2013/03/11;2013/03/17|Mar 04 - Mar 10, 2013:2013/03/04;2013/03/10');
-			$valuesFormExport[] = new Oara_Curl_Parameter('theForm:monthlyDates', 'Jul 2013:2013/07/31,Jun 2013:2013/06/30,May 2013:2013/05/31,Apr 2013:2013/04/30,Mar 2013:2013/03/31,Feb 2013:2013/02/28,Jan 2013:2013/01/31,Dec 2012:2012/12/31,Nov 2012:2012/11/30,Oct 2012:2012/10/31,Sep 2012:2012/09/30,Aug 2012:2012/08/31');
-			$valuesFormExport[] = new Oara_Curl_Parameter('theForm:yearlyDates', '2012:2012/12/31,2011:2011/12/31,2010:2010/12/31,2009:2009/12/31,2008:2008/12/31');
-			$valuesFormExport[] = new Oara_Curl_Parameter('theForm:listVendorHideId', '');
-			$valuesFormExport[] = new Oara_Curl_Parameter('theForm:defaultVendorSelected', '');
-			$valuesFormExport[] = new Oara_Curl_Parameter('javax.faces.ViewState', 'j_id26416:j_id26446');
-			$valuesFormExport[] = new Oara_Curl_Parameter('theForm:downloadLabel2', 'theForm:downloadLabel2');
+			$fileName = "S_M_{$this->_apiPassword}_".$dStartDate->toString("yyyyMM").".txt.gz";
 
-			$urls = array();
-			$urls[] = new Oara_Curl_Request('https://reportingitc.apple.com/sales.faces?', $valuesFormExport);
-			$exportReport = $this->_client->post($urls);
-			$dom = new Zend_Dom_Query($exportReport[0]);
-			$results = $dom->query('.coupon_code table');
-			if (count($results) > 0) {
-				$exportData = self::htmlToCsv(self::DOMinnerHTML($results->current()));
+			$pipes = null;
+			$descriptorspec = array(
+			0 => array('pipe', 'r'),
+			1 => array('pipe', 'w'),
+			2 => array('pipe', 'w')
+			);
 
-				for($z=1; $z < count($exportData)-2; $z++){
-					$transactionLineArray = str_getcsv($exportData[$z], ";");
-					$numberTransactions = (int)$transactionLineArray[1];
-					$commission = preg_replace("/[^0-9\.,]/", "", $transactionLineArray[2]);
-					$commission = ((double)$commission)/$numberTransactions;
-					for($y=0; $y < $numberTransactions; $y++){
-						$transaction = Array();
-						$transaction['merchantId'] = "1";
-						$transaction['date'] =  $dateArray[$j]->toString("yyyy-MM-dd HH:mm:ss");
-						$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
-						$transaction['amount'] = $commission;
-						$transaction['commission'] = $commission;
-						$totalTransactions[] = $transaction;
-					}
+			$command = "cd $dirDestination && java -classpath $pathAutoIngestion Autoingestion {$this->_user} {$this->_password} {$this->_apiPassword} S M S {$dStartDate->toString("yyyyMM")}";
+			$autoIngestionReader = proc_open($command, $descriptorspec, $pipes, null, null);
+			if (is_resource($autoIngestionReader)) {
+				$pdfContent = '';
+				$error = '';
+				$stdin = $pipes[0];
+				$stdout = $pipes[1];
+				$stderr = $pipes[2];
+
+				while (!feof($stdout)) {
+					$pdfContent .= fgets($stdout);
 				}
+
+				while (!feof($stderr)) {
+					$error .= fgets($stderr);
+				}
+				fclose($stdin);
+				fclose($stdout);
+				fclose($stderr);
+				$exit_code = proc_close($autoIngestionReader);
 			}
 
+			//Unzip file and return as XML
+
+			// Raising this value may increase performance
+			$buffer_size = 4096; // read 4kb at a time
+			$local_file = $dirDestination."/".$fileName;
+			$out_file_name = \str_replace('.gz', '', $local_file);
+
+			// Open our files (in binary mode)
+			$file = \gzopen($local_file, 'rb');
+			if ($file != null){
+
+
+				$out_file = \fopen($out_file_name, 'wb');
+
+				// Keep repeating until the end of the input file
+				while(!\gzeof($file)) {
+					// Read buffer-size bytes
+					// Both fwrite and gzread and binary-safe
+					\fwrite($out_file, \gzread($file, $buffer_size));
+				}
+
+				// Files are done, close files
+				\fclose($out_file);
+				\gzclose($file);
+
+
+				unlink($local_file);
+
+				$salesReport = file_get_contents($out_file_name);
+				$salesReport = explode("\n", $salesReport);
+				for ($i = 1; $i < count($salesReport) - 1; $i++) {
+
+					$row = str_getcsv($salesReport[$i], "\t");
+
+					for ($j=0 ; $j < $row[7]; $j++){
+							
+						$obj = array();
+						$obj['merchantId'] = "1";
+						$obj['date'] = $dEndDate->toString("yyyy-MM-dd")." 00:00:00";
+						$obj['custom_id'] = $row[4];
+						if ($row[2] == "FUBRA1PETROLPRICES1" || $row[2] == "com.fubra.petrolpricespro.subscriptionYear"){
+							$obj['amount'] = Oara_Utilities::parseDouble(2.99);
+							$obj['commission'] = Oara_Utilities::parseDouble(2.99);
+						} else if ($row[2] == "FUBRA1WORLDAIRPORTCODES1"){
+							if ($obj['date'] < "2013-04-23 00:00:00"){
+								$obj['amount'] = Oara_Utilities::parseDouble(0.69);
+								$obj['commission'] = Oara_Utilities::parseDouble(0.69);
+							} else {
+								$obj['amount'] = Oara_Utilities::parseDouble(1.49);
+								$obj['commission'] = Oara_Utilities::parseDouble(1.49);
+							}
+						} else {
+							throw new Exception("APP not found {$row[2]}");
+						}
+
+						$obj['status'] = Oara_Utilities::STATUS_CONFIRMED;
+
+						$totalTransactions[] = $obj;
+					}
+				}
+				unlink($out_file_name);
+
+			}
+		} else {
+
+			$dateArray = Oara_Utilities::daysOfDifference($dStartDate, $dEndDate);
+			$dateArraySize = sizeof($dateArray);
+			for ($z = 0; $z < $dateArraySize; $z++) {
+				$transactionDate = $dateArray[$z];
+
+
+				$fileName = "S_D_{$this->_apiPassword}_".$transactionDate->toString("yyyyMMdd").".txt.gz";
+
+				$pipes = null;
+				$descriptorspec = array(
+				0 => array('pipe', 'r'),
+				1 => array('pipe', 'w'),
+				2 => array('pipe', 'w')
+				);
+
+				$command = "cd $dirDestination && java -classpath $pathAutoIngestion Autoingestion {$this->_user} {$this->_password} {$this->_apiPassword} S D S {$transactionDate->toString("yyyyMMdd")}";
+				$autoIngestionReader = proc_open($command, $descriptorspec, $pipes, null, null);
+				if (is_resource($autoIngestionReader)) {
+					$pdfContent = '';
+					$error = '';
+					$stdin = $pipes[0];
+					$stdout = $pipes[1];
+					$stderr = $pipes[2];
+
+					while (!feof($stdout)) {
+						$pdfContent .= fgets($stdout);
+					}
+
+					while (!feof($stderr)) {
+						$error .= fgets($stderr);
+					}
+					fclose($stdin);
+					fclose($stdout);
+					fclose($stderr);
+					$exit_code = proc_close($autoIngestionReader);
+				}
+
+				//Unzip file and return as XML
+
+				// Raising this value may increase performance
+				$buffer_size = 4096; // read 4kb at a time
+				$local_file = $dirDestination."/".$fileName;
+				$out_file_name = \str_replace('.gz', '', $local_file);
+
+				// Open our files (in binary mode)
+				$file = \gzopen($local_file, 'rb');
+				if ($file != null){
+
+
+					$out_file = \fopen($out_file_name, 'wb');
+
+					// Keep repeating until the end of the input file
+					while(!\gzeof($file)) {
+						// Read buffer-size bytes
+						// Both fwrite and gzread and binary-safe
+						\fwrite($out_file, \gzread($file, $buffer_size));
+					}
+
+					// Files are done, close files
+					\fclose($out_file);
+					\gzclose($file);
+
+
+					unlink($local_file);
+
+					$salesReport = file_get_contents($out_file_name);
+					$salesReport = explode("\n", $salesReport);
+					for ($i = 1; $i < count($salesReport) - 1; $i++) {
+
+						$row = str_getcsv($salesReport[$i], "\t");
+
+						for ($j=0 ; $j < $row[7]; $j++){
+
+							$obj = array();
+							$obj['merchantId'] = "1";
+							$obj['date'] = $transactionDate->toString("yyyy-MM-dd")." 00:00:00";
+							$obj['custom_id'] = $row[4];
+							if ($row[2] == "FUBRA1PETROLPRICES1" || $row[2] == "com.fubra.petrolpricespro.subscriptionYear"){
+								$obj['amount'] = Oara_Utilities::parseDouble(2.99);
+								$obj['commission'] = Oara_Utilities::parseDouble(2.99);
+							} else if ($row[2] == "FUBRA1WORLDAIRPORTCODES1"){
+								if ($obj['date'] < "2013-04-23 00:00:00"){
+									$obj['amount'] = Oara_Utilities::parseDouble(0.69);
+									$obj['commission'] = Oara_Utilities::parseDouble(0.69);
+								} else {
+									$obj['amount'] = Oara_Utilities::parseDouble(1.49);
+									$obj['commission'] = Oara_Utilities::parseDouble(1.49);
+								}
+							} else {
+								throw new Exception("APP not found {$row[2]}");
+							}
+
+							$obj['status'] = Oara_Utilities::STATUS_CONFIRMED;
+
+							$totalTransactions[] = $obj;
+						}
+					}
+					unlink($out_file_name);
+
+
+
+
+
+				}
+
+
+			}
 
 		}
-
 		return $totalTransactions;
 	}
 
