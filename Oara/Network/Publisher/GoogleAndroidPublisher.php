@@ -80,25 +80,36 @@ class Oara_Network_Publisher_GoogleAndroidPublisher extends Oara_Network {
 		for ($i = 1; $i < count($salesReport) - 1; $i++) {
 
 			$row = str_getcsv($salesReport[$i], ",");
+			$sub = false;
+			if ($row[12] < 0){
+				$sub = true;
+			}
 			$obj = array();
 			$obj['unique_id'] = $row[0].$row[3];
 			$obj['merchantId'] = "1";
 			$obj['date'] = $row[1]." 00:00:00";
 			$obj['custom_id'] = $row[5];
+			$comission = 0.3;
 			if ($row[6] == "com.petrolprices.app"){
-				$obj['amount'] = Oara_Utilities::parseDouble(2.99);
-				$obj['commission'] = Oara_Utilities::parseDouble(2.99);
+				$value = 2.99;
+				$obj['amount'] = Oara_Utilities::parseDouble($value);
+				$obj['commission'] = Oara_Utilities::parseDouble($value - ($value*$comission));
 			} else if ($row[6] == "com.fubra.wac"){
 				if ($obj['date'] < "2013-04-23 00:00:00"){
-					$obj['amount'] = Oara_Utilities::parseDouble(0.69);
-					$obj['commission'] = Oara_Utilities::parseDouble(0.69);
+					$value = 0.69;
+					$obj['amount'] = Oara_Utilities::parseDouble($value);
+					$obj['commission'] = Oara_Utilities::parseDouble($value - ($value*$comission));
 				} else {
-					$obj['amount'] = Oara_Utilities::parseDouble(1.49);
-					$obj['commission'] = Oara_Utilities::parseDouble(1.49);
+					$value = 1.49;
+					$obj['amount'] = Oara_Utilities::parseDouble($value);
+					$obj['commission'] = Oara_Utilities::parseDouble($value - ($value*$comission));
 				}
 			}
 
-
+			if ($sub){
+				$obj['amount'] = -$obj['amount'];
+				$obj['commission'] = -$obj['commission'];
+			}
 
 			$obj['status'] = Oara_Utilities::STATUS_CONFIRMED;
 

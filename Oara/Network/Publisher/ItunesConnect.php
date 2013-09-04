@@ -52,7 +52,7 @@ class Oara_Network_Publisher_ItunesConnect extends Oara_Network {
 		$connection = false;
 
 		//if (preg_match("/Sign Out/", $this->_constructResult)) {
-			$connection = true;
+		$connection = true;
 		//}
 		return $connection;
 	}
@@ -80,7 +80,6 @@ class Oara_Network_Publisher_ItunesConnect extends Oara_Network {
 		$totalTransactions = array();
 
 
-		$pathAutoIngestion = realpath(dirname(__FILE__)).'/ItunesConnect';
 		$dirDestination = realpath(dirname(__FILE__)).'/../../data/pdf';
 
 		$now = new Zend_Date();
@@ -94,7 +93,7 @@ class Oara_Network_Publisher_ItunesConnect extends Oara_Network {
 			$local_file = $dirDestination."/".$fileName;
 			$url = "http://affjet.dc.fubra.net/tools/ItunesConnect/ic.php?user=".urlencode($this->_user)."&password=".urlencode($this->_password)."&apiPassword=".urlencode($this->_apiPassword)."&type=M&date=".$dStartDate->toString("yyyyMM");
 			\file_put_contents($local_file, file_get_contents($url));
-			
+
 			$out_file_name = \str_replace('.gz', '', $local_file);
 
 			// Open our files (in binary mode)
@@ -124,25 +123,40 @@ class Oara_Network_Publisher_ItunesConnect extends Oara_Network {
 
 					$row = str_getcsv($salesReport[$i], "\t");
 
+					$sub = false;
+					if ($row[7] < 0){
+						$sub = true;
+						$row[7] = abs($row[7]);
+					}
 					for ($j=0 ; $j < $row[7]; $j++){
-							
+
 						$obj = array();
 						$obj['merchantId'] = "1";
 						$obj['date'] = $dEndDate->toString("yyyy-MM-dd")." 00:00:00";
 						$obj['custom_id'] = $row[4];
+						$comission = 0.3;
 						if ($row[2] == "FUBRA1PETROLPRICES1" || $row[2] == "com.fubra.petrolpricespro.subscriptionYear"){
-							$obj['amount'] = Oara_Utilities::parseDouble(2.99);
-							$obj['commission'] = Oara_Utilities::parseDouble(2.99);
+							$value = 2.99;
+							$obj['amount'] = Oara_Utilities::parseDouble($value);
+							$obj['commission'] = Oara_Utilities::parseDouble($value - ($value*$comission));
 						} else if ($row[2] == "FUBRA1WORLDAIRPORTCODES1"){
+
 							if ($obj['date'] < "2013-04-23 00:00:00"){
-								$obj['amount'] = Oara_Utilities::parseDouble(0.69);
-								$obj['commission'] = Oara_Utilities::parseDouble(0.69);
+								$value = 0.69;
+								$obj['amount'] = Oara_Utilities::parseDouble($value);
+								$obj['commission'] = Oara_Utilities::parseDouble($value - ($value*$comission));
 							} else {
-								$obj['amount'] = Oara_Utilities::parseDouble(1.49);
-								$obj['commission'] = Oara_Utilities::parseDouble(1.49);
+								$value = 1.49;
+								$obj['amount'] = Oara_Utilities::parseDouble($value);
+								$obj['commission'] = Oara_Utilities::parseDouble($value - ($value*$comission));
 							}
 						} else {
 							throw new Exception("APP not found {$row[2]}");
+						}
+							
+						if ($sub){
+							$obj['amount'] = -$obj['amount'];
+							$obj['commission'] = -$obj['commission'];
 						}
 
 						$obj['status'] = Oara_Utilities::STATUS_CONFIRMED;
@@ -151,8 +165,8 @@ class Oara_Network_Publisher_ItunesConnect extends Oara_Network {
 					}
 				}
 				unlink($out_file_name);
-
 			}
+
 		} else {
 
 			$dateArray = Oara_Utilities::daysOfDifference($dStartDate, $dEndDate);
@@ -163,13 +177,13 @@ class Oara_Network_Publisher_ItunesConnect extends Oara_Network {
 
 				$fileName = "S_D_{$this->_apiPassword}_".$transactionDate->toString("yyyyMMdd").".txt.gz";
 
-				
+
 				// Raising this value may increase performance
 				$buffer_size = 4096; // read 4kb at a time
 				$local_file = $dirDestination."/".$fileName;
-				$url = "http://affjet.dc.fubra.net/tools/ItunesConnect/ic.php?user=".urlencode($this->_user)."&password=".urlencode($this->_password)."&apiPassword=".urlencode($this->_apiPassword)."&type=D&date=".$dStartDate->toString("yyyyMMdd");
+				$url = "http://affjet.dc.fubra.net/tools/ItunesConnect/ic.php?user=".urlencode($this->_user)."&password=".urlencode($this->_password)."&apiPassword=".urlencode($this->_apiPassword)."&type=D&date=".$transactionDate->toString("yyyyMMdd");
 				\file_put_contents($local_file, file_get_contents($url));
-				
+
 				$out_file_name = \str_replace('.gz', '', $local_file);
 
 				// Open our files (in binary mode)
@@ -199,6 +213,11 @@ class Oara_Network_Publisher_ItunesConnect extends Oara_Network {
 
 						$row = str_getcsv($salesReport[$i], "\t");
 
+						$sub = false;
+						if ($row[7] < 0){
+							$sub = true;
+							$row[7] = abs($row[7]);
+						}
 						for ($j=0 ; $j < $row[7]; $j++){
 
 							$obj = array();
@@ -206,18 +225,29 @@ class Oara_Network_Publisher_ItunesConnect extends Oara_Network {
 							$obj['date'] = $transactionDate->toString("yyyy-MM-dd")." 00:00:00";
 							$obj['custom_id'] = $row[4];
 							if ($row[2] == "FUBRA1PETROLPRICES1" || $row[2] == "com.fubra.petrolpricespro.subscriptionYear"){
-								$obj['amount'] = Oara_Utilities::parseDouble(2.99);
-								$obj['commission'] = Oara_Utilities::parseDouble(2.99);
+								$value = 2.99;
+								$comission = 0.3;
+								$obj['amount'] = Oara_Utilities::parseDouble($value);
+								$obj['commission'] = Oara_Utilities::parseDouble($value - ($value*$comission));
 							} else if ($row[2] == "FUBRA1WORLDAIRPORTCODES1"){
+
+								$comission = 0.3;
 								if ($obj['date'] < "2013-04-23 00:00:00"){
-									$obj['amount'] = Oara_Utilities::parseDouble(0.69);
-									$obj['commission'] = Oara_Utilities::parseDouble(0.69);
+									$value = 0.69;
+									$obj['amount'] = Oara_Utilities::parseDouble($value);
+									$obj['commission'] = Oara_Utilities::parseDouble($value - ($value*$comission));
 								} else {
-									$obj['amount'] = Oara_Utilities::parseDouble(1.49);
-									$obj['commission'] = Oara_Utilities::parseDouble(1.49);
+									$value = 1.49;
+									$obj['amount'] = Oara_Utilities::parseDouble($value);
+									$obj['commission'] = Oara_Utilities::parseDouble($value - ($value*$comission));
 								}
 							} else {
 								throw new Exception("APP not found {$row[2]}");
+							}
+
+							if ($sub){
+								$obj['amount'] = -$obj['amount'];
+								$obj['commission'] = -$obj['commission'];
 							}
 
 							$obj['status'] = Oara_Utilities::STATUS_CONFIRMED;
