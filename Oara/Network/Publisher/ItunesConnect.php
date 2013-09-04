@@ -41,8 +41,8 @@ class Oara_Network_Publisher_ItunesConnect extends Oara_Network {
 		$this->_user = $user;
 		$this->_password = $password;
 		$this->_apiPassword = $credentials['apiPassword'];
-		$this->_client = new Oara_Curl_Access($url, $valuesLogin, $credentials);
-		$this->_constructResult =  $this->_client->getConstructResult();
+		//$this->_client = new Oara_Curl_Access($url, $valuesLogin, $credentials);
+		//$this->_constructResult =  $this->_client->getConstructResult();
 	}
 	/**
 	 * Check the connection
@@ -51,9 +51,9 @@ class Oara_Network_Publisher_ItunesConnect extends Oara_Network {
 
 		$connection = false;
 
-		if (preg_match("/Sign Out/", $this->_constructResult)) {
+		//if (preg_match("/Sign Out/", $this->_constructResult)) {
 			$connection = true;
-		}
+		//}
 		return $connection;
 	}
 	/**
@@ -89,41 +89,12 @@ class Oara_Network_Publisher_ItunesConnect extends Oara_Network {
 
 
 			$fileName = "S_M_{$this->_apiPassword}_".$dStartDate->toString("yyyyMM").".txt.gz";
-
-			$pipes = null;
-			$descriptorspec = array(
-			0 => array('pipe', 'r'),
-			1 => array('pipe', 'w'),
-			2 => array('pipe', 'w')
-			);
-
-			$command = "cd $dirDestination && java -classpath $pathAutoIngestion Autoingestion {$this->_user} {$this->_password} {$this->_apiPassword} S M S {$dStartDate->toString("yyyyMM")}";
-			$autoIngestionReader = proc_open($command, $descriptorspec, $pipes, null, null);
-			if (is_resource($autoIngestionReader)) {
-				$pdfContent = '';
-				$error = '';
-				$stdin = $pipes[0];
-				$stdout = $pipes[1];
-				$stderr = $pipes[2];
-
-				while (!feof($stdout)) {
-					$pdfContent .= fgets($stdout);
-				}
-
-				while (!feof($stderr)) {
-					$error .= fgets($stderr);
-				}
-				fclose($stdin);
-				fclose($stdout);
-				fclose($stderr);
-				$exit_code = proc_close($autoIngestionReader);
-			}
-
-			//Unzip file and return as XML
-
 			// Raising this value may increase performance
 			$buffer_size = 4096; // read 4kb at a time
 			$local_file = $dirDestination."/".$fileName;
+			$url = "http://affjet.dc.fubra.net/tools/ItunesConnect/ic.php?user={$this->_user}&password={$this->_password}&apiPassword={$this->_apiPassword}&type=M&date=".$dStartDate->toString("yyyyMM");
+			\file_put_contents($local_file, file_get_contents($url));
+			
 			$out_file_name = \str_replace('.gz', '', $local_file);
 
 			// Open our files (in binary mode)
@@ -192,40 +163,13 @@ class Oara_Network_Publisher_ItunesConnect extends Oara_Network {
 
 				$fileName = "S_D_{$this->_apiPassword}_".$transactionDate->toString("yyyyMMdd").".txt.gz";
 
-				$pipes = null;
-				$descriptorspec = array(
-				0 => array('pipe', 'r'),
-				1 => array('pipe', 'w'),
-				2 => array('pipe', 'w')
-				);
-
-				$command = "cd $dirDestination && java -classpath $pathAutoIngestion Autoingestion {$this->_user} {$this->_password} {$this->_apiPassword} S D S {$transactionDate->toString("yyyyMMdd")}";
-				$autoIngestionReader = proc_open($command, $descriptorspec, $pipes, null, null);
-				if (is_resource($autoIngestionReader)) {
-					$pdfContent = '';
-					$error = '';
-					$stdin = $pipes[0];
-					$stdout = $pipes[1];
-					$stderr = $pipes[2];
-
-					while (!feof($stdout)) {
-						$pdfContent .= fgets($stdout);
-					}
-
-					while (!feof($stderr)) {
-						$error .= fgets($stderr);
-					}
-					fclose($stdin);
-					fclose($stdout);
-					fclose($stderr);
-					$exit_code = proc_close($autoIngestionReader);
-				}
-
-				//Unzip file and return as XML
-
+				
 				// Raising this value may increase performance
 				$buffer_size = 4096; // read 4kb at a time
 				$local_file = $dirDestination."/".$fileName;
+				$url = "http://affjet.dc.fubra.net/tools/ItunesConnect/ic.php?user={$this->_user}&password={$this->_password}&apiPassword={$this->_apiPassword}&type=D&date=".$dStartDate->toString("yyyyMMdd");
+				\file_put_contents($local_file, file_get_contents($url));
+				
 				$out_file_name = \str_replace('.gz', '', $local_file);
 
 				// Open our files (in binary mode)
@@ -282,10 +226,6 @@ class Oara_Network_Publisher_ItunesConnect extends Oara_Network {
 						}
 					}
 					unlink($out_file_name);
-
-
-
-
 
 				}
 
