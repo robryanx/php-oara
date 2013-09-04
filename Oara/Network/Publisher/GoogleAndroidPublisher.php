@@ -28,41 +28,11 @@ class Oara_Network_Publisher_GoogleAndroidPublisher extends Oara_Network {
 	 */
 	public function checkConnection() {
 		$connection = false;
-		
-		$pathGsutil = realpath(dirname(__FILE__)).'/../../../../../gsutil/gsutil';
-		$dirDestination = realpath(dirname(__FILE__)).'/../../data/pdf';
 
-		$file = "{$this->_bucket}";
-
-		$pipes = null;
-		$descriptorspec = array(
-		0 => array('pipe', 'r'),
-		1 => array('pipe', 'w'),
-		2 => array('pipe', 'w')
-		);
-		$gsUtilReader = proc_open("$pathGsutil ls $file ", $descriptorspec, $pipes, null, null);
-		if (is_resource($gsUtilReader)) {
-			$pdfContent = '';
-			$error = '';
-			$stdin = $pipes[0];
-			$stdout = $pipes[1];
-			$stderr = $pipes[2];
-
-			while (!feof($stdout)) {
-				$pdfContent .= fgets($stdout);
-			}
-
-			while (!feof($stderr)) {
-				$error .= fgets($stderr);
-			}
-			fclose($stdin);
-			fclose($stdout);
-			fclose($stderr);
-			$exit_code = proc_close($gsUtilReader);
-			
-			if ($exit_code == 0){
-				$connection = true;
-			}
+		$url = "http://affjet.dc.fubra.net/tools/gsutil/gs.php?bucket=".urlencode($this->_bucket)."&type=ls";
+		$return = file_get_contents($url);
+		if (preg_match("/ls works/",$return)){
+			$connection = true;
 		}
 		return $connection;
 	}
@@ -94,33 +64,9 @@ class Oara_Network_Publisher_GoogleAndroidPublisher extends Oara_Network {
 		$dirDestination = realpath(dirname(__FILE__)).'/../../data/pdf';
 
 		$file = "{$this->_bucket}/sales/salesreport_".$dStartDate->toString("yyyyMM").".zip";
+		$url = "http://affjet.dc.fubra.net/tools/gsutil/gs.php?bucket=".urlencode($file)."&type=cp";
+		\file_put_contents($dirDestination."/report.zip", file_get_contents($url));
 
-		$pipes = null;
-		$descriptorspec = array(
-		0 => array('pipe', 'r'),
-		1 => array('pipe', 'w'),
-		2 => array('pipe', 'w')
-		);
-		$gsUtilReader = proc_open("$pathGsutil cp $file ".$dirDestination."/report.zip", $descriptorspec, $pipes, null, null);
-		if (is_resource($gsUtilReader)) {
-			$pdfContent = '';
-			$error = '';
-			$stdin = $pipes[0];
-			$stdout = $pipes[1];
-			$stderr = $pipes[2];
-
-			while (!feof($stdout)) {
-				$pdfContent .= fgets($stdout);
-			}
-
-			while (!feof($stderr)) {
-				$error .= fgets($stderr);
-			}
-			fclose($stdin);
-			fclose($stdout);
-			fclose($stderr);
-			$exit_code = proc_close($gsUtilReader);
-		}
 		$zip = new \ZipArchive;
 		if ($zip->open($dirDestination."/report.zip") === TRUE) {
 			$zip->extractTo($dirDestination);
@@ -151,9 +97,9 @@ class Oara_Network_Publisher_GoogleAndroidPublisher extends Oara_Network {
 					$obj['commission'] = Oara_Utilities::parseDouble(1.49);
 				}
 			}
-				
-				
-				
+
+
+
 			$obj['status'] = Oara_Utilities::STATUS_CONFIRMED;
 
 			$totalTransactions[] = $obj;

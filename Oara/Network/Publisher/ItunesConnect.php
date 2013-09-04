@@ -92,7 +92,7 @@ class Oara_Network_Publisher_ItunesConnect extends Oara_Network {
 			// Raising this value may increase performance
 			$buffer_size = 4096; // read 4kb at a time
 			$local_file = $dirDestination."/".$fileName;
-			$url = "http://affjet.dc.fubra.net/tools/ItunesConnect/ic.php?user={$this->_user}&password={$this->_password}&apiPassword={$this->_apiPassword}&type=M&date=".$dStartDate->toString("yyyyMM");
+			$url = "http://affjet.dc.fubra.net/tools/ItunesConnect/ic.php?user=".urlencode($this->_user)."&password=".urlencode($this->_password)."&apiPassword=".urlencode($this->_apiPassword)."&type=M&date=".$dStartDate->toString("yyyyMM");
 			\file_put_contents($local_file, file_get_contents($url));
 			
 			$out_file_name = \str_replace('.gz', '', $local_file);
@@ -167,7 +167,7 @@ class Oara_Network_Publisher_ItunesConnect extends Oara_Network {
 				// Raising this value may increase performance
 				$buffer_size = 4096; // read 4kb at a time
 				$local_file = $dirDestination."/".$fileName;
-				$url = "http://affjet.dc.fubra.net/tools/ItunesConnect/ic.php?user={$this->_user}&password={$this->_password}&apiPassword={$this->_apiPassword}&type=D&date=".$dStartDate->toString("yyyyMMdd");
+				$url = "http://affjet.dc.fubra.net/tools/ItunesConnect/ic.php?user=".urlencode($this->_user)."&password=".urlencode($this->_password)."&apiPassword=".urlencode($this->_apiPassword)."&type=D&date=".$dStartDate->toString("yyyyMMdd");
 				\file_put_contents($local_file, file_get_contents($url));
 				
 				$out_file_name = \str_replace('.gz', '', $local_file);
