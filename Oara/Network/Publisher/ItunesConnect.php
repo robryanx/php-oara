@@ -123,45 +123,49 @@ class Oara_Network_Publisher_ItunesConnect extends Oara_Network {
 
 					$row = str_getcsv($salesReport[$i], "\t");
 
-					$sub = false;
-					if ($row[7] < 0){
-						$sub = true;
-						$row[7] = abs($row[7]);
-					}
-					for ($j=0 ; $j < $row[7]; $j++){
+					if ($row[15] != 0){
 
-						$obj = array();
-						$obj['merchantId'] = "1";
-						$obj['date'] = $dEndDate->toString("yyyy-MM-dd")." 00:00:00";
-						$obj['custom_id'] = $row[4];
-						$comission = 0.3;
-						if ($row[2] == "FUBRA1PETROLPRICES1" || $row[2] == "com.fubra.petrolpricespro.subscriptionYear"){
-							$value = 2.99;
-							$obj['amount'] = Oara_Utilities::parseDouble($value);
-							$obj['commission'] = Oara_Utilities::parseDouble($value - ($value*$comission));
-						} else if ($row[2] == "FUBRA1WORLDAIRPORTCODES1"){
-
-							if ($obj['date'] < "2013-04-23 00:00:00"){
-								$value = 0.69;
-								$obj['amount'] = Oara_Utilities::parseDouble($value);
-								$obj['commission'] = Oara_Utilities::parseDouble($value - ($value*$comission));
-							} else {
-								$value = 1.49;
-								$obj['amount'] = Oara_Utilities::parseDouble($value);
-								$obj['commission'] = Oara_Utilities::parseDouble($value - ($value*$comission));
-							}
-						} else {
-							throw new Exception("APP not found {$row[2]}");
-						}
 							
-						if ($sub){
-							$obj['amount'] = -$obj['amount'];
-							$obj['commission'] = -$obj['commission'];
+						$sub = false;
+						if ($row[7] < 0){
+							$sub = true;
+							$row[7] = abs($row[7]);
 						}
+						for ($j = 0 ; $j < $row[7]; $j++){
 
-						$obj['status'] = Oara_Utilities::STATUS_CONFIRMED;
+							$obj = array();
+							$obj['merchantId'] = "1";
+							$obj['date'] = $dEndDate->toString("yyyy-MM-dd")." 00:00:00";
+							$obj['custom_id'] = $row[4];
+							$comission = 0.3;
+							if ($row[2] == "FUBRA1PETROLPRICES1" || $row[2] == "com.fubra.petrolpricespro.subscriptionYear"){
+								$value = 2.99;
+								$obj['amount'] = Oara_Utilities::parseDouble($value);
+								$obj['commission'] = Oara_Utilities::parseDouble($value - ($value*$comission));
+							} else if ($row[2] == "FUBRA1WORLDAIRPORTCODES1"){
 
-						$totalTransactions[] = $obj;
+								if ($obj['date'] < "2013-04-23 00:00:00"){
+									$value = 0.69;
+									$obj['amount'] = Oara_Utilities::parseDouble($value);
+									$obj['commission'] = Oara_Utilities::parseDouble($value - ($value*$comission));
+								} else {
+									$value = 1.49;
+									$obj['amount'] = Oara_Utilities::parseDouble($value);
+									$obj['commission'] = Oara_Utilities::parseDouble($value - ($value*$comission));
+								}
+							} else {
+								throw new Exception("APP not found {$row[2]}");
+							}
+
+							if ($sub){
+								$obj['amount'] = -$obj['amount'];
+								$obj['commission'] = -$obj['commission'];
+							}
+
+							$obj['status'] = Oara_Utilities::STATUS_CONFIRMED;
+
+							$totalTransactions[] = $obj;
+						}
 					}
 				}
 				unlink($out_file_name);
@@ -213,46 +217,49 @@ class Oara_Network_Publisher_ItunesConnect extends Oara_Network {
 
 						$row = str_getcsv($salesReport[$i], "\t");
 
-						$sub = false;
-						if ($row[7] < 0){
-							$sub = true;
-							$row[7] = abs($row[7]);
-						}
-						for ($j=0 ; $j < $row[7]; $j++){
+						if ($row[15] != 0){
 
-							$obj = array();
-							$obj['merchantId'] = "1";
-							$obj['date'] = $transactionDate->toString("yyyy-MM-dd")." 00:00:00";
-							$obj['custom_id'] = $row[4];
-							if ($row[2] == "FUBRA1PETROLPRICES1" || $row[2] == "com.fubra.petrolpricespro.subscriptionYear"){
-								$value = 2.99;
-								$comission = 0.3;
-								$obj['amount'] = Oara_Utilities::parseDouble($value);
-								$obj['commission'] = Oara_Utilities::parseDouble($value - ($value*$comission));
-							} else if ($row[2] == "FUBRA1WORLDAIRPORTCODES1"){
+							$sub = false;
+							if ($row[7] < 0){
+								$sub = true;
+								$row[7] = abs($row[7]);
+							}
+							for ($j=0 ; $j < $row[7]; $j++){
 
-								$comission = 0.3;
-								if ($obj['date'] < "2013-04-23 00:00:00"){
-									$value = 0.69;
+								$obj = array();
+								$obj['merchantId'] = "1";
+								$obj['date'] = $transactionDate->toString("yyyy-MM-dd")." 00:00:00";
+								$obj['custom_id'] = $row[4];
+								if ($row[2] == "FUBRA1PETROLPRICES1" || $row[2] == "com.fubra.petrolpricespro.subscriptionYear"){
+									$value = 2.99;
+									$comission = 0.3;
 									$obj['amount'] = Oara_Utilities::parseDouble($value);
 									$obj['commission'] = Oara_Utilities::parseDouble($value - ($value*$comission));
+								} else if ($row[2] == "FUBRA1WORLDAIRPORTCODES1"){
+
+									$comission = 0.3;
+									if ($obj['date'] < "2013-04-23 00:00:00"){
+										$value = 0.69;
+										$obj['amount'] = Oara_Utilities::parseDouble($value);
+										$obj['commission'] = Oara_Utilities::parseDouble($value - ($value*$comission));
+									} else {
+										$value = 1.49;
+										$obj['amount'] = Oara_Utilities::parseDouble($value);
+										$obj['commission'] = Oara_Utilities::parseDouble($value - ($value*$comission));
+									}
 								} else {
-									$value = 1.49;
-									$obj['amount'] = Oara_Utilities::parseDouble($value);
-									$obj['commission'] = Oara_Utilities::parseDouble($value - ($value*$comission));
+									throw new Exception("APP not found {$row[2]}");
 								}
-							} else {
-								throw new Exception("APP not found {$row[2]}");
+
+								if ($sub){
+									$obj['amount'] = -$obj['amount'];
+									$obj['commission'] = -$obj['commission'];
+								}
+
+								$obj['status'] = Oara_Utilities::STATUS_CONFIRMED;
+
+								$totalTransactions[] = $obj;
 							}
-
-							if ($sub){
-								$obj['amount'] = -$obj['amount'];
-								$obj['commission'] = -$obj['commission'];
-							}
-
-							$obj['status'] = Oara_Utilities::STATUS_CONFIRMED;
-
-							$totalTransactions[] = $obj;
 						}
 					}
 					unlink($out_file_name);
