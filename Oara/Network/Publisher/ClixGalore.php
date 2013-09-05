@@ -49,16 +49,19 @@ class Oara_Network_Publisher_ClixGalore extends Oara_Network {
 		$password = $credentials['password'];
 
 		$loginUrl = 'https://www.clixgalore.co.uk/MemberLogin.aspx';
-
 		$valuesLogin = array(new Oara_Curl_Parameter('txt_UserName', $user),
-			new Oara_Curl_Parameter('txt_Password', $password),
-			new Oara_Curl_Parameter('cmd_login.x', '29'),
-			new Oara_Curl_Parameter('cmd_login.y', '8'),
-			new Oara_Curl_Parameter('__EVENTTARGET', ''),
-			new Oara_Curl_Parameter('__EVENTARGUMENT', ''),
-			new Oara_Curl_Parameter('__VIEWSTATE', '/wEPDwUKMTA1OTk3NzIzMA9kFgJmD2QWAgIBD2QWCgIBD2QWAmYPZBYCZg9kFggCAQ9kFgJmD2QWBGYPZBYCAgEPDxYCHgtOYXZpZ2F0ZVVybAUbaHR0cDovL3d3dy5jbGl4Z2Fsb3JlLmNvLnVrZGQCAQ9kFgwCAQ8PFgIfAAUkaHR0cDovL3d3dy5jbGl4Z2Fsb3JlLmNvLnVrL2ZhcS5hc3B4ZGQCAw8PFgIfAAUraHR0cDovL3d3dy5jbGl4Z2Fsb3JlLmNvLnVrL3Byb21vdGlvbnMuYXNweGRkAgUPDxYCHwAFKWh0dHA6Ly93d3cuY2xpeGdhbG9yZS5jby51ay9hZ2VuY2llcy5hc3B4ZGQCBw8PFgIfAAUsaHR0cDovL3d3dy5jbGl4Z2Fsb3JlLmNvLnVrL3Rlc3RpbW9uaWFsLmFzcHhkZAIJDw8WAh8ABSlodHRwOi8vd3d3LmNsaXhnYWxvcmUuY28udWsvc2hvd2Nhc2UuYXNweGRkAgsPDxYCHwAFKGh0dHA6Ly93d3cuY2xpeGdhbG9yZS5jby51ay9kZWZhdWx0LmFzcHhkZAIWD2QWAgIBD2QWAgIBDw8WAh8ABShodHRwOi8vd3d3LmNsaXhnYWxvcmUuY28udWsvRGVmYXVsdC5hc3B4ZGQCGA8PFgIfAAUyaHR0cDovL3d3dy5jbGl4Z2Fsb3JlLmNvLnVrL0ZvcmdvdHRlblBhc3N3b3JkLmFzcHhkZAIcD2QWAmYPZBYCZg9kFgJmDw8WAh4EVGV4dAUOVW5pdGVkIEtpbmdkb21kZAIDDw8WAh8BZWRkAgUPDxYCHwFlZGQCBw8PFgIfAWRkZAIJDw8WAh8BZWRkGAEFHl9fQ29udHJvbHNSZXF1aXJlUG9zdEJhY2tLZXlfXxYDBQxjaGtfcmVtZW1iZXIFCmNoa19zaW1wbGUFCWNtZF9sb2dpbja60SmzrLTAPiJpzFev22X7LNs6'),
-			new Oara_Curl_Parameter('__EVENTVALIDATION', '/wEWBgLOvIHJCwL3xJvhBALS9cL8AgKQr7yfDwKls5buAwKD9tBOvKXLmprcxw0JvutQTGgp/77Nv8Q='),
+		new Oara_Curl_Parameter('txt_Password', $password),
+		new Oara_Curl_Parameter('cmd_login.x', '29'),
+		new Oara_Curl_Parameter('cmd_login.y', '8')
 		);
+		$dom = new Zend_Dom_Query(file_get_contents("https://www.clixgalore.co.uk/Memberlogin.aspx"));
+		$results = $dom->query('input[type="hidden"]');
+		$hiddenValue = null;
+		foreach ($results as $result){
+			$name = $result->attributes->getNamedItem("name")->nodeValue;
+			$hiddenValue = $result->attributes->getNamedItem("value")->nodeValue;
+			$valuesLogin[] = new Oara_Curl_Parameter($name, $hiddenValue);
+		}
 
 		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
 
@@ -86,18 +89,18 @@ class Oara_Network_Publisher_ClixGalore extends Oara_Network {
 		$this->_exportMerchantParameters = array();
 
 		$this->_exportTransactionParameters = array(new Oara_Curl_Parameter('AfID', '0'),
-			new Oara_Curl_Parameter('S', ''),
-			new Oara_Curl_Parameter('ST', '2'),
-			new Oara_Curl_Parameter('Period', '6'),
-			new Oara_Curl_Parameter('AdID', '0'),
-			new Oara_Curl_Parameter('B', '2')
+		new Oara_Curl_Parameter('S', ''),
+		new Oara_Curl_Parameter('ST', '2'),
+		new Oara_Curl_Parameter('Period', '6'),
+		new Oara_Curl_Parameter('AdID', '0'),
+		new Oara_Curl_Parameter('B', '2')
 		);
 
 		$this->_exportOverviewParameters = array(new Oara_Curl_Parameter('WNO', '0')
 		);
 
 		$this->_exportPaymentParameters = array(new Oara_Curl_Parameter('dd_Period', '0'),
-			new Oara_Curl_Parameter('cmd_retrieve', 'Retrieve Payments')
+		new Oara_Curl_Parameter('cmd_retrieve', 'Retrieve Payments')
 		);
 
 	}
@@ -182,12 +185,12 @@ class Oara_Network_Publisher_ClixGalore extends Oara_Network {
 					if ($status == 1) {
 						$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
 					} else
-						if ($status == 2) {
-							$transaction['status'] = Oara_Utilities::STATUS_PENDING;
-						} else
-							if ($status == 0) {
-								$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
-							}
+					if ($status == 2) {
+						$transaction['status'] = Oara_Utilities::STATUS_PENDING;
+					} else
+					if ($status == 0) {
+						$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
+					}
 
 					if (preg_match("/[0-9]*,?[0-9]*\.?[0-9]+/", $transactionExportArray[4], $matches)) {
 						$transaction['amount'] = Oara_Utilities::parseDouble($matches[0]);
@@ -273,18 +276,18 @@ class Oara_Network_Publisher_ClixGalore extends Oara_Network {
 								$obj['transaction_confirmed_value'] += $transaction['amount'];
 								$obj['transaction_confirmed_commission'] += $transaction['commission'];
 							} else
-								if ($transaction['status'] == Oara_Utilities::STATUS_PENDING) {
-									$obj['transaction_pending_value'] += $transaction['amount'];
-									$obj['transaction_pending_commission'] += $transaction['commission'];
-								} else
-									if ($transaction['status'] == Oara_Utilities::STATUS_DECLINED) {
-										$obj['transaction_declined_value'] += $transaction['amount'];
-										$obj['transaction_declined_commission'] += $transaction['commission'];
-									} else
-										if ($transaction['status'] == Oara_Utilities::STATUS_PAID) {
-											$obj['transaction_paid_value'] += $transaction['amount'];
-											$obj['transaction_paid_commission'] += $transaction['commission'];
-										}
+							if ($transaction['status'] == Oara_Utilities::STATUS_PENDING) {
+								$obj['transaction_pending_value'] += $transaction['amount'];
+								$obj['transaction_pending_commission'] += $transaction['commission'];
+							} else
+							if ($transaction['status'] == Oara_Utilities::STATUS_DECLINED) {
+								$obj['transaction_declined_value'] += $transaction['amount'];
+								$obj['transaction_declined_commission'] += $transaction['commission'];
+							} else
+							if ($transaction['status'] == Oara_Utilities::STATUS_PAID) {
+								$obj['transaction_paid_value'] += $transaction['amount'];
+								$obj['transaction_paid_commission'] += $transaction['commission'];
+							}
 						}
 						if (Oara_Utilities::checkRegister($obj)) {
 							$overviewArray[] = $obj;
@@ -319,18 +322,18 @@ class Oara_Network_Publisher_ClixGalore extends Oara_Network {
 						$overview['transaction_confirmed_value'] += $transaction['amount'];
 						$overview['transaction_confirmed_commission'] += $transaction['commission'];
 					} else
-						if ($transaction['status'] == Oara_Utilities::STATUS_PENDING) {
-							$overview['transaction_pending_value'] += $transaction['amount'];
-							$overview['transaction_pending_commission'] += $transaction['commission'];
-						} else
-							if ($transaction['status'] == Oara_Utilities::STATUS_DECLINED) {
-								$overview['transaction_declined_value'] += $transaction['amount'];
-								$overview['transaction_declined_commission'] += $transaction['commission'];
-							} else
-								if ($transaction['status'] == Oara_Utilities::STATUS_PAID) {
-									$overview['transaction_paid_value'] += $transaction['amount'];
-									$overview['transaction_paid_commission'] += $transaction['commission'];
-								}
+					if ($transaction['status'] == Oara_Utilities::STATUS_PENDING) {
+						$overview['transaction_pending_value'] += $transaction['amount'];
+						$overview['transaction_pending_commission'] += $transaction['commission'];
+					} else
+					if ($transaction['status'] == Oara_Utilities::STATUS_DECLINED) {
+						$overview['transaction_declined_value'] += $transaction['amount'];
+						$overview['transaction_declined_commission'] += $transaction['commission'];
+					} else
+					if ($transaction['status'] == Oara_Utilities::STATUS_PAID) {
+						$overview['transaction_paid_value'] += $transaction['amount'];
+						$overview['transaction_paid_commission'] += $transaction['commission'];
+					}
 				}
 				$overviewArray[] = $overview;
 			}
