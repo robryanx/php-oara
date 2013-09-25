@@ -46,12 +46,17 @@ class Oara_Network_Publisher_Skimlinks extends Oara_Network {
 		$valuesLogin = array(
 			new Oara_Curl_Parameter('username', $user),
 			new Oara_Curl_Parameter('password', $password),
-			new Oara_Curl_Parameter('menu', ''),
-			new Oara_Curl_Parameter('btn-login', 'Login')
+			new Oara_Curl_Parameter('menu', "{ return }"),
+			new Oara_Curl_Parameter('btn-login', "Login")
 		);
+		
 
-		$loginUrl = 'https://skimlinks.com/login';
-		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
+		$loginUrl = 'https://hub.skimlinks.com/login';
+		$this->_client = new Oara_Curl_Access($loginUrl, array(), $credentials);
+		
+		$urls = array();
+		$urls[] = new Oara_Curl_Request('https://hub.skimlinks.com/login', $valuesLogin);
+		$exportReport = $this->_client->post($urls);
 
 		$this->_exportTransactionParameters = array(new Oara_Curl_Parameter('type', 'merchant'),
 			new Oara_Curl_Parameter('export', 'csv'),

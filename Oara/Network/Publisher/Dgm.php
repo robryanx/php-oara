@@ -79,7 +79,7 @@ class Oara_Network_Publisher_Dgm extends Oara_Network {
 			'compression'	 => SOAP_COMPRESSION_ACCEPT | SOAP_COMPRESSION_GZIP | SOAP_COMPRESSION_DEFLATE,
 			'soap_version'	 => SOAP_1_1));
 
-		$loginUrl = 'http://www.dgmpro.com/index.cfm';
+		$loginUrl = 'http://www.dgperform.com/index.cfm';
 
 		$valuesLogin = array(new Oara_Curl_Parameter('login', $user),
 			new Oara_Curl_Parameter('password', $password)
@@ -87,7 +87,7 @@ class Oara_Network_Publisher_Dgm extends Oara_Network {
 
 		$this->_curlClient = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://www.dgmpro.com/affiliates/index.cfm', array());
+		$urls[] = new Oara_Curl_Request('http://www.dgperform.com//affiliates/index.cfm', array());
 
 		$memberId = null;
 		$result = $this->_curlClient->get($urls);
@@ -191,7 +191,7 @@ class Oara_Network_Publisher_Dgm extends Oara_Network {
 		$valuesFromExport[] = new Oara_Curl_Parameter('fromDate', $dStartDate->toString("dd/MM/yyyy"));
 		$valuesFromExport[] = new Oara_Curl_Parameter('toDate', $dEndDate->toString("dd/MM/yyyy"));
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://www.dgmpro.com/affiliates/cfc/dgmreports.cfc?method=getSalesCSV', $valuesFromExport);
+		$urls[] = new Oara_Curl_Request('http://www.dgperform.com/affiliates/cfc/dgmreports.cfc?method=getSalesCSV', $valuesFromExport);
 		$exportReport = $this->_curlClient->post($urls);
 		$reportUrl = null;
 		if (preg_match("/<filelocation>(.*)<\/filelocation>/", $exportReport[0], $matches)) {
@@ -222,7 +222,7 @@ class Oara_Network_Publisher_Dgm extends Oara_Network {
 					$valuesFromExport[] = new Oara_Curl_Parameter('fromDate', $dStartDate->toString("dd/MM/yyyy"));
 					$valuesFromExport[] = new Oara_Curl_Parameter('toDate', $dEndDate->toString("dd/MM/yyyy"));
 
-					$urls[] = new Oara_Curl_Request('http://www.dgmpro.com/affiliates/cfc/dgmreports.cfc?method=getSalesCSV', $valuesFromExport);
+					$urls[] = new Oara_Curl_Request('http://www.dgperform.com/affiliates/cfc/dgmreports.cfc?method=getSalesCSV', $valuesFromExport);
 				}
 				$exportReportUrl = $this->_curlClient->post($urls);
 				$urls = array();
@@ -290,7 +290,7 @@ class Oara_Network_Publisher_Dgm extends Oara_Network {
 		$valuesFromExport[] = new Oara_Curl_Parameter('fromDate', $dStartDate->toString("dd/MM/yyyy"));
 		$valuesFromExport[] = new Oara_Curl_Parameter('toDate', $dEndDate->toString("dd/MM/yyyy"));
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://www.dgmpro.com/affiliates/cfc/dgmreports.cfc?method=getSummaryCSV', $valuesFromExport);
+		$urls[] = new Oara_Curl_Request('http://www.dgperform.com/affiliates/cfc/dgmreports.cfc?method=getSummaryCSV', $valuesFromExport);
 		$exportReport = $this->_curlClient->post($urls);
 		$reportUrl = null;
 		if (preg_match("/<filelocation>(.*)<\/filelocation>/", $exportReport[0], $matches)) {
@@ -319,7 +319,7 @@ class Oara_Network_Publisher_Dgm extends Oara_Network {
 					$valuesFromExport[] = new Oara_Curl_Parameter('campaignID', self::getAdvertisersCampaigns(array($merchantList[$merchantIndex])));
 					$valuesFromExport[] = new Oara_Curl_Parameter('fromDate', $dStartDate->toString("dd/MM/yyyy"));
 					$valuesFromExport[] = new Oara_Curl_Parameter('toDate', $dEndDate->toString("dd/MM/yyyy"));
-					$urls[] = new Oara_Curl_Request('http://www.dgmpro.com/affiliates/cfc/dgmreports.cfc?method=getSummaryCSV', $valuesFromExport);
+					$urls[] = new Oara_Curl_Request('http://www.dgperform.com/affiliates/cfc/dgmreports.cfc?method=getSummaryCSV', $valuesFromExport);
 				}
 				$exportReportUrl = $this->_curlClient->post($urls);
 				$urls = array();
@@ -483,7 +483,7 @@ class Oara_Network_Publisher_Dgm extends Oara_Network {
 		$parameters = array();
 		$parameters[] = new Oara_Curl_Parameter('fuseaction', 'newreports.payment_summary');
 
-		$urls[] = new Oara_Curl_Request('http://www.dgmpro.com/affiliates/index.cfm?', $parameters);
+		$urls[] = new Oara_Curl_Request('http://www.dgperform.com/affiliates/index.cfm?', $parameters);
 		$exportReport = $this->_curlClient->get($urls);
 
 		/*** load the html into the object ***/

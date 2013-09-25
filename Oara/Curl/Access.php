@@ -77,7 +77,7 @@ class Oara_Curl_Access {
 		$cookies = $dir.$cookieName.'_cookies.txt';
 
 		$this->_options = array(
-			CURLOPT_USERAGENT => "Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:22.0) Gecko/20100101 Firefox/22.0",
+			CURLOPT_USERAGENT => "User-Agent=Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:23.0) Gecko/20100101 Firefox/23.0",
 			CURLOPT_RETURNTRANSFER => true,
 			CURLOPT_FAILONERROR => true,
 			CURLOPT_COOKIEJAR => $cookies,
@@ -342,6 +342,7 @@ class Oara_Curl_Access {
 
 		foreach ($data as $parameter) {
 			$return[] = $parameter->getKey().'='.urlencode($parameter->getValue());
+			
 		}
 
 		return implode('&', $return);

@@ -63,6 +63,7 @@ class Oara_Network_Publisher_CommissionJunction extends Oara_Network {
 		$user = $credentials['user'];
 		$password = $credentials['password'];
 		$this->_apiPassword = $credentials['apiPassword'];
+		
 
 		$loginUrl = 'https://members.cj.com/member/foundation/memberlogin.do?';
 		$valuesLogin = array(new Oara_Curl_Parameter('uname', $user),

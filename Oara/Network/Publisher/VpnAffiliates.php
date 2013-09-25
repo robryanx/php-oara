@@ -123,8 +123,14 @@ class Oara_Network_Publisher_VpnAffiliates extends Oara_Network {
 			$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 			unset($transactionDate);
 			$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
+			
 			$transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[1]);
 			$transaction['commission'] = Oara_Utilities::parseDouble($transactionExportArray[0]);
+			
+			if (preg_match("/renegadegames\.co\.uk/", $this->_credentials["user"]) ){
+				$transaction['amount'] = $transaction['amount'] * 1.8;
+				$transaction['commission'] = $transaction['commission'] * 1.8;
+			}
 			//print_r($transaction);
 
 			if ($transaction['date'] >= $dStartDate->toString("yyyy-MM-dd HH:mm:ss") && $transaction['date'] <= $dEndDate->toString("yyyy-MM-dd HH:mm:ss")){
