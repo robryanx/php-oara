@@ -170,7 +170,7 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 		}
 
 		$form = $form[0];
-
+		echo $form;
 		// find the action of the login form
 		if (!preg_match('/action="([^"]+)"/i', $form, $action)) {
 			die('Failed to find login form url');
@@ -192,6 +192,8 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 		$postFields['email'] = $user;
 		$postFields['create'] = 0;
 		$postFields['password'] = $password;
+		
+		
 
 		$post = '';
 
@@ -203,6 +205,8 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 		$post = substr($post, 0, -1);
 
 		// set additional curl options using our previous options
+		//URL=https://www.amazon.de/ap/signin
+		//URL=https://partnernet.amazon.de/gp/associates/network/main.html
 		curl_setopt($ch, CURLOPT_URL, $URL2);
 		curl_setopt($ch, CURLOPT_REFERER, $URL);
 		curl_setopt($ch, CURLOPT_POST, 1);
@@ -221,7 +225,7 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 		$urls = array();
 		$urls[] = new Oara_Curl_Request($this->_networkServer."/gp/associates/network/main.html", array());
 		$exportReport = $this->_client->get($urls);
-		
+		echo $exportReport[0];
 		if (preg_match("/logout%26openid.ns/", $exportReport[0])) {
 			$dom = new Zend_Dom_Query($exportReport[0]);
 			$idBox = array();
