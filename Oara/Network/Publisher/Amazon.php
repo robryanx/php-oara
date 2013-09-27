@@ -170,7 +170,7 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 		}
 
 		$form = $form[0];
-		echo $form;
+		//echo $form;
 		// find the action of the login form
 		if (!preg_match('/action="([^"]+)"/i', $form, $action)) {
 			die('Failed to find login form url');
