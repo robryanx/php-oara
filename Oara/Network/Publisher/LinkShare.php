@@ -283,7 +283,7 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network {
 			
 			echo "getting Transactions for site " . $site->id . "\n\n";
 			
-			$url = "https://65.245.193.87/downloadreport.php?bdate=" . $dStartDate->toString ( "yyyyMMdd" ) . "&edate=" . $dEndDate->toString ( "yyyyMMdd" ) . "&token=" . $site->secureToken . "&nid=" . $this->_nid . "&reportid=12";
+			$url = "https://reportws.linksynergy.com/downloadreport.php?bdate=" . $dStartDate->toString ( "yyyyMMdd" ) . "&edate=" . $dEndDate->toString ( "yyyyMMdd" ) . "&token=" . $site->secureToken . "&nid=" . $this->_nid . "&reportid=12";
 			$result = file_get_contents ( $url );
 			if (preg_match ( "/You cannot request/", $result )) {
 				throw new Exception ( "Reached the limit" );
@@ -398,8 +398,9 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network {
 				}
 				
 				echo "getting Payment for Site " . $site->id . " and year " . $bdate->toString ( "yyyy" ) . " \n\n";
+				//https://65.245.193.87
 				
-				$url = "https://65.245.193.87/downloadreport.php?bdate=" . $bdate->toString ( "yyyyMMdd" ) . "&edate=" . $edate->toString ( "yyyyMMdd" ) . "&token=" . $site->secureToken . "&nid=" . $this->_nid . "&reportid=1";
+				$url = "https://reportws.linksynergy.com/downloadreport.php?bdate=" . $bdate->toString ( "yyyyMMdd" ) . "&edate=" . $edate->toString ( "yyyyMMdd" ) . "&token=" . $site->secureToken . "&nid=" . $this->_nid . "&reportid=1";
 				$result = file_get_contents ( $url );
 				if (preg_match ( "/You cannot request/", $result )) {
 					throw new Exception ( "Reached the limit" );
@@ -434,7 +435,7 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network {
 	public function paymentTransactions($paymentId, $merchantList, $startDate) {
 		$transactionList = array ();
 		foreach ( $this->_siteList as $site ) {
-			$url = "https://65.245.193.87/downloadreport.php?payid=$paymentId&token=" . $site->secureToken . "&reportid=3";
+			$url = "https://reportws.linksynergy.com/downloadreport.php?payid=$paymentId&token=" . $site->secureToken . "&reportid=3";
 			$result = file_get_contents ( $url );
 			if (preg_match ( "/You cannot request/", $result )) {
 				throw new Exception ( "Reached the limit" );
