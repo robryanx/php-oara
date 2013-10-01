@@ -42,6 +42,9 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 	 * Server Url for the Network Selected
 	 */
 	private $_networkServer = null;
+	
+	
+	private $_extension = null;
 	/**
 	 * Constructor and Login
 	 * @param $credentials
@@ -131,7 +134,7 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 				$handle = "cn";
 				break;
 		}
-
+		$this->_extension = $extension;
 		$this->_client = new Oara_Curl_Access($this->_networkServer."/gp/associates/network/main.html", array(), $this->_credentials);
 
 		// initial login page which redirects to correct sign in page, sets some cookies
@@ -236,6 +239,7 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 		$urls = array();
 		$urls[] = new Oara_Curl_Request($this->_networkServer."/gp/associates/network/main.html", array());
 		$exportReport = $this->_client->get($urls);
+		
 		if (preg_match("/logout%26openid.ns/", $exportReport[0])) {
 			$dom = new Zend_Dom_Query($exportReport[0]);
 			$idBox = array();
@@ -338,7 +342,11 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 
 		$index = 2;
 		try{
+			if (!isset($transactionExportArray[$index]) || !isset($transactionExportArray[5])){
+				throw new Exception("No date");
+			}
 			$transactionExportArray = str_getcsv(str_replace("\"", "", $exportData[$index]), "\t");
+			
 			$transactionDate = new Zend_Date($transactionExportArray[5], 'MMMM d,yyyy', 'en');
 		} catch (Exception $e){
 			$index = 3;
@@ -515,12 +523,16 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 		$aCookies = array();
 		$aLines = file($cookies);
 		foreach ($aLines as $line) {
-			if ('#' == $line {
-				0})
-					continue;
+			if ('#' == $line {0})
+				continue;
 				$arr = explode("\t", $line);
-				if (isset($arr[5]) && isset($arr[6]))
-					$aCookies[$arr[5]] = str_replace("\n", "", $arr[6]);
+				if (isset($arr[5]) && isset($arr[6])){
+					if ($arr[0] == ".amazon{$this->_extension}"){
+						$aCookies[$arr[5]] = str_replace("\n", "", $arr[6]);
+					}
+					
+				}
+					
 		}
 		return $aCookies;
 	}
