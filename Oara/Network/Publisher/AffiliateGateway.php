@@ -29,6 +29,8 @@ class Oara_Network_Publisher_AffiliateGateway extends Oara_Network {
 	 * @var unknown_type
 	 */
 	private $_client = null;
+	
+	private $_extension = null;
 	/**
 	 * Constructor and Login
 	 * @param $credentials
@@ -42,7 +44,17 @@ class Oara_Network_Publisher_AffiliateGateway extends Oara_Network {
 			new Oara_Curl_Parameter('username', $user),
 			new Oara_Curl_Parameter('password', $password)
 		);
-		$loginUrl = 'https://www.tagadmin.com.au/login.html';
+		
+		$extension = null;
+		if ($credentials["network"] == "uk"){
+			$extension = "https://www.tagpm.com";
+		} else if ($credentials["network"] == "au"){
+			$extension = "https://www.tagadmin.com.au";
+		}
+		$this->_extension = $extension;
+		
+		
+		$loginUrl = "{$this->_extension}/login.html";
 		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
 
 		$this->_exportTransactionParameters = array(new Oara_Curl_Parameter('period', '8'),
@@ -74,7 +86,7 @@ class Oara_Network_Publisher_AffiliateGateway extends Oara_Network {
 		//If not login properly the construct launch an exception
 		$connection = false;
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('https://www.tagadmin.com.au/affiliate_home.html', array());
+		$urls[] = new Oara_Curl_Request("{$this->_extension}/affiliate_home.html", array());
 		$exportReport = $this->_client->get($urls);
 		$dom = new Zend_Dom_Query($exportReport[0]);
 		$results = $dom->query('.logout-a');
@@ -99,7 +111,7 @@ class Oara_Network_Publisher_AffiliateGateway extends Oara_Network {
 		$valuesFromExport[] = new Oara_Curl_Parameter('order', "up");
 		$valuesFromExport[] = new Oara_Curl_Parameter('records', "-1");
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('https://www.tagadmin.com.au/affiliate_program_active.html?', $valuesFromExport);
+		$urls[] = new Oara_Curl_Request("{$this->_extension}/affiliate_program_active.html?", $valuesFromExport);
 		$exportReport = $this->_client->get($urls);
 		$dom = new Zend_Dom_Query($exportReport[0]);
 		$tableList = $dom->query('#bluetablecontent > table');
@@ -129,7 +141,7 @@ class Oara_Network_Publisher_AffiliateGateway extends Oara_Network {
 		$valuesFromExport[] = new Oara_Curl_Parameter('endDate', $dEndDate->toString("dd/MM/yyyy"));
 
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('https://www.tagadmin.com.au/affiliate_statistic_transaction.html?', $valuesFromExport);
+		$urls[] = new Oara_Curl_Request("{$this->_extension}/affiliate_statistic_transaction.html?", $valuesFromExport);
 		try {
 
 			$exportReport = $this->_client->get($urls);
@@ -230,7 +242,7 @@ class Oara_Network_Publisher_AffiliateGateway extends Oara_Network {
 		$paymentHistory = array();
 
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('https://www.tagadmin.com.au/affiliate_invoice.html?', array());
+		$urls[] = new Oara_Curl_Request("{$this->_extension}/affiliate_invoice.html?", array());
 		$exportReport = $this->_client->get($urls);
 		$dom = new Zend_Dom_Query($exportReport[0]);
 		$tableList = $dom->query('.bluetable');
