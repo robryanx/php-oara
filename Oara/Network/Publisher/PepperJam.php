@@ -60,21 +60,8 @@ class Oara_Network_Publisher_PepperJam extends Oara_Network {
 	public function getMerchantList() {
 		$merchants = Array();
 
-		$valuesFormExport = array();
-		$valuesFormExport[] = new Oara_Curl_Parameter('csv', '1');
-		$valuesFormExport[] = new Oara_Curl_Parameter('rbtnSearch', 'both');
-		$valuesFormExport[] = new Oara_Curl_Parameter('searchCats', 'all');
-		$valuesFormExport[] = new Oara_Curl_Parameter('statusSwitch', 'basic');
-		$valuesFormExport[] = new Oara_Curl_Parameter('status', '1');
-		$valuesFormExport[] = new Oara_Curl_Parameter('currency', '');
-		$valuesFormExport[] = new Oara_Curl_Parameter('mobile_tracking', '');
-		$valuesFormExport[] = new Oara_Curl_Parameter('q', '');
-		$valuesFormExport[] = new Oara_Curl_Parameter('pendingTermChange', '-1');
-		$valuesFormExport[] = new Oara_Curl_Parameter('rperpage', '10');
-		$valuesFormExport[] = new Oara_Curl_Parameter('order', 'ASC');
-		$valuesFormExport[] = new Oara_Curl_Parameter('sort', 'program');
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://www.pepperjamnetwork.com/affiliate/managePrograms.php?', $valuesFormExport);
+		$urls[] = new Oara_Curl_Request('http://www.pepperjamnetwork.com/affiliate/program/manage?statuses[]=1&csv=1', array());
 		$exportReport = $this->_client->get($urls);
 
 		$merchantList = str_getcsv($exportReport[0], "\n");
