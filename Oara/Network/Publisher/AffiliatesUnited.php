@@ -139,12 +139,9 @@ class Oara_Network_Publisher_AffiliatesUnited extends Oara_Network {
 		$totalTransactions = array();
 
 		$valuesFromExport = Oara_Utilities::cloneArray($this->_exportTransactionParameters);
-		//$valuesFromExport[] = new Oara_Curl_Parameter('fromPeriod', $dStartDate->toString("yyyy-MM-dd"));
-		//$valuesFromExport[] = new Oara_Curl_Parameter('toPeriod', $dEndDate->toString("yyyy-MM-dd"));
+		$valuesFromExport[] = new Oara_Curl_Parameter('fromPeriod', $dStartDate->toString("yyyy-MM-dd"));
+		$valuesFromExport[] = new Oara_Curl_Parameter('toPeriod', $dEndDate->toString("yyyy-MM-dd"));
 		
-		$valuesFromExport[] = new Oara_Curl_Parameter('fromPeriod', "2013-03-01");
-		$valuesFromExport[] = new Oara_Curl_Parameter('toPeriod', "2013-03-31");
-
 		$urls = array();
 		$urls[] = new Oara_Curl_Request('https://www.affutd.com/en/traffic-stats/advertiser', array());
 		$exportReport = $this->_client->get($urls);
