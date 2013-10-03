@@ -139,8 +139,11 @@ class Oara_Network_Publisher_AffiliatesUnited extends Oara_Network {
 		$totalTransactions = array();
 
 		$valuesFromExport = Oara_Utilities::cloneArray($this->_exportTransactionParameters);
-		$valuesFromExport[] = new Oara_Curl_Parameter('fromPeriod', $dStartDate->toString("yyyy-MM-dd"));
-		$valuesFromExport[] = new Oara_Curl_Parameter('toPeriod', $dEndDate->toString("yyyy-MM-dd"));
+		//$valuesFromExport[] = new Oara_Curl_Parameter('fromPeriod', $dStartDate->toString("yyyy-MM-dd"));
+		//$valuesFromExport[] = new Oara_Curl_Parameter('toPeriod', $dEndDate->toString("yyyy-MM-dd"));
+		
+		$valuesFromExport[] = new Oara_Curl_Parameter('fromPeriod', "2013-03-01");
+		$valuesFromExport[] = new Oara_Curl_Parameter('toPeriod', "2013-03-31");
 
 		$urls = array();
 		$urls[] = new Oara_Curl_Request('https://www.affutd.com/en/traffic-stats/advertiser', array());
@@ -159,10 +162,10 @@ class Oara_Network_Publisher_AffiliatesUnited extends Oara_Network {
 		$exportReport = $this->_client->post($urls);
 		$exportData = str_getcsv($exportReport[0], "\n");
 		$num = count($exportData);
-		for ($i = 1; $i < $num - 1; $i++) {
+		for ($i = 1; $i < $num; $i++) {
 			$transactionExportArray = str_getcsv($exportData[$i], ",");
 			$netGamming = 0;
-			$transactionExportArray[2] = str_replace("$", "", $transactionExportArray[2]);
+			$transactionExportArray[2] = str_replace(array("$",","), "", $transactionExportArray[2]);
 			if (preg_match("/[-+]?[0-9]*\.?[0-9]+/", $transactionExportArray[2], $match)){
 				$netGamming = (double)$match[0];
 			}
