@@ -58,14 +58,7 @@ class Oara_Network_Publisher_Zanox extends Oara_Network {
 	 */
 	public function getMerchantList() {
 		$merchantList = array();
-		/*
-		 $adsList = $this->_apiClient->getAdspaces(0, $this->_pageSize);
-		 if ($adsList->total > 0){
-		 $iteration = self::calculeIterationNumber($adsList->total, $this->_pageSize);
-		 for($i = 0; $i < $iteration; $i++){
-		 $adsList = $this->_apiClient->getAdspaces($i, $this->_pageSize);
-		 foreach ($adsList->adspaceItems->adspaceItem as $ads){
-		 */
+	
 		$programApplicationList = $this->_apiClient->getProgramApplications(null, null, "confirmed", 0, $this->_pageSize);
 		if ($programApplicationList->total > 0) {
 			$iterationProgramApplicationList = self::calculeIterationNumber($programApplicationList->total, $this->_pageSize);
@@ -83,11 +76,6 @@ class Oara_Network_Publisher_Zanox extends Oara_Network {
 
 			}
 		}
-		/*
-		 }
-		 }
-		 }
-		 */
 		return $merchantList;
 	}
 	/**
@@ -135,6 +123,9 @@ class Oara_Network_Publisher_Zanox extends Oara_Network {
 
 				if (in_array($transaction->program->id, $merchantList)) {
 					$obj = array();
+					
+					$obj['currency'] = $transaction->currency;
+					
 					if ($transaction->reviewState == 'confirmed') {
 						$obj['status'] = Oara_Utilities::STATUS_CONFIRMED;
 					} else
