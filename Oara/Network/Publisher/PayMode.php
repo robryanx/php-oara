@@ -146,7 +146,7 @@ class Oara_Network_Publisher_PayMode extends Oara_Network {
 
 		$obj = array();
 		$obj['cid'] = 1;
-		$obj['name'] = "Pay Mode";
+		$obj['name'] = "Sixt";
 		$merchants[] = $obj;
 
 		return $merchants;
@@ -211,6 +211,7 @@ class Oara_Network_Publisher_PayMode extends Oara_Network {
 						$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 							
 						$transaction['unique_id'] = $transactionArray[25];
+						$transaction['custom_id'] = $transactionArray[21];
 
 						$transaction['amount'] = $filter->filter($transactionArray[24]);
 						$transaction['commission'] = $filter->filter($transactionArray[28]);
