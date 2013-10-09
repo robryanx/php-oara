@@ -91,7 +91,13 @@ class Oara_Network_Publisher_M4n extends Oara_Network {
 				$merchantId = (int) $transactionExportArray[3];
 				$transaction['merchantId'] = $merchantId;
 				$transaction['unique_id'] = $transactionExportArray[0];
-				$transactionDate = new Zend_Date($transactionExportArray[10], 'yyyy-MM-dd HH:mm:ss');
+				
+				$date = $transactionExportArray[10];
+				if ($transactionExportArray[10] == "null"){
+					$date = $transactionExportArray[9];
+				}
+				
+				$transactionDate = new Zend_Date($date, 'yyyy-MM-dd HH:mm:ss');
 				$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 
 				if ($transactionExportArray[2] == 'ACCEPTED') {

@@ -120,7 +120,7 @@ class Oara_Network_Publisher_PepperJam extends Oara_Network {
 					$transaction['custom_id'] = $transactionExportArray[4];
 				}
 
-				if ($transactionExportArray[10] == 'Pending' || $transactionExportArray[10] == 'Delayed') {
+				if ($transactionExportArray[10] == 'Pending' || $transactionExportArray[10] == 'Delayed' || $transactionExportArray[10] == 'Updated Pending Commission') {
 					$transaction['status'] = Oara_Utilities::STATUS_PENDING;
 				} else
 				if ($transactionExportArray[10] == 'Locked') {
