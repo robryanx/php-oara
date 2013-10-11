@@ -22,6 +22,7 @@ class Oara_Network_Publisher_GoogleAndroidPublisher extends Oara_Network {
 	 */
 	public function __construct($credentials) {
 		$this->_bucket = $credentials["user"];
+		$this->_httpLogin = $credentials['httpLogin'];
 	}
 	/**
 	 * Check the connection
@@ -30,7 +31,14 @@ class Oara_Network_Publisher_GoogleAndroidPublisher extends Oara_Network {
 		$connection = false;
 
 		$url = "http://affjet.dc.fubra.net/tools/gsutil/gs.php?bucket=".urlencode($this->_bucket)."&type=ls";
-		$return = file_get_contents($url);
+		$context = \stream_context_create(array(
+				'http' => array(
+						'header'  => "Authorization: Basic " . base64_encode("{$this->_httpLogin}")
+				)
+		));
+			
+		
+		$return = \file_get_contents($url, false, $context);
 		if (preg_match("/ls works/",$return)){
 			$connection = true;
 		}
@@ -65,7 +73,14 @@ class Oara_Network_Publisher_GoogleAndroidPublisher extends Oara_Network {
 
 		$file = "{$this->_bucket}/sales/salesreport_".$dStartDate->toString("yyyyMM").".zip";
 		$url = "http://affjet.dc.fubra.net/tools/gsutil/gs.php?bucket=".urlencode($file)."&type=cp";
-		\file_put_contents($dirDestination."/report.zip", file_get_contents($url));
+		
+		$context = \stream_context_create(array(
+				'http' => array(
+						'header'  => "Authorization: Basic " . base64_encode("{$this->_httpLogin}")
+				)
+		));
+			
+		\file_put_contents($dirDestination."/report.zip", \file_get_contents($url, false, $context));
 
 		$zip = new \ZipArchive;
 		if ($zip->open($dirDestination."/report.zip") === TRUE) {

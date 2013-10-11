@@ -1,0 +1,46 @@
+Order Number,Order Charged Date,Order Charged Timestamp,Financial Status,Device Model,Product Title,Product ID,Product Type,SKU ID,Currency of Sale,Item Price,Taxes Collected,Charged Amount,City of Buyer,State of Buyer,Postal Code of Buyer,Country of Buyer
+1310082847099759,2013-10-01,1380586431,Charged,t0lte,Petrol Prices Pro,com.petrolprices.app,paidapp,,GBP,2.99,0.00,2.99,,,RG21 8XX,GB
+1315409358893142,2013-10-01,1380596515,Charged,m3,Petrol Prices Pro,com.petrolprices.app,paidapp,,GBP,2.99,0.00,2.99,,,Ts233gy,GB
+1348172542368976,2013-10-01,1380602656,Charged,mako,Petrol Prices Pro,com.petrolprices.app,paidapp,,GBP,2.99,0.00,2.99,Peterborough,CAMBS,PE2 9RD,GB
+1388591955578349,2013-10-01,1380608268,Charged,smi,World Airport Codes,com.fubra.wac,paidapp,,MXN,27.82,0.00,27.82,Mérida,YUC,97146,MX
+1319152001042785,2013-10-01,1380629923,Charged,jflte,Petrol Prices Pro,com.petrolprices.app,paidapp,,GBP,2.99,0.00,2.99,,,NN155ND,GB
+1395669864489884,2013-10-01,1380630959,Charged,m0,Petrol Prices Pro,com.petrolprices.app,paidapp,,GBP,2.99,0.00,2.99,Dewsbury,WEST YORKSHIRE,WF12 8AQ,GB
+1322423307600034,2013-10-02,1380685771,Charged,m7,Petrol Prices Pro,com.petrolprices.app,paidapp,,GBP,2.99,0.00,2.99,Bristol,BRISTOL,BS8 4LT,GB
+1386542554302157,2013-10-02,1380685974,Charged,viewpad7,Petrol Prices Pro,com.petrolprices.app,paidapp,,GBP,2.99,0.00,2.99,Peterborough,,PE3 9XY,GB
+1365786093830517,2013-10-02,1380721808,Charged,m0,Petrol Prices Pro,com.petrolprices.app,paidapp,,GBP,2.99,0.00,2.99,Bournemouth,DORSET,BH1 3EN,GB
+1317632752859360,2013-10-02,1380727658,Charged,jfltevzw,World Airport Codes,com.fubra.wac,paidapp,,USD,2.50,0.00,2.50,,,95747,US
+1364260841113780,2013-10-03,1380766822,Charged,t03g,Petrol Prices Pro,com.petrolprices.app,paidapp,,GBP,2.99,0.00,2.99,,,KT8 9JS,GB
+1329181682303501,2013-10-03,1380773990,Charged,jflte,Petrol Prices Pro,com.petrolprices.app,paidapp,,GBP,2.99,0.00,2.99,,,OL102JB,GB
+1374369306566017,2013-10-03,1380774847,Charged,jflte,Petrol Prices Pro,com.petrolprices.app,paidapp,,GBP,2.99,0.00,2.99,,,M418NY,GB
+1387444790481418,2013-10-03,1380780943,Charged,GT-I9100,Petrol Prices Pro,com.petrolprices.app,paidapp,,GBP,2.99,0.00,2.99,,,Le12 9HP,GB
+1383894002231416,2013-10-03,1380817941,Charged,jflte,Petrol Prices Pro,com.petrolprices.app,paidapp,,GBP,2.99,0.00,2.99,,,HP14 3BE,GB
+1326594240151601,2013-10-03,1380840364,Charged,mfld_pr2,World Airport Codes,com.fubra.wac,paidapp,,HUF,522.00,0.00,522.00,Keszthely,,8360,HU
+1359634305049533,2013-10-04,1380880701,Charged,GT-I8160,Petrol Prices Pro,com.petrolprices.app,paidapp,,GBP,2.99,0.00,2.99,,,CH1 5AH,GB
+1308889738954082,2013-10-04,1380901632,Charged,C6603,Petrol Prices Pro,com.petrolprices.app,paidapp,,GBP,2.99,0.00,2.99,,,SK102HN,GB
+1346713130347983,2013-10-04,1380909574,Charged,espresso10wifi,World Airport Codes,com.fubra.wac,paidapp,,GBP,1.49,0.00,1.49,,,NR14 8BJ,GB
+1320084678110498,2013-10-04,1380918880,Charged,t03g,Petrol Prices Pro,com.petrolprices.app,paidapp,,GBP,2.99,0.00,2.99,,,AB24 1TA,GB
+1369379605808987,2013-10-05,1380935779,Charged,m0,Petrol Prices Pro,com.petrolprices.app,paidapp,,GBP,2.99,0.00,2.99,Potton,BEDFORDSHIRE,SG19 2QX,GB
+1328478591737700,2013-10-05,1380939956,Charged,m7,Petrol Prices Pro,com.petrolprices.app,paidapp,,GBP,2.99,0.00,2.99,,,RG1 5JP,GB
+1395889022211454,2013-10-05,1381000146,Charged,U20i,Petrol Prices Pro,com.petrolprices.app,paidapp,,GBP,2.99,0.00,2.99,,,BN1 8TH,GB
+1372838250824791,2013-10-07,1381108970,Charged,LT26i,World Airport Codes,com.fubra.wac,paidapp,,GBP,1.49,0.00,1.49,,,OL16 2SZ,GB
+1372475317274461,2013-10-07,1381150002,Refund,grouper,Petrol Prices Pro,com.petrolprices.app,paidapp,,GBP,2.99,0.00,-2.99,,,CM194SD,GB
+1338471237935798,2013-10-07,1381171253,Charged,GT-I9100,Petrol Prices Pro,com.petrolprices.app,paidapp,,GBP,2.99,0.00,2.99,Brentwood,ESSEX,CM15 0RB,GB
+1301477365960945,2013-10-07,1381177233,Charged,endeavoru,Petrol Prices Pro,com.petrolprices.app,paidapp,,GBP,2.99,0.00,2.99,,,BS4 1DG,GB
+1397066853145388,2013-10-07,1381184942,Charged,hlte,Petrol Prices Pro,com.petrolprices.app,paidapp,,GBP,2.99,0.00,2.99,,,SW9 6HP,GB
+1358537549111239,2013-10-08,1381193492,Charged,m0,Petrol Prices Pro,com.petrolprices.app,paidapp,,GBP,2.99,0.00,2.99,,,CF373LX,GB
+1304477545280862,2013-10-08,1381200016,Charged,grouper,World Airport Codes,com.fubra.wac,paidapp,,USD,2.50,0.00,2.50,,,48066,US
+1354961379640968,2013-10-08,1381235750,Charged,m3,Petrol Prices Pro,com.petrolprices.app,paidapp,,GBP,2.99,0.00,2.99,,,G13 1SD,GB
+1311693143027505,2013-10-08,1381239437,Charged,protou,Petrol Prices Pro,com.petrolprices.app,paidapp,,GBP,2.99,0.00,2.99,,,DN35 7RJ,GB
+1363121906992144,2013-10-08,1381243728,Charged,grouper,Petrol Prices Pro,com.petrolprices.app,paidapp,,GBP,2.99,0.00,2.99,Ringwood,HANTS,BH24 2HB,GB
+1386978866730013,2013-10-08,1381244357,Charged,GT-I9100,Petrol Prices Pro,com.petrolprices.app,paidapp,,GBP,2.99,0.00,2.99,,,SG1 3BN,GB
+1328659996144324,2013-10-08,1381272581,Charged,m0,World Airport Codes,com.fubra.wac,paidapp,,GBP,1.49,0.00,1.49,,,PE2 5SD,GB
+1381493961784285,2013-10-09,1381279005,Charged,smdk4x12,Petrol Prices Pro,com.petrolprices.app,paidapp,,GBP,2.99,0.00,2.99,,,SO155QL,GB
+1368516573973079,2013-10-09,1381289188,Charged,hlte,Petrol Prices Pro,com.petrolprices.app,paidapp,,GBP,2.99,0.00,2.99,,,EN7 6RF,GB
+1399949839074699,2013-10-09,1381293721,Charged,mako,Petrol Prices Pro,com.petrolprices.app,paidapp,,GBP,2.99,0.00,2.99,SIDMOUTH,DEVON,EX109BH,GB
+1321373686875603,2013-10-09,1381350411,Charged,villec2,World Airport Codes,com.fubra.wac,paidapp,,AUD,2.20,0.00,2.20,,,6014,AU
+1332691100201813,2013-10-09,1381355927,Charged,m0,Petrol Prices Pro,com.petrolprices.app,paidapp,,GBP,2.99,0.00,2.99,Shenley,RADLETT,WD7 9AN,GB
+1309298355622755,2013-10-09,1381357370,Charged,m0,Petrol Prices Pro,com.petrolprices.app,paidapp,,GBP,2.99,0.00,2.99,,,TN38 8DP,GB
+1390943846346218,2013-10-09,1381362734,Charged,t03g,Petrol Prices Pro,com.petrolprices.app,paidapp,,GBP,2.99,0.00,2.99,Buxton,,sk17 6ut,GB
+1358525683245994,2013-10-10,1381417549,Charged,kyleopen,Petrol Prices Pro,com.petrolprices.app,paidapp,,GBP,2.99,0.00,2.99,,,LL237NT,GB
+1368554035661184,2013-10-10,1381431212,Charged,serranolte,Petrol Prices Pro,com.petrolprices.app,paidapp,,GBP,2.99,0.00,2.99,,,NE66 3FB,GB
+1335845824622132,2013-10-10,1381448276,Charged,jflte,Petrol Prices Pro,com.petrolprices.app,paidapp,,GBP,2.99,0.00,2.99,LEDBURY,,HR8 2NA,GB

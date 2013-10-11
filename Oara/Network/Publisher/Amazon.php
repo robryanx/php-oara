@@ -83,7 +83,7 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 		$user = $this->_credentials['user'];
 		$password = $this->_credentials['password'];
 		$network = $this->_credentials['network'];
-
+		$this->_httpLogin = $this->_credentials['httpLogin'];
 		$extension = "";
 		$handle = "";
 		$this->_networkServer = "";
@@ -164,7 +164,16 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 			$cookieString .= "&$cookieName=".urlencode($cookieValue);
 		}
 		$casperUrl = "http://affjet.dc.fubra.net/tools/amazon/amazon.php?extension=$extension&url=".urlencode($URL).$cookieString;
-		$page = file_get_contents($casperUrl);
+		
+		
+		$context = \stream_context_create(array(
+				'http' => array(
+						'header'  => "Authorization: Basic " . base64_encode("{$this->_httpLogin}")
+				)
+		));
+			
+		
+		$page = \file_get_contents($casperUrl, false, $context);
 		
 		
 		// try to find the actual login form
