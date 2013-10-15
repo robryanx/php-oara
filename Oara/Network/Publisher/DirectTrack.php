@@ -82,17 +82,20 @@ class Oara_Network_Publisher_DirectTrack extends Oara_Network {
 	
 		$params = $this->_params;
 		$result = $this->_apiClient->call('campaignInfo', $params, 'http://soapinterop.org/', 'http://soapinterop.org/');
-		$result = html_entity_decode($result);
-		$xml = simplexml_load_string($result, null);
-		
-		if ($xml){
-			foreach ($xml->program as $merchant) {
-				$obj = Array();
-				$obj['cid'] = trim($merchant->program_id);
-				$obj['name'] = substr(trim(html_entity_decode($merchant->program_name)), 0, 150);
-				$merchants[] = $obj;
+		if (!is_array($result)){
+			$result = html_entity_decode($result);
+			$xml = simplexml_load_string($result, null);
+			
+			if ($xml){
+				foreach ($xml->program as $merchant) {
+					$obj = Array();
+					$obj['cid'] = trim($merchant->program_id);
+					$obj['name'] = substr(trim(html_entity_decode($merchant->program_name)), 0, 150);
+					$merchants[] = $obj;
+				}
 			}
 		}
+		
 		
 
 		return $merchants;
@@ -155,37 +158,39 @@ class Oara_Network_Publisher_DirectTrack extends Oara_Network {
 			$params["start_date"] = $dateArray[$i]->toString("yyyy-MM-dd");
 			$params["end_date"] = $dateArray[$i]->toString("yyyy-MM-dd");
 			$result = $this->_apiClient->call('monthlyStatsInfo', $params, 'http://soapinterop.org/', 'http://soapinterop.org/');
-			$xml = simplexml_load_string(html_entity_decode($result), null);
-			foreach ($xml->program_stats as $stats){
-				$merchantId = (int) trim($stats->program_id);
-				if (in_array($merchantId, $merchantList)) {
-					$overview = Array();
-					$payout = $stats->payout;
-					$overview['merchantId'] = $merchantId;
-					$overviewDate = $dateArray[$i];
-					$overview['date'] = $overviewDate->toString("yyyy-MM-dd HH:mm:ss");
-					$overview['click_number'] = trim($stats->clicks);
-					$overview['impression_number'] = trim($stats->impressions);
-					$overview['transaction_number'] = trim($stats->number_of_sales);
-					$overview['transaction_confirmed_value'] = 0;
-					$overview['transaction_confirmed_commission'] = 0;
-					$overview['transaction_pending_value'] = 0;
-					$overview['transaction_pending_commission'] = 0;
-					$overview['transaction_declined_value'] = 0;
-					$overview['transaction_declined_commission'] = 0;
-					$overview['transaction_paid_value'] = 0;
-					$overview['transaction_paid_commission'] = 0;
-					
-					$total_sales = substr(trim($stats->total_sales), 1);
-					$total = substr(trim($stats->total), 1);
-					if ($total_sales != null){
-						$overview['transaction_confirmed_value'] = $total_sales;
+			if (!is_array($result)){
+				$xml = simplexml_load_string(html_entity_decode($result), null);
+				foreach ($xml->program_stats as $stats){
+					$merchantId = (int) trim($stats->program_id);
+					if (in_array($merchantId, $merchantList)) {
+						$overview = Array();
+						$payout = $stats->payout;
+						$overview['merchantId'] = $merchantId;
+						$overviewDate = $dateArray[$i];
+						$overview['date'] = $overviewDate->toString("yyyy-MM-dd HH:mm:ss");
+						$overview['click_number'] = trim($stats->clicks);
+						$overview['impression_number'] = trim($stats->impressions);
+						$overview['transaction_number'] = trim($stats->number_of_sales);
+						$overview['transaction_confirmed_value'] = 0;
+						$overview['transaction_confirmed_commission'] = 0;
+						$overview['transaction_pending_value'] = 0;
+						$overview['transaction_pending_commission'] = 0;
+						$overview['transaction_declined_value'] = 0;
+						$overview['transaction_declined_commission'] = 0;
+						$overview['transaction_paid_value'] = 0;
+						$overview['transaction_paid_commission'] = 0;
+						
+						$total_sales = substr(trim($stats->total_sales), 1);
+						$total = substr(trim($stats->total), 1);
+						if ($total_sales != null){
+							$overview['transaction_confirmed_value'] = $total_sales;
+						}
+						
+						$overview['transaction_confirmed_commission'] = $total;
+	
+						
+						$totalOverviews[] = $overview;
 					}
-					
-					$overview['transaction_confirmed_commission'] = $total;
-
-					
-					$totalOverviews[] = $overview;
 				}
 			}
 		}
