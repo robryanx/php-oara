@@ -92,7 +92,10 @@ class Oara_Network_Publisher_Daisycon extends Oara_Network {
 				}
 			}
 		}
-		unset($merchantList[6389]);
+		if (isset($merchantList[6389])){
+			unset($merchantList[6389]);
+		}
+		
 		sort($merchantList);
 		$i = 0;
 		while ($slice = array_slice($merchantList, $i * 100, 100)) {
