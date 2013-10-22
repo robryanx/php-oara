@@ -69,7 +69,11 @@ class Oara_Network_Publisher_Daisycon extends Oara_Network {
 		);
 		$mResult = $this->_client->getSubscriptions($aFilter);
 		foreach ($mResult["return"] as $merchant) {
-			$merchantList[] = $merchant->program_id;
+			
+			$media = current($merchant->media);
+			if ($media->status == 'approved'){
+				$merchantList[$merchant->program_id] = $merchant->program_id;
+			}
 		}
 		$resposeInfo = $mResult["responseInfo"];
 		$numberIterations = self::calculeIterationNumber($resposeInfo->totalResults, 100);
@@ -82,10 +86,14 @@ class Oara_Network_Publisher_Daisycon extends Oara_Network {
 			);
 			$mResult = $this->_client->getSubscriptions($aFilter);
 			foreach ($mResult["return"] as $merchant) {
-				$merchantList[] = $merchant->program_id;
+				$media = current($merchant->media);
+				if ($media->status == 'approved'){
+					$merchantList[$merchant->program_id] = $merchant->program_id;
+				}
 			}
 		}
-
+		unset($merchantList[6389]);
+		sort($merchantList);
 		$i = 0;
 		while ($slice = array_slice($merchantList, $i * 100, 100)) {
 			if (count($slice) > 0) {
@@ -93,6 +101,8 @@ class Oara_Network_Publisher_Daisycon extends Oara_Network {
 					'program_id' => $slice
 				);
 				$mResult = $this->_client->getPrograms($aFilter);
+
+				
 				foreach ($mResult["return"] as $merchant) {
 					$obj = Array();
 					$obj['cid'] = $merchant->program_id;
