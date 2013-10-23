@@ -63,14 +63,12 @@ class Oara_Network_Publisher_AffiliatesUnited extends Oara_Network {
 		new Oara_Curl_Parameter('product', ''),
 		new Oara_Curl_Parameter('profile', ''),
 		new Oara_Curl_Parameter('ts_type', 'advertiser'),
-		new Oara_Curl_Parameter('reportFirst', 'product'),
-		new Oara_Curl_Parameter('reportSecond', 'date'),
+		new Oara_Curl_Parameter('reportFirst', 'date'),
+		new Oara_Curl_Parameter('reportSecond', ''),
 		new Oara_Curl_Parameter('reportThird', ''),
-		new Oara_Curl_Parameter('columns%5B%5D', 'totalNetGaming'),
+		new Oara_Curl_Parameter('columns%5B%5D', 'tlrAmount'),
 		new Oara_Curl_Parameter('csvRequested', 'EXPORT AS CSV')
 		);
-
-
 
 		$this->_exportPaymentParameters = array();
 
@@ -99,33 +97,12 @@ class Oara_Network_Publisher_AffiliatesUnited extends Oara_Network {
 	public function getMerchantList($merchantMap = array()) {
 		$merchants = array();
 
-		$urls = array();
-		$urls[] = new Oara_Curl_Request('https://www.affutd.com/en/traffic-stats/advertiser', array());
-		$exportReport = $this->_client->get($urls);
-		$dom = new Zend_Dom_Query($exportReport[0]);
-		$merchantList = $dom->query('#product');
-		$merchantList = $merchantList->current();
-		if ($merchantList != null) {
-			$merchantLines = $merchantList->childNodes;
-			for ($i = 0; $i < $merchantLines->length; $i++) {
-				if ($merchantLines->item($i)->getAttribute("value") != "") {
-					$obj = array();
-					$obj['cid'] = $merchantLines->item($i)->getAttribute("value");
-					$obj['name'] = $merchantLines->item($i)->getAttribute("label");
-					$merchants[] = $obj;
-				}
-			}
-		}
+		
 		$obj = array();
 		$obj['cid'] = 1;
-		$obj['name'] = "William Hill";
+		$obj['name'] = "Affiliates United";
 		$merchants[] = $obj;
-		$this->_merchantMap = $merchantMap;
-		foreach ($merchants as $merchant) {
-			if (!isset($this->_merchantMap[$merchant['name']])) {
-				$this->_merchantMap[$merchant['name']] = $merchant['cid'];
-			}
-		}
+		
 
 		return $merchants;
 	}
@@ -162,17 +139,16 @@ class Oara_Network_Publisher_AffiliatesUnited extends Oara_Network {
 		for ($i = 1; $i < $num; $i++) {
 			$transactionExportArray = str_getcsv($exportData[$i], ",");
 			$netGamming = 0;
-			$transactionExportArray[2] = str_replace(array("$",","), "", $transactionExportArray[2]);
-			if (preg_match("/[-+]?[0-9]*\.?[0-9]+/", $transactionExportArray[2], $match)){
+			$transactionExportArray[1] = str_replace(array("$",","), "", $transactionExportArray[1]);
+			if (preg_match("/[-+]?[0-9]*\.?[0-9]+/", $transactionExportArray[1], $match)){
 				$netGamming = (double)$match[0];
 			}
 				
-				
-			if ($netGamming != 0 && isset($this->_merchantMap[$transactionExportArray[0]]) && in_array($this->_merchantMap[$transactionExportArray[0]], $merchantList)) {
+			if ($netGamming != 0) {
 
 				$transaction = Array();
-				$transaction['merchantId'] = $this->_merchantMap[$transactionExportArray[0]];
-				$transactionDate = new Zend_Date($transactionExportArray[1], 'yyyy-MM-dd', 'en');
+				$transaction['merchantId'] = 1;
+				$transactionDate = new Zend_Date($transactionExportArray[0], 'yyyy-MM-dd', 'en');
 				$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 
 				$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
