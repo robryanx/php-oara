@@ -228,7 +228,7 @@ class Oara_Network_Publisher_TradeDoubler extends Oara_Network {
 		$urls = array();
 		$urls[] = new Oara_Curl_Request('http://publisher.tradedoubler.com/pan/aReport3Selection.action?reportName=aAffiliateProgramOverviewReport', array());
 		$exportReport = $this->_client->get($urls);
-		if (preg_match("/\(([a-zA-Z]{0,2}[\/\.][a-zA-Z]{0,2}[\/\.][a-zA-Z]{0,2})\)/", $exportReport[0], $match)) {
+		if (preg_match("/\(([a-zA-Z]{0,2}[\/\.-][a-zA-Z]{0,2}[\/\.-][a-zA-Z]{0,2})\)/", $exportReport[0], $match)) {
 			$this->_dateFormat = $match[1];
 		}
 
@@ -617,6 +617,9 @@ class Oara_Network_Publisher_TradeDoubler extends Oara_Network {
 		} else
 		if ($this->_dateFormat == 'dd.MM.yy') {
 			$dateString = $date->toString('dd.MM.yy');
+		} else
+		if ($this->_dateFormat == 'yy-MM-dd') {
+			$dateString = $date->toString('yy-MM-dd');
 		} else {
 			throw new Exception("\n Date Format not supported ".$this->_dateFormat."\n");
 		}
@@ -650,7 +653,10 @@ class Oara_Network_Publisher_TradeDoubler extends Oara_Network {
 		} else
 		if ($this->_dateFormat == 'dd.MM.yy') {
 			$transactionDate = new Zend_Date(trim($dateString), "dd.MM.yy HH:mm:ss");
-		} else {
+		}  else
+		if ($this->_dateFormat == 'yy-MM-dd') {
+			$transactionDate = new Zend_Date(trim($dateString), "yy-MM-dd HH:mm:ss");
+		}else {
 			throw new Exception("\n Date Format not supported ".$this->_dateFormat."\n");
 		}
 		return $transactionDate;
