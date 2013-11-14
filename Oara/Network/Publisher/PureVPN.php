@@ -101,14 +101,14 @@ class Oara_Network_Publisher_PureVPN extends Oara_Network {
 		$cookieLocalion = realpath(dirname(__FILE__)).'/../../data/curl/'.$this->_credentials['cookiesDir'].'/'.$this->_credentials['cookiesSubDir'].'/'.$this->_credentials["cookieName"].'_cookies.txt';
 		$cookieContent = file_get_contents($cookieLocalion);
 
-		$cookieChips = str_getcsv($cookieContent, "\t");
-		$chip = $cookieChips[18];
-
+		$cookieChips = str_getcsv($cookieContent, "\n");
+		$chip = \explode("\t", $cookieChips[7]);
+		$chip = end($chip);
 		if ($this->_transactionList == null){
 			$urls = array();
 			$urls[] = new Oara_Curl_Request('https://billing.purevpn.com/affiliates/scripts/server.php?C=Pap_Affiliates_Reports_TransactionsGrid&M=getCSVFile&S='.$chip.'&FormRequest=Y&FormResponse=Y', array());
 			$exportReport = array();
-			$exportReport = $this->_client->get($urls);
+			$exportReport = $this->_client->post($urls);
 			$this->_transactionList = str_getcsv($exportReport[0], "\n");
 		}
 		$exportData = $this->_transactionList;
