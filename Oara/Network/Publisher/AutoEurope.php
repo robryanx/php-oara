@@ -96,7 +96,10 @@ class Oara_Network_Publisher_AutoEurope extends Oara_Network {
 			$transaction['commission'] = (double) $xmlTransaction['commission'];
 			$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
 			$transaction['unique_id'] = $xmlTransaction['Res #'];
-
+			if (isset($xmlTransaction['Affiliate1'])){
+				$transaction['custom_id'] = (string)$xmlTransaction['Affiliate1'];
+			}
+			
 			$totalTransactions[] = $transaction;
 		}
 		return $totalTransactions;
