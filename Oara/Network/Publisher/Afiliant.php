@@ -112,7 +112,7 @@ class Oara_Network_Publisher_Afiliant extends Oara_Network {
 			$num = count($exportData);
 			for ($i = 0; $i < $num; $i++) {
 				$transactionExportArray = str_getcsv($exportData[$i], ";");
-					
+				
 				if (isset($merchantMap[$transactionExportArray[1]])) {
 					$transaction = Array();
 					$merchantId = (int) $merchantMap[$transactionExportArray[1]];

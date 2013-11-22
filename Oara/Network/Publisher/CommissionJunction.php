@@ -174,7 +174,7 @@ class Oara_Network_Publisher_CommissionJunction extends Oara_Network {
 
 				$transactionDateEnd = clone $dEndDate;
 				$transactionDateEnd->addDay(1);
-				$restUrl = 'https://commission-detail.api.cj.com/v3/commissions?cids='.implode(',', $merchantSlice).'&date-type=event&start-date='.$dStartDate->toString("yyyy-MM-dd").'&end-date='.$transactionDateEnd->toString("yyyy-MM-dd");
+				$restUrl = 'https://commission-detail.api.cj.com/v3/commissions?cids='.implode(',', $merchantSlice).'&date-type=posting&start-date='.$dStartDate->toString("yyyy-MM-dd").'&end-date='.$transactionDateEnd->toString("yyyy-MM-dd");
 				unset($transactionDateEnd);
 				$totalTransactions = array_merge($totalTransactions, self::getTransactionsXml($restUrl, $merchantList));
 
@@ -186,7 +186,7 @@ class Oara_Network_Publisher_CommissionJunction extends Oara_Network {
 					$transactionDateEnd = clone $dateArray[$j];
 					$transactionDateEnd->addDay(1);
 					echo $dateArray[$j]->toString("yyyy-MM-dd")."\n\n";
-					$restUrl = 'https://commission-detail.api.cj.com/v3/commissions?cids='.implode(',', $merchantSlice).'&date-type=event&start-date='.$dateArray[$j]->toString("yyyy-MM-dd").'&end-date='.$transactionDateEnd->toString("yyyy-MM-dd");
+					$restUrl = 'https://commission-detail.api.cj.com/v3/commissions?cids='.implode(',', $merchantSlice).'&date-type=posting&start-date='.$dateArray[$j]->toString("yyyy-MM-dd").'&end-date='.$transactionDateEnd->toString("yyyy-MM-dd");
 					try {
 						$totalTransactions = array_merge($totalTransactions, self::getTransactionsXml($restUrl, $merchantList));
 					} catch (Exception $e) {
@@ -261,7 +261,7 @@ class Oara_Network_Publisher_CommissionJunction extends Oara_Network {
 		$typeTransactions = array("bonus", "click", "impression", "sale", "lead", "advanced%20sale", "advanced%20lead", "performance%20incentive");
 		foreach ($typeTransactions as $type) {
 			//echo $type."\n\n";
-			$restUrl = 'https://commission-detail.api.cj.com/v3/commissions?action-types='.$type.'&cids='.$cid.'&date-type=event&start-date='.$startDate->toString("yyyy-MM-dd").'&end-date='.$endDate->toString("yyyy-MM-dd");
+			$restUrl = 'https://commission-detail.api.cj.com/v3/commissions?action-types='.$type.'&cids='.$cid.'&date-type=posting&start-date='.$startDate->toString("yyyy-MM-dd").'&end-date='.$endDate->toString("yyyy-MM-dd");
 			$totalTransactions = array_merge($totalTransactions, self::getTransactionsXml($restUrl, $merchantList));
 		}
 		return $totalTransactions;
