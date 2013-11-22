@@ -62,6 +62,16 @@ class Oara_Network_Publisher_FubraWorldSales extends Oara_Network {
 					$transaction['unique_id'] = $invoice->reference;
 					$transaction['date'] = $invoice->dateCreated;
 					
+					$description = "";
+					foreach ($invoice->items as $item){
+						$description .= $item->description." / ";
+					}
+					
+					if ($description != ""){
+						$transaction['custom_id'] = $description;
+					}
+					
+					
 					$totalAmount = 0;
 					foreach ($invoice->items as $item){
 						$totalAmount += $item->unitPrice * $item->quantity;
