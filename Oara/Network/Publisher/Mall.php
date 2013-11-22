@@ -8,7 +8,7 @@
  * @version    Release: 01.00
  *
  */
-class Oara_Network_Publisher_TradeDoubler extends Oara_Network {
+class Oara_Network_Publisher_Mall extends Oara_Network {
 	/**
 	 * Export client.
 	 * @var Oara_Curl_Access
