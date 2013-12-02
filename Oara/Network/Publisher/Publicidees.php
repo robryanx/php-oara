@@ -129,7 +129,7 @@ class Oara_Network_Publisher_Publicidees extends Oara_Network {
 			$urls = array();
 			for ($i = 0; $i < $dateArraySize; $i++) {
 				$valuesFromExport = array();
-				$valuesFromExport[] = new Oara_Curl_Parameter('action', "moreallstats");
+				$valuesFromExport[] = new Oara_Curl_Parameter('action', "myresume");
 				$valuesFromExport[] = new Oara_Curl_Parameter('progid', 0);
 				$valuesFromExport[] = new Oara_Curl_Parameter('dD', $dateArray[$i]->toString("dd/MM/yyyy"));
 				$valuesFromExport[] = new Oara_Curl_Parameter('dF', $dateArray[$i]->toString("dd/MM/yyyy"));

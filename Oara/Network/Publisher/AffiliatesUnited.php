@@ -9,26 +9,7 @@
  *
  */
 class Oara_Network_Publisher_AffiliatesUnited extends Oara_Network {
-	/**
-	 * Export Merchants Parameters
-	 * @var array
-	 */
-	private $_exportMerchantParameters = null;
-	/**
-	 * Export Transaction Parameters
-	 * @var array
-	 */
-	private $_exportTransactionParameters = null;
-	/**
-	 * Export Overview Parameters
-	 * @var array
-	 */
-	private $_exportOverviewParameters = null;
-	/**
-	 * Export Payment Parameters
-	 * @var array
-	 */
-	private $_exportPaymentParameters = null;
+	
 	/**
 	 * Merchants by name
 	 */
@@ -48,29 +29,14 @@ class Oara_Network_Publisher_AffiliatesUnited extends Oara_Network {
 		$password = $credentials['password'];
 
 		$valuesLogin = array(
-		new Oara_Curl_Parameter('username', $user),
-		new Oara_Curl_Parameter('password', $password),
-		new Oara_Curl_Parameter('fromUrl', 'http://www.affutd.com/'),
-		new Oara_Curl_Parameter('hubpage', 'y')
+		new Oara_Curl_Parameter('us', $user),
+		new Oara_Curl_Parameter('pa', $password)
 		);
 
-		$loginUrl = 'https://www.affutd.com/en//login/submit';
+		$loginUrl = 'https://affiliates.affutd.com/affiliates/Login.aspx';
 		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
 
-		$this->_exportTransactionParameters = array(new Oara_Curl_Parameter('periods', 'custom'),
-		new Oara_Curl_Parameter('minDate', '{"year":"2008","month":"01","day":"01"}'),
-		new Oara_Curl_Parameter('show_periods', '1'),
-		new Oara_Curl_Parameter('product', ''),
-		new Oara_Curl_Parameter('profile', ''),
-		new Oara_Curl_Parameter('ts_type', 'advertiser'),
-		new Oara_Curl_Parameter('reportFirst', 'date'),
-		new Oara_Curl_Parameter('reportSecond', ''),
-		new Oara_Curl_Parameter('reportThird', ''),
-		new Oara_Curl_Parameter('columns%5B%5D', 'tlrAmount'),
-		new Oara_Curl_Parameter('csvRequested', 'EXPORT AS CSV')
-		);
-
-		$this->_exportPaymentParameters = array();
+	
 
 	}
 	/**
@@ -80,11 +46,12 @@ class Oara_Network_Publisher_AffiliatesUnited extends Oara_Network {
 		//If not login properly the construct launch an exception
 		$connection = false;
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('https://www.affutd.com/en/', array());
+		$urls[] = new Oara_Curl_Request('https://affiliates.affutd.com/affiliates/Dashboard.aspx', array());
 		$exportReport = $this->_client->get($urls);
 
+		echo $exportReport[0];
 		$dom = new Zend_Dom_Query($exportReport[0]);
-		$results = $dom->query('li .cplLogout');
+		$results = $dom->query('.lnkLogOut');
 		if (count($results) > 0) {
 			$connection = true;
 		}
@@ -112,51 +79,29 @@ class Oara_Network_Publisher_AffiliatesUnited extends Oara_Network {
 	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
 	 */
 	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
-
 		$totalTransactions = array();
-
-		$valuesFromExport = Oara_Utilities::cloneArray($this->_exportTransactionParameters);
-		$valuesFromExport[] = new Oara_Curl_Parameter('fromPeriod', $dStartDate->toString("yyyy-MM-dd"));
-		$valuesFromExport[] = new Oara_Curl_Parameter('toPeriod', $dEndDate->toString("yyyy-MM-dd"));
-		
+		$valuesFromExport = array();
+		$valuesFromExport[] = new Oara_Curl_Parameter('ctl00$cphPage$reportFrom', $dStartDate->toString("yyyy-MM-dd"));
+		$valuesFromExport[] = new Oara_Curl_Parameter('ctl00$cphPage$reportTo', $dEndDate->toString("yyyy-MM-dd"));
+	
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('https://www.affutd.com/en/traffic-stats/advertiser', array());
-		$exportReport = $this->_client->get($urls);
-		$dom = new Zend_Dom_Query($exportReport[0]);
-		$campaignOption = $dom->query('option[label="DEFAULT"]');
-		$campaignOption = $campaignOption->current();
-		$valuesFromExport[] = new Oara_Curl_Parameter('campaign', $campaignOption->getAttribute('value'));
-
-		$hiddenParam = $dom->query('#jsonCampaigns');
-		$hiddenParam = $hiddenParam->current();
-		$valuesFromExport[] = new Oara_Curl_Parameter($hiddenParam->getAttribute('id'), $hiddenParam->getAttribute('value'));
-
-		$urls = array();
-		$urls[] = new Oara_Curl_Request('https://www.affutd.com/en/traffic-stats/advertiser', $valuesFromExport);
+		$urls[] = new Oara_Curl_Request('https://affiliates.affutd.com/affiliates/DataServiceWrapper/DataService.svc/Export/CSV/Affiliates_Reports_GeneralStats_DailyFigures', $valuesFromExport);
 		$exportReport = $this->_client->post($urls);
 		$exportData = str_getcsv($exportReport[0], "\n");
 		$num = count($exportData);
 		for ($i = 1; $i < $num; $i++) {
 			$transactionExportArray = str_getcsv($exportData[$i], ",");
-			$netGamming = 0;
-			$transactionExportArray[1] = str_replace(array("$",","), "", $transactionExportArray[1]);
-			if (preg_match("/[-+]?[0-9]*\.?[0-9]+/", $transactionExportArray[1], $match)){
-				$netGamming = (double)$match[0];
-			}
+
+			$transaction = Array();
+			$transaction['merchantId'] = 1;
+			$transactionDate = new Zend_Date($transactionExportArray[0], 'dd-MM-yyyy', 'en');
+			$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+
+			$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
 				
-			if ($netGamming != 0) {
-
-				$transaction = Array();
-				$transaction['merchantId'] = 1;
-				$transactionDate = new Zend_Date($transactionExportArray[0], 'yyyy-MM-dd', 'en');
-				$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
-
-				$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
-					
-				$transaction['amount'] = $netGamming;
-				$transaction['commission'] = $netGamming;
-				$totalTransactions[] = $transaction;
-			}
+			$transaction['amount'] = $transactionExportArray[12];
+			$transaction['commission'] = $transactionExportArray[13];
+			$totalTransactions[] = $transaction;
 		}
 
 		return $totalTransactions;
