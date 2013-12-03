@@ -49,7 +49,6 @@ class Oara_Network_Publisher_AffiliatesUnited extends Oara_Network {
 		$urls[] = new Oara_Curl_Request('https://affiliates.affutd.com/affiliates/Dashboard.aspx', array());
 		$exportReport = $this->_client->get($urls);
 
-		echo $exportReport[0];
 		$dom = new Zend_Dom_Query($exportReport[0]);
 		$results = $dom->query('.lnkLogOut');
 		if (count($results) > 0) {
