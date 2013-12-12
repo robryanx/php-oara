@@ -183,8 +183,8 @@ class Oara_Network_Publisher_Smg extends Oara_Network {
 				$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 
 				$transaction['unique_id'] = (string) $action->Id;
-				if ((string) $action->SharedId != '') {
-					$transaction['custom_id'] = (string) $action->SharedId;
+				if ((string) $action->SubId1 != '') {
+					$transaction['custom_id'] = (string) $action->SubId1;
 				}
 
 				$status = (string) $action->Status;
