@@ -32,24 +32,21 @@ class Oara_Network_Publisher_PureVPN extends Oara_Network {
 		self::logIn();
 
 	}
-
 	private function logIn() {
 
 		$valuesLogin = array(
 		new Oara_Curl_Parameter('username', $this->_credentials['user']),
 		new Oara_Curl_Parameter('password', $this->_credentials['password']),
 		);
-
-
-		$html = file_get_contents('https://billing.purevpn.com/affiliates.php');
-
+		
+		
+		
 		$dom = new Zend_Dom_Query($html);
 		$hidden = $dom->query('#frmlogin input[name="token"][type="hidden"]');
 
 		foreach ($hidden as $values) {
 			$valuesLogin[] = new Oara_Curl_Parameter($values->getAttribute("name"), $values->getAttribute("value"));
 		}
-		//print_r($valuesLogin);
 
 		$loginUrl = 'https://billing.purevpn.com/dologin.php?goto=clientarea.php';
 		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $this->_credentials);
@@ -62,7 +59,7 @@ class Oara_Network_Publisher_PureVPN extends Oara_Network {
 		//If not login properly the construct launch an exception
 		$connection = true;
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('https://billing.purevpn.com/check_affiliate.php?check=affiliate', array());
+		$urls[] = new Oara_Curl_Request('https://billing.purevpn.com/affiliates/affiliates/panel.php', array());
 
 		$exportReport = $this->_client->get($urls);
 
