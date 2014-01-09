@@ -53,7 +53,7 @@ class Oara_Network_Publisher_DirectTrack extends Oara_Network {
 		//Setting the client.
 		$this->_apiClient = new nusoap_client($wsdlUrl, true);
 
-
+		throw new Exception("DirectTrack has to be renew");
 	}
 	/**
 	 * Check the connection

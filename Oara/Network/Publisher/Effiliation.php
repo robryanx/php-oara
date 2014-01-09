@@ -71,27 +71,37 @@ class Oara_Network_Publisher_Effiliation extends Oara_Network {
 		for ($i = 1; $i < $num; $i++) {
 			$transactionExportArray = str_getcsv($exportData[$i], "|");
 			if (in_array((int) $transactionExportArray[2], $merchantList)) {
+				
+				$numFields = 0;
+				foreach ($transactionExportArray as $fieldValue){
+					if ($fieldValue == "Valide" || $fieldValue == "Attente" || $fieldValue == "Refusé"){
+						break;
+					}
+					$numFields ++;
+				}
+				
+				
 				$transaction = Array();
 				$merchantId = (int) $transactionExportArray[2];
 				$transaction['merchantId'] = $merchantId;
 				$transaction['date'] = $transactionExportArray[4];
-				$transaction['unique_id'] = $transactionExportArray[9];
+				$transaction['unique_id'] = $transactionExportArray[$numFields+1];
 
 				if ($transactionExportArray[0] != null) {
 					$transaction['custom_id'] = $transactionExportArray[0];
 				}
 
-				if ($transactionExportArray[8] == 'Valide') {
+				if ($transactionExportArray[$numFields] == 'Valide') {
 					$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
 				} else
-					if ($transactionExportArray[8] == 'Attente') {
+					if ($transactionExportArray[$numFields] == 'Attente') {
 						$transaction['status'] = Oara_Utilities::STATUS_PENDING;
 					} else
-						if ($transactionExportArray[8] == 'Refusé') {
+						if ($transactionExportArray[$numFields] == 'Refusé') {
 							$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
 						}
-				$transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[6]);
-				$transaction['commission'] = Oara_Utilities::parseDouble($transactionExportArray[7]);
+				$transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[$numFields -2]);
+				$transaction['commission'] = Oara_Utilities::parseDouble($transactionExportArray[$numFields -1]);
 				$totalTransactions[] = $transaction;
 			}
 		}
