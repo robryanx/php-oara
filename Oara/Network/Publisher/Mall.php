@@ -160,7 +160,8 @@ class Oara_Network_Publisher_Mall extends Oara_Network {
 		new Oara_Curl_Parameter('metric1.factor', ''),
 		new Oara_Curl_Parameter('showFavorite', 'false'),
 		new Oara_Curl_Parameter('separator', ','),
-		new Oara_Curl_Parameter('format', 'CSV')
+		new Oara_Curl_Parameter('format', 'CSV'),
+		new Oara_Curl_Parameter('currencyId', 'GBP')
 		);
 
 		$this->_exportOverviewParameters = array(new Oara_Curl_Parameter('reportName', 'aAffiliateProgramOverviewReport'),
