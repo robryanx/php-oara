@@ -192,8 +192,10 @@ class Oara_Network_Publisher_PayMode extends Oara_Network {
 			$urls[] = new Oara_Curl_Request('https://secure.paymode.com/paymode/reports-do_csv.jsp?closeJQS=true?', $valuesFromExportTemp);
 		}
 
-
 		$exportReport = $this->_client->get($urls);
+		$transactionCounter = 0;
+		$valueCounter = 0;
+		$commissionCounter = 0;
 		$j = 0;
 		foreach ($exportReport as $report){
 			$reportParameters = $urls[$j]->getParameters();
@@ -205,73 +207,32 @@ class Oara_Network_Publisher_PayMode extends Oara_Network {
 				for ($i = 1; $i < $num; $i++) {
 					$transactionArray = str_getcsv($exportReportData[$i], ",");
 					if (count($transactionArray) == 30 && $transactionArray[0] == 'D' && $transactionArray[1] == null){
-						$transaction['merchantId'] = 1;
-						$transaction['status'] = Oara_Utilities::STATUS_PAID;
-							
-						$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
-							
-						$transaction['unique_id'] = $transactionArray[25];
-						$transaction['custom_id'] = $transactionArray[21];
-
-						$transaction['amount'] = $filter->filter($transactionArray[24]);
-						$transaction['commission'] = $filter->filter($transactionArray[28]);
-							
-
-						$totalTransactions[] = $transaction;
+						$transactionCounter++;
+						$valueCounter += $filter->filter($transactionArray[24]);
+						$commissionCounter += $filter->filter($transactionArray[28]);
 					}
 				}
 			}
 			$j++;
 		}
-
-		/*
-		 $valuesFromExport = Oara_Utilities::cloneArray($this->_exportTransactionParameters);
-		 foreach ($this->_agentNumber as $agentNumber) {
-			$valuesFromExport[] = new Oara_Curl_Parameter($agentNumber, "on");
+		
+		if ($transactionCounter > 0){
+			
+			for ($i = 0; $i < count($dateList); $i++){
+				
+				$transaction = array();
+				$transaction['merchantId'] = 1;
+				$transaction['status'] = Oara_Utilities::STATUS_PAID;
+					
+				$transaction['date'] = $dateList[$i]->toString("yyyy-MM-dd HH:mm:ss");
+		
+				$transaction['amount'] = $valueCounter/count($dateList);
+				$transaction['commission'] = $commissionCounter/count($dateList);
+		
+				$totalTransactions[] = $transaction;
 			}
-			$valuesFromExport[] = new Oara_Curl_Parameter('startDate', $dStartDate->toString("MM/dd/yyyy"));
-			$valuesFromExport[] = new Oara_Curl_Parameter('endDate', $dEndDate->toString("MM/dd/yyyy"));
-
-			$urls = array();
-			$urls[] = new Oara_Curl_Request('https://secure.paymode.com/paymode/post-coll_comm_hist_detail.jsp?', $valuesFromExport);
-			$exportReport = $this->_client->post($urls);
-			$urls = array();
-			$urls[] = new Oara_Curl_Request('https://secure.paymode.com/paymode/tewf/navGenericReport.jsp?presentation=excel', array());
-			$exportReport = $this->_client->get($urls);
-
-			$dom = new Zend_Dom_Query($exportReport[0]);
-			$results = $dom->query('tr[valign="top"]');
-			foreach ($results as $line) {
-			$transaction = Array();
-			$lineHtml = self::DOMinnerHTML($line);
-			$domLine = new Zend_Dom_Query($lineHtml);
-			$resultsLine = $domLine->query('.rptcontentText');
-			if (count($resultsLine) > 0) {
-
-			$transaction['merchantId'] = 1;
-			$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
-			$i = 0;
-			foreach ($resultsLine as $attribute) {
-			if ($i == 5) {
-			$transactionDate = new Zend_Date($attribute->nodeValue, 'MM/dd/yyyy', 'en');
-			$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
-			} else
-			if ($i == 10) {
-			$transaction['unique_id'] = $attribute->nodeValue;
-			} else
-			if ($i == 13) {
-			$transaction['amount'] = $filter->filter($attribute->nodeValue);
-			$transaction['commission'] = $filter->filter($attribute->nodeValue);
-			}
-			$i++;
-			}
-
-			$totalTransactions[] = $transaction;
-
-			}
-			}
-
-			*/
+		
+		}
 		return $totalTransactions;
 	}
 
