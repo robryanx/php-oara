@@ -113,7 +113,7 @@ class Oara_Curl_Access {
 		if ($isDianomi) {
 			$result = true;
 		}
-		
+		echo $result;
 		$this->_constructResult = $result;
 		if ($result == false) {
 			throw new Exception ( "Failed to connect" );
