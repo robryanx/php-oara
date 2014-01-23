@@ -370,7 +370,7 @@ class Oara_Curl_Access {
 				
 				curl_setopt ( $rch, CURLOPT_HEADER, true );
 				curl_setopt ( $rch, CURLOPT_NOBODY, false );
-				// curl_setopt ( $rch, CURLOPT_FORBID_REUSE, false );
+				curl_setopt ( $rch, CURLOPT_FORBID_REUSE, false );
 				do {
 					curl_setopt ( $rch, CURLOPT_URL, $newurl );
 					$resp = curl_exec ( $rch );
