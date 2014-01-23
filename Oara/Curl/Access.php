@@ -28,11 +28,6 @@ class Oara_Curl_Access {
 	 */
 	private $_threads = 7;
 	/**
-	 *
-	 *
-	 *
-	 *
-	 *
 	 * Construct Result
 	 *
 	 * @var string
@@ -113,7 +108,6 @@ class Oara_Curl_Access {
 		if ($isDianomi) {
 			$result = true;
 		}
-		echo $result;
 		$this->_constructResult = $result;
 		if ($result == false) {
 			throw new Exception ( "Failed to connect" );
@@ -144,74 +138,20 @@ class Oara_Curl_Access {
 			throw new Exception ( "Not connected" );
 		}
 		
-		$mcurl = curl_multi_init ();
-		$threadsRunning = 0;
-		$urls_id = 0;
-		for(;;) {
-			// Fill up the slots
-			while ( $threadsRunning < $this->_threads && $urls_id < count ( $urls ) ) {
-				$request = $urls [$urls_id];
-				$ch = curl_init ();
-				$chId = ( int ) $ch;
-				$curlResults [( string ) $chId] = '';
-				$options = $this->_options;
-				$options [CURLOPT_URL] = $request->getUrl ();
-				$options [CURLOPT_POST] = true;
-				$options [CURLOPT_FOLLOWLOCATION] = true;
-				// Post form fields
-				$arg = self::getPostFields ( $request->getParameters () );
-				$options [CURLOPT_POSTFIELDS] = $arg;
-				curl_setopt_array ( $ch, $options );
-				
-				curl_multi_add_handle ( $mcurl, $ch );
-				$urls_id ++;
-				$threadsRunning ++;
+		
+		foreach ($urls as $urlKey => $request){
+			$options = $this->_options;
+			$options [CURLOPT_URL] = $request->getUrl ();
+			$options [CURLOPT_POST] = true;
+			// Post form fields
+			$arg = self::getPostFields ( $request->getParameters () );
+			$options [CURLOPT_POSTFIELDS] = $arg;
+			$curlResult = self::curlExec($options);
+			if ($return == 'content') {
+				$results[$urlKey] = $curlResult["result"];
+			} else if ($return == 'url') {
+				$curlResults [( string ) $chId] = $result ["info"]["url"];;
 			}
-			// Check if done
-			if ($threadsRunning == 0 && $urls_id >= count ( $urls )) {
-				break;
-			}
-			// Let mcurl do its thing
-			curl_multi_select ( $mcurl );
-			while ( ($mcRes = curl_multi_exec ( $mcurl, $mcActive )) == CURLM_CALL_MULTI_PERFORM ) {
-				sleep ( 1 );
-			}
-			if ($mcRes != CURLM_OK) {
-				throw new Exception ( 'Fail in CURL access in POST, multiexec' );
-			}
-			while ( $done = curl_multi_info_read ( $mcurl ) ) {
-				$ch = $done ['handle'];
-				$chId = ( int ) $ch;
-				$done_url = curl_getinfo ( $ch, CURLINFO_EFFECTIVE_URL );
-				$done_content = curl_multi_getcontent ( $ch );
-				if ($done_content == false) {
-					if ($deep == 5) {
-						throw new Exception ( 'Fail in CURL access in POST, getcontent' );
-					}
-					$keyPosition = self::keyPosition ( $curlResults, $chId );
-					$newUrlArray = array ();
-					$newUrlArray [] = $urls [$keyPosition];
-					$newDeep = $deep + 1;
-					$recursion = self::post ( $newUrlArray, $return, $newDeep );
-					$done_content = $recursion [0];
-				}
-				if (curl_errno ( $ch ) == 0) {
-					if ($return == 'content') {
-						$curlResults [( string ) $chId] = $done_content;
-					} else if ($return == 'url') {
-						$curlResults [( string ) $chId] = $done_url;
-					}
-				} else {
-					throw new Exception ( 'Fail in CURL access in POST, getcontent' );
-				}
-				curl_multi_remove_handle ( $mcurl, $ch );
-				curl_close ( $ch );
-				$threadsRunning --;
-			}
-		}
-		curl_multi_close ( $mcurl );
-		foreach ( $curlResults as $key => $value ) {
-			$results [] = $value;
 		}
 		return $results;
 	}
@@ -231,72 +171,17 @@ class Oara_Curl_Access {
 			throw new Exception ( "Not connected" );
 		}
 		
-		$mcurl = curl_multi_init ();
-		$threadsRunning = 0;
-		$urls_id = 0;
-		for(;;) {
-			// Fill up the slots
-			while ( $threadsRunning < $this->_threads && $urls_id < count ( $urls ) ) {
-				$request = $urls [$urls_id];
-				$ch = curl_init ();
-				$chId = ( int ) $ch;
-				$curlResults [( string ) $chId] = '';
-				
-				$options = $this->_options;
-				$options [CURLOPT_URL] = $request->getUrl () . self::getPostFields ( $request->getParameters () );
-				$options [CURLOPT_RETURNTRANSFER] = true;
-				$options [CURLOPT_FOLLOWLOCATION] = true;
-				curl_setopt_array ( $ch, $options );
-				
-				curl_multi_add_handle ( $mcurl, $ch );
-				$urls_id ++;
-				$threadsRunning ++;
+		
+		foreach ($urls as $urlKey => $request){
+			$options = $this->_options;
+			$options [CURLOPT_URL] = $request->getUrl () . self::getPostFields ( $request->getParameters () );
+			$options [CURLOPT_POST] = false;
+			$curlResult = self::curlExec($options);
+			if ($return == 'content') {
+				$results[$urlKey] = $curlResult["result"];
+			} else if ($return == 'url') {
+				$curlResults [( string ) $chId] = $result ["info"]["url"];;
 			}
-			// Check if done
-			if ($threadsRunning == 0 && $urls_id >= count ( $urls )) {
-				break;
-			}
-			// Let mcurl do it's thing
-			curl_multi_select ( $mcurl );
-			while ( ($mcRes = curl_multi_exec ( $mcurl, $mcActive )) == CURLM_CALL_MULTI_PERFORM ) {
-				sleep ( 1 );
-			}
-			if ($mcRes != CURLM_OK) {
-				throw new Exception ( 'Fail in CURL access in GET, multiexec' );
-			}
-			while ( $done = curl_multi_info_read ( $mcurl ) ) {
-				$ch = $done ['handle'];
-				$chId = ( int ) $ch;
-				$done_url = curl_getinfo ( $ch, CURLINFO_EFFECTIVE_URL );
-				$done_content = curl_multi_getcontent ( $ch );
-				if ($done_content == false) {
-					if ($deep == 5) {
-						throw new Exception ( 'Fail in CURL access in GET, getcontent' );
-					}
-					$keyPosition = self::keyPosition ( $curlResults, $chId );
-					$newUrlArray = array ();
-					$newUrlArray [] = $urls [$keyPosition];
-					$newDeep = $deep + 1;
-					$recursion = self::get ( $newUrlArray, $return, $newDeep );
-					$done_content = $recursion [0];
-				}
-				if (curl_errno ( $ch ) == 0) {
-					if ($return == 'content') {
-						$curlResults [( string ) $chId] = $done_content;
-					} else if ($return == 'url') {
-						$curlResults [( string ) $chId] = $done_url;
-					}
-				} else {
-					throw new Exception ( 'Fail in CURL access in GET, getcontent' );
-				}
-				curl_multi_remove_handle ( $mcurl, $ch );
-				curl_close ( $ch );
-				$threadsRunning --;
-			}
-		}
-		curl_multi_close ( $mcurl );
-		foreach ( $curlResults as $key => $value ) {
-			$results [] = $value;
 		}
 		return $results;
 	}
@@ -375,6 +260,8 @@ class Oara_Curl_Access {
 					curl_setopt ( $rch, CURLOPT_URL, $newurl );
 					$resp = curl_exec ( $rch );
 					list ( $header, $response ) = explode ( "\r\n\r\n", $resp, 2 );
+					
+					
 					$result ["result"] = $response;
 					$result ["err"] = curl_errno ( $rch );
 					$result ["errmsg"] = curl_error ( $rch );
