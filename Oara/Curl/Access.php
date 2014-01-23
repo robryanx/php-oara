@@ -92,7 +92,7 @@ class Oara_Curl_Access {
 				CURLOPT_SSL_VERIFYPEER => false,
 				CURLOPT_SSL_VERIFYHOST => false,
 				CURLOPT_HEADER => false,
-				CURLOPT_FOLLOWLOCATION => true,
+				CURLOPT_FOLLOWLOCATION => false,
 				//CURLOPT_VERBOSE => true 
 		);
 		
