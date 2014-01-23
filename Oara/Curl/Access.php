@@ -98,7 +98,7 @@ class Oara_Curl_Access {
 				CURLOPT_SSL_VERIFYHOST => false,
 				CURLOPT_HEADER => false,
 				CURLOPT_FOLLOWLOCATION => true,
-				CURLOPT_VERBOSE => true 
+				//CURLOPT_VERBOSE => true 
 		);
 		
 		// Init curl
