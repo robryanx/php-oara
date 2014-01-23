@@ -93,7 +93,7 @@ class Oara_Curl_Access {
 				CURLOPT_SSL_VERIFYHOST => false,
 				CURLOPT_HEADER => false,
 				CURLOPT_FOLLOWLOCATION => false,
-				//CURLOPT_VERBOSE => true 
+				CURLOPT_VERBOSE => false 
 		);
 		
 		// Init curl
@@ -242,6 +242,8 @@ class Oara_Curl_Access {
 			curl_setopt ( $rch, CURLOPT_MAXREDIRS, $mr );
 			curl_setopt ( $rch, CURLOPT_RETURNTRANSFER, true );
 			curl_setopt ( $rch, CURLOPT_SSL_VERIFYPEER, false );
+			
+			
 		} else {
 			if ($mr > 0) {
 				
@@ -256,6 +258,7 @@ class Oara_Curl_Access {
 				curl_setopt ( $rch, CURLOPT_HEADER, true );
 				curl_setopt ( $rch, CURLOPT_NOBODY, false );
 				curl_setopt ( $rch, CURLOPT_FORBID_REUSE, false );
+				curl_setopt ( $rch, CURLOPT_POSTREDIR, 3 );
 				do {
 					curl_setopt ( $rch, CURLOPT_URL, $newurl );
 					$resp = curl_exec ( $rch );
@@ -272,6 +275,7 @@ class Oara_Curl_Access {
 					} else {
 						$code = curl_getinfo ( $rch, CURLINFO_HTTP_CODE );
 						if ($code == 301 || $code == 302) {
+							curl_setopt($rch, CURLOPT_CUSTOMREQUEST, 'GET');
 							preg_match ( '/Location:(.*?)\n/', $header, $matches );
 							$newurl = trim ( array_pop ( $matches ) );
 							
