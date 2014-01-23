@@ -87,66 +87,24 @@ class Oara_Curl_Access {
 			CURLOPT_SSL_VERIFYPEER => false,
 			CURLOPT_SSL_VERIFYHOST => false,
 			CURLOPT_HEADER => false,
+			CURLOPT_FOLLOWLOCATION => false,
 			//CURLOPT_VERBOSE => true,
 		);
 		
 		//Init curl
-		$ch = curl_init();
 		$options = $this->_options;
 		$options[CURLOPT_URL] = $url;
 		$options[CURLOPT_POST] = true;
-
-		$options[CURLOPT_FOLLOWLOCATION] = true;
-		
-		
-
 		// Login form fields
 		$arg = self::getPostFields($valuesLogin);
-
 		$options[CURLOPT_POSTFIELDS] = $arg;
-
-		//problem with SMG about the redirects and headers
-		if ($isTD) {
-			$options[CURLOPT_FOLLOWLOCATION] = false;
-			$options[CURLOPT_HEADER] = true;
-		}
-
-		
-		curl_setopt_array($ch, $options);
-
-		$result = curl_exec($ch);
-		$err = curl_errno($ch);
-		$errmsg = curl_error($ch);
-		$info = curl_getinfo($ch);
-		//Close curl session
-		curl_close($ch);
-		
+		$curlResult = self::curlExec($options);
+		$result = $curlResult["result"];
 		if ($isDianomi){
 			$result = true;
 		}
 		
-		while (($isTD) && ($info['http_code'] == 301 || $info['http_code'] == 302)) {
-			// redirect manually, cookies must be set, which curl does not itself
-
-			// extract new location
-			preg_match_all('|Location: (.*)\n|U', $result, $results);
-			$location = implode(';', $results[1]);
-			$ch = curl_init();
-
-			$options = $this->_options;
-			$options[CURLOPT_URL] = str_replace("/publisher/..", "", $location);
-			$options[CURLOPT_HEADER] = true;
-			$options[CURLOPT_FOLLOWLOCATION] = false;
-
-			curl_setopt_array($ch, $options);
-
-			$result = curl_exec($ch);
-			$err = curl_errno($ch);
-			$errmsg = curl_error($ch);
-			$info = curl_getinfo($ch);
-
-			curl_close($ch);
-		}
+		
 		$this->_constructResult = $result;
 		if ($result == false) {
 			throw new Exception("Failed to connect");
@@ -377,4 +335,61 @@ class Oara_Curl_Access {
 		$temp = array_slice($a, $pos, 1, true);
 		return key($temp);
 	}
+	
+	function curlExec($options, $maxredirect = null) {
+		$result = array();
+		$ch = curl_init();
+		curl_setopt_array($ch, $options);
+		
+	    $mr = $maxredirect === null ? 10 : intval($maxredirect);
+	    if (ini_get('open_basedir') == '' && ini_get('safe_mode' == 'Off')) {
+	        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, $mr > 0);
+	        curl_setopt($ch, CURLOPT_MAXREDIRS, $mr);
+	    } else {
+	        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
+	        if ($mr > 0) {
+	            $newurl = curl_getinfo($ch, CURLINFO_EFFECTIVE_URL);
+	
+	            $rch = curl_copy_handle($ch);
+	            curl_setopt($rch, CURLOPT_HEADER, true);
+	            curl_setopt($rch, CURLOPT_NOBODY, true);
+	            curl_setopt($rch, CURLOPT_FORBID_REUSE, false);
+	            curl_setopt($rch, CURLOPT_RETURNTRANSFER, true);
+	            do {
+	                curl_setopt($rch, CURLOPT_URL, $newurl);
+	                $header = curl_exec($rch);
+	                if (curl_errno($rch)) {
+	                    $code = 0;
+	                } else {
+	                    $code = curl_getinfo($rch, CURLINFO_HTTP_CODE);
+	                    if ($code == 301 || $code == 302) {
+	                        preg_match('/Location:(.*?)\n/', $header, $matches);
+	                        $newurl = trim(array_pop($matches));
+	                    } else {
+	                        $code = 0;
+	                    }
+	                }
+	            } while ($code && --$mr);
+	            curl_close($rch);
+	            if (!$mr) {
+	                if ($maxredirect === null) {
+	                    trigger_error('Too many redirects. When following redirects, libcurl hit the maximum amount.', E_USER_WARNING);
+	                } else {
+	                    $maxredirect = 0;
+	                }
+	                return false;
+	            }
+	            curl_setopt($ch, CURLOPT_URL, $newurl);
+	        }
+	    }
+	    
+	    
+	    $result["result"] = curl_exec($ch);
+	    $result["err"] = curl_errno($ch);
+	    $result["errmsg"] = curl_error($ch);
+	    $result["info"] = curl_getinfo($ch);
+	    curl_close($ch);
+	    
+	    return $result;
+	} 
 }
