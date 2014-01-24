@@ -15,7 +15,13 @@ class Oara_Network_Publisher_PureVPN extends Oara_Network {
 	 * Client
 	 * @var unknown_type
 	 */
-	private $_client = null;
+	private $_s = null;
+	
+	/**
+	 * Client
+	 * @var unknown_type
+	 */
+	private $_options = array();
 
 	/**
 	 * Transaction List
@@ -33,13 +39,45 @@ class Oara_Network_Publisher_PureVPN extends Oara_Network {
 
 	}
 	private function logIn() {
+		
 
 		$valuesLogin = array(
 		new Oara_Curl_Parameter('username', $this->_credentials['user']),
 		new Oara_Curl_Parameter('password', $this->_credentials['password']),
 		);
 		
+		$cookies = realpath(dirname(__FILE__)).'/../../data/curl/'.$this->_credentials['cookiesDir'].'/'.$this->_credentials['cookiesSubDir'].'/'.$this->_credentials["cookieName"].'_cookies.txt';
+		unlink($cookies);
+		$this->_options = array (
+				CURLOPT_USERAGENT => "Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:26.0) Gecko/20100101 Firefox/26.0",
+				CURLOPT_RETURNTRANSFER => true,
+				CURLOPT_FAILONERROR => true,
+				CURLOPT_COOKIEJAR => $cookies,
+				CURLOPT_COOKIEFILE => $cookies,
+				CURLOPT_HTTPAUTH => CURLAUTH_ANY,
+				CURLOPT_AUTOREFERER => true,
+				CURLOPT_SSL_VERIFYPEER => false,
+				CURLOPT_SSL_VERIFYHOST => false,
+				CURLOPT_HEADER => false,
+				CURLOPT_FOLLOWLOCATION => false,
+				CURLOPT_HTTPHEADER => array('Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8','Accept-Language: es,en-us;q=0.7,en;q=0.3','Accept-Encoding: gzip, deflate','Connection: keep-alive', 'Cache-Control: max-age=0'),
+				CURLOPT_ENCODING => "gzip",
+				CURLOPT_VERBOSE => false
+		);
+		$rch = curl_init ();
+		$options = $this->_options;
+		curl_setopt ( $rch, CURLOPT_URL, "https://billing.purevpn.com/clientarea.php" );
+		curl_setopt_array ( $rch, $options );
+		$html = curl_exec ( $rch );
+		curl_close ( $rch );
 		
+		sleep(10);
+		$rch = curl_init ();
+		$options = $this->_options;
+		curl_setopt ( $rch, CURLOPT_URL, "https://billing.purevpn.com/clientarea.php" );
+		curl_setopt_array ( $rch, $options );
+		$html = curl_exec ( $rch );
+		curl_close ( $rch );
 		
 		$dom = new Zend_Dom_Query($html);
 		$hidden = $dom->query('#frmlogin input[name="token"][type="hidden"]');
@@ -47,10 +85,47 @@ class Oara_Network_Publisher_PureVPN extends Oara_Network {
 		foreach ($hidden as $values) {
 			$valuesLogin[] = new Oara_Curl_Parameter($values->getAttribute("name"), $values->getAttribute("value"));
 		}
-
-		$loginUrl = 'https://billing.purevpn.com/dologin.php?goto=clientarea.php';
-		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $this->_credentials);
-
+		$rch = curl_init ();
+		$options = $this->_options;
+		curl_setopt ( $rch, CURLOPT_URL, "https://billing.purevpn.com/dologin.php?goto=clientarea.php" );
+		
+		$options[CURLOPT_HTTPHEADER] =  array('Referer: https://billing.purevpn.com/clientarea.php', 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8','Accept-Language: es,en-us;q=0.7,en;q=0.3','Accept-Encoding: gzip, deflate','Connection: keep-alive', 'Cache-Control: max-age=0');
+		
+		$options [CURLOPT_POST] = true;
+		$arg = array ();
+		foreach ( $valuesLogin as $parameter ) {
+			$arg [] = $parameter->getKey () . '=' . urlencode ( $parameter->getValue () );
+		}
+		$options [CURLOPT_POSTFIELDS] = implode ( '&', $arg );
+		curl_setopt_array ( $rch, $options );
+		$html = curl_exec ( $rch );
+		curl_close ( $rch );
+		
+		
+		$rch = curl_init ();
+		$options = $this->_options;
+		$options[CURLOPT_URL] =  "https://billing.purevpn.com/check_affiliate.php?check=affiliate";
+		$options[CURLOPT_HEADER] = true ;
+		$options[CURLOPT_NOBODY] =  false;
+		$options[CURLOPT_HTTPHEADER] =  array('Referer: https://billing.purevpn.com/affiliates.php', 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8','Accept-Language: es,en-us;q=0.7,en;q=0.3','Accept-Encoding: gzip, deflate','Connection: keep-alive', 'Cache-Control: max-age=0');
+		curl_setopt_array ( $rch, $options );
+		$header = curl_exec ( $rch );
+		preg_match ( '/Location:(.*?)\n/', $header, $matches );
+		$newurl = trim ( array_pop ( $matches ) );
+		curl_close ( $rch );
+		
+		if (preg_match ( "/S=(.*)/", $newurl, $matches )) {
+			$this->_s = $matches [1];
+		}
+		
+		$rch = curl_init ();
+		$options = $this->_options;
+		$options[CURLOPT_URL] =  $newurl;
+		$options[CURLOPT_HTTPHEADER] =  array('Referer: https://billing.purevpn.com/affiliates.php', 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8','Accept-Language: es,en-us;q=0.7,en;q=0.3','Accept-Encoding: gzip, deflate','Connection: keep-alive', 'Cache-Control: max-age=0');
+		curl_setopt_array ( $rch, $options );
+		$content = curl_exec ( $rch );
+		
+		
 	}
 	/**
 	 * Check the connection
@@ -58,15 +133,7 @@ class Oara_Network_Publisher_PureVPN extends Oara_Network {
 	public function checkConnection() {
 		//If not login properly the construct launch an exception
 		$connection = true;
-		$urls = array();
-		$urls[] = new Oara_Curl_Request('https://billing.purevpn.com/affiliates/affiliates/panel.php', array());
-
-		$exportReport = $this->_client->get($urls);
-
-		$dom = new Zend_Dom_Query($exportReport[0]);
-		$results = $dom->query('#frmlogin');
-
-		if (count($results) > 0) {
+		if ($this->_s == null) {
 			$connection = false;
 		}
 		return $connection;
@@ -95,18 +162,20 @@ class Oara_Network_Publisher_PureVPN extends Oara_Network {
 		$totalTransactions = array();
 		$valuesFormExport = array();
 
-		$cookieLocalion = realpath(dirname(__FILE__)).'/../../data/curl/'.$this->_credentials['cookiesDir'].'/'.$this->_credentials['cookiesSubDir'].'/'.$this->_credentials["cookieName"].'_cookies.txt';
-		$cookieContent = file_get_contents($cookieLocalion);
-
-		$cookieChips = str_getcsv($cookieContent, "\n");
-		$chip = \explode("\t", $cookieChips[7]);
-		$chip = end($chip);
+		$chip = $this->_s;
 		if ($this->_transactionList == null){
-			$urls = array();
-			$urls[] = new Oara_Curl_Request('https://billing.purevpn.com/affiliates/scripts/server.php?C=Pap_Affiliates_Reports_TransactionsGrid&M=getCSVFile&S='.$chip.'&FormRequest=Y&FormResponse=Y', array());
-			$exportReport = array();
-			$exportReport = $this->_client->post($urls);
-			$this->_transactionList = str_getcsv($exportReport[0], "\n");
+			
+			
+			$rch = curl_init ();
+			$options = $this->_options;
+			$options[CURLOPT_HTTPHEADER] =  array("Referer: https://billing.purevpn.com/affiliates/affiliates/panel.php?S=$chip", 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8','Accept-Language: es,en-us;q=0.7,en;q=0.3','Accept-Encoding: gzip, deflate','Connection: keep-alive', 'Cache-Control: max-age=0');
+			curl_setopt ( $rch, CURLOPT_URL, "https://billing.purevpn.com/affiliates/scripts/server.php?C=Pap_Affiliates_Reports_TransactionsGrid&M=getCSVFile&S=$chip&FormRequest=Y&FormResponse=Y" );
+			$options [CURLOPT_POST] = true;
+			$options [CURLOPT_POSTFIELDS] = "";
+			curl_setopt_array ( $rch, $options );
+			$exportReport = curl_exec ( $rch );
+			curl_close ( $rch );
+			$this->_transactionList = str_getcsv($exportReport, "\n");
 		}
 		$exportData = $this->_transactionList;
 
