@@ -1,42 +1,44 @@
 <?php
 /**
- * Acces Class
- *
- * @author     Carlos Morillo Merino
- * @category   Oara_Curl
- * @copyright  Fubra Limited
- * @version    Release: 01.00
- *
- */
+* Acces Class
+*
+* @author Carlos Morillo Merino
+* @category Oara_Curl
+* @copyright Fubra Limited
+* @version Release: 01.00
+*
+*/
 class Oara_Curl_Access {
 	/**
 	 * Curl options.
-	 *
+	 * 
 	 * @var array
 	 */
 	private $_options = array ();
 	/**
 	 * If we are connected to the website.
-	 *
+	 * 
 	 * @var boolean
 	 */
 	private $_connected = false;
 	/**
 	 * Number of threads
-	 *
+	 * 
 	 * @var integer
 	 */
 	private $_threads = 7;
 	/**
-	 * Construct Result
 	 *
+	 *
+	 * Construct Result
+	 * 
 	 * @var string
 	 */
 	private $_constructResult = null;
 	
 	/**
 	 * Constructor and Login.
-	 *
+	 * 
 	 * @param $url -
 	 *        	Url Login
 	 * @param $valuesLogin -
@@ -91,22 +93,63 @@ class Oara_Curl_Access {
 				CURLOPT_AUTOREFERER => true,
 				CURLOPT_SSL_VERIFYPEER => false,
 				CURLOPT_SSL_VERIFYHOST => false,
-				CURLOPT_HEADER => false,
-				CURLOPT_FOLLOWLOCATION => false,
-				CURLOPT_VERBOSE => false 
-		);
+				CURLOPT_HEADER => false 
+		// CURLOPT_VERBOSE => true,
+				);
 		
 		// Init curl
+		$ch = curl_init ();
 		$options = $this->_options;
 		$options [CURLOPT_URL] = $url;
 		$options [CURLOPT_POST] = true;
+		
+		$options [CURLOPT_FOLLOWLOCATION] = true;
+		
 		// Login form fields
 		$arg = self::getPostFields ( $valuesLogin );
+		
 		$options [CURLOPT_POSTFIELDS] = $arg;
-		$curlResult = self::curlExec ( $options );
-		$result = $curlResult ["result"];
+		
+		// problem with SMG about the redirects and headers
+		if ($isTD) {
+			$options [CURLOPT_FOLLOWLOCATION] = false;
+			$options [CURLOPT_HEADER] = true;
+		}
+		
+		curl_setopt_array ( $ch, $options );
+		
+		$result = curl_exec ( $ch );
+		$err = curl_errno ( $ch );
+		$errmsg = curl_error ( $ch );
+		$info = curl_getinfo ( $ch );
+		// Close curl session
+		curl_close ( $ch );
+		
 		if ($isDianomi) {
 			$result = true;
+		}
+		
+		while ( ($isTD) && ($info ['http_code'] == 301 || $info ['http_code'] == 302) ) {
+			// redirect manually, cookies must be set, which curl does not itself
+			
+			// extract new location
+			preg_match_all ( '|Location: (.*)\n|U', $result, $results );
+			$location = implode ( ';', $results [1] );
+			$ch = curl_init ();
+			
+			$options = $this->_options;
+			$options [CURLOPT_URL] = str_replace ( "/publisher/..", "", $location );
+			$options [CURLOPT_HEADER] = true;
+			$options [CURLOPT_FOLLOWLOCATION] = false;
+			
+			curl_setopt_array ( $ch, $options );
+			
+			$result = curl_exec ( $ch );
+			$err = curl_errno ( $ch );
+			$errmsg = curl_error ( $ch );
+			$info = curl_getinfo ( $ch );
+			
+			curl_close ( $ch );
 		}
 		$this->_constructResult = $result;
 		if ($result == false) {
@@ -124,7 +167,7 @@ class Oara_Curl_Access {
 	
 	/**
 	 * Post request.
-	 *
+	 * 
 	 * @param $url -
 	 *        	Post url request
 	 * @param $valuesForm -
@@ -138,26 +181,80 @@ class Oara_Curl_Access {
 			throw new Exception ( "Not connected" );
 		}
 		
-		
-		foreach ($urls as $urlKey => $request){
-			$options = $this->_options;
-			$options [CURLOPT_URL] = $request->getUrl ();
-			$options [CURLOPT_POST] = true;
-			// Post form fields
-			$arg = self::getPostFields ( $request->getParameters () );
-			$options [CURLOPT_POSTFIELDS] = $arg;
-			$curlResult = self::curlExec($options);
-			if ($return == 'content') {
-				$results[$urlKey] = $curlResult["result"];
-			} else if ($return == 'url') {
-				$curlResults [( string ) $chId] = $result ["info"]["url"];;
+		$mcurl = curl_multi_init ();
+		$threadsRunning = 0;
+		$urls_id = 0;
+		for(;;) {
+			// Fill up the slots
+			while ( $threadsRunning < $this->_threads && $urls_id < count ( $urls ) ) {
+				$request = $urls [$urls_id];
+				$ch = curl_init ();
+				$chId = ( int ) $ch;
+				$curlResults [( string ) $chId] = '';
+				$options = $this->_options;
+				$options [CURLOPT_URL] = $request->getUrl ();
+				$options [CURLOPT_POST] = true;
+				$options [CURLOPT_FOLLOWLOCATION] = true;
+				// Post form fields
+				$arg = self::getPostFields ( $request->getParameters () );
+				$options [CURLOPT_POSTFIELDS] = $arg;
+				curl_setopt_array ( $ch, $options );
+				
+				curl_multi_add_handle ( $mcurl, $ch );
+				$urls_id ++;
+				$threadsRunning ++;
 			}
+			// Check if done
+			if ($threadsRunning == 0 && $urls_id >= count ( $urls )) {
+				break;
+			}
+			// Let mcurl do its thing
+			curl_multi_select ( $mcurl );
+			while ( ($mcRes = curl_multi_exec ( $mcurl, $mcActive )) == CURLM_CALL_MULTI_PERFORM ) {
+				sleep ( 1 );
+			}
+			if ($mcRes != CURLM_OK) {
+				throw new Exception ( 'Fail in CURL access in POST, multiexec' );
+			}
+			while ( $done = curl_multi_info_read ( $mcurl ) ) {
+				$ch = $done ['handle'];
+				$chId = ( int ) $ch;
+				$done_url = curl_getinfo ( $ch, CURLINFO_EFFECTIVE_URL );
+				$done_content = curl_multi_getcontent ( $ch );
+				if ($done_content == false) {
+					if ($deep == 5) {
+						throw new Exception ( 'Fail in CURL access in POST, getcontent' );
+					}
+					$keyPosition = self::keyPosition ( $curlResults, $chId );
+					$newUrlArray = array ();
+					$newUrlArray [] = $urls [$keyPosition];
+					$newDeep = $deep + 1;
+					$recursion = self::post ( $newUrlArray, $return, $newDeep );
+					$done_content = $recursion [0];
+				}
+				if (curl_errno ( $ch ) == 0) {
+					if ($return == 'content') {
+						$curlResults [( string ) $chId] = $done_content;
+					} else if ($return == 'url') {
+						$curlResults [( string ) $chId] = $done_url;
+					}
+				} else {
+					throw new Exception ( 'Fail in CURL access in POST, getcontent' );
+				}
+				curl_multi_remove_handle ( $mcurl, $ch );
+				curl_close ( $ch );
+				$threadsRunning --;
+			}
+		}
+		curl_multi_close ( $mcurl );
+		foreach ( $curlResults as $key => $value ) {
+			$results [] = $value;
 		}
 		return $results;
 	}
 	/**
 	 * Get request.
-	 *
+	 * 
 	 * @param $url -
 	 *        	Get url request
 	 * @param $valuesForm -
@@ -171,23 +268,78 @@ class Oara_Curl_Access {
 			throw new Exception ( "Not connected" );
 		}
 		
-		
-		foreach ($urls as $urlKey => $request){
-			$options = $this->_options;
-			$options [CURLOPT_URL] = $request->getUrl () . self::getPostFields ( $request->getParameters () );
-			$options [CURLOPT_POST] = false;
-			$curlResult = self::curlExec($options);
-			if ($return == 'content') {
-				$results[$urlKey] = $curlResult["result"];
-			} else if ($return == 'url') {
-				$curlResults [( string ) $chId] = $result ["info"]["url"];;
+		$mcurl = curl_multi_init ();
+		$threadsRunning = 0;
+		$urls_id = 0;
+		for(;;) {
+			// Fill up the slots
+			while ( $threadsRunning < $this->_threads && $urls_id < count ( $urls ) ) {
+				$request = $urls [$urls_id];
+				$ch = curl_init ();
+				$chId = ( int ) $ch;
+				$curlResults [( string ) $chId] = '';
+				
+				$options = $this->_options;
+				$options [CURLOPT_URL] = $request->getUrl () . self::getPostFields ( $request->getParameters () );
+				$options [CURLOPT_RETURNTRANSFER] = true;
+				$options [CURLOPT_FOLLOWLOCATION] = true;
+				curl_setopt_array ( $ch, $options );
+				
+				curl_multi_add_handle ( $mcurl, $ch );
+				$urls_id ++;
+				$threadsRunning ++;
 			}
+			// Check if done
+			if ($threadsRunning == 0 && $urls_id >= count ( $urls )) {
+				break;
+			}
+			// Let mcurl do it's thing
+			curl_multi_select ( $mcurl );
+			while ( ($mcRes = curl_multi_exec ( $mcurl, $mcActive )) == CURLM_CALL_MULTI_PERFORM ) {
+				sleep ( 1 );
+			}
+			if ($mcRes != CURLM_OK) {
+				throw new Exception ( 'Fail in CURL access in GET, multiexec' );
+			}
+			while ( $done = curl_multi_info_read ( $mcurl ) ) {
+				$ch = $done ['handle'];
+				$chId = ( int ) $ch;
+				$done_url = curl_getinfo ( $ch, CURLINFO_EFFECTIVE_URL );
+				$done_content = curl_multi_getcontent ( $ch );
+				if ($done_content == false) {
+					if ($deep == 5) {
+						throw new Exception ( 'Fail in CURL access in GET, getcontent' );
+					}
+					$keyPosition = self::keyPosition ( $curlResults, $chId );
+					$newUrlArray = array ();
+					$newUrlArray [] = $urls [$keyPosition];
+					$newDeep = $deep + 1;
+					$recursion = self::get ( $newUrlArray, $return, $newDeep );
+					$done_content = $recursion [0];
+				}
+				if (curl_errno ( $ch ) == 0) {
+					if ($return == 'content') {
+						$curlResults [( string ) $chId] = $done_content;
+					} else if ($return == 'url') {
+						$curlResults [( string ) $chId] = $done_url;
+					}
+				} else {
+					throw new Exception ( 'Fail in CURL access in GET, getcontent' );
+				}
+				curl_multi_remove_handle ( $mcurl, $ch );
+				curl_close ( $ch );
+				$threadsRunning --;
+			}
+		}
+		curl_multi_close ( $mcurl );
+		foreach ( $curlResults as $key => $value ) {
+			$results [] = $value;
 		}
 		return $results;
 	}
 	/**
 	 * Curl_Parameter to post
-	 *
+	 * 
 	 * @param array $data        	
 	 * @return unknown_type
 	 */
@@ -202,7 +354,7 @@ class Oara_Curl_Access {
 	}
 	/**
 	 * Search the position for a key in a map
-	 *
+	 * 
 	 * @param array $data        	
 	 * @param
 	 *        	$key
@@ -228,80 +380,5 @@ class Oara_Curl_Access {
 	private function keyName(array $a, $pos) {
 		$temp = array_slice ( $a, $pos, 1, true );
 		return key ( $temp );
-	}
-	function curlExec($options, $maxredirect = null) {
-		$mr = $maxredirect === null ? 10 : intval ( $maxredirect );
-		if (ini_get ( 'open_basedir' ) == '' && ini_get ( 'safe_mode' ) == 'Off') {
-			
-			$rch = curl_init ();
-			if (! empty ( $options )) {
-				curl_setopt_array ( $rch, $options );
-			}
-			
-			curl_setopt ( $rch, CURLOPT_FOLLOWLOCATION, $mr > 0 );
-			curl_setopt ( $rch, CURLOPT_MAXREDIRS, $mr );
-			curl_setopt ( $rch, CURLOPT_RETURNTRANSFER, true );
-			curl_setopt ( $rch, CURLOPT_SSL_VERIFYPEER, false );
-			
-			
-		} else {
-			if ($mr > 0) {
-				
-				$rch = curl_init ();
-				if (! empty ( $options )) {
-					curl_setopt_array ( $rch, $options );
-				}
-				curl_setopt ( $rch, CURLOPT_FOLLOWLOCATION, false );
-				$original_url = curl_getinfo ( $rch, CURLINFO_EFFECTIVE_URL );
-				$newurl = $original_url;
-				
-				curl_setopt ( $rch, CURLOPT_HEADER, true );
-				curl_setopt ( $rch, CURLOPT_NOBODY, false );
-				curl_setopt ( $rch, CURLOPT_FORBID_REUSE, false );
-				curl_setopt ( $rch, CURLOPT_POSTREDIR, 3 );
-				do {
-					curl_setopt ( $rch, CURLOPT_URL, $newurl );
-					$resp = curl_exec ( $rch );
-					list ( $header, $response ) = explode ( "\r\n\r\n", $resp, 2 );
-					
-					
-					$result ["result"] = $response;
-					$result ["err"] = curl_errno ( $rch );
-					$result ["errmsg"] = curl_error ( $rch );
-					$result ["info"] = curl_getinfo ( $rch );
-					
-					if (curl_errno ( $rch )) {
-						$code = 0;
-					} else {
-						$code = curl_getinfo ( $rch, CURLINFO_HTTP_CODE );
-						if ($code == 301 || $code == 302) {
-							curl_setopt($rch, CURLOPT_CUSTOMREQUEST, 'GET');
-							preg_match ( '/Location:(.*?)\n/', $header, $matches );
-							$newurl = trim ( array_pop ( $matches ) );
-							
-							// if no scheme is present then the new url is a
-							// relative path and thus needs some extra care
-							if (! preg_match ( "/^https?:/i", $newurl )) {
-								$newurl = $original_url . $newurl;
-							}
-						} else {
-							$code = 0;
-						}
-					}
-				} while ( $code && -- $mr );
-				
-				curl_close ( $rch );
-				
-				if (! $mr) {
-					if ($maxredirect === null)
-						trigger_error ( 'Too many redirects.', E_USER_WARNING );
-					else
-						$maxredirect = 0;
-					
-					return false;
-				}
-			}
-		}
-		return $result;
 	}
 }
