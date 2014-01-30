@@ -132,8 +132,8 @@ class Oara_Network_Publisher_CommissionJunction extends Oara_Network {
 			
 		}
 
-		if (isset($cookieMap["jsCompanyId"])) {
-			$this->_memberId = $cookieMap["jsCompanyId"];
+		if (isset($cookieMap["jsContactId"])) {
+			$this->_memberId = $cookieMap["jsContactId"];
 		} else {
 			return false;
 		}
