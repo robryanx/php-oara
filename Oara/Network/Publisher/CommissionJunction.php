@@ -120,12 +120,20 @@ class Oara_Network_Publisher_CommissionJunction extends Oara_Network {
 	 */
 	public function checkConnection() {
 		$connection = true;
+		
+		$cookieMap = array();
+		$cookieContent = $this->_client->getCookies();
+		$cookieArray = explode("\n", $cookieContent);
+		for($i = 4 ; $i < count($cookieArray); $i++){
+			$cookieValue = explode("\t", $cookieArray[$i]);
+			if (count($cookieValue) == 7){
+				$cookieMap[$cookieValue[count($cookieValue)-2]] = $cookieValue[count($cookieValue)-1];
+			}
+			
+		}
 
-		$urls = array();
-		$urls[] = new Oara_Curl_Request('https://members.cj.com/member/publisher/home.do', array());
-		$result = $this->_client->get($urls);
-		if (preg_match("/a href=\"\/member\/(.*)?\/publisher/", $result[0], $matches)) {
-			$this->_memberId = trim($matches[1]);
+		if (isset($cookieMap["jsCompanyId"])) {
+			$this->_memberId = $cookieMap["jsCompanyId"];
 		} else {
 			return false;
 		}

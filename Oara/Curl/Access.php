@@ -37,6 +37,12 @@ class Oara_Curl_Access {
 	private $_constructResult = null;
 	
 	/**
+	 * Cookie Path
+	 * @var unknown
+	 */
+	private $_cookiePath = null;
+	
+	/**
 	 * Constructor and Login.
 	 * 
 	 * @param $url -
@@ -82,6 +88,7 @@ class Oara_Curl_Access {
 		$cookieName = $credentials ["cookieName"];
 		
 		$cookies = $dir . $cookieName . '_cookies.txt';
+		$this->_cookiePath = $cookies;
 		
 		$this->_options = array (
 				CURLOPT_USERAGENT => "Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:23.0) Gecko/20100101 Firefox/23.0",
@@ -93,8 +100,8 @@ class Oara_Curl_Access {
 				CURLOPT_AUTOREFERER => true,
 				CURLOPT_SSL_VERIFYPEER => false,
 				CURLOPT_SSL_VERIFYHOST => false,
-				CURLOPT_HEADER => false 
-		// CURLOPT_VERBOSE => true,
+				CURLOPT_HEADER => false ,
+		//CURLOPT_VERBOSE => true,
 				);
 		
 		// Init curl
@@ -163,6 +170,13 @@ class Oara_Curl_Access {
 	 */
 	public function getConstructResult() {
 		return $this->_constructResult;
+	}
+	
+	/**
+	 * Get the cookies
+	 */
+	public function getCookies() {
+		return file_get_contents($this->_cookiePath);
 	}
 	
 	/**
