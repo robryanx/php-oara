@@ -119,7 +119,6 @@ class Oara_Curl_Access {
 		
 		// problem with SMG about the redirects and headers
 		if ($isTD) {
-			$options [CURLOPT_FOLLOWLOCATION] = false;
 			$options [CURLOPT_HEADER] = true;
 		}
 		
