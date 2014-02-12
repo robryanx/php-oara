@@ -37,7 +37,8 @@ class Oara_Network_Publisher_SkyScanner extends Oara_Network {
 			new Oara_Curl_Parameter('PortalKey', $this->_credentials['password']),
 		);
 
-		$loginUrl = 'http://www.skyscanneraffiliate.net/portal/en-GB/UK/Home/LogOn';
+		
+		$loginUrl = 'http://www.skyscanneraffiliate.net/portal/en-GB/SignIn';
 		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $this->_credentials);
 		
 	}

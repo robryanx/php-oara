@@ -159,17 +159,17 @@ class Oara_Network_Publisher_AffiliateGateway extends Oara_Network {
 						$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 						$transaction['unique_id'] = $transactionExportArray[0];
 
-						if ($transactionExportArray[11] == "Approved" || $transactionExportArray[11] == "Approve") {
+						if ($transactionExportArray[12] == "Approved" || $transactionExportArray[12] == "Approve") {
 							$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
 						} else
-							if ($transactionExportArray[11] == "Pending") {
+							if ($transactionExportArray[12] == "Pending") {
 								$transaction['status'] = Oara_Utilities::STATUS_PENDING;
 							} else
-								if ($transactionExportArray[11] == "Declined") {
+								if ($transactionExportArray[12] == "Declined") {
 									$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
 								}
 						$transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[7]);
-						$transaction['commission'] = Oara_Utilities::parseDouble($transactionExportArray[8]);
+						$transaction['commission'] = Oara_Utilities::parseDouble($transactionExportArray[9]);
 						$totalTransactions[] = $transaction;
 					}
 				}
