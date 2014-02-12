@@ -24,7 +24,7 @@ for (var i=0;i<length;i++)
 }
 
 //casper.echo(JSON.stringify(phantom.cookies));
-casper.echo(casper.cli.get("url"));
+//casper.echo(casper.cli.get("url"));
 casper.start(casper.cli.get("url"), function() {
    casper.echo(this.getHTML());
 });
