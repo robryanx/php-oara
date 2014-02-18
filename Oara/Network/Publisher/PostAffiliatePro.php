@@ -70,7 +70,7 @@ class Oara_Network_Publisher_PostAffiliatePro extends Oara_Network {
 		// If not login properly the construct launch an exception
 		$connection = true;
 		
-		if (! preg_match ( "/User authenticated./", $this->_loginResult )) {
+		if (! preg_match ( "/\"success\":\"Y\"/", $this->_loginResult )) {
 			$connection = false;
 		}
 		
