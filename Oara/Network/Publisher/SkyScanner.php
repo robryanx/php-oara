@@ -36,9 +36,8 @@ class Oara_Network_Publisher_SkyScanner extends Oara_Network {
 			new Oara_Curl_Parameter('ApiKey', $this->_credentials['user']),
 			new Oara_Curl_Parameter('PortalKey', $this->_credentials['password']),
 		);
-
 		
-		$loginUrl = 'http://www.skyscanneraffiliate.net/portal/en-GB/SignIn';
+		$loginUrl = 'http://business.skyscanner.net/portal/en-GB/SignIn';
 		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $this->_credentials);
 		
 	}
@@ -49,7 +48,7 @@ class Oara_Network_Publisher_SkyScanner extends Oara_Network {
 		//If not login properly the construct launch an exception
 		$connection = true;
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('www.skyscanneraffiliate.net/portal/en-GB/UK/Report/Show', array());
+		$urls[] = new Oara_Curl_Request('http://business.skyscanner.net/portal/en-GB/UK/Report/Show', array());
 		$exportReport = $this->_client->get($urls);
 		if (!preg_match("/encrypedApiKey: \"(.*)?\",/", $exportReport[0], $match)){
 			$connection = false;
@@ -84,7 +83,7 @@ class Oara_Network_Publisher_SkyScanner extends Oara_Network {
 
 		$urls = array();
 		
-		$url = 'http://www.skyscanneraffiliate.net/apiservices/reporting/v1.0/reportdata/'.$dStartDate->toString("yyyy-MM-dd").'/'.$dEndDate->toString("yyyy-MM-dd").'?encryptedApiKey='.$this->_apiKey."&type=csv";
+		$url = 'http://business.skyscanner.net/apiservices/reporting/v1.0/reportdata/'.$dStartDate->toString("yyyy-MM-dd").'/'.$dEndDate->toString("yyyy-MM-dd").'?encryptedApiKey='.$this->_apiKey."&type=csv";
 		$urls[] = new Oara_Curl_Request($url, array());
 
 		$exportReport = array();
