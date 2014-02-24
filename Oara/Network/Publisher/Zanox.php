@@ -30,11 +30,11 @@ class Oara_Network_Publisher_Zanox extends Oara_Network {
 
 		$connectId = $credentials['connectId'];
 		$secretKey = $credentials['secretKey'];
-		$publicKey = $credentials['publicKey'];
+		//$publicKey = $credentials['publicKey'];
 
 		$api->setConnectId($connectId);
 		$api->setSecretKey($secretKey);
-		$api->setPublicKey($publicKey);
+		//$api->setPublicKey($publicKey);
 
 		$this->_apiClient = $api;
 
