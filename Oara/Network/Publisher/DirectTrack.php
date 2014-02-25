@@ -1,5 +1,4 @@
 <?php
-require_once ('DirectTrack/lib/nusoap.php');
 /**
  * Api Class
  *
@@ -42,34 +41,23 @@ class Oara_Network_Publisher_DirectTrack extends Oara_Network {
 	 */
 	public function __construct($credentials) {
 		ini_set ( 'default_socket_timeout', '120' );
-		$this->_client = $credentials ['client'];
-		$this->_password = $credentials ['password'];
-		$this->_publisherId = $credentials ['publisherId'];
+		$this->_version = '1_0';
+		$this->_domain = $credentials["domain"];
+		$this->_clientId  = $credentials["client"];
+		$this->_accessId = $credentials["access"];
+		$this->_username = $credentials["user"];
+		$this->_password = $credentials["password"];
 		
-		$params = array ();
-		$params ["client"] = $this->_client;
-		$params ["add_code"] = $this->_publisherId;
-		$params ["password"] = $this->_password;
-		$this->_params = $params;
-		
-		$wsdlUrl = 'http://secure.directtrack.com/api/soap_affiliate.php?wsdl';
-		// Setting the client.
-		$this->_apiClient = new nusoap_client ( $wsdlUrl, true );
 	}
 	/**
 	 * Check the connection
 	 */
 	public function checkConnection() {
 		$connection = false;
-		try {
-			$params = $this->_params;
-			$params ["program_id"] = 1;
-			$result = $this->_apiClient->call ( 'campaignInfo', $params, 'http://soapinterop.org/', 'http://soapinterop.org/' );
-			if ($result ["faultcode"] == "Invalid Login") {
-				throw new Exception ( "Invalid Login" );
-			}
+		$apiURL = "https://{$this->_domain}/apifleet/rest/{$this->_clientId}/{$this->_accessId}/campaign/active/";
+		$response = self::call($apiURL);
+		if (isset($response["@attributes"])){
 			$connection = true;
-		} catch ( Exception $e ) {
 		}
 		return $connection;
 	}
@@ -80,23 +68,10 @@ class Oara_Network_Publisher_DirectTrack extends Oara_Network {
 	 */
 	public function getMerchantList() {
 		$merchants = array ();
-		
-		$params = $this->_params;
-		$result = $this->_apiClient->call ( 'campaignInfo', $params, 'http://soapinterop.org/', 'http://soapinterop.org/' );
-		if (! is_array ( $result )) {
-			$result = html_entity_decode ( $result );
-			$xml = simplexml_load_string ( $result, null );
-			
-			if ($xml) {
-				foreach ( $xml->program as $merchant ) {
-					$obj = Array ();
-					$obj ['cid'] = trim ( $merchant->program_id );
-					$obj ['name'] = substr ( trim ( html_entity_decode ( $merchant->program_name ) ), 0, 150 );
-					$merchants [] = $obj;
-				}
-			}
-		}
-		
+		$obj = Array ();
+		$obj ['cid'] = "1";
+		$obj ['name'] = "DirectTrack";
+		$merchants [] = $obj;
 		return $merchants;
 	}
 	/**
@@ -106,34 +81,32 @@ class Oara_Network_Publisher_DirectTrack extends Oara_Network {
 	 */
 	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = array ();
-
-		$params = $this->_params;
-		$params ["start_date"] = $dStartDate->toString ( "yyyy-MM-dd" );
-		$params ["end_date"] = $dEndDate->toString ( "yyyy-MM-dd" );
-		$result = $this->_apiClient->call ( 'dailyStatsInfo', $params, 'http://soapinterop.org/', 'http://soapinterop.org/' );
-		if (! is_array ( $result )) {
-			$xml = simplexml_load_string ( html_entity_decode ( $result ), null );
-			foreach ( $xml->program_stats as $stats ) {
-				$merchantId = ( int ) trim ( $stats->program_id );
-				if (in_array ( $merchantId, $merchantList )) {
-					$transactionDate = $dateArray [$i];
-					
+		
+		
+		
+		
+		$dateArray = Oara_Utilities::daysOfDifference($dStartDate, $dEndDate);
+		foreach ($dateArray as $date){
+				
+				$apiURL = "https://{$this->_domain}/apifleet/rest/{$this->_clientId}/{$this->_accessId}/statCampaign/quick/{$date->toString("yyyy-MM-dd")}";
+				$response = self::call($apiURL);
+			
+				if (isset($response["resource"]["numSales"])){
+						
 					$transaction = Array ();
-					$transaction ['merchantId'] = $merchantId;
-					$transaction = $dateArray [$i];
-					$transaction ['date'] = $transactionDate->toString ( "yyyy-MM-dd HH:mm:ss" );
+					$transaction ['merchantId'] = "1";
+					$transaction ['date'] = $date->toString ( "yyyy-MM-dd HH:mm:ss" );
 					$transaction ['status'] = Oara_Utilities::STATUS_CONFIRMED;
+						
+					$transaction ['amount'] = $response["resource"]["saleAmount"];
+					$transaction ['commission'] = $response["resource"]["theyGet"];
+					$transaction ['currency'] = $response["resource"]["currency"];
 					
-					$total_sales = substr ( trim ( $stats->total_sales ), 1 );
-					$total = substr ( trim ( $stats->total ), 1 );
-					
-					$transaction ['amount'] = $total_sales;
-					$transaction ['commission'] = $total;
 					if ($transaction ['amount'] != 0 && $transaction ['commission'] != 0) {
 						$totalTransactions [] = $transaction;
 					}
 				}
-			}
+				
 		}
 		return $totalTransactions;
 	}
@@ -199,5 +172,30 @@ class Oara_Network_Publisher_DirectTrack extends Oara_Network {
 		$paymentHistory = array ();
 		
 		return $paymentHistory;
+	}
+	
+	private function call($apiUrl){
+		$headers[] = "Authorization: Basic ".base64_encode($this->_username.":".$this->_password);
+		
+		// Initiate the REST call via curl
+		$ch = curl_init($apiUrl);
+			
+		// Set the HTTP method to GET
+		curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'GET');
+		// Add the headers defined above
+		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+		// Don't return headers
+		curl_setopt($ch, CURLOPT_HEADER, false);
+		// Return data after call is made
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		
+		// Execute the REST call
+		$response = curl_exec($ch);
+		$data = simplexml_load_string($response, 'SimpleXMLElement', LIBXML_NOCDATA);
+		$json = json_encode($data);
+		$array = json_decode($json, true);
+		// Close the connection
+		curl_close($ch);
+		return $array;
 	}
 }
