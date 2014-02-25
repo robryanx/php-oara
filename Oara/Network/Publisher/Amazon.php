@@ -83,7 +83,10 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 		$user = $this->_credentials['user'];
 		$password = $this->_credentials['password'];
 		$network = $this->_credentials['network'];
-		$this->_httpLogin = $this->_credentials['httpLogin'];
+		$this->_httpLogin = null;
+		if (isset($this->_credentials['httpLogin'])){
+			$this->_httpLogin = $this->_credentials['httpLogin'];
+		}
 		$extension = "";
 		$handle = "";
 		$this->_networkServer = "";
@@ -164,7 +167,7 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 			$cookieString .= "&$cookieName=".urlencode($cookieValue);
 		}
 		
-		if ($this->_httpLogin){
+		if ($this->_httpLogin != null){
 			$casperUrl = "http://affjet.dc.fubra.net/tools/amazon/amazon.php?extension=$extension&url=".urlencode($URL).$cookieString;
 			
 			
