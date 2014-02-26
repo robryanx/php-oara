@@ -148,6 +148,8 @@ class Oara_Network_Publisher_PaidOnResults extends Oara_Network {
 		$exportData = str_getcsv($exportReport[0], "\r\n");
 		$num = count($exportData);
 		for ($i = 1; $i < $num; $i++) {
+			
+			$exportData[$i] = preg_replace("/\n/", "", $exportData[$i]);
 			$transactionExportArray = str_getcsv($exportData[$i], ",");
 			if (in_array($transactionExportArray[0], $merchantList)) {
 				$transaction = array();

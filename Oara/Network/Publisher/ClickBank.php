@@ -90,10 +90,10 @@ class Oara_Network_Publisher_ClickBank extends Oara_Network {
 	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = array();
 		$filter = new Zend_Filter_LocalizedToNormalized(array('precision' => 2));
-		$number = self::returnApiData("https://api.clickbank.com/rest/1.2/orders/count?startDate=".$dStartDate->toString("yyyy-MM-dd")."&endDate=".$dEndDate->toString("yyyy-MM-dd"));
+		$number = self::returnApiData("https://api.clickbank.com/rest/1.3/orders/count?startDate=".$dStartDate->toString("yyyy-MM-dd")."&endDate=".$dEndDate->toString("yyyy-MM-dd"));
 
 		if ($number[0] != 0) {
-			$transactionXMLList = self::returnApiData("https://api.clickbank.com/rest/1.2/orders/list?startDate=".$dStartDate->toString("yyyy-MM-dd")."&endDate=".$dEndDate->toString("yyyy-MM-dd"));
+			$transactionXMLList = self::returnApiData("https://api.clickbank.com/rest/1.3/orders/list?startDate=".$dStartDate->toString("yyyy-MM-dd")."&endDate=".$dEndDate->toString("yyyy-MM-dd"));
 			foreach ($transactionXMLList as $transactionXML) {
 				$transactionXML = simplexml_load_string($transactionXML, null, LIBXML_NOERROR | LIBXML_NOWARNING);
 
