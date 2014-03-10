@@ -99,7 +99,7 @@ class Oara_Network_Publisher_AutoEurope extends Oara_Network {
 			$transaction = array ();
 			$transaction ['merchantId'] = 1;
 			$date = new Zend_date ( $xmlTransaction ['Booked'], "MM/dd/yyyy" );
-			$transaction ['date'] = $date->toString ( "yyyy-MM-dd" );
+			$transaction ['date'] = $date->toString ( "yyyy-MM-dd 00:00:00" );
 			$transaction ['amount'] = ( double ) $xmlTransaction ['commissionValue'];
 			$transaction ['commission'] = ( double ) $xmlTransaction ['commission'];
 			$transaction ['status'] = Oara_Utilities::STATUS_CONFIRMED;
