@@ -119,6 +119,7 @@ class Oara_Network_Publisher_PaidOnResults extends Oara_Network {
 		$urls[] = new Oara_Curl_Request('http://affiliate.paidonresults.com/api/merchant-directory?', $valuesFormExport);
 		$exportReport = $this->_client->get($urls);
 		$exportData = str_getcsv($exportReport[0], "\r\n");
+		$exportData = preg_replace("/\n/", "", $exportData);
 		$num = count($exportData);
 		for ($i = 1; $i < $num; $i++) {
 			$merchantExportArray = str_getcsv($exportData[$i], ",");

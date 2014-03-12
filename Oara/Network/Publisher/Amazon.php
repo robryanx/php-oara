@@ -359,11 +359,12 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 		$urls[] = new Oara_Curl_Request($this->_networkServer."/gp/associates/network/reports/report.html?", $valuesFromExport);
 		$exportReport = $this->_client->get($urls);
 		
-		if (preg_match("/Account Closed/", $exportReport[0])){
+		if (preg_match("/DOCTYPE/", $exportReport[0])){
 			return array();
 		}
 		$exportData = str_getcsv($exportReport[0], "\n");
 
+		
 		$index = 2;
 		try{
 			if (!isset($transactionExportArray[$index]) || !isset($transactionExportArray[5])){

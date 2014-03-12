@@ -62,6 +62,7 @@ class Oara_Network_Publisher_CommissionFactory extends Oara_Network {
 	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
 	 */
 	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+		$transactions = array();
 		$transactionsExportList = self::request ( "https://api.commissionfactory.com.au/V1/Affiliate/Transactions?apiKey={$this->_apiKey}&fromDate={$dStartDate->toString("yyyy-MM-dd")}&toDate={$dEndDate->toString("yyyy-MM-dd")}" );
 		
 		foreach ( $transactionsExportList as $transaction ) {

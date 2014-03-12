@@ -71,76 +71,7 @@ class Oara_Network_Publisher_Omg extends Oara_Network {
 		
 		$this->_client = new Oara_Curl_Access ( $loginUrl, $valuesLogin, $credentials );
 		
-		$this->_exportMerchantParameters = array (
-				new Oara_Curl_Parameter ( 'searchcampaigns', '' ),
-				new Oara_Curl_Parameter ( 'ProductTypeID', '0' ),
-				new Oara_Curl_Parameter ( 'SectorID', '0' ),
-				new Oara_Curl_Parameter ( 'CountryIDProgs', '1' ),
-				new Oara_Curl_Parameter ( 'ProgammeStatus', 'live' ),
-				new Oara_Curl_Parameter ( 'geturl', 'Get+URL' ),
-				new Oara_Curl_Parameter ( 'ExportFormat', 'XML' ) 
-		);
 		
-		$valuesFromExport = $this->_exportMerchantParameters;
-		$urls = array ();
-		$urls [] = new Oara_Curl_Request ( 'https://admin.omgpm.com/en/clientarea/affiliates/affiliate_campaigns.asp?', $valuesFromExport );
-		$exportReport = $this->_client->post ( $urls );
-		
-		/**
-		 * * load the html into the object **
-		 */
-		$doc = new DOMDocument ();
-		libxml_use_internal_errors ( true );
-		$doc->validateOnParse = true;
-		$doc->loadHTML ( $exportReport [0] );
-		$textareaList = $doc->getElementsByTagName ( 'textarea' );
-		
-		$messageNode = $textareaList->item ( 0 );
-		if (! isset ( $messageNode->firstChild )) {
-			throw new Exception ( 'Error getting the Merchants' );
-		}
-		$messageStr = $messageNode->firstChild->nodeValue;
-		
-		$parseUrl = parse_url ( trim ( $messageStr ) );
-		
-		$parameters = explode ( '&', $parseUrl ['query'] );
-		$oaraCurlParameters = array ();
-		foreach ( $parameters as $parameter ) {
-			$parameterValue = explode ( '=', $parameter );
-			if ($parameterValue [0] == 'Affiliate') {
-				$contact = $parameterValue [1];
-			}
-			if ($parameterValue [0] == 'AuthHash') {
-				$exportPass = $parameterValue [1];
-			}
-		}
-		if ($contact == null || $exportPass == null) {
-			throw new Exception ( "Member id doesn\'t found" );
-		}
-		
-		$this->_exportTransactionParameters = array (
-				new Oara_Curl_Parameter ( 'Contact', $contact ),
-				new Oara_Curl_Parameter ( 'Country', '1' ),
-				new Oara_Curl_Parameter ( 'Agency', '1' ),
-				new Oara_Curl_Parameter ( 'Status', '-1' ),
-				new Oara_Curl_Parameter ( 'DateType', '2' ),
-				new Oara_Curl_Parameter ( 'Login', $exportPass ),
-				new Oara_Curl_Parameter ( 'Format', 'CSV' ) 
-		);
-		
-		$this->_exportPaymentParameters = array (
-				new Oara_Curl_Parameter ( 'ctl00$Uc_Navigation1$ddlNavSelectMerchant', '0' ),
-				new Oara_Curl_Parameter ( 'ctl00$ContentPlaceHolder1$ddlMonth', '0' ),
-				new Oara_Curl_Parameter ( 'ctl00$ContentPlaceHolder1$ddlStatus', 'All' ),
-				new Oara_Curl_Parameter ( 'ctl00$ContentPlaceHolder1$btnSearch', 'Search' ) 
-		);
-		
-		$this->_exportPaymentTransactionParameters = array (
-				new Oara_Curl_Parameter ( 'Contact', $contact ),
-				new Oara_Curl_Parameter ( 'Agency', '1' ),
-				new Oara_Curl_Parameter ( 'Login', $exportPass ),
-				new Oara_Curl_Parameter ( 'Format', 'XML' ) 
-		);
 	}
 	/**
 	 * Check the connection
@@ -148,6 +79,88 @@ class Oara_Network_Publisher_Omg extends Oara_Network {
 	public function checkConnection() {
 		// If not login properly the construct launch an exception
 		$connection = true;
+		
+		try{
+			$this->_exportMerchantParameters = array (
+					new Oara_Curl_Parameter ( 'searchcampaigns', '' ),
+					new Oara_Curl_Parameter ( 'ProductTypeID', '0' ),
+					new Oara_Curl_Parameter ( 'SectorID', '0' ),
+					new Oara_Curl_Parameter ( 'CountryIDProgs', '1' ),
+					new Oara_Curl_Parameter ( 'ProgammeStatus', 'live' ),
+					new Oara_Curl_Parameter ( 'geturl', 'Get+URL' ),
+					new Oara_Curl_Parameter ( 'ExportFormat', 'XML' )
+			);
+			
+			$valuesFromExport = $this->_exportMerchantParameters;
+			$urls = array ();
+			$urls [] = new Oara_Curl_Request ( 'https://admin.omgpm.com/en/clientarea/affiliates/affiliate_campaigns.asp?', $valuesFromExport );
+			$exportReport = $this->_client->post ( $urls );
+			
+			/**
+			 * * load the html into the object **
+			*/
+			$doc = new DOMDocument ();
+			libxml_use_internal_errors ( true );
+			$doc->validateOnParse = true;
+			$doc->loadHTML ( $exportReport [0] );
+			$textareaList = $doc->getElementsByTagName ( 'textarea' );
+			
+			$messageNode = $textareaList->item ( 0 );
+			if (! isset ( $messageNode->firstChild )) {
+				throw new Exception ( 'Error getting the Merchants' );
+			}
+			$messageStr = $messageNode->firstChild->nodeValue;
+			
+			$parseUrl = parse_url ( trim ( $messageStr ) );
+			
+			$parameters = explode ( '&', $parseUrl ['query'] );
+			$oaraCurlParameters = array ();
+			foreach ( $parameters as $parameter ) {
+				$parameterValue = explode ( '=', $parameter );
+				if ($parameterValue [0] == 'Affiliate') {
+					$contact = $parameterValue [1];
+				}
+				if ($parameterValue [0] == 'AuthHash') {
+					$exportPass = $parameterValue [1];
+				}
+			}
+			if ($contact == null || $exportPass == null) {
+				throw new Exception ( "Member id doesn\'t found" );
+			}
+			
+			$this->_exportTransactionParameters = array (
+					new Oara_Curl_Parameter ( 'Contact', $contact ),
+					new Oara_Curl_Parameter ( 'Country', '1' ),
+					new Oara_Curl_Parameter ( 'Agency', '1' ),
+					new Oara_Curl_Parameter ( 'Status', '-1' ),
+					new Oara_Curl_Parameter ( 'DateType', '2' ),
+					new Oara_Curl_Parameter ( 'Login', $exportPass ),
+					new Oara_Curl_Parameter ( 'Format', 'CSV' )
+			);
+			
+			$this->_exportPaymentParameters = array (
+					new Oara_Curl_Parameter ( 'ctl00$Uc_Navigation1$ddlNavSelectMerchant', '0' ),
+					new Oara_Curl_Parameter ( 'ctl00$ContentPlaceHolder1$ddlMonth', '0' ),
+					new Oara_Curl_Parameter ( 'ctl00$ContentPlaceHolder1$ddlStatus', 'All' ),
+					new Oara_Curl_Parameter ( 'ctl00$ContentPlaceHolder1$btnSearch', 'Search' )
+			);
+			
+			$this->_exportPaymentTransactionParameters = array (
+					new Oara_Curl_Parameter ( 'Contact', $contact ),
+					new Oara_Curl_Parameter ( 'Agency', '1' ),
+					new Oara_Curl_Parameter ( 'Login', $exportPass ),
+					new Oara_Curl_Parameter ( 'Format', 'XML' )
+			);
+			
+		} catch(Exception $e){
+			$connection = false;
+		}
+		
+		
+		
+		
+		
+		
 		return $connection;
 	}
 	/**
