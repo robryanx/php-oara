@@ -70,6 +70,22 @@ The list of supported networks for Publishers so far is:
 * [PepperJam Network / eBay Enterprise Affiliate Network](http://www.pepperjamnetwork.com)
 * [HideMyAss](http://www.hidemyass.com)
 * [PureVPN](http://www.purevpn.com)
+* [MyPcBackUp](http://affiliates.mypcbackup.com)
+* [BtGuard](https://affiliate.btguard.com)
+* [PaddyPartners](http://affiliates.paddypartners.com)
+* [WinnerAffiliates](https://www.winneraffiliates.com/)
+* [Google Android Publisher](https://play.google.com/store)
+* [iTunes Connect](https://itunesconnect.apple.com)
+* [Mall.cz](http://affiliate.mall.cz/pan/public/)
+* [PostAffiliatePro](http://www.postaffiliatepro.com/)
+* [Avantlink.ca](http://www.avantlink.ca)
+* [Skyscanner](http://www.skyscanneraffiliate.net/portal/en-GB/UK/Home/LogOn)
+* [SkyParkSecure](http://agents.skyparksecure.com)
+* [ParkAndGo](http://www.parkandgo.co.uk)
+* [RentalCars](http://www.rentalcars.com)
+* [CommissionFactory AU](http://www.commissionfactory.com.au/)
+* [HasOffers](http://www.hasoffers.com/)
+
 
 The list of supported networks for Advertisers so far is:
 
