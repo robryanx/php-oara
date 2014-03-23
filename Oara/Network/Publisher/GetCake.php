@@ -106,7 +106,7 @@ class Oara_Network_Publisher_GetCake extends Oara_Network {
 						if ($transactionApi["disposition"] == "Approved") {
 							$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
 						} else
-						if ($transactionApi["disposition"] == "Pending") {
+						if ($transactionApi["disposition"] == "Pending" || $transactionApi["disposition"] == null) {
 							$transaction['status'] = Oara_Utilities::STATUS_PENDING;
 						} else
 						if ($transactionApi["disposition"] == "Rejected") {
