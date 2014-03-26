@@ -29,8 +29,8 @@ class Oara_Network_Publisher_Daisycon extends Oara_Network {
 
 		$sWsdl = "http://api.daisycon.com/publisher/soap/program/wsdl/";
 		$aOptions = array(
-			'login'		 => $this->_credentials["user"],
-			'password'	 => md5($this->_credentials["password"]),
+			'login'		 => $user,
+			'password'	 => md5($password),
 			'features'	 => SOAP_SINGLE_ELEMENT_ARRAYS,
 			'encoding'	 => 'utf-8',
 			'trace'		 => 1,

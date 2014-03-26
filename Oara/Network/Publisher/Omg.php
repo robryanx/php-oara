@@ -95,7 +95,7 @@ class Oara_Network_Publisher_Omg extends Oara_Network {
 			$urls = array ();
 			$urls [] = new Oara_Curl_Request ( 'https://admin.omgpm.com/en/clientarea/affiliates/affiliate_campaigns.asp?', $valuesFromExport );
 			$exportReport = $this->_client->post ( $urls );
-			
+			echo $exportReport[0];
 			/**
 			 * * load the html into the object **
 			*/
