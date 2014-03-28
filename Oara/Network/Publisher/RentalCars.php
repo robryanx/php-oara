@@ -115,12 +115,15 @@ class Oara_Network_Publisher_RentalCars extends Oara_Network {
 			$date = new Zend_Date($transactionDetails["Book Date"], "dd MMM yyyy - HH:ii", "en_GB");
 			
 			if (!empty($transactionDetails["AD Campaign"])){
-				$transaction ['custom_id'] = current($transactionDetails["AD Campaign"]);
+				$transaction ['custom_id'] = $transactionDetails["AD Campaign"];
 			}
 			
 			
 			$transaction ['date'] = $date->toString ( "yyyy-MM-dd HH:mm:00" );
 			$transaction ['status'] = Oara_Utilities::STATUS_CONFIRMED;
+			if ($transactionDetails["Status"] == "Cancelled"){
+				$transaction ['status'] = Oara_Utilities::STATUS_DECLINED;
+			}
 			$transaction ['amount'] = $transactionDetails["Booking Value"];
 			$transaction ['currency'] = $transactionDetails["Payment Currency"];
 			$transaction ['commission'] = $transactionDetails["Total Commission"];
