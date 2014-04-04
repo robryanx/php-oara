@@ -112,19 +112,37 @@ class Oara_Network_Publisher_RentalCars extends Oara_Network {
 			$transaction = Array ();
 			$transaction ['merchantId'] = "1";
 			$transaction ['unique_id'] = $transactionDetails["Res. Number"];
-			$date = new Zend_Date($transactionDetails["Book Date"], "dd MMM yyyy - HH:ii", "en_GB");
+			
+			if ($transactionDetails["Payment Date"] != null){
+				$date = new Zend_Date($transactionDetails["Payment Date"], "dd MMM yyyy - HH:ii", "en_GB");
+			} else {
+				$date = new Zend_Date($transactionDetails["Book Date"], "dd MMM yyyy - HH:ii", "en_GB");
+			}
+			
+			
 			
 			if (!empty($transactionDetails["AD Campaign"])){
 				$transaction ['custom_id'] = $transactionDetails["AD Campaign"];
 			}
 			
 			
+			
 			$transaction ['date'] = $date->toString ( "yyyy-MM-dd HH:mm:00" );
-			$transaction ['status'] = Oara_Utilities::STATUS_CONFIRMED;
+			
+			if ($transactionDetails["Payment Date"] != null){
+				$transaction ['status'] = Oara_Utilities::STATUS_CONFIRMED;
+			} else {
+				$transaction ['status'] = Oara_Utilities::STATUS_PENDING;
+			}
+			
+			
 			if ($transactionDetails["Status"] == "Cancelled"){
 				$transaction ['status'] = Oara_Utilities::STATUS_DECLINED;
+				$transaction ['amount'] = - $transactionDetails["Booking Value"];
+			} else {
+				$transaction ['amount'] = $transactionDetails["Booking Value"];
 			}
-			$transaction ['amount'] = $transactionDetails["Booking Value"];
+			
 			$transaction ['currency'] = $transactionDetails["Payment Currency"];
 			$transaction ['commission'] = $transactionDetails["Total Commission"];
 			$totalTransactions [] = $transaction;
