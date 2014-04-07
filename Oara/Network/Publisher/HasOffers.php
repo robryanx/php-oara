@@ -77,41 +77,52 @@ class Oara_Network_Publisher_HasOffers extends Oara_Network {
 		//fields[]=Stat.offer_id&fields[]=Stat.datetime&fields[]=Offer.name&fields[]=Stat.conversion_status&fields[]=Stat.payout&fields[]=Stat.conversion_sale_amount&fields[]=Stat.ip&fields[]=Stat.ad_id&fields[]=Stat.affiliate_info1&sort[Stat.datetime]=desc&filters[Stat.date][conditional]=BETWEEN&filters[Stat.date][values][]=2014-03-13&filters[Stat.date][values][]=2014-03-19&data_start=2014-03-13&data_end=2014-03-19
 		
 		
+		$limit = 100;
+		$page = 1;
+		$loop = true;
+		while ($loop){
 		
-		$apiURL = "http://api.hasoffers.com/v3/Affiliate_Report.json?Method=getConversions&api_key={$this->_apiPassword}&NetworkId={$this->_domain}&fields[]=Stat.offer_id&fields[]=Stat.datetime&fields[]=Offer.name&fields[]=Stat.conversion_status&fields[]=Stat.payout&fields[]=Stat.conversion_sale_amount&fields[]=Stat.ip&fields[]=Stat.ad_id&fields[]=Stat.affiliate_info1&sort[Stat.datetime]=desc&filters[Stat.date][conditional]=BETWEEN&filters[Stat.date][values][]={$dStartDate->toString("yyyy-MM-dd")}&filters[Stat.date][values][]={$dEndDate->toString("yyyy-MM-dd")}&data_start={$dStartDate->toString("yyyy-MM-dd")}&data_end={$dEndDate->toString("yyyy-MM-dd")}";
-		$response = self::call($apiURL);
-		foreach ($response["response"]["data"]["data"] as $transactionApi){
-				
-			$transaction = Array();
-			$merchantId = (int) $transactionApi["Stat"]["offer_id"];
+			$apiURL = "http://api.hasoffers.com/v3/Affiliate_Report.json?limit=$limit&page=$page&Method=getConversions&api_key={$this->_apiPassword}&NetworkId={$this->_domain}&fields[]=Stat.offer_id&fields[]=Stat.datetime&fields[]=Offer.name&fields[]=Stat.conversion_status&fields[]=Stat.payout&fields[]=Stat.conversion_sale_amount&fields[]=Stat.ip&fields[]=Stat.ad_id&fields[]=Stat.affiliate_info1&sort[Stat.datetime]=desc&filters[Stat.date][conditional]=BETWEEN&filters[Stat.date][values][]={$dStartDate->toString("yyyy-MM-dd")}&filters[Stat.date][values][]={$dEndDate->toString("yyyy-MM-dd")}&data_start={$dStartDate->toString("yyyy-MM-dd")}&data_end={$dEndDate->toString("yyyy-MM-dd")}";
 			
-			if (in_array($merchantId, $merchantList)){
-				$transaction['merchantId'] = $merchantId;
+			$response = self::call($apiURL);
+			foreach ($response["response"]["data"]["data"] as $transactionApi){
 					
-				$transactionDate = new Zend_Date($transactionApi["Stat"]["datetime"], 'yyyy-MM-dd HH:mm:ss', 'en');
-				$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+				$transaction = Array();
+				$merchantId = (int) $transactionApi["Stat"]["offer_id"];
+				
+				if (in_array($merchantId, $merchantList)){
+					$transaction['merchantId'] = $merchantId;
+						
+					$transactionDate = new Zend_Date($transactionApi["Stat"]["datetime"], 'yyyy-MM-dd HH:mm:ss', 'en');
+					$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+						
+					if ($transactionApi["Stat"]["ad_id"] != null) {
+						$transaction['custom_id'] = $transactionApi["Stat"]["ad_id"];
+					}
+						
+					if ($transactionApi["Stat"]["conversion_status"] == "approved") {
+						$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
+					} else
+					if ($transactionApi["Stat"]["conversion_status"] == "pending") {
+						$transaction['status'] = Oara_Utilities::STATUS_PENDING;
+					} else
+					if ($transactionApi["Stat"]["conversion_status"] == "rejected") {
+						$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
+					}
+					$transaction['amount'] = $transactionApi["Stat"]["payout"];
+					if (isset($transactionApi["Stat"]["conversion_sale_amount"])){
+						$transaction['amount'] = $transactionApi["Stat"]["conversion_sale_amount"];
+					}
+					$transaction['commission'] = $transactionApi["Stat"]["payout"];
+					$totalTransactions[] = $transaction;
 					
-				if ($transactionApi["Stat"]["ad_id"] != null) {
-					$transaction['custom_id'] = $transactionApi["Stat"]["ad_id"];
 				}
-					
-				if ($transactionApi["Stat"]["conversion_status"] == "approved") {
-					$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
-				} else
-				if ($transactionApi["Stat"]["conversion_status"] == "pending") {
-					$transaction['status'] = Oara_Utilities::STATUS_PENDING;
-				} else
-				if ($transactionApi["Stat"]["conversion_status"] == "rejected") {
-					$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
-				}
-					
-				$transaction['amount'] = $transactionApi["Stat"]["conversion_sale_amount"];
-				$transaction['commission'] = $transactionApi["Stat"]["payout"];
-				$totalTransactions[] = $transaction;
 				
 			}
-			
-			
+			if ((int)$response["response"]["data"]["pageCount"] <= $page){
+				$loop = false;
+			}
+			$page++;
 				
 		}
 		return $totalTransactions;
