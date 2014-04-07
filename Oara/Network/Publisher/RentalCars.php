@@ -83,11 +83,39 @@ class Oara_Network_Publisher_RentalCars extends Oara_Network {
 	 */
 	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = array ();
+		
+		
+		$cancelledMap = array();
 		$valuesFormExport = array ();
+		$valuesFormExport [] = new Oara_Curl_Parameter ( 'cancelled', 'cancelled' );
+		
+		$urls = array ();
+		$urls [] = new Oara_Curl_Request ( 'https://secure.rentalcars.com/affiliates/booked_excel?date_start=' . $dStartDate->toString ( "yyyy-MM-dd" ) . '&date_end=' . $dEndDate->toString ( "yyyy-MM-dd" ) . '?', $valuesFormExport );
+		$exportReport = $this->_client->post ( $urls );
+		
+		$xml = simplexml_load_string ( $exportReport [0] );
+		$json = json_encode ( $xml );
+		$array = json_decode ( $json, TRUE );
+		
+		$headerIndex = array();
+		for ($i=0; $i < count($array["Worksheet"]["Table"]["Row"][2]["Cell"]);$i++){
+			$headerIndex[$i] = $array["Worksheet"]["Table"]["Row"][2]["Cell"][$i]["Data"];
+		}
+		
+		
+		for($z = 3; $z < count ( $array["Worksheet"]["Table"]["Row"] ) - 2; $z ++) {
+			$transactionDetails = array();
+			for ($i=0; $i < count($array["Worksheet"]["Table"]["Row"][$z]["Cell"]);$i++){
+				$transactionDetails[$headerIndex[$i]] = $array["Worksheet"]["Table"]["Row"][$z]["Cell"][$i]["Data"];
+			}
+				
+			$cancelledMap[$transactionDetails["Res. Number"]] = true;
+		}
+		
+		
 		
 		$valuesFormExport = array ();
 		$valuesFormExport [] = new Oara_Curl_Parameter ( 'booking', 'booking' );
-		$valuesFormExport [] = new Oara_Curl_Parameter ( 'cancelled', 'cancelled' );
 		
 		$urls = array ();
 		$urls [] = new Oara_Curl_Request ( 'https://secure.rentalcars.com/affiliates/booked_excel?date_start=' . $dStartDate->toString ( "yyyy-MM-dd" ) . '&date_end=' . $dEndDate->toString ( "yyyy-MM-dd" ) . '?', $valuesFormExport );
@@ -136,13 +164,11 @@ class Oara_Network_Publisher_RentalCars extends Oara_Network {
 			}
 			
 			
-			if ($transactionDetails["Status"] == "Cancelled"){
+			if (isset($cancelledMap[$transaction ['unique_id']])){
 				$transaction ['status'] = Oara_Utilities::STATUS_DECLINED;
-				$transaction ['amount'] = - $transactionDetails["Booking Value"];
-			} else {
-				$transaction ['amount'] = $transactionDetails["Booking Value"];
 			}
 			
+			$transaction ['amount'] = $transactionDetails["Booking Value"];
 			$transaction ['currency'] = $transactionDetails["Payment Currency"];
 			$transaction ['commission'] = $transactionDetails["Total Commission"];
 			$totalTransactions [] = $transaction;
