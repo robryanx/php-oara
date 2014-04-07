@@ -108,7 +108,7 @@ class Oara_Network_Publisher_ParkAndGo extends Oara_Network {
 			$transactionExportArray = str_getcsv ( $exportData [$i], "," );
 			$transaction = Array ();
 			$transaction ['merchantId'] = 1;
-			$transaction ['uniqueId'] = $transactionExportArray [0];
+			$transaction ['unique_id'] = $transactionExportArray [0];
 			$transactionDate = new Zend_Date ( $transactionExportArray [2], 'yyyy-MM-dd 00:00:00', 'en' );
 			$transaction ['date'] = $transactionDate->toString ( "yyyy-MM-dd HH:mm:ss" );
 			unset ( $transactionDate );
