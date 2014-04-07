@@ -100,6 +100,10 @@ class Oara_Network_Publisher_SkyParkSecure extends Oara_Network {
 
 		$totalTransactions = array();
 		
+		$today = new Zend_Date();
+		$today->setHour(0);
+		$today->setMinute(0);
+		
 		$urls = array();
 		$exportParams = array(
 				new Oara_Curl_Parameter('data[query][agent]', $this->_agent),
@@ -118,11 +122,13 @@ class Oara_Network_Publisher_SkyParkSecure extends Oara_Network {
 			$transaction['merchantId'] = 1;
 			$transaction['unique_id'] = $booking->booking_ref;
 			$transactionDate = new Zend_Date($booking->booking_date, 'yyyy.MMM.dd HH:mm:00', 'en');
+			$pickupDate = new Zend_Date($booking->dateA, 'yyyy.MMM.dd HH:mm:00', 'en');
 			$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
-			if ($booking->booking_mode == "Booked"){
-				$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
-			} else if ($booking->booking_mode == "Amended"){
+			if ($booking->booking_mode == "Booked" || $booking->booking_mode == "Amended"){
 				$transaction['status'] = Oara_Utilities::STATUS_PENDING;
+				if ($today > $pickupDate){
+					$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
+				}
 			} else if ($booking->booking_mode == "Cancelled"){
 				$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
 			} else {

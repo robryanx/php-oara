@@ -100,19 +100,28 @@ class Oara_Network_Publisher_ParkAndGo extends Oara_Network {
 		$urls[] = new Oara_Curl_Request('https://www.parkandgo.co.uk/agents/', $exportParams);
 		$exportReport = $this->_client->post($urls);
 		
+		$today = new Zend_Date();
+		$today->setHour(0);
+		$today->setMinute(0);
 		
 		$exportData = str_getcsv ( $exportReport [0], "\n" );
 		$num = count ( $exportData );
 		for($i = 1; $i < $num; $i ++) {
 				
 			$transactionExportArray = str_getcsv ( $exportData [$i], "," );
+			
+			$arrivalDate = new Zend_Date ( $transactionExportArray [3], 'yyyy-MM-dd 00:00:00', 'en' );
+			
 			$transaction = Array ();
 			$transaction ['merchantId'] = 1;
 			$transaction ['unique_id'] = $transactionExportArray [0];
 			$transactionDate = new Zend_Date ( $transactionExportArray [2], 'yyyy-MM-dd 00:00:00', 'en' );
 			$transaction ['date'] = $transactionDate->toString ( "yyyy-MM-dd HH:mm:ss" );
 			unset ( $transactionDate );
-			$transaction ['status'] = Oara_Utilities::STATUS_CONFIRMED;
+			$transaction ['status'] = Oara_Utilities::STATUS_PENDING;
+			if ($today > $arrivalDate){
+				$transaction ['status'] = Oara_Utilities::STATUS_CONFIRMED;
+			}
 				
 			$transaction ['amount'] = Oara_Utilities::parseDouble ( $transactionExportArray [6] );
 			$transaction ['commission'] = Oara_Utilities::parseDouble ( $transactionExportArray [7] );
