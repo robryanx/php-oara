@@ -333,14 +333,19 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network {
 			if (count($transactionIdList) == 1){
 				$auxTransaction = current($transactionIdList);
 			} else {
+				$auxTransaction = Array ();
+				$auxTransaction ['merchantId'] = $transaction["merchantId"];
+				
 				foreach ($transactionIdList as $transaction){
 					if ($transaction ['status'] = Oara_Utilities::STATUS_PENDING){
-						$auxTransaction = $transaction;
+						$auxTransaction ['date'] = $transaction ['date'];
 					}
 					if ($transaction ['status'] = Oara_Utilities::STATUS_CONFIRMED){
 						$auxTransaction ['status'] = $transaction["status"];
 						$auxTransaction ['amount'] = $transaction["amount"];
 						$auxTransaction ['commission'] = $transaction["commission"];
+						$auxTransaction ['unique_id'] = $transaction ['unique_id'];
+						$auxTransaction ['custom_id'] =$transaction ['custom_id'];
 					}
 				}
 			}
