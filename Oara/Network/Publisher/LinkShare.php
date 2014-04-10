@@ -275,15 +275,18 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network {
 	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = Array ();
 		
+		$transactionById = array();
 		$filter = new Zend_Filter_LocalizedToNormalized ( array (
 				'precision' => 2 
 		) );
 		foreach ( $this->_siteList as $site ) {
-			// foreach ($merchantList as $mid){
 			
 			echo "getting Transactions for site " . $site->id . "\n\n";
 			
-			$url = "https://reportws.linksynergy.com/downloadreport.php?bdate=" . $dStartDate->toString ( "yyyyMMdd" ) . "&edate=" . $dEndDate->toString ( "yyyyMMdd" ) . "&token=" . $site->secureToken . "&nid=" . $this->_nid . "&reportid=12";
+			$finalDate = clone $dEndDate;
+			$finalDate->addDay("90");
+			
+			$url = "https://reportws.linksynergy.com/downloadreport.php?bdate=" . $dStartDate->toString ( "yyyyMMdd" ) . "&edate=" . $finalDate->toString ( "yyyyMMdd" ) . "&token=" . $site->secureToken . "&nid=" . $this->_nid . "&reportid=12";
 			$result = file_get_contents ( $url );
 			if (preg_match ( "/You cannot request/", $result )) {
 				throw new Exception ( "Reached the limit" );
@@ -316,10 +319,26 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network {
 					
 					$transaction ['commission'] = $filter->filter ( $transactionData [9] );
 					
-					$totalTransactions [] = $transaction;
+					$transactionById [$transaction ['unique_id']][] = $transaction;
+					
 				}
 			}
-			// }
+		}
+		
+		foreach ($transactionById as $id => $transactionIdList){
+			if (count($transactionIdList) == 1){
+				$totalTransactions[] = current($transactionIdList);
+			} else {
+				$auxTransaction = current($transactionIdList);
+				foreach ($transactionIdList as $transaction){
+					if ($transaction ['status'] = Oara_Utilities::STATUS_CONFIRMED){
+						$auxTransaction = $transaction;
+					}
+				}
+				
+				$totalTransactions[] = $auxTransaction;
+			}
+			
 		}
 		
 		return $totalTransactions;
