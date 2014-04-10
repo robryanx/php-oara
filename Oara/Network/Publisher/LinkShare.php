@@ -337,10 +337,10 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network {
 				$auxTransaction ['merchantId'] = $transaction["merchantId"];
 				
 				foreach ($transactionIdList as $transaction){
-					if ($transaction ['status'] = Oara_Utilities::STATUS_PENDING){
+					if ($transaction ['status'] == Oara_Utilities::STATUS_PENDING){
 						$auxTransaction ['date'] = $transaction ['date'];
 					}
-					if ($transaction ['status'] = Oara_Utilities::STATUS_CONFIRMED){
+					if ($transaction ['status'] == Oara_Utilities::STATUS_CONFIRMED){
 						$auxTransaction ['status'] = $transaction["status"];
 						$auxTransaction ['amount'] = $transaction["amount"];
 						$auxTransaction ['commission'] = $transaction["commission"];
