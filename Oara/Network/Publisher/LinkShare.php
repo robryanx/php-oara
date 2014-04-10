@@ -335,18 +335,15 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network {
 			} else {
 				$auxTransaction = Array ();
 				$auxTransaction ['merchantId'] = $transaction["merchantId"];
-				
-				foreach ($transactionIdList as $transaction){
-					if ($transaction ['status'] == Oara_Utilities::STATUS_PENDING){
-						$auxTransaction ['date'] = $transaction ['date'];
-					}
-					if ($transaction ['status'] == Oara_Utilities::STATUS_CONFIRMED){
-						$auxTransaction ['status'] = $transaction["status"];
-						$auxTransaction ['amount'] = $transaction["amount"];
-						$auxTransaction ['commission'] = $transaction["commission"];
-						$auxTransaction ['unique_id'] = $transaction ['unique_id'];
-						$auxTransaction ['custom_id'] =$transaction ['custom_id'];
-					}
+				usort($transactionIdList,array("Oara_Network_Publisher_LinkShare", "compareDates"));
+				$auxTransaction = current($transactionIdList);
+				$lastTransaction = end($transactionIdList);
+				$auxTransaction ['status'] = $lastTransaction["status"];
+				$auxTransaction ['amount'] = $lastTransaction["amount"];
+				$auxTransaction ['commission'] = $lastTransaction["commission"];
+				$auxTransaction ['unique_id'] = $lastTransaction ['unique_id'];
+				if (isset($lastTransaction ['custom_id'])){
+					$auxTransaction ['custom_id'] = $lastTransaction ['custom_id'];
 				}
 			}
 			
@@ -538,4 +535,15 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network {
 		$exportData = str_getcsv ( $csv, "\n" );
 		return $exportData;
 	}
+	
+	/**
+	 *
+	 * Compare date by strings
+	 * @param unknown_type $a
+	 * @param unknown_type $b
+	 */
+	static function compareDates($a, $b) {
+		return strcmp($a['date'], $b['date']);
+	}
+	
 }
