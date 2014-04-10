@@ -283,10 +283,13 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network {
 			
 			echo "getting Transactions for site " . $site->id . "\n\n";
 			
-			$finalDate = clone $dEndDate;
-			$finalDate->addDay("90");
+			$auxStartDate = clone $dStartDate;
+			$auxStartDate->subDay("90");
 			
-			$url = "https://reportws.linksynergy.com/downloadreport.php?bdate=" . $dStartDate->toString ( "yyyyMMdd" ) . "&edate=" . $finalDate->toString ( "yyyyMMdd" ) . "&token=" . $site->secureToken . "&nid=" . $this->_nid . "&reportid=12";
+			$auxEndDate = clone $dEndDate;
+			$auxEndDate->addDay("90");
+			
+			$url = "https://reportws.linksynergy.com/downloadreport.php?bdate=" . $auxStartDate->toString ( "yyyyMMdd" ) . "&edate=" . $auxEndDate->toString ( "yyyyMMdd" ) . "&token=" . $site->secureToken . "&nid=" . $this->_nid . "&reportid=12";
 			$result = file_get_contents ( $url );
 			if (preg_match ( "/You cannot request/", $result )) {
 				throw new Exception ( "Reached the limit" );
@@ -326,16 +329,23 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network {
 		}
 		
 		foreach ($transactionById as $id => $transactionIdList){
+			$auxTransaction = null;
 			if (count($transactionIdList) == 1){
-				$totalTransactions[] = current($transactionIdList);
-			} else {
 				$auxTransaction = current($transactionIdList);
+			} else {
 				foreach ($transactionIdList as $transaction){
-					if ($transaction ['status'] = Oara_Utilities::STATUS_CONFIRMED){
+					if ($transaction ['status'] = Oara_Utilities::STATUS_PENDING){
 						$auxTransaction = $transaction;
 					}
+					if ($transaction ['status'] = Oara_Utilities::STATUS_CONFIRMED){
+						$auxTransaction ['status'] = $transaction["status"];
+						$auxTransaction ['amount'] = $transaction["amount"];
+						$auxTransaction ['commission'] = $transaction["commission"];
+					}
 				}
-				
+			}
+			
+			if ($auxTransaction ['date'] >= $dStartDate->toString ( "yyyy-MM-dd HH:mm:ss" ) && $auxTransaction ['date'] <= $dEndDate->toString ( "yyyy-MM-dd HH:mm:ss" )) {
 				$totalTransactions[] = $auxTransaction;
 			}
 			
