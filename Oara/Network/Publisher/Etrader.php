@@ -3,12 +3,12 @@
  * Export Class
  *
  * @author     Carlos Morillo Merino
- * @category   Oara_Network_Publisher_RentalCars
+ * @category   Oara_Network_Publisher_Etrader
  * @copyright  Fubra Limited
  * @version    Release: 01.00
  *
  */
-class Oara_Network_Publisher_RentalCars extends Oara_Network {
+class Oara_Network_Publisher_Etrader extends Oara_Network {
 	private $_credentials = null;
 	/**
 	 * Client
@@ -29,16 +29,15 @@ class Oara_Network_Publisher_RentalCars extends Oara_Network {
 	}
 	private function logIn() {
 		$valuesLogin = array (
-				new Oara_Curl_Parameter ( 'login_username', $this->_credentials ['user'] ),
-				new Oara_Curl_Parameter ( 'login_password', $this->_credentials ['password'] ) 
+				new Oara_Curl_Parameter ( 'j_username', $this->_credentials ['user'] ),
+				new Oara_Curl_Parameter ( 'j_password', $this->_credentials ['password'] ),
+				new Oara_Curl_Parameter ( '_spring_security_remember_me', 'true' )
 		);
 		
-		$loginUrl = 'https://secure.rentalcars.com/affiliates/access?commit=true';
+		
+		$loginUrl = 'http://etrader.kalahari.com/login?';
 		$this->_client = new Oara_Curl_Access ( $loginUrl, $valuesLogin, $this->_credentials );
 		
-		if (! self::checkConnection ()) {
-			throw new Exception ( "You are not connected\n\n" );
-		}
 	}
 	/**
 	 * Check the connection
@@ -47,14 +46,11 @@ class Oara_Network_Publisher_RentalCars extends Oara_Network {
 		// If not login properly the construct launch an exception
 		$connection = false;
 		$urls = array ();
-		$urls [] = new Oara_Curl_Request ( 'https://secure.rentalcars.com/affiliates/?master=1', array () );
+		$urls [] = new Oara_Curl_Request ( 'https://etrader.kalahari.com/view/affiliate/home', array () );
 		
 		$exportReport = $this->_client->get ( $urls );
 		
-		$dom = new Zend_Dom_Query ( $exportReport [0] );
-		$results = $dom->query ( '#header_logout' );
-		
-		if (count ( $results ) > 0) {
+		if (preg_match("/signout/", $exportReport [0])) {
 			$connection = true;
 		}
 		return $connection;
@@ -69,8 +65,8 @@ class Oara_Network_Publisher_RentalCars extends Oara_Network {
 		
 		$obj = array ();
 		$obj ['cid'] = "1";
-		$obj ['name'] = "RentalCars";
-		$obj ['url'] = "https://secure.rentalcars.com";
+		$obj ['name'] = "eTrader";
+		$obj ['url'] = "https://etrader.kalahari.com";
 		$merchants [] = $obj;
 		
 		return $merchants;
@@ -84,94 +80,59 @@ class Oara_Network_Publisher_RentalCars extends Oara_Network {
 	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = array ();
 		
-		
-		$cancelledMap = array();
-		$valuesFormExport = array ();
-		$valuesFormExport [] = new Oara_Curl_Parameter ( 'cancelled', 'cancelled' );
-		
-		$urls = array ();
-		$urls [] = new Oara_Curl_Request ( 'https://secure.rentalcars.com/affiliates/booked_excel?date_start=' . $dStartDate->toString ( "yyyy-MM-dd" ) . '&date_end=' . $dEndDate->toString ( "yyyy-MM-dd" ) . '?', $valuesFormExport );
-		$exportReport = $this->_client->post ( $urls );
-		
-		$xml = simplexml_load_string ( $exportReport [0] );
-		$json = json_encode ( $xml );
-		$array = json_decode ( $json, TRUE );
-		
-		$headerIndex = array();
-		for ($i=0; $i < count($array["Worksheet"]["Table"]["Row"][2]["Cell"]);$i++){
-			$headerIndex[$i] = $array["Worksheet"]["Table"]["Row"][2]["Cell"][$i]["Data"];
-		}
-		
-		
-		for($z = 3; $z < count ( $array["Worksheet"]["Table"]["Row"] ) - 2; $z ++) {
-			$transactionDetails = array();
-			for ($i=0; $i < count($array["Worksheet"]["Table"]["Row"][$z]["Cell"]);$i++){
-				$transactionDetails[$headerIndex[$i]] = $array["Worksheet"]["Table"]["Row"][$z]["Cell"][$i]["Data"];
+		$page = 1;
+		$continue = true;
+		while  ($continue){
+			$valuesFormExport = array ();
+			$valuesFormExport [] = new Oara_Curl_Parameter ( 'dateFrom', $dStartDate->toString("dd/MM/yyyy") );
+			$valuesFormExport [] = new Oara_Curl_Parameter ( 'dateTo', $dEndDate->toString("dd/MM/yyyy") );
+			$valuesFormExport [] = new Oara_Curl_Parameter ( 'startIndex', $page );
+			$valuesFormExport [] = new Oara_Curl_Parameter ( 'numberOfPages', '1' );
+			
+			$urls = array ();
+			$urls [] = new Oara_Curl_Request ( 'https://etrader.kalahari.com/view/affiliate/transactionreport', $valuesFormExport );
+			$exportReport = $this->_client->post ( $urls );
+			
+			$dom = new Zend_Dom_Query ( $exportReport [0] );
+			$results = $dom->query ( 'table' );
+			$exportData = self::htmlToCsv ( self::DOMinnerHTML ( $results->current () ) );
+			
+			if (preg_match("/No results found/", $exportData[1])){
+				$continue = false;
+				break;
+			} else {
+				$page++;
 			}
+			
+			for ($j = 1; $j < count($exportData); $j++) {
+	
+				$transactionDetail = str_getcsv($exportData[$j], ";");
+				$transaction = Array ();
+				$transaction ['merchantId'] = "1";
 				
-			$cancelledMap[$transactionDetails["Res. Number"]] = true;
-		}
-		
-		
-		
-		$valuesFormExport = array ();
-		$valuesFormExport [] = new Oara_Curl_Parameter ( 'booking', 'booking' );
-		
-		$urls = array ();
-		$urls [] = new Oara_Curl_Request ( 'https://secure.rentalcars.com/affiliates/booked_excel?date_start=' . $dStartDate->toString ( "yyyy-MM-dd" ) . '&date_end=' . $dEndDate->toString ( "yyyy-MM-dd" ) . '?', $valuesFormExport );
-		$exportReport = $this->_client->post ( $urls );
-		
-		$xml = simplexml_load_string ( $exportReport [0] );
-		$json = json_encode ( $xml );
-		$array = json_decode ( $json, TRUE );
-		
-		$headerIndex = array();
-		for ($i=0; $i < count($array["Worksheet"]["Table"]["Row"][2]["Cell"]);$i++){
-			$headerIndex[$i] = $array["Worksheet"]["Table"]["Row"][2]["Cell"][$i]["Data"];
-		}
-		
-		
-		for($z = 3; $z < count ( $array["Worksheet"]["Table"]["Row"] ) - 2; $z ++) {
-			$transactionDetails = array();
-			for ($i=0; $i < count($array["Worksheet"]["Table"]["Row"][$z]["Cell"]);$i++){
-				$transactionDetails[$headerIndex[$i]] = $array["Worksheet"]["Table"]["Row"][$z]["Cell"][$i]["Data"];
-			}
-			
-			$transaction = Array ();
-			$transaction ['merchantId'] = "1";
-			$transaction ['unique_id'] = $transactionDetails["Res. Number"];
-			
-			if ($transactionDetails["Payment Date"] != null){
-				$date = new Zend_Date($transactionDetails["Payment Date"], "dd MMM yyyy - HH:ii", "en_GB");
-			} else {
-				$date = new Zend_Date($transactionDetails["Book Date"], "dd MMM yyyy - HH:ii", "en_GB");
-			}
-			
-			
-			
-			if (!empty($transactionDetails["AD Campaign"])){
-				$transaction ['custom_id'] = $transactionDetails["AD Campaign"];
-			}
-			
-			
-			
-			$transaction ['date'] = $date->toString ( "yyyy-MM-dd HH:mm:00" );
-			
-			if ($transactionDetails["Payment Date"] != null){
+				if (preg_match("/Order dispatched: ([0-9]+) /", $transactionDetail[2], $match)){
+					$transaction ['custom_id'] = $match[1];
+				}
+				
+				$date = new Zend_Date($transactionDetail[0], "dd MMM yyyy", "en_GB");
+				$transaction ['date'] = $date->toString ( "yyyy-MM-dd 00:00:00" );
 				$transaction ['status'] = Oara_Utilities::STATUS_CONFIRMED;
-			} else {
-				$transaction ['status'] = Oara_Utilities::STATUS_PENDING;
+				
+				if ($transactionDetail[3] != null){
+					preg_match("/[-+]?[0-9]*\.?[0-9]+/", $transactionDetail[3], $match);
+					$transaction['amount'] = (double)$match[0];
+					$transaction['commission'] = (double)$match[0];
+					
+				} else if ($transactionDetail[4] != null){
+					preg_match("/[-+]?[0-9]*\.?[0-9]+/", $transactionDetail[4], $match);
+					$transaction['amount'] = (double)$match[0];
+					$transaction['commission'] = (double)$match[0];
+				}
+				$totalTransactions [] = $transaction;
+				
 			}
 			
 			
-			if (isset($cancelledMap[$transaction ['unique_id']])){
-				$transaction ['status'] = Oara_Utilities::STATUS_DECLINED;
-			}
-			
-			$transaction ['amount'] = $transactionDetails["Booking Value"];
-			$transaction ['currency'] = $transactionDetails["Payment Currency"];
-			$transaction ['commission'] = $transactionDetails["Total Commission"];
-			$totalTransactions [] = $transaction;
 			
 		}
 		return $totalTransactions;
@@ -241,7 +202,6 @@ class Oara_Network_Publisher_RentalCars extends Oara_Network {
 	 */
 	public function getPaymentHistory() {
 		$paymentHistory = array ();
-		
 		
 		return $paymentHistory;
 	}
