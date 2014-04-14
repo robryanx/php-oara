@@ -149,7 +149,7 @@ class Oara_Network_Publisher_Daisycon extends Oara_Network {
 		$numberIterations = self::calculeIterationNumber($resposeInfo->totalResults, 1000);
 
 		for ($i = 0; $i < $numberIterations; $i++) {
-			$aFilter = array('offset'			 => 0,
+			$aFilter = array('offset'			 => $i * 1000,
 				'limitCount'		 => 1000,
 				'program_ids'		 => $merchantList,
 				'selection_start'	 => $dStartDate->toString("yyyy-MM-dd"),
@@ -165,7 +165,7 @@ class Oara_Network_Publisher_Daisycon extends Oara_Network {
 					$transaction['unique_id'] = $transactionObject->affiliatemarketing_id;
 
 					$transaction['merchantId'] = $merchantId;
-					$transactionDate = new Zend_Date($transactionObject->date_transaction, 'MM-dd-yyyy HH:mm:ss');
+					$transactionDate = new Zend_Date($transactionObject->date_transaction, 'dd-MM-yyyyTHH:mm:ss');
 					$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 
 					if ($transactionObject->sub_id != null) {
@@ -183,7 +183,7 @@ class Oara_Network_Publisher_Daisycon extends Oara_Network {
 								throw new Exception("New status {$transactionObject->status}");
 							}
 					$transaction['amount'] = Oara_Utilities::parseDouble($transactionObject->revenue);
-
+					$transaction['currency'] = $transactionObject->currency;
 					$transaction['commission'] = Oara_Utilities::parseDouble($transactionObject->commision);
 					$totalTransactions[] = $transaction;
 				}
