@@ -113,8 +113,10 @@ class Oara_Network_Publisher_WebGains extends Oara_Network {
 
 			foreach ($loginUrlArray as $country => $url){
 				$this->_webClient = new Oara_Curl_Access($url, $valuesLogin, $credentials);
-				if (preg_match("/\/affiliates\/logout\.html/", $this->_webClient->getConstructResult())) {
+				if (preg_match("/program\/list\/index\/joined\/joined/", $this->_webClient->getConstructResult())) {
 					$this->_server = $serverArray[$country];
+					
+					$this->_campaignMap = self::getCampaignMap($this->_webClient->getConstructResult());
 					break;
 				}
 			}
@@ -148,13 +150,11 @@ class Oara_Network_Publisher_WebGains extends Oara_Network {
 		 * @see library/Oara/Network/Oara_Network_Publisher_Base#getMerchantList()
 		 */
 		public function getMerchantList() {
-			$this->_campaignMap = self::getCampaignMap();
-
 			$merchantList = Array();
 			foreach ($this->_campaignMap as $campaignKey => $campaignValue) {
 				$merchants = $this->_soapClient->getProgramsWithMembershipStatus($this->_exportMerchantParameters['username'], $this->_exportMerchantParameters['password'], $campaignKey);
 				foreach ($merchants as $merchant) {
-					if ($merchant->programMembershipStatusName == 'Live') {
+					if ($merchant->programMembershipStatusName == 'Live' || $merchant->programMembershipStatusName == 'Joined') {
 						$merchantList[$merchant->programID] = $merchant;
 					}
 
@@ -279,27 +279,15 @@ class Oara_Network_Publisher_WebGains extends Oara_Network {
 		 * Get the campaings identifiers and returns it in an array.
 		 * @return array
 		 */
-		private function getCampaignMap() {
+		private function getCampaignMap($html) {
 			$campaingMap = array();
-			$urls = array();
-			$urls[] = new Oara_Curl_Request("http://{$this->_server}/affiliates/report.html?f=0&action=sf", array());
-			$exportReport = $this->_webClient->get($urls);
-			$matches = array();
-			if (preg_match("/<select name=\"campaignswitchid\" class=\"formelement\" style=\"width:134px\">([^\t]*)<\/select>/", $exportReport[0], $matches)) {
-
-				if (preg_match_all("/<option value=\"(.*)\" .*>(.*)<\/option>/", $matches[1], $matches)) {
-					$campaingNumber = count($matches[1]);
-					$i = 0;
-					while ($i < $campaingNumber) {
-						$campaingMap[$matches[1][$i]] = $matches[2][$i];
-						$i++;
-					}
-				} else {
-					throw new Exception('No campaigns found');
-				}
-
-			} else {
-				throw new Exception("No campaigns found");
+			
+			$dom = new Zend_Dom_Query($html);
+			$results = $dom->query('#affiliateCampaignSelector');
+			$merchantLines = $results->current()->childNodes;
+			for ($i = 0; $i < $merchantLines->length; $i++) {
+				$cid = $merchantLines->item($i)->attributes->getNamedItem("value")->nodeValue;
+				$campaingMap[$cid] = $merchantLines->item($i)->nodeValue;
 			}
 			return $campaingMap;
 		}
@@ -310,7 +298,7 @@ class Oara_Network_Publisher_WebGains extends Oara_Network {
 		 */
 		public function getPaymentHistory() {
 			$paymentHistory = array();
-
+			
 			$urls = array();
 
 			$urls[] = new Oara_Curl_Request("https://{$this->_server}/affiliates/payment.html", array());
