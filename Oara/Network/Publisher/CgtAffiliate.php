@@ -102,7 +102,7 @@ class Oara_Network_Publisher_CgtAffiliate extends Oara_Network {
 		
 			$transaction = Array();
 			$transaction['merchantId'] = 1;
-			$transaction['date'] = $transactionExportArray[0]." 00:00:00";
+			$transaction['date'] =  preg_replace("/[^0-9\-]/", "", $transactionExportArray[0])." 00:00:00";
 			
 			$transactionExportArray[1] = trim($transactionExportArray[1]);
 		
