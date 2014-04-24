@@ -466,7 +466,8 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network {
 	public function paymentTransactions($paymentId, $merchantList, $startDate) {
 		$transactionList = array ();
 		foreach ( $this->_siteList as $site ) {
-			$url = "https://reportws.linksynergy.com/downloadreport.php?payid=$paymentId&token=" . $site->secureToken . "&reportid=3";
+			
+			$url = "https://reportws.linksynergy.com/downloadreport.php?payid=$paymentId&token=" . $site->secureToken . "&reportid=2";
 			$result = file_get_contents ( $url );
 			if (preg_match ( "/You cannot request/", $result )) {
 				throw new Exception ( "Reached the limit" );
@@ -475,10 +476,20 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network {
 			$number = count ( $paymentLines );
 			for($j = 1; $j < $number; $j ++) {
 				$paymentData = str_getcsv ( $paymentLines [$j], "," );
-				$transactionList [] = $paymentData [4];
+				
+				$url = "https://reportws.linksynergy.com/downloadreport.php?invoiceid={$paymentData[2]}&token=" . $site->secureToken . "&reportid=3";
+				$result = file_get_contents ( $url );
+				if (preg_match ( "/You cannot request/", $result )) {
+					throw new Exception ( "Reached the limit" );
+				}
+				$transactionLines = str_getcsv ( $result, "\n" );
+				$numbeTr = count ( $transactionLines );
+				for($z = 1; $z < $numbeTr; $z ++) {
+					$transactionData = str_getcsv ( $transactionLines [$z], "," );
+					$transactionList [] = $transactionData [4];
+				}
 			}
 		}
-		
 		return $transactionList;
 	}
 	
