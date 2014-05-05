@@ -52,7 +52,7 @@ class Oara_Network_Publisher_SilverTap extends Oara_Network {
 		$password = $credentials['password'];
 		$report = null;
 		if ($credentials['network'] == "SilverTap") {
-			$this->_serverUrl = "http://mats.silvertap.com/";
+			$this->_serverUrl = "https://mats.silvertap.com/";
 			$report = 'AMSCommission_Breakdown';
 
 		} else
@@ -61,8 +61,7 @@ class Oara_Network_Publisher_SilverTap extends Oara_Network {
 				$report = 'BCCommission_Breakdown';
 			}
 
-		$loginUrl = $this->_serverUrl.'login.aspx';
-
+		$loginUrl = $this->_serverUrl.'Login.aspx?ReturnUrl=/';
 		$valuesLogin = array(new Oara_Curl_Parameter('txtUsername', $user),
 			new Oara_Curl_Parameter('txtPassword', $password),
 			new Oara_Curl_Parameter('cmdSubmit', 'Login'),
@@ -71,7 +70,6 @@ class Oara_Network_Publisher_SilverTap extends Oara_Network {
 		);
 
 		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
-
 		$exportPassword = md5($password);
 		$exportUser = self::getExportUser();
 

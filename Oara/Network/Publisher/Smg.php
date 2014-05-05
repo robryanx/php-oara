@@ -77,7 +77,7 @@ class Oara_Network_Publisher_Smg extends Oara_Network {
 		foreach ($results as $result) {
 			if ($i == 0) {
 				$this->_accountSid = str_replace(array("\n", "\t", " "), "", $result->nodeValue);
-			} else {
+			} else if ($i == 1) {
 				$this->_authToken = str_replace(array("\n", "\t", " "), "", $result->nodeValue);
 			}
 			$i++;
