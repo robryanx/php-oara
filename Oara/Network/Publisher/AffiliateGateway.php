@@ -167,6 +167,8 @@ class Oara_Network_Publisher_AffiliateGateway extends Oara_Network {
 							} else
 								if ($transactionExportArray[12] == "Declined") {
 									$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
+								} else {
+									echo "asdf";
 								}
 						$transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[7]);
 						$transaction['commission'] = Oara_Utilities::parseDouble($transactionExportArray[9]);
