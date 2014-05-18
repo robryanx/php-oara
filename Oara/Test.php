@@ -82,10 +82,6 @@ class Oara_Test {
 
 					echo "Number of transactions: ".count($transactionList)."\n\n";
 
-					$overviewList = $network->getOverviewList($transactionList, $merchantIdList, $monthStartDate, $monthEndDate, $merchantMap);
-
-					echo "Number register on the overview: ".count($overviewList)."\n\n";
-
 				}
 
 			}
@@ -213,36 +209,6 @@ class Oara_Test {
 						fwrite(STDERR, "TOTAL AMOUNT		$totalAmount\n");
 						fwrite(STDERR, "TOTAL COMMISSION	$totalCommission\n");
 						fwrite(STDERR, "--------------------------------------------------\n\n");
-
-					}
-
-					if (!isset($arguments['t']) || $arguments['t'] == 'overview') {
-						fwrite(STDERR, "Getting overview, please wait \n\n");
-						$overviewList = $network->getOverviewList($transactionList, $merchantIdList, $monthStartDate, $monthEndDate, $merchantMap);
-						fwrite(STDERR, "Number register on the overview: ".count($overviewList)."\n\n");
-
-						$totalCV = 0;
-						$totalCC = 0;
-						$totalPV = 0;
-						$totalPC = 0;
-						$totalDV = 0;
-						$totalDC = 0;
-						foreach ($overviewList as $overview) {
-							$totalCV += $overview['transaction_confirmed_value'];
-							$totalCC += $overview['transaction_confirmed_commission'];
-							$totalPV += $overview['transaction_pending_value'];
-							$totalPC += $overview['transaction_pending_commission'];
-							$totalDV += $overview['transaction_declined_value'];
-							$totalDC += $overview['transaction_declined_commission'];
-						}
-						fwrite(STDERR, "----------------------------------\n");
-						fwrite(STDERR, "CONFIRMED VALUE		$totalCV	\n");
-						fwrite(STDERR, "CONFIRMED COMMISSION	$totalCC	\n");
-						fwrite(STDERR, "PENDING VALUE		$totalPV	\n");
-						fwrite(STDERR, "PENDING COMMISSION	$totalPC	\n");
-						fwrite(STDERR, "DECLINED VALUE		$totalDV	\n");
-						fwrite(STDERR, "DECLINED COMMISSION	$totalDC	\n");
-						fwrite(STDERR, "----------------------------------\n\n");
 
 					}
 				}

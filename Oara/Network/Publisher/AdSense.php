@@ -65,18 +65,9 @@ class Oara_Network_Publisher_AdSense extends Oara_Network {
 	 */
 	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = array();
-		return $totalTransactions;
-	}
-
-	/**
-	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getOverviewList($aMerchantIds, $dStartDate, $dEndDate)
-	 */
-	public function getOverviewList($transactionList = null, $merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
-		$overviewArray = array();
-
+		
 		$report = $this->_adsense->reports->generate($dStartDate->toString("YYYY-MM-dd"), $dEndDate->toString("YYYY-MM-dd"), array("dimension" => "DATE", "metric" => array("PAGE_VIEWS", "CLICKS", "EARNINGS"), "sort" => "DATE"));
-
+		
 		$firstDayMonth = new Zend_Date();
 		$firstDayMonth->setDay(1);
 		$firstDayMonth->setHour("00");
@@ -86,41 +77,33 @@ class Oara_Network_Publisher_AdSense extends Oara_Network {
 			foreach ($report["rows"] as $row) {
 				$obj = array();
 				$obj['merchantId'] = 1;
-				$overviewDate = new Zend_Date($row[0], "yyyy-MM-dd");
-				$overviewDate->setHour("00");
-				$overviewDate->setMinute("00");
-				$overviewDate->setSecond("00");
-				$obj['date'] = $overviewDate->toString("yyyy-MM-dd HH:mm:ss");
-
-				$obj['transaction_number'] = 0;
-				$obj['transaction_confirmed_commission'] = 0;
-				$obj['transaction_confirmed_value'] = 0;
-				$obj['transaction_pending_commission'] = 0;
-				$obj['transaction_pending_value'] = 0;
-				$obj['transaction_declined_commission'] = 0;
-				$obj['transaction_declined_value'] = 0;
-				$obj['transaction_paid_commission'] = 0;
-				$obj['transaction_paid_value'] = 0;
-
+				$tDate = new Zend_Date($row[0], "yyyy-MM-dd");
+				$tDate->setHour("00");
+				$tDate->setMinute("00");
+				$tDate->setSecond("00");
+				$obj['date'] = $tDate->toString("yyyy-MM-dd HH:mm:ss");
+		
+		
 				$obj['impression_number'] = (int) Oara_Utilities::parseDouble($row[1]);
 				$obj['click_number'] = Oara_Utilities::parseDouble($row[2]);
-				if ($firstDayMonth->compare($overviewDate) <= 0) {
-					$obj['transaction_pending_commission'] = Oara_Utilities::parseDouble($row[3]);
-					$obj['transaction_pending_value'] = Oara_Utilities::parseDouble($row[3]);
+				if ($firstDayMonth->compare($tDate) <= 0) {
+					$obj['amount'] = Oara_Utilities::parseDouble($row[3]);
+					$obj['commission'] = Oara_Utilities::parseDouble($row[3]);
+					$obj['status'] = Oara_Utilities::STATUS_PENDING;
 				} else {
-					$obj['transaction_confirmed_commission'] = Oara_Utilities::parseDouble($row[3]);
-					$obj['transaction_confirmed_value'] = Oara_Utilities::parseDouble($row[3]);
+					$obj['amount'] = Oara_Utilities::parseDouble($row[3]);
+					$obj['commission'] = Oara_Utilities::parseDouble($row[3]);
+					$obj['status'] = Oara_Utilities::STATUS_CONFIRMED;
 				}
-
-				if (Oara_Utilities::checkRegister($obj)) {
-					$overviewArray[] = $obj;
-				}
-			}
 				
+				$totalTransactions[] = $obj;
+			}
+		
 		}
-
-		return $overviewArray;
+		
+		return $totalTransactions;
 	}
+
 	/**
 	 * (non-PHPdoc)
 	 * @see Oara/Network/Oara_Network_Publisher_Base#getPaymentHistory()

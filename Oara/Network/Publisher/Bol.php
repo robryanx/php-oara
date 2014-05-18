@@ -78,8 +78,6 @@ class Oara_Network_Publisher_Bol extends Oara_Network {
 			$valuesFromExport[] = new Oara_Curl_Parameter('fromDate', $dateArray[$i]->toString("yyyy-MM-dd"));
 			$valuesFromExport[] = new Oara_Curl_Parameter('toDate', $dateArray[$i]->toString("yyyy-MM-dd"));
 			
-			
-
 			$urls = array();
 			$urls[] = new Oara_Curl_Request('https://partnerprogramma.bol.com/partner/affiliate/productOverview?', $valuesFromExport);
 			$exportReport = $this->_client->get($urls);
@@ -123,59 +121,7 @@ class Oara_Network_Publisher_Bol extends Oara_Network {
 
 		return $totalTransactions;
 	}
-
-	/**
-	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Oara_Network_Publisher_Base#getOverviewList($merchantId, $dStartDate, $dEndDate)
-	 */
-	public function getOverviewList($transactionList = null, $merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
-		$overviewArray = Array();
-		$transactionArray = Oara_Utilities::transactionMapPerDay($transactionList);
-
-		foreach ($transactionArray as $merchantId => $merchantTransaction) {
-			foreach ($merchantTransaction as $date => $transactionList) {
-
-				$overview = Array();
-
-				$overview['merchantId'] = $merchantId;
-				$overviewDate = new Zend_Date($date, "yyyy-MM-dd");
-				$overview['date'] = $overviewDate->toString("yyyy-MM-dd HH:mm:ss");
-				$overview['click_number'] = 0;
-				$overview['impression_number'] = 0;
-				$overview['transaction_number'] = 0;
-				$overview['transaction_confirmed_value'] = 0;
-				$overview['transaction_confirmed_commission'] = 0;
-				$overview['transaction_pending_value'] = 0;
-				$overview['transaction_pending_commission'] = 0;
-				$overview['transaction_declined_value'] = 0;
-				$overview['transaction_declined_commission'] = 0;
-				$overview['transaction_paid_value'] = 0;
-				$overview['transaction_paid_commission'] = 0;
-				foreach ($transactionList as $transaction) {
-					$overview['transaction_number']++;
-					if ($transaction['status'] == Oara_Utilities::STATUS_CONFIRMED) {
-						$overview['transaction_confirmed_value'] += $transaction['amount'];
-						$overview['transaction_confirmed_commission'] += $transaction['commission'];
-					} else
-						if ($transaction['status'] == Oara_Utilities::STATUS_PENDING) {
-							$overview['transaction_pending_value'] += $transaction['amount'];
-							$overview['transaction_pending_commission'] += $transaction['commission'];
-						} else
-							if ($transaction['status'] == Oara_Utilities::STATUS_DECLINED) {
-								$overview['transaction_declined_value'] += $transaction['amount'];
-								$overview['transaction_declined_commission'] += $transaction['commission'];
-							} else
-								if ($transaction['status'] == Oara_Utilities::STATUS_PAID) {
-									$overview['transaction_paid_value'] += $transaction['amount'];
-									$overview['transaction_paid_commission'] += $transaction['commission'];
-								}
-				}
-				$overviewArray[] = $overview;
-			}
-		}
-
-		return $overviewArray;
-	}
+	
 	/**
 	 * (non-PHPdoc)
 	 * @see Oara/Network/Oara_Network_Publisher_Base#getPaymentHistory()

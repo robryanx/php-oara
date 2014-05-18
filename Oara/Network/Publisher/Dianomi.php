@@ -70,30 +70,19 @@ class Oara_Network_Publisher_Dianomi extends Oara_Network {
 	 */
 	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = Array();
-
-		return $totalTransactions;
-
-	}
-
-	/**
-	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Oara_Network_Publisher_Base#getOverviewList($merchantId, $dStartDate, $dEndDate)
-	 */
-	public function getOverviewList($transactionList = null, $merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
-		$totalOverviews = Array();
-
+		
 		$valuesFormExport = array();
 		$valuesFormExport[] = new Oara_Curl_Parameter('periodtype', "fromtolong");
 		$valuesFormExport[] = new Oara_Curl_Parameter('fromday', $dStartDate->toString("dd"));
 		$valuesFormExport[] = new Oara_Curl_Parameter('frommonth', $dStartDate->toString("MM"));
 		$valuesFormExport[] = new Oara_Curl_Parameter('fromyear', $dStartDate->toString("yyyy"));
-
+		
 		$valuesFormExport[] = new Oara_Curl_Parameter('today', $dEndDate->toString("dd"));
 		$valuesFormExport[] = new Oara_Curl_Parameter('tomonth', $dEndDate->toString("MM"));
 		$valuesFormExport[] = new Oara_Curl_Parameter('toyear', $dEndDate->toString("yyyy"));
-
+		
 		$valuesFormExport[] = new Oara_Curl_Parameter('Go', 'Go');
-
+		
 		$valuesFormExport[] = new Oara_Curl_Parameter('partnerId', '326');
 		$valuesFormExport[] = new Oara_Curl_Parameter('action', 'partnerLeads');
 		$valuesFormExport[] = new Oara_Curl_Parameter('subaction', 'RevenueOverTime');
@@ -107,27 +96,22 @@ class Oara_Network_Publisher_Dianomi extends Oara_Network {
 			$num = count($exportData);
 			for ($i = 1; $i < $num; $i++) {
 				$overviewExportArray = str_getcsv($exportData[$i], ";");
-
-				$overview = Array();
-
-				$overview['merchantId'] = 1;
+		
+				$transaction = Array();
+		
+				$transaction['merchantId'] = 1;
 				$date = new Zend_Date($overviewExportArray[0], "yyyy-MM-dd");
-				$overview['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
-				$overview['click_number'] = 0;
-				$overview['impression_number'] = 0;
-				$overview['transaction_number'] = 0;
-				$overview['transaction_confirmed_value'] = $overviewExportArray[1];
-				$overview['transaction_confirmed_commission'] = $overviewExportArray[1];
-				$overview['transaction_pending_value'] = 0;
-				$overview['transaction_pending_commission'] = 0;
-				$overview['transaction_declined_value'] = 0;
-				$overview['transaction_declined_commission'] = 0;
-				$overview['transaction_paid_value'] = 0;
-				$overview['transaction_paid_commission'] = 0;
-				$totalOverviews[] = $overview;
+				$transaction['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
+				$transaction['amount'] = $overviewExportArray[1];
+				$transaction['commission'] = $overviewExportArray[1];
+				$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
+				$totalTransactions[] = $transaction;
 			}
 		}
-		return $totalOverviews;
+		
+
+		return $totalTransactions;
+
 	}
 
 	/**

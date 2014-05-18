@@ -38,18 +38,6 @@ class Oara_Network {
 	}
 	/**
 	 *
-	 * Get the overview (a summary daily of our statistics) for the network and the merchants selected for the date given
-	 * @param array $transactionList - Transaction List
-	 * @param array $merchantList - array with the merchants we want to retrieve the data from
-	 * @param Zend_Date $dStartDate - start date (included)
-	 * @param Zend_Date $dEndDate - end date (included)
-	 */
-	public function getOverviewList($transactionList, $merchantList, Zend_Date $dStartDate, Zend_Date $dEndDate, $merchantMap = null) {
-		$result = array();
-		return $result;
-	}
-	/**
-	 *
 	 * Get the Payments already done for this network
 	 */
 	public function getPaymentHistory() {

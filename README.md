@@ -199,20 +199,6 @@ Gets the transactions for the network, from the "dStartDate" until "dEndDate" fo
 
 * return Array ( Array of Transactions )
 
-### getOverviewList($transactionList, $merchantList, Zend_Date $dStartDate, Zend_Date $dEndDate, array $merchantMap)
-Gets the overview (a daily summary  of our statistics) for the network and the merchants selected for the date given
-
-* @param array $transactionList - Transaction List
-
-* @param array $merchantList - array with the merchants we want to retrieve the data from
-
-* @param Zend_Date $dStartDate - start date (included)
-
-* @param Zend_Date $dEndDate - end date (included)
-
-* @param array $merchantMap - array with the merchants indexed by name, only in case we can't get the merchant id in the transaction report, we may need to link it by name.
-
-* return Array ( Array of Overview )
 
 ### getPaymentHistory()
 Gets the Payments already done for this network
