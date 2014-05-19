@@ -244,19 +244,26 @@ class Oara_Network_Publisher_CommissionJunction extends Oara_Network {
 					}
 
 					//$transaction['unique_id'] = self::findAttribute($singleTransaction, 'commission-id');
-					$transaction ['unique_id'] = self::findAttribute ( $singleTransaction, 'order-id' );
-					if (self::findAttribute($singleTransaction, 'action-status') == 'locked' || self::findAttribute($singleTransaction, 'action-status') == 'closed') {
-						$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
-					} else
-						if (self::findAttribute($singleTransaction, 'action-status') == 'extended' || self::findAttribute($singleTransaction, 'action-status') == 'new') {
-							$transaction['status'] = Oara_Utilities::STATUS_PENDING;
-						} else
-							if (self::findAttribute($singleTransaction, 'action-status') == 'corrected') {
-								$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
-							}
-
-					$transaction['amount'] = (double) $filter->filter(self::findAttribute($singleTransaction, 'sale-amount'));
-					$transaction['commission'] = (double) $filter->filter(self::findAttribute($singleTransaction, 'commission-amount'));
+					$transaction ['amount'] = ( double ) $filter->filter ( self::findAttribute ( $singleTransaction, 'sale-amount' ) );
+					$transaction ['commission'] = ( double ) $filter->filter ( self::findAttribute ( $singleTransaction, 'commission-amount' ) );
+					
+					if (self::findAttribute ( $singleTransaction, 'action-status' ) == 'locked' || self::findAttribute ( $singleTransaction, 'action-status' ) == 'closed') {
+						$transaction ['status'] = Oara_Utilities::STATUS_CONFIRMED;
+					} else if (self::findAttribute ( $singleTransaction, 'action-status' ) == 'extended' || self::findAttribute ( $singleTransaction, 'action-status' ) == 'new') {
+						$transaction ['status'] = Oara_Utilities::STATUS_PENDING;
+					} else if (self::findAttribute ( $singleTransaction, 'action-status' ) == 'corrected') {
+						$transaction ['status'] = Oara_Utilities::STATUS_DECLINED;
+					}
+					
+					if ($transaction ['commission'] == 0){
+						$transaction ['status'] = Oara_Utilities::STATUS_PENDING;
+					}
+					
+					if ($transaction ['amount'] < 0 || $transaction ['commission'] < 0){
+						$transaction ['status'] = Oara_Utilities::STATUS_DECLINED;
+						$transaction ['amount'] = abs($transaction ['amount']);
+						$transaction ['commission'] = abs($transaction ['commission']);
+					}
 					$totalTransactions[] = $transaction;
 				}
 			}
