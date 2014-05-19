@@ -165,7 +165,7 @@ class Oara_Network_Publisher_AffiliateGateway extends Oara_Network {
 							if ($transactionExportArray[12] == "Pending") {
 								$transaction['status'] = Oara_Utilities::STATUS_PENDING;
 							} else
-								if ($transactionExportArray[12] == "Declined") {
+								if ($transactionExportArray[12] == "Declined" || $transactionExportArray[12] == "Rejected") {
 									$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
 								} else {
 									echo "asdf";
