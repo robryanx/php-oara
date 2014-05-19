@@ -90,7 +90,7 @@ class Oara_Network_Publisher_RentalCars extends Oara_Network {
 		$valuesFormExport [] = new Oara_Curl_Parameter ( 'cancelled', 'cancelled' );
 		
 		$urls = array ();
-		$urls [] = new Oara_Curl_Request ( 'https://secure.rentalcars.com/affiliates/booked_excel?date_start=' . $dStartDate->toString ( "yyyy-MM-dd" ) . '&date_end=' . $dEndDate->toString ( "yyyy-MM-dd" ) . '?', $valuesFormExport );
+		$urls [] = new Oara_Curl_Request ( 'https://secure.rentalcars.com/affiliates/booked_excel?date_start=' . $dStartDate->toString ( "yyyy-MM-dd" ) . '&date_end=' . $dEndDate->toString ( "yyyy-MM-dd" ) , $valuesFormExport );
 		$exportReport = $this->_client->post ( $urls );
 		
 		$xml = simplexml_load_string ( $exportReport [0] );
@@ -118,7 +118,7 @@ class Oara_Network_Publisher_RentalCars extends Oara_Network {
 		$valuesFormExport [] = new Oara_Curl_Parameter ( 'booking', 'booking' );
 		
 		$urls = array ();
-		$urls [] = new Oara_Curl_Request ( 'https://secure.rentalcars.com/affiliates/booked_excel?date_start=' . $dStartDate->toString ( "yyyy-MM-dd" ) . '&date_end=' . $dEndDate->toString ( "yyyy-MM-dd" ) . '?', $valuesFormExport );
+		$urls [] = new Oara_Curl_Request ( 'https://secure.rentalcars.com/affiliates/booked_excel?date_start=' . $dStartDate->toString ( "yyyy-MM-dd" ) . '&date_end=' . $dEndDate->toString ( "yyyy-MM-dd" ), $valuesFormExport );
 		$exportReport = $this->_client->post ( $urls );
 		
 		$xml = simplexml_load_string ( $exportReport [0] );
