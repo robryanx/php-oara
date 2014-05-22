@@ -162,7 +162,6 @@ please pay attention to the next rules:
 	* checkConnection
 	* getMerchantList
 	* getTransactionList
-	* getOverviewList
 	* getPaymentHistory
 	* paymentTransactions
 	
@@ -251,37 +250,6 @@ It's an array with the following keys:
 * unique_id - Unique id for the transaction (string)
 * custom_id - Custom id (or sub id) for the transaction (string), custom param you put on your links to see the performance or who made the sale.
 
-
-Overview 
-------------
-
-It's an array with the following keys:
-
-* merchantId (not null) - Merchant's unique id
-
-* date (not null) - Transaction date format, "2011-06-26 18:10:10"
-
-* click_number (not null) - The number (int) of clicks for this date for this merchant, link and website 
-
-* impression_number (not null) - The number (int) of impressions for this date for this merchant, link and website 
-
-* transaction_number (not null) - The number (int) of transactions for this date for this merchant, link and website 
-
-* transaction_confirmed_value (not null) -  Transaction value  (double) with status confirmed 
-
-* transaction_confirmed_commission (not null) -  Transaction commission  (double) with status confirmed 
-
-* transaction_pending_value (not null) - Transaction value  (double) with status pending 
-
-* transaction_pending_commission (not null) -  Transaction commission  (double) with status pending 
-
-* transaction_declined_value (not null) -  Transaction value  (double) with status declined 
-
-* transaction_declined_commission (not null) -  Transaction commission  (double) with status declined 
-
-* transaction_paid_value (not null) -  Transaction value  (double) with status paid 
-
-* transaction_paid_commission (not null) -  Transaction commission  (double) with status paid 
 
 Payment 
 ------------
