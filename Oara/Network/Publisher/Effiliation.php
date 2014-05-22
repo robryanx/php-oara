@@ -43,7 +43,7 @@ class Oara_Network_Publisher_Effiliation extends Oara_Network {
 	 */
 	public function getMerchantList() {
 		$merchants = array();
-
+		
 		$content = @file_get_contents('http://api.effiliation.com/api/programmes.xml?key='.$this->_credentials["apiPassword"]);
 		$xml = simplexml_load_string($content, null, LIBXML_NOERROR | LIBXML_NOWARNING);
 		foreach ($xml->programme as $merchant) {

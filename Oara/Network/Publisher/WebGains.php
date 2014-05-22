@@ -91,7 +91,7 @@ class Oara_Network_Publisher_WebGains extends Oara_Network {
 			$serverArray["es"] = 'www.webgains.es';
 			$serverArray["ie"] = 'www.webgains.ie';
 			$serverArray["it"] = 'www.webgains.it';
-
+			
 			$loginUrlArray = array();
 			$loginUrlArray["uk"] = 'https://www.webgains.com/loginform.html?action=login';
 			$loginUrlArray["fr"] = 'https://www.webgains.fr/loginform.html?action=login';
@@ -113,9 +113,8 @@ class Oara_Network_Publisher_WebGains extends Oara_Network {
 
 			foreach ($loginUrlArray as $country => $url){
 				$this->_webClient = new Oara_Curl_Access($url, $valuesLogin, $credentials);
-				if (preg_match("/program\/list\/index\/joined\/joined/", $this->_webClient->getConstructResult())) {
+				if (preg_match("/logout.html/", $this->_webClient->getConstructResult())) {
 					$this->_server = $serverArray[$country];
-					
 					$this->_campaignMap = self::getCampaignMap($this->_webClient->getConstructResult());
 					break;
 				}
@@ -232,11 +231,15 @@ class Oara_Network_Publisher_WebGains extends Oara_Network {
 			$campaingMap = array();
 			
 			$dom = new Zend_Dom_Query($html);
-			$results = $dom->query('#affiliateCampaignSelector');
+			$results = $dom->query('select[name="campaignswitchid"]');
 			$merchantLines = $results->current()->childNodes;
 			for ($i = 0; $i < $merchantLines->length; $i++) {
 				$cid = $merchantLines->item($i)->attributes->getNamedItem("value")->nodeValue;
-				$campaingMap[$cid] = $merchantLines->item($i)->nodeValue;
+				if (is_numeric($cid)){
+					$campaingMap[$cid] = $merchantLines->item($i)->nodeValue;
+				}
+				
+				
 			}
 			return $campaingMap;
 		}
