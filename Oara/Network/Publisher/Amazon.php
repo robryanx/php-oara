@@ -193,7 +193,7 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 		
 		// try to find the actual login form
 		if (!preg_match('/<form name="signIn".*?<\/form>/is', $page, $form)) {
-			die('Failed to find log in form!');
+			die('Failed to find log in form!Please verify you have installed casperjs (http://casperjs.org/) in your machine.');
 		}
 
 		$form = $form[0];

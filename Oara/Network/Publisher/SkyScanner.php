@@ -105,8 +105,8 @@ class Oara_Network_Publisher_SkyScanner extends Oara_Network {
 				$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 				//unset($transactionDate);
 				$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
-				$transaction['amount'] = (double)$transactionExportArray[7];
-				$transaction['commission'] = (double)$transactionExportArray[7]* 0.6;
+				$transaction['amount'] = (double)$transactionExportArray[9];
+				$transaction['commission'] = (double)$transaction['amount']* 0.6;
 
 				if ($transaction['amount'] != 0){
 					$totalTransactions[] = $transaction;
