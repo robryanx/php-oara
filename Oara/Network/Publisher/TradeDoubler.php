@@ -573,6 +573,9 @@ class Oara_Network_Publisher_TradeDoubler extends Oara_Network {
 		}else
 		if ($this->_dateFormat == 'yyyy/MM/dd') {
 			$dateString = $date->toString('yyyy/MM/dd');
+		}else
+		if ($this->_dateFormat == 'yyyy-MM-dd') {
+			$dateString = $date->toString('yyyy-MM-dd');
 		} else {
 			throw new Exception("\n Date Format not supported ".$this->_dateFormat."\n");
 		}
@@ -615,6 +618,9 @@ class Oara_Network_Publisher_TradeDoubler extends Oara_Network {
 		}  else
 		if ($this->_dateFormat == 'yyyy/MM/dd') {
 			$transactionDate = new Zend_Date(trim($dateString), "yyyy/MM/dd HH:mm:ss");
+		}  else
+		if ($this->_dateFormat == 'yyyy-MM-dd') {
+			$transactionDate = new Zend_Date(trim($dateString), "yyyy-MM-dd HH:mm:ss");
 		}else {
 			throw new Exception("\n Date Format not supported ".$this->_dateFormat."\n");
 		}

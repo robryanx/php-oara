@@ -185,8 +185,8 @@ class Oara_Network_Publisher_Publicidees extends Oara_Network {
 							$transaction = Array();
 							$transaction['merchantId'] = 1;
 							$transaction['date'] = $dateArray[$i]->toString("yyyy-MM-dd HH:mm:ss");
-							$transaction['amount'] = ((double) $filter->filter(substr($transactionExportArray[$headerMap["pendingCA"]], 0, -2)) / $pendingTransactions);
-							$transaction['commission'] = ((double) $filter->filter(substr($transactionExportArray[$headerMap["pendingCA"]], 0, -2)) / $pendingTransactions);
+							$transaction['amount'] = (double) $transactionExportArray[$headerMap["pendingCA"]] / $pendingTransactions;
+							$transaction['commission'] = (double) $transactionExportArray[$headerMap["pendingCA"]] / $pendingTransactions;
 							$transaction['status'] = Oara_Utilities::STATUS_PENDING;
 							$totalTransactions[] = $transaction;
 						}
