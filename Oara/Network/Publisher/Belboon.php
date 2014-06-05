@@ -114,12 +114,15 @@ class Oara_Network_Publisher_Belboon extends Oara_Network {
 	 */
 	public function Login() {
 		//Setting the client.
-		$this->_client = new SoapClient('http://api.belboon.com/?wsdl', array('login' => $this->_user, 'password' => $this->_password, 'trace' => true));
-		$result = $this->_client->getAccountInfo();
-		sleep(2);
-		$oSmartFeed = new SoapClient("http://smartfeeds.belboon.com/SmartFeedServices.php?wsdl");
+		
+		$oSmartFeed = new Zend_Soap_Client("http://smartfeeds.belboon.com/SmartFeedServices.php?wsdl");
 		
 		$oSessionHash = $oSmartFeed->login($this->_user, $this->_password);
+		
+		$this->_client = new SoapClient('http://api.belboon.com/?wsdl', array('login' => $this->_user, 'password' => $this->_password, 'trace' => true));
+		$result = $this->_client->getAccountInfo();
+		
+		
 
 		if(!$oSessionHash->HasError){
 
