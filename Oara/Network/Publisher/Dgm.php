@@ -106,7 +106,7 @@ class Oara_Network_Publisher_Dgm extends Oara_Network {
 			
 			$campaignIdList = array ();
 			foreach ( $merchantList as $merchantId ) {
-				$campaingList = explode ( ",", $this->_advertisersCampaings [( string ) $idMerchant] );
+				$campaingList = explode ( ",", $this->_advertisersCampaings [( string ) $merchantId] );
 				foreach ( $campaingList as $campaignId ) {
 					$campaignIdList [$campaignId] = $merchantId;
 				}
@@ -114,29 +114,29 @@ class Oara_Network_Publisher_Dgm extends Oara_Network {
 			
 			foreach ( $xmlObject->sales->sale as $sale ) {
 				
-				if (isset ( $campaignIdList [( string ) $sale->campaignid] )) {
+				if (isset ( $campaignIdList [( string ) $sale->Campaignid] )) {
 					
 					$transaction = Array ();
-					$transaction ['unique_id'] = ( string ) $sale->orderid;
-					$transaction ['merchantId'] = $campaignIdList [( string ) $sale->campaignid];
-					$transactionDate = new Zend_Date ( ( string ) $sale->saledate, 'yyyy-MM-dd HH:mm:ss' );
+					$transaction ['unique_id'] = ( string ) $sale->OrderID;
+					$transaction ['merchantId'] = $campaignIdList [( string ) $sale->CampaignID];
+					$transactionDate = new Zend_Date ( ( string ) $sale->Saledate, 'yyyy-MM-dd HH:mm:ss' );
 					$transaction ['date'] = $transactionDate->toString ( "yyyy-MM-dd HH:mm:ss" );
 					
-					if (( string ) $sale->companyid != null) {
-						$transaction ['custom_id'] = ( string ) $sale->companyid;
+					if (( string ) $sale->CompanyID != null) {
+						$transaction ['custom_id'] = ( string ) $sale->CompanyID;
 					}
 					
-					if (( string ) $sale->salestatus == 'Approved') {
+					if (( string ) $sale->SaleStatus == 'Approved') {
 						$transaction ['status'] = Oara_Utilities::STATUS_CONFIRMED;
-					} else if (( string ) $sale->salestatus == 'Pending') {
+					} else if (( string ) $sale->SaleStatus == 'Pending') {
 						$transaction ['status'] = Oara_Utilities::STATUS_PENDING;
-					} else if (( string ) $sale->salestatus == 'Deleted') {
+					} else if (( string ) $sale->SaleStatus == 'Deleted') {
 						$transaction ['status'] = Oara_Utilities::STATUS_DECLINED;
 					}
 					
-					$transaction ['amount'] = ( string ) $sale->salevalue;
+					$transaction ['amount'] = ( string ) $sale->SaleValue;
 					
-					$transaction ['commission'] = ( string ) $sale->salecommission;
+					$transaction ['commission'] = ( string ) $sale->SaleCommission;
 					$totalTransactions [] = $transaction;
 				}
 			}
