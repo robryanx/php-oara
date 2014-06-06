@@ -205,9 +205,14 @@ class Oara_Network_Publisher_Omg extends Oara_Network {
 		
 		$rowNumber = 0;
 		foreach ( $exportData as $exportRow ) {
-			if ($rowNumber > 0) {
+			if ($rowNumber > 0 && $rowNumber != count($exportData) - 1) {
 				$row = str_getcsv ( $exportRow, "," );
+				if (!isset($row [5])){
+					echo "asdf";
+				}
+				
 				$date = new Zend_Date ( $row [5], "dd-MM-yyyy HH:mm:ss" );
+				
 				
 				if (in_array ( ( int ) $row [9], $merchantList )) {
 					
