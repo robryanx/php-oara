@@ -57,7 +57,7 @@ $networkName = "AffiliateWindow"; //Ex: AffiliateWindow
 $config = Zend_Registry::getInstance()->get('credentialsIni');
 
 $configName = strtolower($networkName);
-$credentials = array();
+$credentials = $config->$configName->toArray();
 
 //Path for the cookie located inside the Oara/data/curl folder
 $credentials["cookiesDir"] = "example";
