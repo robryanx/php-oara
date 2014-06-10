@@ -317,6 +317,12 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network {
 					
 					$transaction ['commission'] = $filter->filter ( $transactionData [9] );
 					
+					if ($transaction ['commission'] < 0){
+						$transaction ['amount'] = 0;
+						$transaction ['commission'] = 0;
+						$transaction ['status'] =  Oara_Utilities::STATUS_DECLINED;
+					}
+					
 					$totalTransactions [] = $transaction;
 				}
 			}
