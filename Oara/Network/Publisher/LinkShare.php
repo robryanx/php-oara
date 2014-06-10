@@ -303,7 +303,7 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network {
 					if ($transactionData [0] != '<none>') {
 						$transaction ['custom_id'] = $transactionData [0];
 					}
-					$transaction ['unique_id'] = $transactionData [3];
+					$transaction ['unique_id'] = $transactionData [6];
 					
 					$sales = $filter->filter ( $transactionData [7] );
 					
