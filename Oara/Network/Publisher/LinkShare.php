@@ -387,6 +387,7 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network {
 	 */
 	public function paymentTransactions($paymentId, $merchantList, $startDate) {
 		$transactionList = array ();
+		/*
 		foreach ( $this->_siteList as $site ) {
 			
 			$url = "https://reportws.linksynergy.com/downloadreport.php?payid=$paymentId&token=" . $site->secureToken . "&reportid=2";
@@ -412,6 +413,7 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network {
 				}
 			}
 		}
+		*/
 		return $transactionList;
 	}
 	
