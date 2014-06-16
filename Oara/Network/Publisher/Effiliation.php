@@ -64,13 +64,13 @@ class Oara_Network_Publisher_Effiliation extends Oara_Network {
 		$totalTransactions = array();
 
 		$url = 'http://api.effiliation.com/apiv2/transaction.csv?key='.$this->_credentials["apiPassword"].'&start='.$dStartDate->toString("dd/MM/yyyy").'&end='.$dEndDate->toString("dd/MM/yyyy").'&type=datetran';
-		$content = file_get_contents($url);
+		$content = utf8_encode(file_get_contents($url));
 		$exportData = str_getcsv($content, "\n");
 		$num = count($exportData);
 		for ($i = 1; $i < $num; $i++) {
 			$transactionExportArray = str_getcsv($exportData[$i], "|");
 			if (in_array((int) $transactionExportArray[2], $merchantList)) {
-				
+				/*
 				$numFields = 0;
 				foreach ($transactionExportArray as $fieldValue){
 					if ($fieldValue == "Valide" || $fieldValue == "Attente" || $fieldValue == "Refusé"){
@@ -78,29 +78,29 @@ class Oara_Network_Publisher_Effiliation extends Oara_Network {
 					}
 					$numFields ++;
 				}
-				
+				*/
 				
 				$transaction = Array();
 				$merchantId = (int) $transactionExportArray[2];
 				$transaction['merchantId'] = $merchantId;
-				$transaction['date'] = $transactionExportArray[4];
-				$transaction['unique_id'] = $transactionExportArray[$numFields+1];
+				$transaction['date'] = $transactionExportArray[10];
+				$transaction['unique_id'] = $transactionExportArray[0];
 
-				if ($transactionExportArray[0] != null) {
-					$transaction['custom_id'] = $transactionExportArray[0];
+				if ($transactionExportArray[15] != null) {
+					$transaction['custom_id'] = $transactionExportArray[15];
 				}
 
-				if ($transactionExportArray[$numFields] == 'Valide') {
+				if ($transactionExportArray[9] == 'Valide') {
 					$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
 				} else
-					if ($transactionExportArray[$numFields] == 'Attente') {
+					if ($transactionExportArray[9] == 'Attente') {
 						$transaction['status'] = Oara_Utilities::STATUS_PENDING;
 					} else
-						if ($transactionExportArray[$numFields] == 'Refusé') {
+						if ($transactionExportArray[9] == 'Refusé') {
 							$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
 						}
-				$transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[$numFields -2]);
-				$transaction['commission'] = Oara_Utilities::parseDouble($transactionExportArray[$numFields -1]);
+				$transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[7]);
+				$transaction['commission'] = Oara_Utilities::parseDouble($transactionExportArray[8]);
 				$totalTransactions[] = $transaction;
 			}
 		}
