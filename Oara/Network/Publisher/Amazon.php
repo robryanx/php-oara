@@ -188,24 +188,23 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 			include dirname(__FILE__)."/Amazon/amazon.php";
 			$page = ob_get_clean();
 		}
-		
-		
-		
+		$dom = new Zend_Dom_Query($page);
 		// try to find the actual login form
-		if (!preg_match('/<form name="signIn".*?<\/form>/is', $page, $form)) {
+		$result = $dom->query('form[name="signIn"]');
+		if (!$result){
 			die('Failed to find log in form!Please verify you have installed casperjs (http://casperjs.org/) in your machine.');
 		}
 
-		$form = $form[0];
+		$action = (string)$result->current()->attributes->getNamedItem ( "action" )->nodeValue;
 		//echo $form;
 		// find the action of the login form
-		if (!preg_match('/action="([^"]+)"/i', $form, $action)) {
+		if (!$action) {
 			die('Failed to find login form url');
 		}
 
-		$URL2 = $action[1]; // this is our new post url
+		$URL2 = $action; // this is our new post url
 		
-		$dom = new Zend_Dom_Query($page);
+		
 		$results = $dom->query('input[type="hidden"]');
 		$hiddenValue = null;
 		foreach ($results as $result){
