@@ -106,9 +106,11 @@ class Oara_Network_Publisher_Dgm extends Oara_Network {
 			
 			$campaignIdList = array ();
 			foreach ( $merchantList as $merchantId ) {
-				$campaingList = explode ( ",", $this->_advertisersCampaings [( string ) $merchantId] );
-				foreach ( $campaingList as $campaignId ) {
-					$campaignIdList [$campaignId] = $merchantId;
+				if (isset($this->_advertisersCampaings [( string ) $merchantId])){
+					$campaingList = explode ( ",", $this->_advertisersCampaings [( string ) $merchantId] );
+					foreach ( $campaingList as $campaignId ) {
+						$campaignIdList [$campaignId] = $merchantId;
+					}
 				}
 			}
 			
@@ -119,7 +121,7 @@ class Oara_Network_Publisher_Dgm extends Oara_Network {
 					$transaction = Array ();
 					$transaction ['unique_id'] = ( string ) $sale->OrderID;
 					$transaction ['merchantId'] = $campaignIdList [( string ) $sale->CampaignID];
-					$transactionDate = new Zend_Date ( ( string ) $sale->Saledate, 'yyyy-MM-dd HH:mm:ss' );
+					$transactionDate = new Zend_Date ( ( string ) $sale->SaleDate, 'yyyy-MM-dd HH:mm:ss' );
 					$transaction ['date'] = $transactionDate->toString ( "yyyy-MM-dd HH:mm:ss" );
 					
 					if (( string ) $sale->CompanyID != null) {
