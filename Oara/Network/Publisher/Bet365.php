@@ -60,8 +60,8 @@ class Oara_Network_Publisher_Bet365 extends Oara_Network {
 		$valuesLogin = array(
 		new Oara_Curl_Parameter('txtUserName', $user),
 		new Oara_Curl_Parameter('txtPassword', $password),
-		new Oara_Curl_Parameter('ctl00%24MasterHeaderPlaceHolder%24ctl00%24userNameTextbox', 'lamertoj'),
-		new Oara_Curl_Parameter('ctl00%24MasterHeaderPlaceHolder%24ctl00%24passwordTextbox', 'lemonade10'),
+		new Oara_Curl_Parameter('ctl00%24MasterHeaderPlaceHolder%24ctl00%24userNameTextbox', $user),
+		new Oara_Curl_Parameter('ctl00%24MasterHeaderPlaceHolder%24ctl00%24passwordTextbox', $password),
 		new Oara_Curl_Parameter('ctl00%24MasterHeaderPlaceHolder%24ctl00%24tempPasswordTextbox', 'Password'),
 		new Oara_Curl_Parameter('ctl00%24MasterHeaderPlaceHolder%24ctl00%24goButton.x', '19'),
 		new Oara_Curl_Parameter('ctl00%24MasterHeaderPlaceHolder%24ctl00%24goButton.y', '15')
