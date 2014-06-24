@@ -52,7 +52,7 @@ require realpath(dirname(__FILE__)).'/../settings.php';
  * CommissionJunction
  * ShareASale
  */
-$networkName = "SportCoverDirect"; //Ex: AffiliateWindow
+$networkName = "Ibiboads"; //Ex: AffiliateWindow
 //Retrieving the credentials for the network
 $config = Zend_Registry::getInstance()->get('credentialsIni');
 

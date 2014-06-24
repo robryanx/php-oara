@@ -30,6 +30,11 @@ class Oara_Network_Publisher_SportCoverDirect extends Oara_Network {
 		new Oara_Curl_Parameter('Password', $password),
 		);
 		
+		$dir = realpath ( dirname ( __FILE__ ) ) . '/../../data/curl/' . $credentials ['cookiesDir'] . '/' . $credentials ['cookiesSubDir'] . '/';
+		
+		if (! Oara_Utilities::mkdir_recursive ( $dir, 0777 )) {
+			throw new Exception ( 'Problem creating folder in Access' );
+		}
 		$cookies = realpath(dirname(__FILE__)).'/../../data/curl/'.$credentials['cookiesDir'].'/'.$credentials['cookiesSubDir'].'/'.$credentials["cookieName"].'_cookies.txt';
 		unlink($cookies);
 		$this->_options = array (

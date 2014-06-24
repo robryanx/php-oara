@@ -40,6 +40,12 @@ class Oara_Network_Publisher_Ibiboads extends Oara_Network {
 		new Oara_Curl_Parameter('password', md5($password)),
 		);
 		
+		$dir = realpath ( dirname ( __FILE__ ) ) . '/../../data/curl/' . $credentials ['cookiesDir'] . '/' . $credentials ['cookiesSubDir'] . '/';
+		
+		if (! Oara_Utilities::mkdir_recursive ( $dir, 0777 )) {
+			throw new Exception ( 'Problem creating folder in Access' );
+		}
+		
 		$cookies = realpath(dirname(__FILE__)).'/../../data/curl/'.$credentials['cookiesDir'].'/'.$credentials['cookiesSubDir'].'/'.$credentials["cookieName"].'_cookies.txt';
 		unlink($cookies);
 		$this->_options = array (
@@ -149,32 +155,6 @@ class Oara_Network_Publisher_Ibiboads extends Oara_Network {
 		$totalTransactions = Array();		
 		
 		$valuesFromExport = array(
-				new Oara_Curl_Parameter('entity', 'conversions'),
-				new Oara_Curl_Parameter('affiliateid', $this->_affiliateID),
-				new Oara_Curl_Parameter('statsBreakdown', 'day'),
-				new Oara_Curl_Parameter('period_preset', 'today'),
-				new Oara_Curl_Parameter('period_start', $dStartDate->toString ( "yyyy-MM-dd" )), //'2014-06-20'
-				new Oara_Curl_Parameter('period_end', $dEndDate->toString ( "yyyy-MM-dd" )), //'2014-06-20'
-				new Oara_Curl_Parameter('listorder', 'key'),
-				new Oara_Curl_Parameter('orderdirection', 'up'),
-				new Oara_Curl_Parameter('setPerPage', '15'),
-				new Oara_Curl_Parameter('marketing_type', '-1'),
-				new Oara_Curl_Parameter('expand', 'all')
-		);
-		
-		$rch = curl_init ();
-		$options = $this->_options;
-		curl_setopt ( $rch, CURLOPT_URL, 'http://adsadmin.ibibo.com/ad/publisher/stats.php' );
-		$arg = array ();
-		foreach ( $valuesFromExport as $parameter ) {
-			$arg [] = $parameter->getKey () . '=' . urlencode ( $parameter->getValue () );
-		}
-		$options [CURLOPT_POSTFIELDS] = implode ( '&', $arg );
-		curl_setopt_array ( $rch, $options );
-		$html = curl_exec ( $rch );
-		curl_close ( $rch );
-		
-		$valuesFromExport = array(
 				new Oara_Curl_Parameter('period_preset', 'specific'),
 				new Oara_Curl_Parameter('period_start', $dStartDate->toString ( "yyyy-MM-dd" )), //'2014-06-20'
 				new Oara_Curl_Parameter('period_end', $dEndDate->toString ( "yyyy-MM-dd" )), //'2014-06-20'				
@@ -185,21 +165,15 @@ class Oara_Network_Publisher_Ibiboads extends Oara_Network {
 				new Oara_Curl_Parameter('plugin', 'reports:oxReportsStandard:conversionTrackingReport')
 		);
 		
-		$dom = new Zend_Dom_Query($html);
-		$hidden = $dom->query('input[type="hidden"]');
-		
-		foreach ($hidden as $values) {
-			$valuesFromExport[] = new Oara_Curl_Parameter($values->getAttribute("name"), $values->getAttribute("value"));
-		}
 		
 		$rch = curl_init ();
 		$options = $this->_options;
-		curl_setopt ( $rch, CURLOPT_URL, 'http://adsadmin.ibibo.com/ad/publisher/report-generate.php' );
 		$arg = array ();
 		foreach ( $valuesFromExport as $parameter ) {
 			$arg [] = $parameter->getKey () . '=' . urlencode ( $parameter->getValue () );
 		}
-		$options [CURLOPT_POSTFIELDS] = implode ( '&', $arg );
+		curl_setopt ( $rch, CURLOPT_URL, 'http://adsadmin.ibibo.com/ad/publisher/report-generate.php?'.implode ( '&', $arg ) );
+		
 		curl_setopt_array ( $rch, $options );
 		$html = curl_exec ( $rch );
 		curl_close ( $rch );
@@ -211,10 +185,6 @@ class Oara_Network_Publisher_Ibiboads extends Oara_Network {
 		fwrite($handle, $html);
 		fclose($handle);
 		
-		/////quitar
-		$my_file = $folder.'prueba.xls';
-		/////
-			
 		$objReader = PHPExcel_IOFactory::createReader('Excel5');
 		$objReader->setReadDataOnly(true);
 			
@@ -276,6 +246,7 @@ class Oara_Network_Publisher_Ibiboads extends Oara_Network {
 					++$row;
 				}else{
 					$transaction['merchantId'] = "1";
+					$transaction['unique_id'] = $objWorksheet->getCellByColumnAndRow($columnTransactionID, $row)->getValue();
 					$transaction['date'] = $objWorksheet->getCellByColumnAndRow($columnConnectionDate, $row)->getValue();	
 					$transaction['amount'] = $objWorksheet->getCellByColumnAndRow($columnSaleValue, $row)->getValue();
 					$transaction['commission'] = $objWorksheet->getCellByColumnAndRow($columnSaleValue, $row)->getValue();
