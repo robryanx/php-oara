@@ -1,6 +1,0 @@
-# IDE files
-.idea
-.buildpath
-
-# Composer
-vendor

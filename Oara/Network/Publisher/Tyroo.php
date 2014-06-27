@@ -245,6 +245,9 @@ class Oara_Network_Publisher_Tyroo extends Oara_Network {
 	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = array();		
 		
+		
+		
+		
 		$valuesFromExport = array(
 				new Oara_Curl_Parameter('affiliateid', $this->_publisherID),
 				new Oara_Curl_Parameter('statsBreakdown', 'day'),
@@ -258,8 +261,8 @@ class Oara_Network_Publisher_Tyroo extends Oara_Network {
 				new Oara_Curl_Parameter('type', 'TRAFFICKER'),
 				new Oara_Curl_Parameter('windowid', $this->_windowid),
 				new Oara_Curl_Parameter('period_preset', 'specific'),
-				new Oara_Curl_Parameter('period_start',$dStartDate->toString("dd+MMMM+yyyy", 'en_US')),/* new Oara_Curl_Parameter('period_start', "01+June+2014"),*/
-				new Oara_Curl_Parameter('period_end', $dEndDate->toString("dd+MMMM+yyyy", 'en_US')),/* new Oara_Curl_Parameter('period_end', "25+June+2014"),*/
+				new Oara_Curl_Parameter('period_start',$dStartDate->toString("dd MMMM yyyy", 'en_US')),/* new Oara_Curl_Parameter('period_start', "01+June+2014"),*/
+				new Oara_Curl_Parameter('period_end', $dEndDate->toString("dd MMMM yyyy", 'en_US')),/* new Oara_Curl_Parameter('period_end', "25+June+2014"),*/
 				new Oara_Curl_Parameter('plugin', 'advertiser:statshistory')				
 		);		
 		
@@ -269,7 +272,6 @@ class Oara_Network_Publisher_Tyroo extends Oara_Network {
 		foreach ( $valuesFromExport as $parameter ) {
 			$arg [] = $parameter->getKey () . '=' . urlencode ( $parameter->getValue () );
 		}
-		
 		curl_setopt ( $rch, CURLOPT_URL, 'http://www.tyroocentral.com/www/admin/stats.php?'.implode ( '&', $arg ) );
 		
 		curl_setopt_array ( $rch, $options );
@@ -278,20 +280,14 @@ class Oara_Network_Publisher_Tyroo extends Oara_Network {
 		
 		$folder = realpath(dirname(__FILE__)).'/../../data/pdf/';
 		$my_file = $folder.mt_rand().'.csv';
-		
 		$handle = fopen($my_file, 'w') or die('Cannot open file:  '.$my_file);
 		fwrite($handle, $html);
 		fclose($handle);
 		
-		/////////// 	QUITAR!!!!!!!!!!!!!
-		$my_file = $folder.'reports.csv';
-		///////////
-		
-		//$objReader = PHPExcel_IOFactory::createReader('Excel5');
 		$objReader = PHPExcel_IOFactory::createReader('CSV');
 		$objReader->setReadDataOnly(true);
 			
-		$objPHPExcel = $objReader->load($my_file);
+		$objPHPExcel = @$objReader->load($my_file);
 		$objWorksheet = $objPHPExcel->getActiveSheet();
 			
 		$highestRow = $objWorksheet->getHighestRow();
@@ -324,50 +320,11 @@ class Oara_Network_Publisher_Tyroo extends Oara_Network {
 			}	
 			 
 		}
-		//////////////     DESCOMENTAR!!!!!!!!!!!!
-		//unlink($my_file);
-		//////////////
+		
+		unlink($my_file);
+		
  		
 		return $totalTransactions;
-		/*
-		$num = count($merchantList);
-		echo $merchantList[0]["cid"];
-		
-		for ($i = 0; $i < $num; $i++) {
-			$postdata = http_build_query(
-					array('class' => 'Campaign',
-							'method' => 'getCampaignConversionStatistics',
-							'val1' => $this->_sessionID,
-							'val2' => $merchantList[$i]["cid"],
-							'val3' => $dStartDate->toString("yyyy-MM-dd"),//"1900-01-01",
-							'val4' => $dEndDate->toString("yyyy-MM-dd"),//"2014-06-25",
-							'val5' => '',
-							'val6' => ''));
-			$opts = array('http' =>array('method'  => 'POST',
-					'header'  => 'Content-type: application/x-www-form-urlencoded',
-					'content' => $postdata));
-			$context  = stream_context_create($opts);
-			$result = unserialize(file_get_contents('http://www.tyroocentral.com/www/api/v2/xmlrpc/APICall.php', false, $context));
-			$json = json_encode($result);
-		
-			$jsonArray = json_decode($json, true);
-		
-			if($jsonArray[0]){
-				for ($i=0; $i < count($jsonArray[1]);$i++){
-					$transaction = Array();
-			 		
-					$status = count($jsonArray[1][$i]["conversionStatus"]);
-					$date = count($jsonArray[1][$i]["conversionTime"]);
-					//$transaction['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
-					//$transaction ['amount'] = Oara_Utilities::parseDouble ( preg_replace ( "/[^0-9\.,]/", "", $overviewExportArray[1] ) );
-					//$transaction['commission'] = Oara_Utilities::parseDouble ( preg_replace ( "/[^0-9\.,]/", "", $overviewExportArray[1] ) );
-					//$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
-			 		
-					$totalTransactions[] = $transaction;
-				}
-			}
-		}
-		*/
 	}
 
 	/**
