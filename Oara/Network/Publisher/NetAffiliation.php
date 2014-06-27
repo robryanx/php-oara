@@ -139,7 +139,7 @@ class Oara_Network_Publisher_NetAffiliation extends Oara_Network {
 		$valuesFormExport = array();
 		$valuesFormExport[] = new Oara_Curl_Parameter('authl', $this->_credentials["user"]);
 		$valuesFormExport[] = new Oara_Curl_Parameter('authv', $this->_credentials["apiPassword"]);
-		$valuesFormExport[] = new Oara_Curl_Parameter('champs', 'idprogramme,date,etat,argann,montant,taux,monnaie');
+		$valuesFormExport[] = new Oara_Curl_Parameter('champs', 'idprogramme,date,etat,argann,montant,taux,monnaie,idsite');
 
 		$valuesFormExport[] = new Oara_Curl_Parameter('debut', $dStartDate->toString("yyyy-MM-dd"));
 		$valuesFormExport[] = new Oara_Curl_Parameter('fin', $dEndDate->toString("yyyy-MM-dd"));
