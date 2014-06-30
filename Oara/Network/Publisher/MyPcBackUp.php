@@ -141,16 +141,20 @@ class Oara_Network_Publisher_MyPcBackUP extends Oara_Network {
 			$num = count($exportData);
 			for ($i = 1; $i < $num; $i++) {
 				$paymentExportArray = str_getcsv($exportData[$i], ";");
-	
-				$obj = array();
-				$date = new Zend_Date($paymentExportArray[14], "MM/dd/yyyy");
-				$obj['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
-				$obj['pid'] = preg_replace("/[^0-9\.,]/", "", $paymentExportArray[14]);
-				$obj['method'] = $paymentExportArray[16];
-				$value = preg_replace("/[^0-9\.,]/", "", $paymentExportArray[12]);
-	
-				$obj['value'] = Oara_Utilities::parseDouble($value);
-				$paymentHistory[] = $obj;
+				try{
+					$obj = array();
+					$date = new Zend_Date($paymentExportArray[14], "MM/dd/yyyy");
+					$obj['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
+					$obj['pid'] = preg_replace("/[^0-9\.,]/", "", $paymentExportArray[14]);
+					$obj['method'] = $paymentExportArray[16];
+					$value = preg_replace("/[^0-9\.,]/", "", $paymentExportArray[12]);
+					
+					$obj['value'] = Oara_Utilities::parseDouble($value);
+					$paymentHistory[] = $obj;
+				} catch (Exception $e){
+					echo "Payment failed\n";
+				}
+				
 			}
 		}
 		return $paymentHistory;

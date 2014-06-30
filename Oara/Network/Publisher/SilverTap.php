@@ -147,8 +147,8 @@ class Oara_Network_Publisher_SilverTap extends Oara_Network {
 		$endDate = $dEndDate->toString('dd/MM/yyyy');
 
 		$valueIndex = 9;
-		$commissionIndex = 15;
-		$statusIndex = 16;
+		$commissionIndex = 16;
+		$statusIndex = 17;
 		if ($this->_serverUrl == "https://mats.brandconversions.com/") {
 			$valueIndex = 11;
 			$commissionIndex = 17;

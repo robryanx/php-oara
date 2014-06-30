@@ -119,11 +119,13 @@ class Oara_Network_Publisher_AffiliateGateway extends Oara_Network {
 		$num = count($exportData);
 		for ($i = 4; $i < $num; $i++) {
 			$merchantExportArray = str_getcsv($exportData[$i], ";");
-
-			$obj = array();
-			$obj['cid'] = $merchantExportArray[0];
-			$obj['name'] = $merchantExportArray[1];
-			$merchants[] = $obj;
+			if ( $merchantExportArray[0] != "No available programs."){
+				$obj = array();
+				$obj['cid'] = $merchantExportArray[0];
+				$obj['name'] = $merchantExportArray[1];
+				$merchants[] = $obj;
+			}
+			
 		}
 		return $merchants;
 	}
