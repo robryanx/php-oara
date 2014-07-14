@@ -160,6 +160,10 @@ class Oara_Network_Publisher_AffiliateGateway extends Oara_Network {
 						$transactionDate = new Zend_Date($transactionExportArray[4], 'dd/MM/yyyy HH:mm:ss', 'en');
 						$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 						$transaction['unique_id'] = $transactionExportArray[0];
+						
+						if ($transactionExportArray[11] != null) {
+							$transaction['custom_id'] = $transactionExportArray[11];
+						}
 
 						if ($transactionExportArray[12] == "Approved" || $transactionExportArray[12] == "Approve") {
 							$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
@@ -170,7 +174,7 @@ class Oara_Network_Publisher_AffiliateGateway extends Oara_Network {
 								if ($transactionExportArray[12] == "Declined" || $transactionExportArray[12] == "Rejected") {
 									$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
 								} else {
-									echo "asdf";
+									throw new Exception ("No Status found ".$transactionExportArray[12]);
 								}
 						$transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[7]);
 						$transaction['commission'] = Oara_Utilities::parseDouble($transactionExportArray[9]);
