@@ -88,7 +88,7 @@ class Oara_Network_Publisher_AffiliatesUnited extends Oara_Network {
 		$exportReport = $this->_client->post($urls);
 		$exportData = str_getcsv($exportReport[0], "\n");
 		$num = count($exportData);
-		for ($i = 1; $i < $num; $i++) {
+		for ($i = 2; $i < $num; $i++) {
 			$transactionExportArray = str_getcsv($exportData[$i], ",");
 
 			$transaction = Array();
