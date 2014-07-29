@@ -250,6 +250,12 @@ class Oara_Network_Publisher_Ibiboads extends Oara_Network {
 					$transaction['date'] = $objWorksheet->getCellByColumnAndRow($columnConnectionDate, $row)->getValue();	
 					$transaction['amount'] = $objWorksheet->getCellByColumnAndRow($columnSaleValue, $row)->getValue();
 					$transaction['commission'] = $objWorksheet->getCellByColumnAndRow($columnSaleValue, $row)->getValue();
+					if (!is_numeric($transaction['amount'])){
+						$transaction['amount'] = 0;
+					}
+					if (!is_numeric($transaction['commission'])){
+						$transaction['commission'] = 0;
+					}
 					$transactionStatus = $objWorksheet->getCellByColumnAndRow($columnStatus, $row)->getValue();
 					if ($transactionStatus == "Accepted" || $transactionStatus == "Approved") {
 						$transaction ['status'] = Oara_Utilities::STATUS_CONFIRMED;
