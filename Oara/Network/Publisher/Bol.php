@@ -112,7 +112,7 @@ class Oara_Network_Publisher_Bol extends Oara_Network {
 		   	$transaction['custom_id'] = $objWorksheet->getCellByColumnAndRow(8, $row)->getValue();
 		
 		   	
-		   	if ($objWorksheet->getCellByColumnAndRow(14, $row)->getValue() == 'APPROVED') {
+		   	if ($objWorksheet->getCellByColumnAndRow(14, $row)->getValue() == 'geaccepteerd') {
 		   		$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
 		   	} else
 		   	if ($objWorksheet->getCellByColumnAndRow(14, $row)->getValue() == 'in behandeling') {
