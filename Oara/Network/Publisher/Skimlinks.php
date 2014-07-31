@@ -26,20 +26,6 @@ class Oara_Network_Publisher_Skimlinks extends Oara_Network {
 	 * @return Oara_Network_Publisher_Daisycon
 	 */
 	public function __construct($credentials) {
-				
-		$user = $credentials['user'];
-		$password = $credentials['password'];
-		
-		$this->_publicapikey =  $credentials['publicapikey'];
-		$this->_privateapikey = $credentials['privateapikey'];
-		
-		$valuesLogin = array(
-				new Oara_Curl_Parameter('username', $user),
-				new Oara_Curl_Parameter('password', $password),
-				new Oara_Curl_Parameter('menu', "{ return }"),
-				new Oara_Curl_Parameter('btn-login', "")
-		);
-		
 		
 		$dir = realpath ( dirname ( __FILE__ ) ) . '/../../data/curl/' . $credentials ['cookiesDir'] . '/' . $credentials ['cookiesSubDir'] . '/';
 		
@@ -65,39 +51,9 @@ class Oara_Network_Publisher_Skimlinks extends Oara_Network {
 				CURLOPT_ENCODING => "gzip",
 				CURLOPT_VERBOSE => false
 		);
-		$rch = curl_init ();
-		$options = $this->_options;
-		curl_setopt ( $rch, CURLOPT_URL, "https://hub.skimlinks.com/login" );
-		curl_setopt_array ( $rch, $options );
-		$html = curl_exec ( $rch );
-		curl_close ( $rch );
-		
-		$dom = new Zend_Dom_Query($html);
-		$hidden = $dom->query('input[type="hidden"]');
-		
-		foreach ($hidden as $values) {
-			$valuesLogin[] = new Oara_Curl_Parameter($values->getAttribute("name"), $values->getAttribute("value"));
-		}
-		
-		$rch = curl_init ();
-		$options = $this->_options;
-		curl_setopt ( $rch, CURLOPT_URL, "https://hub.skimlinks.com/login" );
-		$options [CURLOPT_POST] = true;
-		$arg = array ();
-		foreach ( $valuesLogin as $parameter ) {
-			$arg [] = $parameter->getKey () . '=' . urlencode ( $parameter->getValue () );
-		}
-		$options [CURLOPT_POSTFIELDS] = implode ( '&', $arg );
-		curl_setopt_array ( $rch, $options );
-		$html = curl_exec ( $rch );
-		curl_close ( $rch );
-		
-		$rch = curl_init ();
-		$options = $this->_options;
-		curl_setopt ( $rch, CURLOPT_URL, "https://hub.skimlinks.com/toolbox/apis/reporting" );
-		curl_setopt_array ( $rch, $options );
-		$html = curl_exec ( $rch );
-		curl_close ( $rch );
+				
+		$this->_publicapikey =  $credentials['user'];
+		$this->_privateapikey = $credentials['apiPassword'];
 
 	}
 	/**
@@ -106,15 +62,11 @@ class Oara_Network_Publisher_Skimlinks extends Oara_Network {
 	public function checkConnection() {
 		$connection = false;
 		
-		$rch = curl_init ();
-		$options = $this->_options;
-		curl_setopt ( $rch, CURLOPT_URL, 'https://hub.skimlinks.com/' );
-		curl_setopt_array ( $rch, $options );
-		$html = curl_exec ( $rch );
-		curl_close ( $rch );
-			
-		if (preg_match("/user_hash/", $html, $matches)) {
+		try{
+			self::getMerchantList();
 			$connection = true;
+		} catch (Exception $e){
+			
 		}
 		
 		return $connection;
@@ -158,13 +110,49 @@ class Oara_Network_Publisher_Skimlinks extends Oara_Network {
 		curl_close ( $rch );
 		
 		$jsonArray = json_decode($json, true);
+		
+		$iteration = 0;
+		while (count($jsonArray["skimlinksAccount"]["merchants"]) != 0){
 			
-		foreach ($jsonArray["skimlinksAccount"]["merchants"] as $i){
-			$obj = Array();
-			$obj['cid']  = $i["merchantID"];
-			$obj['name'] = $i["merchantName"];
-			$merchants[] = $obj;
+			foreach ($jsonArray["skimlinksAccount"]["merchants"] as $i){
+				$obj = Array();
+				$obj['cid']  = $i["merchantID"];
+				$obj['name'] = $i["merchantName"];
+				$merchants[] = $obj;
+			}
+			
+			$iteration++;
+			
+			$valuesFromExport = array(
+					new Oara_Curl_Parameter('version', '0.5'),
+					new Oara_Curl_Parameter('timestamp', $timestamp),
+					new Oara_Curl_Parameter('apikey', $publicapikey),
+					new Oara_Curl_Parameter('authtoken', $authtoken),
+					new Oara_Curl_Parameter('startdate', '2009-01-01'), //minimum date
+					new Oara_Curl_Parameter('enddate', $date->toString("yyyy-MM-dd")),
+					new Oara_Curl_Parameter('format', 'json'),
+					new Oara_Curl_Parameter('responseFrom', $iteration*100),
+					
+			);
+			
+			$rch = curl_init ();
+			$options = $this->_options;
+			$arg = array ();
+			foreach ( $valuesFromExport as $parameter ) {
+				$arg [] = $parameter->getKey () . '=' . urlencode ( $parameter->getValue () );
+			}
+			curl_setopt ( $rch, CURLOPT_URL, 'https://api-reports.skimlinks.com/publisher/reportmerchants?'.implode ( '&', $arg ) );
+			
+			curl_setopt_array ( $rch, $options );
+			$json = curl_exec ( $rch );
+			curl_close ( $rch );
+			
+			$jsonArray = json_decode($json, true);
+			
+			
 		}
+			
+		
 		
 		return $merchants;
 	}
