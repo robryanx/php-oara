@@ -87,6 +87,9 @@ class Oara_Network_Publisher_Belboon extends Oara_Network {
 
 				if ($event["subid"] != null) {
 					$transaction['custom_id'] = $event["subid"];
+					if (preg_match("/subid1=/", $transaction['custom_id'])){
+						$transaction['custom_id'] = str_replace("subid1=", "", $transaction['custom_id']);
+					}
 				}
 
 				if ($event["eventstatus"] == 'APPROVED') {

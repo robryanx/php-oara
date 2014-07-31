@@ -71,53 +71,66 @@ class Oara_Network_Publisher_Bol extends Oara_Network {
 	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
 		$folder = realpath(dirname(__FILE__)).'/../../data/pdf/';
 		$totalTransactions = array();
-		$dateArray = Oara_Utilities::daysOfDifference($dStartDate, $dEndDate);
-		for ($i = 0; $i < sizeof($dateArray); $i++) {
-			$valuesFromExport = array();
-			$valuesFromExport[] = new Oara_Curl_Parameter('id', "-1");			
-			$valuesFromExport[] = new Oara_Curl_Parameter('fromDate', $dateArray[$i]->toString("yyyy-MM-dd"));
-			$valuesFromExport[] = new Oara_Curl_Parameter('toDate', $dateArray[$i]->toString("yyyy-MM-dd"));
-			
-			$urls = array();
-			$urls[] = new Oara_Curl_Request('https://partnerprogramma.bol.com/partner/affiliate/productOverview?', $valuesFromExport);
-			$exportReport = $this->_client->get($urls);
-			
-			$my_file = $folder.mt_rand().'.xlsx';
-			$handle = fopen($my_file, 'w') or die('Cannot open file:  '.$my_file);
-			$data = $exportReport[0];
-			fwrite($handle, $data);
-			fclose($handle);
-			
-			$objReader = PHPExcel_IOFactory::createReader('Excel2007');
-			$objReader->setReadDataOnly(true);
-			
-			$objPHPExcel = $objReader->load($my_file);
-			$objWorksheet = $objPHPExcel->getActiveSheet();
-			
-			$highestRow = $objWorksheet->getHighestRow(); 
-			$highestColumn = $objWorksheet->getHighestColumn(); 
-			
-			$highestColumnIndex = PHPExcel_Cell::columnIndexFromString($highestColumn); 
-			
-			for ($row = 2; $row <= $highestRow; ++$row) {
-
-			    $value =  $objWorksheet->getCellByColumnAndRow(3, $row)->getValue();
-			   	$commission = $objWorksheet->getCellByColumnAndRow(4, $row)->getValue();
-			    
-			    
-			    $transaction = Array();
-				$transaction['merchantId'] = "1";
-				$transaction['date'] = $dateArray[$i]->toString("yyyy-MM-dd HH:mm:ss");
-
-				$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
-				$transaction['amount'] = Oara_Utilities::parseDouble($value);
-				$transaction['commission'] = Oara_Utilities::parseDouble($commission);
-				$totalTransactions[] = $transaction;
-			    
-			}
-			unlink($my_file);
-		}
+		$valuesFromExport = array();
+		$valuesFromExport[] = new Oara_Curl_Parameter('id', "-1");			
+		$valuesFromExport[] = new Oara_Curl_Parameter('yearStart', $dStartDate->toString("yyyy"));
+		$valuesFromExport[] = new Oara_Curl_Parameter('monthStart', $dStartDate->toString("MM"));
+		$valuesFromExport[] = new Oara_Curl_Parameter('dayStart', $dStartDate->toString("dd"));
+		$valuesFromExport[] = new Oara_Curl_Parameter('yearEnd', $dEndDate->toString("yyyy"));
+		$valuesFromExport[] = new Oara_Curl_Parameter('monthEnd', $dEndDate->toString("MM"));
+		$valuesFromExport[] = new Oara_Curl_Parameter('dayEnd', $dEndDate->toString("dd"));
 		
+		$urls = array();
+		$urls[] = new Oara_Curl_Request('https://partnerprogramma.bol.com/partner/s/excelReport/orders?', $valuesFromExport);
+		$exportReport = $this->_client->get($urls);
+		
+		$my_file = $folder.mt_rand().'.xlsx';
+		$handle = fopen($my_file, 'w') or die('Cannot open file:  '.$my_file);
+		$data = $exportReport[0];
+		fwrite($handle, $data);
+		fclose($handle);
+		
+		$objReader = PHPExcel_IOFactory::createReader('Excel2007');
+		$objReader->setReadDataOnly(true);
+		
+		$objPHPExcel = $objReader->load($my_file);
+		$objWorksheet = $objPHPExcel->getActiveSheet();
+		
+		$highestRow = $objWorksheet->getHighestRow(); 
+		$highestColumn = $objWorksheet->getHighestColumn(); 
+		
+		$highestColumnIndex = PHPExcel_Cell::columnIndexFromString($highestColumn); 
+		
+		for ($row = 2; $row <= $highestRow; ++$row) {
+
+		    
+		   	$transaction = Array();
+		   	$transaction['unique_id'] = $objWorksheet->getCellByColumnAndRow(0, $row)->getValue();
+		   	$transaction['merchantId'] = "1";
+		   	$transaction['date'] = $objWorksheet->getCellByColumnAndRow(2, $row)->getValue()." 00:00:00";
+		   	
+		   	$transaction['custom_id'] = $objWorksheet->getCellByColumnAndRow(8, $row)->getValue();
+		
+		   	
+		   	if ($objWorksheet->getCellByColumnAndRow(14, $row)->getValue() == 'APPROVED') {
+		   		$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
+		   	} else
+		   	if ($objWorksheet->getCellByColumnAndRow(14, $row)->getValue() == 'in behandeling') {
+		   		$transaction['status'] = Oara_Utilities::STATUS_PENDING;
+		   	} else
+		   	if ($objWorksheet->getCellByColumnAndRow(14, $row)->getValue() == 'geweigerd: klik te oud' || $objWorksheet->getCellByColumnAndRow(14, $row)->getValue() == 'geweigerd') {
+		   		$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
+		   	} else {
+		   		echo "asdf";
+		   	}
+		   	
+		   	$transaction['amount'] = $objWorksheet->getCellByColumnAndRow(11, $row)->getValue();
+		   	
+		   	$transaction['commission'] = $objWorksheet->getCellByColumnAndRow(12, $row)->getValue();
+		   	$totalTransactions[] = $transaction;
+		    
+		}
+		unlink($my_file);
 
 		return $totalTransactions;
 	}
