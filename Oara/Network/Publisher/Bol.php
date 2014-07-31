@@ -121,7 +121,7 @@ class Oara_Network_Publisher_Bol extends Oara_Network {
 		   	if ($objWorksheet->getCellByColumnAndRow(14, $row)->getValue() == 'geweigerd: klik te oud' || $objWorksheet->getCellByColumnAndRow(14, $row)->getValue() == 'geweigerd') {
 		   		$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
 		   	} else {
-		   		echo "asdf";
+		   		echo "new status ".$objWorksheet->getCellByColumnAndRow(14, $row)->getValue();
 		   	}
 		   	
 		   	$transaction['amount'] = $objWorksheet->getCellByColumnAndRow(11, $row)->getValue();
