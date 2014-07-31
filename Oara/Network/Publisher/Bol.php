@@ -107,7 +107,9 @@ class Oara_Network_Publisher_Bol extends Oara_Network {
 		   	$transaction = Array();
 		   	$transaction['unique_id'] = $objWorksheet->getCellByColumnAndRow(0, $row)->getValue()."_".$objWorksheet->getCellByColumnAndRow(1, $row)->getValue();
 		   	$transaction['merchantId'] = "1";
-		   	$transaction['date'] = $objWorksheet->getCellByColumnAndRow(2, $row)->getValue()." 00:00:00";
+		   	
+		   	$transactionDate = new Zend_Date($objWorksheet->getCellByColumnAndRow(2, $row)->getValue(), 'dd-MM-yyyy');
+		   	$transaction['date'] = $transactionDate->toString("yyyy-MM-dd 00:00:00");
 		   	
 		   	$transaction['custom_id'] = $objWorksheet->getCellByColumnAndRow(8, $row)->getValue();
 		
