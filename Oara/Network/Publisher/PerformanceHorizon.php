@@ -115,6 +115,7 @@ class Oara_Network_Publisher_PerformanceHorizon extends Oara_Network {
 						}
 
 						$transaction['amount'] = $conversion["conversion_value"]["value"];
+						$transaction['currency'] = $conversion["currency"];
 
 						$transaction['commission'] = $conversion["conversion_value"]["publisher_commission"];
 						$transactions[] = $transaction;
