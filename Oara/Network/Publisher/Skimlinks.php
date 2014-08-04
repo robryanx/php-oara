@@ -203,7 +203,7 @@ class Oara_Network_Publisher_Skimlinks extends Oara_Network {
 			$transaction['merchantId'] = $i["merchantID"];			
 			$transaction['unique_id'] =  $i["commissionID"];
 			$transaction['date'] = $i["date"];
-			$transaction ['amount'] = $i["commissionValue"];
+			$transaction ['amount'] = $i["orderValue"];
 			$transaction['commission'] = $i["commissionValue"];
 			$transactionStatus = $i["status"];
 			if ($transactionStatus == "active") {
