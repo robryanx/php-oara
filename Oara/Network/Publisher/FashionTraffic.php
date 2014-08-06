@@ -162,6 +162,8 @@ class Oara_Network_Publisher_FashionTraffic extends Oara_Network {
 
 				if ($transactionExportArray[10] == 'approved') {
 					$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
+				} else if ($transactionExportArray[10] == 'rejected'){
+					$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
 				} else {
 					throw new Exception("Status {$transactionExportArray[10]} unknown");
 				}

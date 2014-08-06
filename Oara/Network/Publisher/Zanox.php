@@ -173,6 +173,7 @@ class Oara_Network_Publisher_Zanox extends Oara_Network {
 
 	public function getPaymentHistory() {
 		$paymentHistory = array();
+		/*
 		$paymentList = $this->_apiClient->getPayments(0, $this->_pageSize);
 
 		if ($paymentList->total > 0) {
@@ -192,6 +193,7 @@ class Oara_Network_Publisher_Zanox extends Oara_Network {
 				}
 			}
 		}
+		*/
 		return $paymentHistory;
 	}
 
