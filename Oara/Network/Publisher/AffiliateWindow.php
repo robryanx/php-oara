@@ -330,9 +330,11 @@ class Oara_Network_Publisher_AffiliateWindow extends Oara_Network {
 			$exportReport = $this->_exportClient->get($urls);
 			$exportData = str_getcsv($exportReport[0], "\n");
 			$num = count($exportData);
+			$header = str_getcsv($exportData[0], ",");
+			$index = array_search("Transaction ID", $header);
 			for ($j = 1; $j < $num; $j++) {
 				$transactionArray = str_getcsv($exportData[$j], ",");
-				$transactionList[] = end($transactionArray);
+				$transactionList[] = $transactionArray[$index];
 			}
 			return $transactionList;
 		}
