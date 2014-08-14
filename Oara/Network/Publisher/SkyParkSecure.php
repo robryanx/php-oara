@@ -121,6 +121,7 @@ class Oara_Network_Publisher_SkyParkSecure extends Oara_Network {
 			$transaction = Array();
 			$transaction['merchantId'] = 1;
 			$transaction['unique_id'] = $booking->booking_ref;
+			$transaction['metadata'] = $booking->product_name;
 			$transaction['custom_id'] = $booking->custom_id;
 			$transactionDate = new Zend_Date($booking->booking_date, 'yyyy.MMM.dd HH:mm:00', 'en');
 			$pickupDate = new Zend_Date($booking->dateA, 'yyyy.MMM.dd HH:mm:00', 'en');
