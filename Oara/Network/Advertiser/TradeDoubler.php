@@ -8,7 +8,7 @@
  * @version Release: 01.00
  *         
  */
-class Oara_Network_Advertiser_Tradedoubler extends Oara_Network {
+class Oara_Network_Advertiser_TradeDoubler extends Oara_Network {
 	
 	/**
 	 * Client
@@ -189,8 +189,8 @@ class Oara_Network_Advertiser_Tradedoubler extends Oara_Network {
 						$transaction['custom_id'] = $transactionExportArray[26]; //epi1
 					}
 					$transaction['merchantId'] = $merchantList[$i];
-					$transactionDate = new Zend_Date($transactionExportArray[4], 'dd-MM-yy HH:mm:ss');
-					$transaction['date'] = $transactionDate->toString("dd-MM-yy HH:mm:ss");
+					$transactionDate = new Zend_Date($transactionExportArray[4], 'dd/MM/yy HH:mm:ss CEST');
+					$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 					$transaction['amount'] = $transactionExportArray[17];
 					$transaction['commission'] = $transactionExportArray[24];
 					
