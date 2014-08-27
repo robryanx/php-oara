@@ -17,6 +17,8 @@ class Oara_Network_Advertiser_TradeDoubler extends Oara_Network {
 	 */
 	private $_client = null;
 	
+	private $_currency = null;
+	
 	/**
 	 * Constructor and Login
 	 *
@@ -26,6 +28,8 @@ class Oara_Network_Advertiser_TradeDoubler extends Oara_Network {
 	public function __construct($credentials) {
 		$user = $credentials ['user'];
 		$password = $credentials ['password'];
+		
+		$this->_currency = $credentials["currency"];
 		
 		$loginUrl = 'https://login.tradedoubler.com/pan/login';
 		
@@ -131,7 +135,7 @@ class Oara_Network_Advertiser_TradeDoubler extends Oara_Network {
 		$valuesFromExport [] = new Oara_Curl_Parameter ( 'interval', 'MONTHS' );
 		$valuesFromExport [] = new Oara_Curl_Parameter ( 'segmentId', '' );
 		$valuesFromExport [] = new Oara_Curl_Parameter ( 'favoriteDescription', '' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'currencyId', 'EUR' );
+		$valuesFromExport [] = new Oara_Curl_Parameter ( 'currencyId', $this->_currency );
 		$valuesFromExport [] = new Oara_Curl_Parameter ( 'run_as_organization_id', '' );
 /**/	$valuesFromExport [] = new Oara_Curl_Parameter ( 'eventId', '5' );
 		$valuesFromExport [] = new Oara_Curl_Parameter ( 'minRelativeIntervalStartTime', '0' );
