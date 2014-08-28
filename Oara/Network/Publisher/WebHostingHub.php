@@ -49,8 +49,34 @@ class Oara_Network_Publisher_WebHostingHub extends Oara_Network {
 		self::logIn ();
 	}
 	private function logIn() {
-		$html = file_get_contents ( 'http://ref.webhostinghub.com/affiliates/login.php#login' );
-		if (preg_match ( "/\"S\\\\\",\\\\\"(.*?)\\\\\"/", $html, $matches )) {
+		
+		$dir = realpath(dirname(__FILE__)).'/../../data/curl/'.$this->_credentials['cookiesDir'].'/'.$this->_credentials['cookiesSubDir'].'/';
+		
+		$cookieName = $this->_credentials["cookieName"];
+		$cookies = $dir.$cookieName.'_cookies.txt';
+		
+		$defaultOptions = array(
+				CURLOPT_USERAGENT => "Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:22.0) Gecko/20100101 Firefox/22.0",
+				CURLOPT_RETURNTRANSFER => true,
+				CURLOPT_FAILONERROR => true,
+				CURLOPT_COOKIEJAR => $cookies,
+				CURLOPT_COOKIEFILE => $cookies,
+				CURLOPT_AUTOREFERER => true,
+				CURLOPT_SSL_VERIFYPEER => false,
+				CURLOPT_SSL_VERIFYHOST => false,
+				CURLOPT_HEADER => false,
+				//CURLOPT_VERBOSE => true,
+		);
+		
+		//Init curl
+		$ch = curl_init();
+		$options = $defaultOptions;
+		$options[CURLOPT_URL] = 'http://ref.webhostinghub.com/affiliates/login.php#login';
+		$options[CURLOPT_FOLLOWLOCATION] = true;
+		curl_setopt_array($ch, $options);
+		$result = curl_exec($ch);
+		
+		if (preg_match ( "/\"S\\\\\",\\\\\"(.*?)\\\\\"/", $result, $matches )) {
 			$this->_s = $matches [1];
 		}
 		$valuesLogin = array (

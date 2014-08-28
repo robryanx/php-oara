@@ -35,9 +35,6 @@ class Oara_Network_Publisher_AffiliatesUnited extends Oara_Network {
 
 		$loginUrl = 'https://affiliates.affutd.com/affiliates/Login.aspx';
 		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
-
-	
-
 	}
 	/**
 	 * Check the connection
