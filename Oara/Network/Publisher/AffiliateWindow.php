@@ -84,9 +84,19 @@ class Oara_Network_Publisher_AffiliateWindow extends Oara_Network {
 						$urls = array();
 						$urls[] = new Oara_Curl_Request('https://darwin.affiliatewindow.com/awin/affiliate/'.$user, array());
 						$exportReport = $this->_exportClient->get($urls);
-						if (preg_match("/\/user\/redirect\/v1\/type\/affiliate\/r\/(.*?)\">/", $exportReport[0], $matches)) {
+						$dom = new Zend_Dom_Query($exportReport[0]);
+						$links = $dom->query('a [href*="v1"]');
+						$href = null;
+						foreach ($links as $link){
+							$text = trim($link->nodeValue);
+							if ( $text == "Manage API Credentials"){
+								$href = $link->attributes->getNamedItem ( "href" )->nodeValue;
+								break;
+							}
+						}
+						if ($href != null) {
 							$urls = array();
-							$urls[] = new Oara_Curl_Request('https://darwin.affiliatewindow.com/user/redirect/v1/type/affiliate/r/'.$matches[1], array());
+							$urls[] = new Oara_Curl_Request('https://darwin.affiliatewindow.com'.$href, array());
 							$exportReport = $this->_exportClient->get($urls);
 							$dom = new Zend_Dom_Query($exportReport[0]);
 							$apiPassword = $dom->query('#aw_api_password_hash');
