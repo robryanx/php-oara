@@ -22,9 +22,7 @@ class Oara_Network_Advertiser_Zanox extends Oara_Network {
 	
 
 		/**
-		 * Constructor.
-		 * @param $affiliateWindow
-		 * @return Oara_Network_Publisher_Aw_Api
+		 * Constructor
 		 */
 		public function __construct($credentials) {
 			
@@ -83,8 +81,8 @@ class Oara_Network_Advertiser_Zanox extends Oara_Network {
 		public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {			
 			$totalTransactions = array ();
 /**/
-$dStartDate = new Zend_Date('2014-08-05', 'yyyy-MM-dd'); 
-$dEndDate  	= new Zend_Date('2014-08-06', 'yyyy-MM-dd');
+$dStartDate = new Zend_Date('2014-08-01', 'yyyy-MM-dd'); 
+$dEndDate  	= new Zend_Date('2014-09-03', 'yyyy-MM-dd');
 /**/
 			$timestampStartDate = strtotime($dStartDate->toString ( "dd-MM-yyyy" ));  //'05-08-2014'
 			$timestampEndDate = strtotime($dEndDate->toString ( "dd-MM-yyyy" ));
@@ -148,7 +146,6 @@ while(!feof($csvfile)) {
 					throw new Exception ( 'Order ID is null' );
 				}else{
 					$transaction = Array();
-					//$transaction['currency'] = $exportData[$j][6];
 					$transaction['custom_id'] = $exportData[$j][4];
 					$transaction['unique_id'] = $exportData[$j][2];
 					$transaction['merchantId'] = $this->_idProgram;
@@ -160,7 +157,7 @@ while(!feof($csvfile)) {
 					if ($exportData[$j][0] == 'Confirmed') {
 						$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
 					} else
-					if ($exportData[$j][0] == 'Pending') {
+					if ($exportData[$j][0] == 'Open') {
 						$transaction['status'] = Oara_Utilities::STATUS_PENDING;
 					} else
 					if ($exportData[$j][0] == 'Rejected') {
