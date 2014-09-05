@@ -52,10 +52,7 @@ class Oara_Network_Advertiser_Zanox extends Oara_Network {
 		 */
 		public function checkConnection() {
 			$connection = false;
-			$urls = array ();
-			$urls [] = new Oara_Curl_Request ( 'https://advertiser.zanox.com/advertiserdashboard/main/app?program='.$this->_idProgram, array () );
-			$exportReport = $this->_client->get ( $urls );
-			if (preg_match ( "/logout/", $exportReport [0], $matches )) {
+			if (preg_match ( "/logout/", $this->_client->getConstructResult(), $matches )) {
 				$connection = true;
 			}
 			return $connection;
@@ -78,12 +75,31 @@ class Oara_Network_Advertiser_Zanox extends Oara_Network {
 		 * (non-PHPdoc)
 		 * @see library/Oara/Network/Oara_Network_Publisher_Base#getTransactionList($merchantId,$dStartDate,$dEndDate)
 		 */
-		public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {			
+		public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {		
+			
+				
 			$totalTransactions = array ();
-/**/
-$dStartDate = new Zend_Date('2014-08-01', 'yyyy-MM-dd'); 
-$dEndDate  	= new Zend_Date('2014-09-03', 'yyyy-MM-dd');
-/**/
+			
+			/**/
+			$dStartDate = new Zend_Date('2014-08-05', 'yyyy-MM-dd');
+			$dEndDate  	= new Zend_Date('2014-08-05', 'yyyy-MM-dd');
+			/**/
+			$options = $this->_client->getOptions();
+			$options[CURLOPT_ENCODING] = "gzip,deflate";
+			$options[CURLOPT_HTTPHEADER] = array(
+											    'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+											    'Accept-Language: es,en-us;q=0.7,en;q=0.3',
+												'Accept-Encoding: gzip, deflate',
+												'Connection: keep-alive',
+											);
+			$this->_client->setOptions($options);
+			
+				
+			
+			$urls = array ();
+			$urls [] = new Oara_Curl_Request ( "https://advertiser.zanox.com/advertisertransactionconfirmation/main/app?dest=sales&program=7641", array () );
+			$exportReport = $this->_client->get ( $urls );
+
 			$timestampStartDate = strtotime($dStartDate->toString ( "dd-MM-yyyy" ));  //'05-08-2014'
 			$timestampEndDate = strtotime($dEndDate->toString ( "dd-MM-yyyy" ));
 			
@@ -99,8 +115,6 @@ $dEndDate  	= new Zend_Date('2014-09-03', 'yyyy-MM-dd');
 			$valuesFromExport [] = new Oara_Curl_Parameter ( 'open', 'true' );
 			$valuesFromExport [] = new Oara_Curl_Parameter ( 'invalid', 'true' );
 			$valuesFromExport [] = new Oara_Curl_Parameter ( 'confirmed', 'true' );
-//			$valuesFromExport [] = new Oara_Curl_Parameter ( 'date_from', '1407193200000' ); //1407193200000 ==> "1407196800 - 3600" ++ "000"
-//			$valuesFromExport [] = new Oara_Curl_Parameter ( 'date_to', '1407193200000' );
 			$valuesFromExport [] = new Oara_Curl_Parameter ( 'date_from', $timestampStartDate ); //1407193200000 ==> "1407196800 - 3600" ++ "000"
 			$valuesFromExport [] = new Oara_Curl_Parameter ( 'date_to', $timestampEndDate );
 			$valuesFromExport [] = new Oara_Curl_Parameter ( 'sale_date', 'true' );
@@ -112,23 +126,11 @@ $dEndDate  	= new Zend_Date('2014-09-03', 'yyyy-MM-dd');
 			$valuesFromExport [] = new Oara_Curl_Parameter ( 'program_id', $this->_idProgram );
 			$valuesFromExport [] = new Oara_Curl_Parameter ( 'locale_name', 'en_US' );			
 
-/*
-$arg = array ();
-foreach ( $valuesFromExport as $parameter ) {
-	$arg [] = $parameter->getKey () . '=' . urlencode ( $parameter->getValue () );
-}
-echo 'https://advertiser.zanox.com/advertisertransactionconfirmation/main/export?'.implode ( '&', $arg ) ;
-echo "\n";
-echo 'https://advertiser.zanox.com/advertisertransactionconfirmation/main/export?transaction_type=SALE&approved=true&rejected=true&open=true&invalid=true&confirmed=true&date_from=1407193200000&date_to=1407193200000&sale_date=true&pattern=&pattern_field=ORDER_ID&sort_column=SALE_DATE&sort_direction=DESC&tracking_category=&program_id=7641&locale_name=en_US';
-echo "\n";
-*/
 			$urls = array ();
 			$urls [] = new Oara_Curl_Request ( 'https://advertiser.zanox.com/advertisertransactionconfirmation/main/export?', $valuesFromExport );
-			try{				
-				$result = $this->_client->get($urls);
-			} catch (Exception $e){
-				return $transactions;
-			}
+			$result = $this->_client->get($urls);
+			
+			echo $result[0];
 			$exportData = str_getcsv($result[0], ";");
 /**/
 $exportData=null;
