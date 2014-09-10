@@ -98,8 +98,7 @@ class Oara_Network_Publisher_FoxTransfer extends Oara_Network {
 			$transaction = Array();
 			$transaction['merchantId'] = 1;
 			$transaction['unique_id'] = $transactionExportArray[0];
-			$transactionDate = new Zend_Date($transactionExportArray[5], 'yyyy.MMM.dd HH:mm:00', 'en');
-			$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+			$transaction['date'] = "{$dStartDate->toString("yyyy")}-{$dStartDate->toString("MM")}-01 00:00:00";
 			if ($transactionExportArray[7] == "Confirmed"){
 				$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
 			} else if ($transactionExportArray[7] == "Cancelled"){
