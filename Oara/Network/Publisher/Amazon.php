@@ -140,118 +140,64 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 		$this->_extension = $extension;
 		$this->_client = new Oara_Curl_Access($this->_networkServer."/gp/associates/network/main.html", array(), $this->_credentials);
 
-		// initial login page which redirects to correct sign in page, sets some cookies
-		$URL = "https://www.amazon$extension/ap/signin?openid.assoc_handle=amzn_associates_$handle&openid.return_to={$this->_networkServer}&openid.mode=checkid_setup&openid.ns=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0&openid.claimed_id=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select&openid.pape.max_auth_age=0&openid.ns.pape=http%3A%2F%2Fspecs.openid.net%2Fextensions%2Fpape%2F1.0&openid.identity=http%3A%2F%2Fspecs.openid.net%2Fauth%2F2.0%2Fidentifier_select";
-		
-		
-		$dir = realpath(dirname(__FILE__)).'/../../data/curl/'.$this->_credentials['cookiesDir'].'/'.$this->_credentials['cookiesSubDir'].'/';
-		$cookieName = $this->_credentials["cookieName"];
-		$cookies = $dir.$cookieName.'_cookies.txt';
-		
-		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_COOKIEJAR, $cookies);
-		curl_setopt($ch, CURLOPT_COOKIEFILE, $cookies);
-		curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.2.13) Gecko/20101206 Ubuntu/10.10 (maverick) Firefox/3.6.13');
-		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-		curl_setopt($ch, CURLOPT_HEADER, 0);
-		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
-		
-		// set additional curl options using our previous options
-		curl_setopt($ch, CURLOPT_URL, $URL);
-		
-		curl_exec($ch); // make request
-		
-		$cookiesArray = self::readCookies($this->_credentials);
-		$cookieString = "";
-		foreach ($cookiesArray as $cookieName => $cookieValue){
-			$cookieString .= "&$cookieName=".urlencode($cookieValue);
-		}
-		
-		if ($this->_httpLogin != null){
-			$casperUrl = "http://affjet.dc.fubra.net/tools/amazon/amazon.php?extension=$extension&url=".urlencode($URL).$cookieString;
-			
-			
-			
-			
-			$context = \stream_context_create(array(
-					'http' => array(
-							'header'  => "Authorization: Basic " . base64_encode("{$this->_httpLogin}")
-					)
-			));
-				
-			
-			$page = \file_get_contents($casperUrl, false, $context);
-			
-		} else {
-			ob_start();
-			$url = urlencode($URL);
-			include dirname(__FILE__)."/Amazon/amazon.php";
-			$page = ob_get_clean();
-		}
-		$dom = new Zend_Dom_Query($page);
-		// try to find the actual login form
-		$result = $dom->query('form[name="signIn"]');
-		if (!$result){
-			die('Failed to find log in form!Please verify you have installed casperjs (http://casperjs.org/) in your machine.');
-		}
-
-		$action = (string)$result->current()->attributes->getNamedItem ( "action" )->nodeValue;
-		//echo $form;
-		// find the action of the login form
-		if (!$action) {
-			die('Failed to find login form url');
-		}
-
-		$URL2 = $action; // this is our new post url
-		
-		
-		$results = $dom->query('input[type="hidden"]');
-		$hiddenValue = null;
-		foreach ($results as $result){
-			$name = $result->attributes->getNamedItem("name")->nodeValue;
-			$hiddenValue = $result->attributes->getNamedItem("value")->nodeValue;
-			$postFields[$name] = $hiddenValue;
-		}
-		// add our login values
-		$postFields['email'] = $user;
-		$postFields['create'] = 0;
-		$postFields['password'] = $password;
-		
-		
-
-		$post = '';
-
-		// convert to string, this won't work as an array, form will not accept multipart/form-data, only application/x-www-form-urlencoded
-		foreach ($postFields as $key => $value) {
-			$post .= $key.'='.urlencode($value).'&';
-		}
-
-		$post = substr($post, 0, -1);
-		
-		
-		
-		
-		
-		if (!isset($this->_credentials["cookiesDir"])) {
-			$this->_credentials["cookiesDir"] = "Oara";
-		}
-		if (!isset($this->_credentials["cookiesSubDir"])) {
-			$this->_credentials["cookiesSubDir"] = "Import";
-		}
-		if (!isset($this->_credentials["cookieName"])) {
-			$this->_credentials["cookieName"] = "default";
-		}
-		
-
-		// set additional curl options using our previous options
-		curl_setopt($ch, CURLOPT_URL, $URL2);
-		curl_setopt($ch, CURLOPT_REFERER, $URL);
-		curl_setopt($ch, CURLOPT_POST, 1);
-		curl_setopt($ch, CURLOPT_POSTFIELDS, $post);
-
-		curl_exec($ch); // make request
-
-
+	        if (!isset($this->_credentials["cookiesDir"])) {
+	            $this->_credentials["cookiesDir"] = "Oara";
+	        }
+	        if (!isset($this->_credentials["cookiesSubDir"])) {
+	            $this->_credentials["cookiesSubDir"] = "Import";
+	        }
+	        if (!isset($this->_credentials["cookieName"])) {
+	            $this->_credentials["cookieName"] = "default";
+	        }
+	
+			$dir = realpath(dirname(__FILE__)).'/../../data/curl/'.$this->_credentials['cookiesDir'].'/'.$this->_credentials['cookiesSubDir'].'/';
+			$cookieName = $this->_credentials["cookieName"];
+			$cookies = $dir.$cookieName.'_cookies.txt';
+	
+	        $ch = curl_init();
+	        curl_setopt($ch, CURLOPT_URL, $this->_networkServer);
+	        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	        curl_setopt($ch, CURLOPT_COOKIESESSION, true);
+	        curl_setopt($ch, CURLOPT_COOKIEFILE, $cookies);
+	        curl_setopt($ch, CURLOPT_COOKIEJAR, $cookies);
+	        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+	
+	        $strHTML = curl_exec($ch);
+	        curl_close($ch);
+	
+	        libxml_use_internal_errors(true);
+	        $objDOM = new DOMDocument();
+	        $objDOM->loadHTML($strHTML);
+	
+	        $objXPath = new DOMXPath($objDOM);
+	
+	        $objForm = $objXPath->query("//form[@name='sign_in']");
+	        $objForm = $objForm->item(0);
+	
+	        $objInputs = $objXPath->query("//input[@type='hidden']", $objForm);
+	
+	        $arrInputs = array(
+	            'username' => $user,
+	            'password' => $password,
+	        );
+	        foreach ($objInputs as $objInput) {
+	            $arrInputs[$objInput->getAttribute('name')] = $objInput->getAttribute('value');
+	        }
+	
+	        $strURL = $objForm->getAttribute('action');
+	
+	        // make the actual login-request
+	        $ch = curl_init();
+	        curl_setopt($ch, CURLOPT_URL, $strURL);
+	        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	        curl_setopt($ch, CURLOPT_COOKIEFILE, $cookies);
+	        curl_setopt($ch, CURLOPT_COOKIEJAR, $cookies);
+	        curl_setopt($ch, CURLOPT_POST, true);
+	        curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($arrInputs));
+	        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+	
+	        $strHTML = curl_exec($ch);
+	        curl_close($ch);
 	}
 	/**
 	 * Check the connection
