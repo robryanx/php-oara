@@ -130,7 +130,9 @@ for the different networks.
 
 
 
-
+PHP OARA on Composer
+-----------
+You can use the package "fubralimited/php-oara" from composer instead to import the library.
 
 
 Contributing
