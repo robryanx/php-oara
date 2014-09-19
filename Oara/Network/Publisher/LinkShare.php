@@ -90,7 +90,6 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network {
 			$urls [] = new Oara_Curl_Request ( 'https://cli.linksynergy.com/cli/publisher/my_account/marketingChannels.php', array () );
 			$resultHtml = $this->_client->get ( $urls );
 			
-			echo $resultHtml [0];
 			$dom = new Zend_Dom_Query ( $resultHtml [0] );
 			$results = $dom->query ( 'table' );
 			foreach ( $results as $table ) {
