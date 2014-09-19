@@ -90,6 +90,7 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network {
 			$urls [] = new Oara_Curl_Request ( 'https://cli.linksynergy.com/cli/publisher/my_account/marketingChannels.php', array () );
 			$resultHtml = $this->_client->get ( $urls );
 			
+			echo $resultHtml [0];
 			$dom = new Zend_Dom_Query ( $resultHtml [0] );
 			$results = $dom->query ( 'table' );
 			foreach ( $results as $table ) {
@@ -109,21 +110,7 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network {
 					$resultsSites [] = $result;
 				}
 			}
-			
-			$results = $dom->query ( "#headerLoginWebsiteDDLContent .headerLoginWebsiteDDLItem" );
-			if (count ( $results ) == 0) {
-				preg_match ( "/sid=(.+?)&/", $resultHtml [0], $matches );
-				$site = null;
-				foreach ( $resultsSites as $result ) {
-					if ($result ["id"] == $matches [1]) {
-						$site = $result;
-					}
-				}
-				
-				$resultsSites = array ();
-				$resultsSites [] = $site;
-			}
-			
+		
 			$siteList = array ();
 			foreach ( $resultsSites as $resultSite ) {
 				$site = new stdClass ();

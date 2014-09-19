@@ -241,7 +241,7 @@ class Oara_Network_Advertiser_WebGains extends Oara_Network {
 					if (in_array($transactionExportArray[14], array('Paid to affiliate','Cleared for Payment','Adjusted - Cleared for Payment','Adjusted - Awaiting Payment') )) {
 						$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
 					} else
-					if (in_array($transactionExportArray[14], array('In Recall Period','Recall Expires','Delayed until','Awaiting Invoice Settlement','Awaiting Invoice','Invoiced - Awaiting Payment') )) {
+					if (in_array($transactionExportArray[14], array('In Recall Period','Recall Expires','Delayed until','Awaiting Invoice Settlement','Awaiting Invoice','Invoiced - awaiting payment') )) {
 						$transaction['status'] = Oara_Utilities::STATUS_PENDING;
 					} else
 					if ($transactionExportArray[14] == 'Cancelled') {
