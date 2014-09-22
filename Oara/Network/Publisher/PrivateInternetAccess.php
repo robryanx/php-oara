@@ -36,7 +36,7 @@ class Oara_Network_Publisher_PrivateInternetAccess extends Oara_Network {
 
 
 
-		$dir = realpath(dirname(__FILE__)).'/../../data/curl/'.$credentials['cookiesDir'].'/'.$credentials['cookiesSubDir'].'/';
+		$dir = COOKIES_BASE_DIR . DIRECTORY_SEPARATOR . $credentials['cookiesDir'] . DIRECTORY_SEPARATOR . $credentials['cookiesSubDir'] . DIRECTORY_SEPARATOR;
 
 		$cookieName = $credentials["cookieName"];
 		$cookies = $dir.$cookieName.'_cookies.txt';
@@ -150,7 +150,7 @@ class Oara_Network_Publisher_PrivateInternetAccess extends Oara_Network {
 		$dateArray = Oara_Utilities::daysOfDifference($dStartDate, $dEndDate);
 		$dateArraySize = sizeof($dateArray);
 
-			
+
 		for ($j = 0; $j < $dateArraySize; $j++) {
 			$valuesFormExport = array();
 			$valuesFormExport[] = new Oara_Curl_Parameter('date', $dateArray[$j]->toString("yyyy-MM-dd"));

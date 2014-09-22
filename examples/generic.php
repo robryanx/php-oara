@@ -3,9 +3,9 @@ require realpath(dirname(__FILE__)).'/../settings.php';
 
 /**
  * Network Name, please choose the Network from this list
- * 
+ *
  * Be sure you have your credential on the credentials.ini.sample before runnig it
- * 
+ *
  * FOR PUBLISHERS
  * Adsense
  * AffiliateFuture
@@ -47,7 +47,7 @@ require realpath(dirname(__FILE__)).'/../settings.php';
  * WebGains
  * WowTrk
  * Zanox
- * 
+ *
  * FOR ADVERTISERS (be sure of changing the "type" param to "Advertiser")
  * CommissionJunction
  * ShareASale
@@ -60,6 +60,7 @@ $configName = strtolower($networkName);
 $credentials = $config->$configName->toArray();
 
 //Path for the cookie located inside the Oara/data/curl folder
+$credentials["cookiesBaseDir"] = sys_get_temp_dir() . DIRECTORY_SEPARATOR . "php-oara-cookies" . DIRECTORY_SEPARATOR;
 $credentials["cookiesDir"] = "example";
 $credentials["cookiesSubDir"] = $networkName;
 $credentials["cookieName"] = "test";

@@ -11,19 +11,19 @@
 class Oara_Curl_Access {
 	/**
 	 * Curl options.
-	 * 
+	 *
 	 * @var array
 	 */
 	private $_options = array ();
 	/**
 	 * If we are connected to the website.
-	 * 
+	 *
 	 * @var boolean
 	 */
 	private $_connected = false;
 	/**
 	 * Number of threads
-	 * 
+	 *
 	 * @var integer
 	 */
 	private $_threads = 7;
@@ -31,20 +31,20 @@ class Oara_Curl_Access {
 	 *
 	 *
 	 * Construct Result
-	 * 
+	 *
 	 * @var string
 	 */
 	private $_constructResult = null;
-	
+
 	/**
 	 * Cookie Path
 	 * @var unknown
 	 */
 	private $_cookiePath = null;
-	
+
 	/**
 	 * Constructor and Login.
-	 * 
+	 *
 	 * @param $url -
 	 *        	Url Login
 	 * @param $valuesLogin -
@@ -61,19 +61,19 @@ class Oara_Curl_Access {
 		if (! isset ( $credentials ["cookieName"] )) {
 			$credentials ["cookieName"] = "default";
 		}
-		
+
 		// Setting cookies
 		$isDianomi = $credentials ['networkName'] == "Dianomi" ? true : false;
-		
+
 		$isTD = ($credentials ['networkName'] == "TradeDoubler" || $credentials ['networkName'] == "Stream20" || $credentials ['networkName'] == "Wehkamp" || $credentials ['networkName'] == "Steak");
 		// $isAW = $credentials['networkName'] == "AffiliateWindow";
-		$dir = realpath ( dirname ( __FILE__ ) ) . '/../data/curl/' . $credentials ['cookiesDir'] . '/' . $credentials ['cookiesSubDir'] . '/';
-		
+		$dir = COOKIES_BASE_DIR . DIRECTORY_SEPARATOR . $credentials ['cookiesDir'] . DIRECTORY_SEPARATOR . $credentials ['cookiesSubDir'] . '/';
+
 		if (! Oara_Utilities::mkdir_recursive ( $dir, 0777 )) {
 			throw new Exception ( 'Problem creating folder in Access' );
 		}
 		// Deleting the last cookie
-		
+
 		if ($handle = opendir ( $dir )) {
 			/* This is the correct way to loop over the directory. */
 			while ( false !== ($file = readdir ( $handle )) ) {
@@ -84,12 +84,12 @@ class Oara_Curl_Access {
 			}
 			closedir ( $handle );
 		}
-		
+
 		$cookieName = $credentials ["cookieName"];
-		
+
 		$cookies = $dir . $cookieName . '_cookies.txt';
 		$this->_cookiePath = $cookies;
-		
+
 		$this->_options = array (
 				CURLOPT_USERAGENT => "Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:23.0) Gecko/20100101 Firefox/32.0",
 				CURLOPT_RETURNTRANSFER => true,
@@ -103,59 +103,59 @@ class Oara_Curl_Access {
 				CURLOPT_HEADER => false ,
 				CURLOPT_VERBOSE => false,
 				);
-		
+
 		// Init curl
 		$ch = curl_init ();
 		$options = $this->_options;
 		$options [CURLOPT_URL] = $url;
 		$options [CURLOPT_POST] = true;
-		
+
 		$options [CURLOPT_FOLLOWLOCATION] = true;
-		
+
 		// Login form fields
 		$arg = self::getPostFields ( $valuesLogin );
-		
+
 		$options [CURLOPT_POSTFIELDS] = $arg;
-		
+
 		// problem with SMG about the redirects and headers
 		if ($isTD) {
 			$options [CURLOPT_HEADER] = true;
 			$options [CURLOPT_FOLLOWLOCATION] = false;
 		}
-		
+
 		curl_setopt_array ( $ch, $options );
-		
+
 		$result = curl_exec ( $ch );
 		$err = curl_errno ( $ch );
 		$errmsg = curl_error ( $ch );
 		$info = curl_getinfo ( $ch );
 		// Close curl session
 		curl_close ( $ch );
-		
+
 		if ($isDianomi) {
 			$result = true;
 		}
-		
+
 		while ( ($isTD) && ($info ['http_code'] == 301 || $info ['http_code'] == 302) ) {
 			// redirect manually, cookies must be set, which curl does not itself
-			
+
 			// extract new location
 			preg_match_all ( '|Location: (.*)\n|U', $result, $results );
 			$location = implode ( ';', $results [1] );
 			$ch = curl_init ();
-			
+
 			$options = $this->_options;
 			$options [CURLOPT_URL] = str_replace ( "/publisher/..", "", $location );
 			$options [CURLOPT_HEADER] = true;
 			$options [CURLOPT_FOLLOWLOCATION] = false;
-			
+
 			curl_setopt_array ( $ch, $options );
-			
+
 			$result = curl_exec ( $ch );
 			$err = curl_errno ( $ch );
 			$errmsg = curl_error ( $ch );
 			$info = curl_getinfo ( $ch );
-			
+
 			curl_close ( $ch );
 		}
 		$this->_constructResult = $result;
@@ -171,17 +171,17 @@ class Oara_Curl_Access {
 	public function getConstructResult() {
 		return $this->_constructResult;
 	}
-	
+
 	/**
 	 * Get the cookies
 	 */
 	public function getCookies() {
 		return file_get_contents($this->_cookiePath);
 	}
-	
+
 	/**
 	 * Post request.
-	 * 
+	 *
 	 * @param $url -
 	 *        	Post url request
 	 * @param $valuesForm -
@@ -194,7 +194,7 @@ class Oara_Curl_Access {
 		if (! $this->_connected) {
 			throw new Exception ( "Not connected" );
 		}
-		
+
 		$mcurl = curl_multi_init ();
 		$threadsRunning = 0;
 		$urls_id = 0;
@@ -213,7 +213,7 @@ class Oara_Curl_Access {
 				$arg = self::getPostFields ( $request->getParameters () );
 				$options [CURLOPT_POSTFIELDS] = $arg;
 				curl_setopt_array ( $ch, $options );
-				
+
 				curl_multi_add_handle ( $mcurl, $ch );
 				$urls_id ++;
 				$threadsRunning ++;
@@ -268,7 +268,7 @@ class Oara_Curl_Access {
 	}
 	/**
 	 * Get request.
-	 * 
+	 *
 	 * @param $url -
 	 *        	Get url request
 	 * @param $valuesForm -
@@ -281,7 +281,7 @@ class Oara_Curl_Access {
 		if (! $this->_connected) {
 			throw new Exception ( "Not connected" );
 		}
-		
+
 		$mcurl = curl_multi_init ();
 		$threadsRunning = 0;
 		$urls_id = 0;
@@ -292,13 +292,13 @@ class Oara_Curl_Access {
 				$ch = curl_init ();
 				$chId = ( int ) $ch;
 				$curlResults [( string ) $chId] = '';
-				
+
 				$options = $this->_options;
 				$options [CURLOPT_URL] = $request->getUrl () . self::getPostFields ( $request->getParameters () );
 				$options [CURLOPT_RETURNTRANSFER] = true;
 				$options [CURLOPT_FOLLOWLOCATION] = true;
 				curl_setopt_array ( $ch, $options );
-				
+
 				curl_multi_add_handle ( $mcurl, $ch );
 				$urls_id ++;
 				$threadsRunning ++;
@@ -353,23 +353,23 @@ class Oara_Curl_Access {
 	}
 	/**
 	 * Curl_Parameter to post
-	 * 
-	 * @param array $data        	
+	 *
+	 * @param array $data
 	 * @return unknown_type
 	 */
 	public function getPostFields(array $data) {
 		$return = array ();
-		
+
 		foreach ( $data as $parameter ) {
 			$return [] = $parameter->getKey () . '=' . urlencode ( $parameter->getValue () );
 		}
-		
+
 		return implode ( '&', $return );
 	}
 	/**
 	 * Search the position for a key in a map
-	 * 
-	 * @param array $data        	
+	 *
+	 * @param array $data
 	 * @param
 	 *        	$key
 	 * @return position
@@ -395,7 +395,7 @@ class Oara_Curl_Access {
 		$temp = array_slice ( $a, $pos, 1, true );
 		return key ( $temp );
 	}
-	
+
 	public function getOptions(){
 		return $this->_options;
 	}
