@@ -59,8 +59,7 @@ $config = Zend_Registry::getInstance()->get('credentialsIni');
 $configName = strtolower($networkName);
 $credentials = $config->$configName->toArray();
 
-//Path for the cookie located inside the Oara/data/curl folder
-$credentials["cookiesBaseDir"] = sys_get_temp_dir() . DIRECTORY_SEPARATOR . "php-oara-cookies" . DIRECTORY_SEPARATOR;
+//Path for the cookie located inside of COOKIES_BASE_DIR
 $credentials["cookiesDir"] = "example";
 $credentials["cookiesSubDir"] = $networkName;
 $credentials["cookieName"] = "test";

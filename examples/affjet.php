@@ -37,8 +37,7 @@ if (isset($argumentsMap['s']) && isset($argumentsMap['e']) && isset($argumentsMa
 	$iniNetworkOption = strtolower($argumentsMap['n']);
 	$credentials = $config->$iniNetworkOption->toArray();
 
-	// Path for cookies
-    $credentials["cookiesBaseDir"] = sys_get_temp_dir() . DIRECTORY_SEPARATOR . "php-oara-cookies" . DIRECTORY_SEPARATOR;
+	// Path for cookies inside of COOKIES_BASE_DIR
     $credentials["cookiesDir"] = "example";
 	$credentials["cookiesSubDir"] = "Affjet";
 	$credentials["cookieName"] = "test";
