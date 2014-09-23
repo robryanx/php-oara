@@ -91,7 +91,7 @@ class Oara_Curl_Access {
 		$this->_cookiePath = $cookies;
 		
 		$this->_options = array (
-				CURLOPT_USERAGENT => "Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:23.0) Gecko/20100101 Firefox/23.0",
+				CURLOPT_USERAGENT => "Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:23.0) Gecko/20100101 Firefox/32.0",
 				CURLOPT_RETURNTRANSFER => true,
 				CURLOPT_FAILONERROR => true,
 				CURLOPT_COOKIEJAR => $cookies,
@@ -101,7 +101,7 @@ class Oara_Curl_Access {
 				CURLOPT_SSL_VERIFYPEER => false,
 				CURLOPT_SSL_VERIFYHOST => false,
 				CURLOPT_HEADER => false ,
-				//CURLOPT_VERBOSE => true,
+				CURLOPT_VERBOSE => false,
 				);
 		
 		// Init curl
@@ -394,5 +394,12 @@ class Oara_Curl_Access {
 	private function keyName(array $a, $pos) {
 		$temp = array_slice ( $a, $pos, 1, true );
 		return key ( $temp );
+	}
+	
+	public function getOptions(){
+		return $this->_options;
+	}
+	public function setOptions($options){
+		$this->_options = $options;
 	}
 }

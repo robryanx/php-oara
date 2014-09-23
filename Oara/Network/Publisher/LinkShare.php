@@ -109,21 +109,7 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network {
 					$resultsSites [] = $result;
 				}
 			}
-			
-			$results = $dom->query ( "#headerLoginWebsiteDDLContent .headerLoginWebsiteDDLItem" );
-			if (count ( $results ) == 0) {
-				preg_match ( "/sid=(.+?)&/", $resultHtml [0], $matches );
-				$site = null;
-				foreach ( $resultsSites as $result ) {
-					if ($result ["id"] == $matches [1]) {
-						$site = $result;
-					}
-				}
-				
-				$resultsSites = array ();
-				$resultsSites [] = $site;
-			}
-			
+		
 			$siteList = array ();
 			foreach ( $resultsSites as $resultSite ) {
 				$site = new stdClass ();
