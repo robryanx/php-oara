@@ -49,6 +49,11 @@ class Oara_Network_Publisher_CommissionJunction extends Oara_Network {
 	 */
 	private $_memberId = null;
 	/**
+	 * Account id
+	 * @var int
+	 */
+	private $_accountId = null;
+	/**
 	 * API Password
 	 * @var string
 	 */
@@ -134,6 +139,12 @@ class Oara_Network_Publisher_CommissionJunction extends Oara_Network {
 
 		if (isset($cookieMap["jsContactId"])) {
 			$this->_memberId = $cookieMap["jsContactId"];
+		} else {
+			return false;
+		}
+		
+		if (isset($cookieMap["jsCompanyId"])) {
+			$this->_accountId = $cookieMap["jsCompanyId"];
 		} else {
 			return false;
 		}
@@ -338,6 +349,48 @@ class Oara_Network_Publisher_CommissionJunction extends Oara_Network {
 			}
 		}
 		return $paymentHistory;
+	}
+	/**
+	 *
+	 * It returns the transactions for a payment
+	 * @param int $paymentId
+	 */
+	public function paymentTransactions($pid, $merchantList = null, $startDate = null) {
+		$transactionList = array();
+		$invoices = $this->getPaymentHistory();
+		for ($i = 0; $i < count($invoices); $i++) {
+			if ($invoices[$i]['pid'] == $pid) {
+				$endDate = $invoices[$i]['date'];
+				if (isset($invoices[$i+1])) {
+					$startDate = $invoices[$i+1]['date'];
+				} else {
+					$startDate = date("Y-m-d", strtotime($invoices[i]['date']) - (90 * 60 * 60 * 24));
+				}
+				break;
+			}
+		}
+		$startDate = date("Y-m-d", strtotime($startDate));
+		$endDate = date("Y-m-d", strtotime($endDate));
+		$exportReport = $this->_client->get(array(new Oara_Curl_Request('https://members.cj.com/member/publisher/' . $this->_accountId .'/transactionReport.json?startDate=' . $startDate . '&endDate=' . $endDate . '&allowAllDateRanges=true&columnSort=amount%09DESC&startRow=1&endRow=1000', array())));
+		$advertiserPaymentIds = array();
+		foreach (json_decode($exportReport[0])->{'records'}->{'record'} as $advertiser) {
+			if (($advertiser->{'advertiserId'} != '-3') && (!in_array($advertiser->{'txnId'}, $advertiserPaymentIds))) {
+				$advertiserPaymentIds[] = $advertiser->{'txnId'}; 
+			}
+		}
+		foreach ($advertiserPaymentIds as $id) {
+			$exportReport = $this->_client->get(array(new Oara_Curl_Request('https://members.cj.com/member/publisher/' . $this->_accountId . '/commissionReport/detailForTransactionId.json?allowAllDateRanges=true&txnId=' . $id . '&columnSort=publisherCommission%09DESC&startRow=1&endRow=1000', array())));
+			$transactions = json_decode($exportReport[0])->{'records'}->{'record'};
+			if (!isset($transactions->{'advertiserId'})) {
+				foreach ($transactions as $transaction) {
+					$transactionList[] = $transaction->{'commissionId'};
+				}
+			}
+			else {
+				$transactionList[] = $transactions->{'commissionId'};
+			}
+		}
+		return $transactionList;
 	}
 
 	/**

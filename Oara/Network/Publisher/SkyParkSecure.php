@@ -126,6 +126,7 @@ class Oara_Network_Publisher_SkyParkSecure extends Oara_Network {
 			$transactionDate = new Zend_Date($booking->booking_date, 'yyyy.MMM.dd HH:mm:00', 'en');
 			$pickupDate = new Zend_Date($booking->dateA, 'yyyy.MMM.dd HH:mm:00', 'en');
 			$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+			$transaction['metadata'] = $booking->product_id;
 			if ($booking->booking_mode == "Booked" || $booking->booking_mode == "Amended"){
 				$transaction['status'] = Oara_Utilities::STATUS_PENDING;
 				if ($today > $pickupDate){

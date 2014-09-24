@@ -15,6 +15,10 @@ and additional analysis tools.
 Development is sponsored by [AffJet](http://www.affjet.com) but we welcome 
 code contributions from anyone. 
 
+License
+-------
+The terms and conditions of the license are explained in the file FubraLimited-ContributorLicenseAgreement.docx
+
 Networks Supported
 -------
 
