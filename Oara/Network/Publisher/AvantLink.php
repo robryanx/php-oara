@@ -138,9 +138,9 @@ class Oara_Network_Publisher_AvantLink extends Oara_Network {
 		$num = count($exportData);
 		for ($i = 1; $i < $num; $i++) {
 			$transactionExportArray = str_getcsv($exportData[$i], ",");
-			if (count($transactionExportArray) > 1 && in_array((int) $transactionExportArray[16], $merchantList)) {
+			if (count($transactionExportArray) > 1 && in_array((int) $transactionExportArray[17], $merchantList)) {
 				$transaction = Array();
-				$merchantId = (int) $transactionExportArray[16];
+				$merchantId = (int) $transactionExportArray[17];
 				$transaction['merchantId'] = $merchantId;
 				$transactionDate = new Zend_Date($transactionExportArray[11], 'MM-dd-yyyy HH:mm:ss');
 				$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
