@@ -3,7 +3,7 @@
    The goal of the Open Affiliate Report Aggregator (OARA) is to develop a set 
    of PHP classes that can download affiliate reports from a number of affiliate networks, and store the data in a common format.
    
-    Copyright (C) 2014  Carlos Morillo Merino
+    Copyright (C) 2014  Fubra Limited
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as published by
     the Free Software Foundation, either version 3 of the License, or any later version.
@@ -87,7 +87,7 @@ class Oara_Curl_Access {
 
 		$isTD = ($credentials ['networkName'] == "TradeDoubler" || $credentials ['networkName'] == "Stream20" || $credentials ['networkName'] == "Wehkamp" || $credentials ['networkName'] == "Steak");
 		// $isAW = $credentials['networkName'] == "AffiliateWindow";
-		$dir = COOKIES_BASE_DIR . DIRECTORY_SEPARATOR . $credentials ['cookiesDir'] . DIRECTORY_SEPARATOR . $credentials ['cookiesSubDir'] . '/';
+		$dir = COOKIES_BASE_DIR . DIRECTORY_SEPARATOR . $credentials ['cookiesDir'] . DIRECTORY_SEPARATOR . $credentials ['cookiesSubDir'] . DIRECTORY_SEPARATOR;
 
 		if (! Oara_Utilities::mkdir_recursive ( $dir, 0777 )) {
 			throw new Exception ( 'Problem creating folder in Access' );
