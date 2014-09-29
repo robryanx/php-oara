@@ -20,7 +20,7 @@
  **/
 // Use composer autoload to load OARA classes as well as Zend Framework (dependency)
 require_once 'vendor/autoload.php';
-
+$authNamespace = new Zend_Session_Namespace('passport_user');
 //Upgrade the memory limit
 ini_set('memory_limit', '256M');
 // Error handle configuration
