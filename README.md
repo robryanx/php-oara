@@ -17,6 +17,7 @@ code contributions from anyone.
 
 License
 -------
+PHP-OARA is available under a dual license model; either AGPL or a commercial license, depending on your requirements. If you wish to use php-oara in an open source project, or one for internal use only then you can choose the AGPL. If you wish to use php-oara in a commercial project that will be available to external users, then you should contact us for a commercial license.
 
 This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU Affero General Public License (LICENSE.TXT).
