@@ -26,8 +26,10 @@ ini_set('memory_limit', '256M');
 // Error handle configuration
 error_reporting(E_ALL | E_STRICT);
 //Defining the Global variables
-define('BI_PATH_BASE', rtrim(realpath(dirname(__FILE__)), '/'));
+define('BI_PATH_BASE', rtrim(realpath(dirname(__FILE__)), DIRECTORY_SEPARATOR));
 define('DS', DIRECTORY_SEPARATOR);
+
+define('COOKIES_BASE_DIR', sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'php-oara-cookies');
 
 //set up default timezone
 date_default_timezone_set('GMT');
