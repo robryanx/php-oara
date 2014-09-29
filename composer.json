@@ -12,8 +12,5 @@
             "Oara" : "",
             "PHPExcel" : ""
         }
-    },
-    "include-path": [
-        "Oara/"
-    ],
+    }
 }
