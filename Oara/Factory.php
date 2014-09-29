@@ -13,7 +13,10 @@
     GNU Affero General Public License for more details.
     You should have received a copy of the GNU Affero General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
-	and we should add some contact information
+	
+	Contact
+	------------
+	Fubra Limited <support@fubra.com> , +44 (0)1252 367 200
 **/	
 /**
  * Implementation Class

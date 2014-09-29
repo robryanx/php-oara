@@ -17,7 +17,11 @@ code contributions from anyone.
 
 License
 -------
-The terms and conditions of the license are explained in the file FubraLimited-ContributorLicenseAgreement.docx
+
+This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Affero General Public License (LICENSE.TXT).
+ 
+If you are interested in being a contributor to this project we encourage to read, fill and send this file (FubraLimited-ContributorLicenseAgreement.docx) to support@fubra.com.
 
 Networks Supported
 -------
