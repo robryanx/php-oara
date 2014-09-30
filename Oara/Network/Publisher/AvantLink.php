@@ -98,7 +98,7 @@ class Oara_Network_Publisher_AvantLink extends Oara_Network {
 		$urls [] = new Oara_Curl_Request ( $this->_domain.'/affiliate/merchants.php',$params );
 		$result = $this->_client->post ( $urls );
 		
-		$folder = realpath(dirname(__FILE__)).'/../../data/pdf/';
+		$folder = realpath ( dirname ( COOKIES_BASE_DIR ) ) . '/pdf/';
 		$my_file = $folder.mt_rand().'.xls';
 		
 		$handle = fopen($my_file, 'w') or die('Cannot open file:  '.$my_file);

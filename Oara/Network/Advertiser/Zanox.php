@@ -153,7 +153,7 @@ class Oara_Network_Advertiser_Zanox extends Oara_Network {
 			$exportData = str_getcsv($result[0], ";");
 /**/
 $exportData=null;
-$folder = realpath(dirname(__FILE__)).'/../../data/pdf/';
+$folder = realpath ( dirname ( COOKIES_BASE_DIR ) ) . '/pdf/';
 $my_file = $folder.'tracking_pps_report.csv';
 
 $csvfile = fopen($my_file,'rb');

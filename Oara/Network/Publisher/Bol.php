@@ -88,7 +88,7 @@ class Oara_Network_Publisher_Bol extends Oara_Network {
 	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
 	 */
 	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
-		$folder = realpath(dirname(__FILE__)).'/../../data/pdf/';
+		$folder = realpath ( dirname ( COOKIES_BASE_DIR ) ) . '/pdf/';
 		$totalTransactions = array();
 		$valuesFromExport = array();
 		$valuesFromExport[] = new Oara_Curl_Parameter('id', "-1");			

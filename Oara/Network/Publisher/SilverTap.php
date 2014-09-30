@@ -330,7 +330,7 @@ class Oara_Network_Publisher_SilverTap extends Oara_Network {
 					$exportReportUrl = $this->_client->get($urls, 'url');
 					$exportReportUrl = explode('/', $exportReportUrl[0]);
 					$exportReportUrl = $exportReportUrl[count($exportReportUrl) - 1];
-					$dir = realpath(dirname(__FILE__)).'/../../data/pdf/';
+					$dir = realpath ( dirname ( COOKIES_BASE_DIR ) ) . '/pdf/';
 					//writing temp pdf
 					$fh = fopen($dir.$exportReportUrl, 'w') or die("can't open file");
 					fwrite($fh, $exportReport[0]);

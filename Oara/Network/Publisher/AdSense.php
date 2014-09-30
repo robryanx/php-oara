@@ -18,8 +18,6 @@
  ------------
  Fubra Limited <support@fubra.com> , +44 (0)1252 367 200
  **/
-require_once "GoogleApiClient/src/Google_Client.php";
-require_once "GoogleApiClient/src/contrib/Google_AdSenseService.php";
 /**
  * API Class
  *

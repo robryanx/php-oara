@@ -296,7 +296,7 @@ class Oara_Network_Publisher_Tyroo extends Oara_Network {
 		$html = curl_exec ( $rch );
 		curl_close ( $rch );
 
-		$folder = realpath(dirname(__FILE__)).'/../../data/pdf/';
+		$folder = realpath ( dirname ( COOKIES_BASE_DIR ) ) . '/pdf/';
 		$my_file = $folder.mt_rand().'.csv';
 		$handle = fopen($my_file, 'w') or die('Cannot open file:  '.$my_file);
 		fwrite($handle, $html);
