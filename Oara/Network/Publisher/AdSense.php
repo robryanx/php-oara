@@ -47,7 +47,7 @@ class Oara_Network_Publisher_AdSense extends Oara_Network {
 		$client->setAccessToken($credentials['oauth2']);
 		$client->setAccessType('offline');
 		$this->_client = $client;
-		$this->_adsense = new Google_AdSenseService($client);
+		$this->_adsense = new Google_Service_AdSense($client);
 	}
 	/**
 	 * Check the connection

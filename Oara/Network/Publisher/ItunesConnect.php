@@ -101,7 +101,7 @@ class Oara_Network_Publisher_ItunesConnect extends Oara_Network {
 		$totalTransactions = array();
 
 
-		$dirDestination = realpath(dirname(__FILE__)).'/../../data/pdf';
+		$dirDestination = realpath ( dirname ( COOKIES_BASE_DIR ) ) . '/pdf';
 
 		$now = new Zend_Date();
 		if ($now->toString("yyyy-MM") != $dStartDate->toString("yyyy-MM")){

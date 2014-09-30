@@ -87,8 +87,7 @@ class Oara_Network_Publisher_GoogleAndroidPublisher extends Oara_Network {
 	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = array();
 
-		$pathGsutil = realpath(dirname(__FILE__)).'/../../../../../gsutil/gsutil';
-		$dirDestination = realpath(dirname(__FILE__)).'/../../data/pdf';
+		$dirDestination = realpath ( dirname ( COOKIES_BASE_DIR ) ) . '/pdf';
 
 		$file = "{$this->_bucket}/sales/salesreport_".$dStartDate->toString("yyyyMM").".zip";
 		$url = "http://affjet.dc.fubra.net/tools/gsutil/gs.php?bucket=".urlencode($file)."&type=cp";
