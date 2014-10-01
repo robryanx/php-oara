@@ -84,7 +84,7 @@ class Oara_Network_Publisher_ShareASale extends Oara_Network {
 		} else { // connection error
 			$connection = false;
 		}
-		
+		$returnResult;
 		return $connection;
 	}
 
