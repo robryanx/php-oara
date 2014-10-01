@@ -359,7 +359,7 @@ class Oara_Network_Publisher_Mall extends Oara_Network {
 				$zip->extractTo(realpath ( dirname ( COOKIES_BASE_DIR ) ) . '/pdf/');
 				$zip->close();
 
-				$unzipFilePath = realpath(realpath ( dirname ( COOKIES_BASE_DIR ) ) . '/pdf/'.$matches[2];
+				$unzipFilePath = realpath ( dirname ( COOKIES_BASE_DIR ) ) . '/pdf/'.$matches[2];
 				$fileContent = file_get_contents($unzipFilePath);
 				unlink($newfile);
 				unlink($unzipFilePath);
