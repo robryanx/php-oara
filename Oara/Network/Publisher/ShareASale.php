@@ -84,7 +84,6 @@ class Oara_Network_Publisher_ShareASale extends Oara_Network {
 		} else { // connection error
 			$connection = false;
 		}
-		echo $returnResult;
 		return $connection;
 	}
 
@@ -172,11 +171,12 @@ class Oara_Network_Publisher_ShareASale extends Oara_Network {
 		
 		$myTimeStamp = gmdate(DATE_RFC1123);
 		$sig = $this->_apiToken.':'.$myTimeStamp.':'.$actionVerb.':'.$this->_apiSecret;
-
+		$url = $this->_apiServer."affiliateId=".$this->_affiliateId."&token=".$this->_apiToken."&version=".$this->_apiVersion."&action=".$actionVerb.$params;
+		echo "asdf".$url;
 		$sigHash = hash("sha256", $sig);
 		$myHeaders = array("x-ShareASale-Date: $myTimeStamp", "x-ShareASale-Authentication: $sigHash");
 		$ch = curl_init();
-		curl_setopt($ch, CURLOPT_URL, $this->_apiServer."affiliateId=".$this->_affiliateId."&token=".$this->_apiToken."&version=".$this->_apiVersion."&action=".$actionVerb.$params);
+		curl_setopt($ch, CURLOPT_URL, $url);
 		curl_setopt($ch, CURLOPT_HTTPHEADER, $myHeaders);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
 		curl_setopt($ch, CURLOPT_HEADER, 0);
