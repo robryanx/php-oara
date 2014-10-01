@@ -66,6 +66,8 @@ class Oara_Network_Publisher_AffiliateWindow extends Oara_Network {
 		 * page Size.
 		 */
 		private $_pageSize = 100;
+		
+		private $_currency = null;
 
 		/**
 		 * User Id
@@ -82,6 +84,8 @@ class Oara_Network_Publisher_AffiliateWindow extends Oara_Network {
 			$user = $credentials['user'];
 			$password = $credentials['apiPassword'];
 			$passwordExport = $credentials['password'];
+			
+			$this->_currency = $credentials['currency'];
 
 			$this->_exportOverviewParameters = array(new Oara_Curl_Parameter('post', 'yes'), new Oara_Curl_Parameter('merchant', ''), new Oara_Curl_Parameter('limit', '25'), new Oara_Curl_Parameter('submit.x', '75'), new Oara_Curl_Parameter('submit.y', '11'), new Oara_Curl_Parameter('submit', 'submit'));
 
@@ -260,6 +264,13 @@ class Oara_Network_Publisher_AffiliateWindow extends Oara_Network {
 						$transaction['status'] = $transactionObject->sStatus;
 						$transaction['amount'] = $transactionObject->mSaleAmount->dAmount;
 						$transaction['commission'] = $transactionObject->mCommissionAmount->dAmount;
+						
+						if (isset($transactionObject->aTransactionParts)){
+							$transactionPart = current($transactionObject->aTransactionParts);
+							if ($transactionPart->mCommissionAmount->sCurrency != $this->_currency){
+								$transaction['currency'] = $transactionPart->mCommissionAmount->sCurrency;
+							}
+						}
 						$totalTransactions[] = $transaction;
 					}
 
