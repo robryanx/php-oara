@@ -18,7 +18,6 @@
  ------------
  Fubra Limited <support@fubra.com> , +44 (0)1252 367 200
  **/
-require_once realpath(dirname(__FILE__)).'/../../../PHPExcel.php';
 /**
  * Export Class
  *
