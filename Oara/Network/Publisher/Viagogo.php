@@ -25,64 +25,15 @@ class Oara_Network_Publisher_Viagogo extends Oara_Network {
 	public function __construct($credentials) {
 		$user = $credentials ['user'];
 		$password = $credentials ['password'];
-			
-		$loginUrl = 'https://www.viagogo.co.uk/secure/loginregister/login';
 		
-		$dir = realpath ( dirname ( __FILE__ ) ) . '/../../data/curl/' . $credentials ['cookiesDir'] . '/' . $credentials ['cookiesSubDir'] . '/';
-		
-		if (! Oara_Utilities::mkdir_recursive ( $dir, 0777 )) {
-			throw new Exception ( 'Problem creating folder in Access' );
-		}
-		$cookies = realpath(dirname(__FILE__)).'/../../data/curl/'.$credentials['cookiesDir'].'/'.$credentials['cookiesSubDir'].'/'.$credentials["cookieName"].'_cookies.txt';
-		unlink($cookies);
-			
 		$valuesLogin = array (
 				new Oara_Curl_Parameter ( 'Login.UserName', $user ),
 				new Oara_Curl_Parameter ( 'Login.Password', $password ),
 				new Oara_Curl_Parameter ( 'ReturnUrl', $loginUrl )
-		);	
-		
-		$this->_options = array (
-				CURLOPT_USERAGENT => "Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:26.0) Gecko/20100101 Firefox/26.0",
-				CURLOPT_RETURNTRANSFER => true,
-				CURLOPT_FAILONERROR => true,
-				CURLOPT_COOKIEJAR => $cookies,
-				CURLOPT_COOKIEFILE => $cookies,
-				CURLOPT_HTTPAUTH => CURLAUTH_ANY,
-				CURLOPT_AUTOREFERER => true,
-				CURLOPT_SSL_VERIFYPEER => false,
-				CURLOPT_SSL_VERIFYHOST => false,
-				CURLOPT_HEADER => false,
-				CURLOPT_FOLLOWLOCATION => true,
-				CURLOPT_HTTPHEADER => array('Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8','Accept-Language: es,en-us;q=0.7,en;q=0.3','Accept-Encoding: gzip, deflate','Connection: keep-alive', 'Cache-Control: max-age=0'),
-				CURLOPT_ENCODING => "gzip",
-				CURLOPT_VERBOSE => false
 		);
-		$rch = curl_init ();
-		$options = $this->_options;
-		curl_setopt ( $rch, CURLOPT_URL, "https://www.viagogo.co.uk/secure/loginregister/login" );
-		curl_setopt_array ( $rch, $options );
-		$html = curl_exec ( $rch );
-		curl_close ( $rch );
+		$loginUrl = 'https://www.viagogo.co.uk/secure/loginregister/login';
+		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
 		
-		$dom = new Zend_Dom_Query($html);
-		$hidden = $dom->query('input[type="hidden"]');
-		
-		foreach ($hidden as $values) {
-			$valuesLogin[] = new Oara_Curl_Parameter($values->getAttribute("name"), $values->getAttribute("value"));
-		}
-		$rch = curl_init ();
-		$options = $this->_options;
-		curl_setopt ( $rch, CURLOPT_URL, "https://www.viagogo.co.uk/secure/loginregister/login" );
-		$options [CURLOPT_POST] = true;
-		$arg = array ();
-		foreach ( $valuesLogin as $parameter ) {
-			$arg [] = $parameter->getKey () . '=' . urlencode ( $parameter->getValue () );
-		}
-		$options [CURLOPT_POSTFIELDS] = implode ( '&', $arg );
-		curl_setopt_array ( $rch, $options );
-		$html = curl_exec ( $rch );
-		curl_close ( $rch );
 	}
 	/**
 	 * Check the connection
