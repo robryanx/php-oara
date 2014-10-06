@@ -27,15 +27,66 @@ class Oara_Network_Publisher_Shuttlefare extends Oara_Network {
 
 		$user = $credentials ['user'];
 		$password = $credentials ['password'];
+			
+		$loginUrl = 'http://affiliates.shuttlefare.com/users/sign_in';
 		
+		$dir = COOKIES_BASE_DIR . DIRECTORY_SEPARATOR . $credentials ['cookiesDir'] . DIRECTORY_SEPARATOR . $credentials ['cookiesSubDir'] . DIRECTORY_SEPARATOR;
+		
+		if (! Oara_Utilities::mkdir_recursive ( $dir, 0777 )) {
+			throw new Exception ( 'Problem creating folder in Access' );
+		}
+		$cookies = $dir . $credentials["cookieName"] . '_cookies.txt';
+		unlink($cookies);
+			
 		$valuesLogin = array (
 				new Oara_Curl_Parameter ( 'user[email]', $user ),
 				new Oara_Curl_Parameter ( 'user[password]', $password ),
 				new Oara_Curl_Parameter ( 'user[remember_me]', '0' ),
 				new Oara_Curl_Parameter ( 'commit', 'Sign in' )
 		);
-		$loginUrl = 'http://affiliates.shuttlefare.com/users/sign_in';
-		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
+		
+		$this->_options = array (
+				CURLOPT_USERAGENT => "Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:26.0) Gecko/20100101 Firefox/26.0",
+				CURLOPT_RETURNTRANSFER => true,
+				CURLOPT_FAILONERROR => true,
+				CURLOPT_COOKIEJAR => $cookies,
+				CURLOPT_COOKIEFILE => $cookies,
+				CURLOPT_HTTPAUTH => CURLAUTH_ANY,
+				CURLOPT_AUTOREFERER => true,
+				CURLOPT_SSL_VERIFYPEER => false,
+				CURLOPT_SSL_VERIFYHOST => false,
+				CURLOPT_HEADER => false,
+				CURLOPT_FOLLOWLOCATION => true,
+				CURLOPT_HTTPHEADER => array('Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8','Accept-Language: es,en-us;q=0.7,en;q=0.3','Accept-Encoding: gzip, deflate','Connection: keep-alive', 'Cache-Control: max-age=0'),
+				CURLOPT_ENCODING => "gzip",
+				CURLOPT_VERBOSE => false
+		);
+		$rch = curl_init ();
+		$options = $this->_options;
+		curl_setopt ( $rch, CURLOPT_URL, "http://affiliates.shuttlefare.com/users/sign_in" );
+		curl_setopt_array ( $rch, $options );
+		$html = curl_exec ( $rch );
+		curl_close ( $rch );
+		
+		$dom = new Zend_Dom_Query($html);
+		$hidden = $dom->query('input[type="hidden"]');
+		
+		foreach ($hidden as $values) {
+			$valuesLogin[] = new Oara_Curl_Parameter($values->getAttribute("name"), $values->getAttribute("value"));
+		}
+		$rch = curl_init ();
+		$options = $this->_options;
+		curl_setopt ( $rch, CURLOPT_URL, "http://affiliates.shuttlefare.com/users/sign_in" );
+		$options [CURLOPT_POST] = true;
+		$arg = array ();
+		foreach ( $valuesLogin as $parameter ) {
+			$arg [] = urlencode($parameter->getKey ()) . '=' . urlencode ( $parameter->getValue () );
+		}
+		$options [CURLOPT_POSTFIELDS] = implode ( '&', $arg );
+		curl_setopt_array ( $rch, $options );
+		$html = curl_exec ( $rch );
+
+		curl_close ( $rch );
 		
 	}
 	/**
@@ -105,25 +156,27 @@ class Oara_Network_Publisher_Shuttlefare extends Oara_Network {
 		$dom = new Zend_Dom_Query($html);
 		
 		$tableList = $dom->query ( 'table' );
-		$exportData = self::htmlToCsv(self::DOMinnerHTML($tableList->current()));
-		
-		$num = count ( $exportData );
-		for($i = 1; $i < $num-1; $i ++) {
-			$transactionExportArray = explode (";,", $exportData [$i]);
+		if (count($tableList) > 0){
+			
+			$exportData = self::htmlToCsv(self::DOMinnerHTML($tableList->current()));
+			
+			$num = count ( $exportData );
+			for($i = 1; $i < $num-1; $i ++) {
+				$transactionExportArray = explode (";,", $exportData [$i]);
+					
+				$transaction = Array ();
+				$transaction ['merchantId'] = 1;
+				$transaction ['unique_id'] = $transactionExportArray [0];
+				$transactionDate = new Zend_Date ( $transactionExportArray [5], 'MM/dd/yyyy');
+				$transaction ['date'] = $transactionDate->toString ( "yyyy-MM-dd HH:mm:ss" );				
+				$transaction ['status'] = Oara_Utilities::STATUS_CONFIRMED;				
+				$transaction ['amount'] = Oara_Utilities::parseDouble ( preg_replace ( "/[^0-9\.,]/", "", $transactionExportArray [1] ) );
+				$transaction ['commission'] = Oara_Utilities::parseDouble ( preg_replace ( "/[^0-9\.,]/", "", $transactionExportArray [2] ) );
 				
-			$transaction = Array ();
-			$transaction ['merchantId'] = 1;
-			$transaction ['unique_id'] = $transactionExportArray [0];
-			$transactionDate = new Zend_Date ( $transactionExportArray [5], 'MM/dd/yyyy');
-			$transaction ['date'] = $transactionDate->toString ( "yyyy-MM-dd HH:mm:ss" );				
-			$transaction ['status'] = Oara_Utilities::STATUS_CONFIRMED;				
-			$transaction ['amount'] = Oara_Utilities::parseDouble ( preg_replace ( "/[^0-9\.,]/", "", $transactionExportArray [1] ) );
-			$transaction ['commission'] = Oara_Utilities::parseDouble ( preg_replace ( "/[^0-9\.,]/", "", $transactionExportArray [2] ) );
-			
-			$totalTransactions [] = $transaction;
-			
+				$totalTransactions [] = $transaction;
+				
+			}
 		}
-		
 		return $totalTransactions;
 	}
 	
