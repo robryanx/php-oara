@@ -61,11 +61,11 @@ class Oara_Network_Publisher_ShareASale extends Oara_Network {
 	 */
 	public function __construct($credentials) {
 
-		$this->_affiliateId = $credentials['affiliateId'];
+		$this->_affiliateId = preg_replace("/[^0-9]/","",$credentials['affiliateId']);
 		$this->_apiToken = $credentials['apiToken'];
 		$this->_apiSecret = $credentials['apiSecret'];
 
-		$this->_apiVersion = 1.5;
+		$this->_apiVersion = 1.8;
 		$this->_apiServer = "https://shareasale.com/x.cfm?";
 		
 	}
