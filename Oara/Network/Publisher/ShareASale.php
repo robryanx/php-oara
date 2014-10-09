@@ -177,7 +177,6 @@ class Oara_Network_Publisher_ShareASale extends Oara_Network {
 		$sigHash = hash("sha256", $sig);
 		$myHeaders = array("x-ShareASale-Date: $myTimeStamp", "x-ShareASale-Authentication: $sigHash");
 		$ch = curl_init();
-		echo $this->_apiServer."affiliateId=".$this->_affiliateId."&token=".$this->_apiToken."&version=".$this->_apiVersion."&action=".$actionVerb.$params;
 		curl_setopt($ch, CURLOPT_URL, $this->_apiServer."affiliateId=".$this->_affiliateId."&token=".$this->_apiToken."&version=".$this->_apiVersion."&action=".$actionVerb.$params);
 		curl_setopt($ch, CURLOPT_HTTPHEADER, $myHeaders);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
