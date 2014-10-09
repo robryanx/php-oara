@@ -80,6 +80,7 @@ class Oara_Network_Publisher_ShareASale extends Oara_Network {
 			//parse HTTP Body to determine result of request
 			if (stripos($returnResult, "Error Code ")) { // error occurred
 				$connection = false;
+				echo $returnResult;
 			}
 		} else { // connection error
 			$connection = false;

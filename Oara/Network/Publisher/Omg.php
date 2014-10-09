@@ -399,8 +399,7 @@ class Oara_Network_Publisher_Omg extends Oara_Network {
 					$valuesFromExport [] = new Oara_Curl_Parameter ( $attrs->getNamedItem ( "name" )->nodeValue, $attrs->getNamedItem ( "value" )->nodeValue );
 				}
 			}
-			$yearSelect = $doc->getElementById ( 'ctl00_ContentPlaceHolder1_ddlYear' )->childNodes;
-			$yearStart = ( int ) $yearSelect->item ( $yearSelect->length - 1 )->attributes->getNamedItem ( "value" )->nodeValue;
+			$yearStart = 2011;
 			$nowDays = new Zend_Date ();
 			$yearEnd = ( int ) $nowDays->get ( Zend_Date::YEAR );
 			
@@ -417,7 +416,7 @@ class Oara_Network_Publisher_Omg extends Oara_Network {
 					libxml_use_internal_errors ( true );
 					$doc->validateOnParse = true;
 					$doc->loadHTML ( $exportReport [$i] );
-					$table = $doc->getElementById ( 'ctl00_ContentPlaceHolder1_gvSummary' );
+					$table = $doc->getElementById ( 'ContentPlaceHolder1_gvSummary' );
 					$paymentList = $table->childNodes;
 					for($j = 1; $j < $paymentList->length; $j ++) {
 						$paymentData = $paymentList->item ( $j )->childNodes;
