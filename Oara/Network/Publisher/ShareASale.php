@@ -76,7 +76,6 @@ class Oara_Network_Publisher_ShareASale extends Oara_Network {
 		$connection = true;
 		
 		$returnResult = self::makeCall("apitokencount");
-		var_dump($returnResult);
 		if ($returnResult) {
 			//parse HTTP Body to determine result of request
 			if (stripos($returnResult, "Error Code ")) { // error occurred
