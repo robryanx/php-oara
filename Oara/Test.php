@@ -112,6 +112,17 @@ class Oara_Test {
 		}
 	}
 
+	public static function report($type, $merchant, $startDate, $endDate, $data){
+		$dir = "tmp/affjet/".$merchant."/$type/";
+		if(!is_dir($dir)) mkdir($dir, 0777, true);
+		$fname = $dir;
+		$fname .= $startDate->toString("yyyyMMdd");
+		$fname .= '-'.$endDate->toString("yyyyMMdd").'.json';
+		$fp = fopen($fname, 'w');
+		fwrite($fp, json_encode($data));
+		fclose($fp);
+	}
+
 	/**
 	 * The affjet cli , read the arguments and build the report requested
 	 * @param array arguments, Map of the cli arguments
@@ -142,6 +153,8 @@ class Oara_Test {
 				//Get all the payments for this network.
 				$paymentsList = $network->getPaymentHistory();
 
+				self::report("payments", $arguments['n'], $startDate, $endDate, $paymentsList);
+
 				fwrite(STDERR, "Number of payments: ".count($paymentsList)."\n\n");
 				fwrite(STDERR, "------------------------------------------------------------------------\n");
 				fwrite(STDERR, "ID			DATE					VALUE\n");
@@ -165,6 +178,8 @@ class Oara_Test {
 			$merchantList = $network->getMerchantList(array());
 
 			if (!isset($arguments['t']) || $arguments['t'] == 'merchant') {
+
+				self::report("merchants", $arguments['n'], $startDate, $endDate, $merchantList);
 
 				fwrite(STDERR, "Number of merchants: ".count($merchantList)."\n\n");
 				fwrite(STDERR, "--------------------------------------------------\n");
@@ -215,6 +230,9 @@ class Oara_Test {
 					$transactionList = $network->getTransactionList($merchantIdList, $monthStartDate, $monthEndDate, $merchantMap);
 
 					if (!isset($arguments['t']) || $arguments['t'] == 'transaction') {
+						
+						self::report("transactions", $arguments['n'], $startDate, $endDate, $transactionList);
+
 						fwrite(STDERR, "Number of transactions: ".count($transactionList)."\n\n");
 
 						$totalAmount = 0;
