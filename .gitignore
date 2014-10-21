@@ -3,7 +3,7 @@
 .buildpath
 .project
 # Composer
-# vendor
+vendor
 composer.phar
 composer.lock
 tmp
