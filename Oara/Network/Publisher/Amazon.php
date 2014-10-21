@@ -362,6 +362,7 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 			$transaction['commission'] = Oara_Utilities::parseDouble($transactionExportArray[10]);
 			$transaction['device_type'] = $transactionExportArray[11];
 			$transaction['skew'] = $transactionExportArray[2];
+			$transaction['title'] = $transactionExportArray[1];
 			$totalTransactions[] = $transaction;
 
 		}
