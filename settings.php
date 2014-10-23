@@ -36,5 +36,5 @@ date_default_timezone_set('GMT');
 umask(0002);
 
 //Adding the credentials ini into the Zend Registry
-$config = new Zend_Config_Ini(BI_PATH_BASE.DS.'examples/credentials.ini', 'production');
+$config = new Zend_Config_Ini(BI_PATH_BASE.DS.'../credentials.ini', 'production');
 Zend_Registry::getInstance()->set('credentialsIni', $config);
