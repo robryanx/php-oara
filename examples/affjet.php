@@ -58,7 +58,7 @@ if (isset($argumentsMap['s']) && isset($argumentsMap['e']) && isset($argumentsMa
 	$credentials = $config->$iniNetworkOption->toArray();
 
 	// Path for cookies inside of COOKIES_BASE_DIR
-    $credentials["cookiesDir"] = "example";
+	$credentials["cookiesDir"] = "example";
 	$credentials["cookiesSubDir"] = "Affjet";
 	$credentials["cookieName"] = "test";
 
