@@ -328,7 +328,6 @@ class Oara_Network_Publisher_CommissionJunction extends Oara_Network {
 			$urls = array();
 			$urls[] = new Oara_Curl_Request('https://members.cj.com/member/'.$this->_memberId.'/publisher/accounts/listmyadvertisers.do', $valuesFromExport);
 			$exportReport = $this->_client->post($urls);
-			echo $exportReport[0];
 			$exportData = str_getcsv($exportReport[0], "\n");
 			$merchantReportList = Array();
 			$num = count($exportData);

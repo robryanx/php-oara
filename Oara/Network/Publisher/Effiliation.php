@@ -82,7 +82,7 @@ class Oara_Network_Publisher_Effiliation extends Oara_Network {
 	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = array();
 
-		$url = 'http://api.effiliation.com/apiv2/transaction.csv?key='.$this->_credentials["apiPassword"].'&start='.$dStartDate->toString("dd/MM/yyyy").'&end='.$dEndDate->toString("dd/MM/yyyy").'&type=datetran';
+		$url = 'http://api.effiliation.com/apiv2/transaction.csv?key='.$this->_credentials["apiPassword"].'&start='.$dStartDate->toString("dd/MM/yyyy").'&end='.$dEndDate->toString("dd/MM/yyyy").'&type=date';
 		$content = utf8_encode(file_get_contents($url));
 		$exportData = str_getcsv($content, "\n");
 		$num = count($exportData);
