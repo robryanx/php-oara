@@ -166,14 +166,14 @@ class Oara_Network_Publisher_Shuttlefare extends Oara_Network {
 		foreach ( $valuesFromExport as $parameter ) {
 			$arg [] = urlencode($parameter->getKey ()) . '=' . urlencode ( $parameter->getValue () );
 		}
-		curl_setopt ( $rch, CURLOPT_URL, 'http://affiliates.shuttlefare.com/partners/payments/report?'.implode ( '&', $arg ) );
+		$url = 'http://affiliates.shuttlefare.com/partners/payments/report?'.implode ( '&', $arg );
+		curl_setopt ( $rch, CURLOPT_URL,  $url);
 		curl_setopt_array ( $rch, $options );		
 		
 		$html = curl_exec ( $rch );
 		curl_close ( $rch );
 		
 		$dom = new Zend_Dom_Query($html);
-		
 		$tableList = $dom->query ( 'table' );
 		if (count($tableList) > 0){
 			

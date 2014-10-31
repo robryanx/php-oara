@@ -70,8 +70,8 @@ class Oara_Network_Publisher_PaidOnResults extends Oara_Network {
 		$user = $credentials['user'];
 		$password = $credentials['password'];
 		$this->_apiPassword = $credentials['apiPassword'];
-
-		$loginUrl = 'https://secure.paidonresults.com/cgi-bin/affiliate-login/login.pl';
+		
+		$loginUrl = 'https://secure.paidonresults.com/cgi-bin/affiliate/login/login.pl';
 
 		$valuesLogin = array(new Oara_Curl_Parameter('username', $user),
 			new Oara_Curl_Parameter('password', $password)
