@@ -44,6 +44,8 @@ class Oara_Network_Publisher_AffiliateFuture extends Oara_Network {
 	 * @var unknown_type
 	 */
 	private $_client = null;
+	
+	private $_credentials = null;
 	/**
 	 * Constructor and Login
 	 * @param $af
@@ -71,6 +73,7 @@ class Oara_Network_Publisher_AffiliateFuture extends Oara_Network {
 			new Oara_Curl_Parameter('password', $password));
 
 		$this->_exportOverviewParameters = array();
+		$this->_credentials = $credentials;
 
 	}
 	/**
@@ -243,6 +246,7 @@ class Oara_Network_Publisher_AffiliateFuture extends Oara_Network {
 	 * @see Oara/Network/Oara_Network_Publisher_Base#getPaymentHistory()
 	 */
 	public function getPaymentHistory() {
+		self::__construct($this->_credentials);
 		$paymentHistory = array();
 		$filter = new Zend_Filter_LocalizedToNormalized(array('precision' => 2));
 		$urls = array();

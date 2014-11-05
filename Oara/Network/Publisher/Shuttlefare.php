@@ -154,8 +154,8 @@ class Oara_Network_Publisher_Shuttlefare extends Oara_Network {
 
 		$valuesFromExport = array(
 				new Oara_Curl_Parameter('utf8', '%E2%9C%93'),
-				new Oara_Curl_Parameter('payment[from]', $dStartDate->toString("MM/dd/yyyy")),
-				new Oara_Curl_Parameter('payment[to]', $dEndDate->toString("MM/dd/yyyy")),
+				new Oara_Curl_Parameter('payment[from]', $dStartDate->toString("dd/MM/yyyy")),
+				new Oara_Curl_Parameter('payment[to]', $dEndDate->toString("dd/MM/yyyy")),
 				new Oara_Curl_Parameter('commit', 'Generate')
 		);
 	
@@ -168,7 +168,7 @@ class Oara_Network_Publisher_Shuttlefare extends Oara_Network {
 		}
 		$url = 'http://affiliates.shuttlefare.com/partners/payments/report?'.implode ( '&', $arg );
 		curl_setopt ( $rch, CURLOPT_URL,  $url);
-		curl_setopt_array ( $rch, $options );		
+		curl_setopt_array ( $rch, $options );
 		
 		$html = curl_exec ( $rch );
 		curl_close ( $rch );
