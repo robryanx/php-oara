@@ -157,8 +157,8 @@ class Oara_Network_Publisher_SkyParkSecure extends Oara_Network {
 				throw new Exception("New status found");
 			}
 			
-			$transaction['amount'] = Oara_Utilities::parseDouble(preg_replace("/[^0-9\.,]/", "", $booking->sale_price));
-			$transaction['commission'] = Oara_Utilities::parseDouble(preg_replace("/[^0-9\.,]/", "",  $booking->commission_affiliate));
+			$transaction['amount'] = Oara_Utilities::parseDouble(preg_replace("/[^0-9\.,]/", "", $booking->sale_price))/1.2;
+			$transaction['commission'] = Oara_Utilities::parseDouble(preg_replace("/[^0-9\.,]/", "",  $booking->commission_affiliate))/1.2;
 
 			$totalTransactions[] = $transaction;
 

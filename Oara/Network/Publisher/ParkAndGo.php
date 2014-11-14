@@ -142,8 +142,8 @@ class Oara_Network_Publisher_ParkAndGo extends Oara_Network {
 				$transaction ['status'] = Oara_Utilities::STATUS_CONFIRMED;
 			}
 				
-			$transaction ['amount'] = Oara_Utilities::parseDouble ( $transactionExportArray [6] );
-			$transaction ['commission'] = Oara_Utilities::parseDouble ( $transactionExportArray [7] );
+			$transaction ['amount'] = Oara_Utilities::parseDouble ( $transactionExportArray [6])/1.2;
+			$transaction ['commission'] = Oara_Utilities::parseDouble ( $transactionExportArray [7] )/1.2;
 	
 			$totalTransactions [] = $transaction;
 		}
