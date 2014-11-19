@@ -112,17 +112,17 @@ class Oara_Network_Publisher_WebGains extends Oara_Network {
 			$serverArray["it"] = 'www.webgains.it';
 			
 			$loginUrlArray = array();
-			$loginUrlArray["uk"] = 'https://www.webgains.com/loginform.html?action=login';
-			$loginUrlArray["fr"] = 'https://www.webgains.fr/loginform.html?action=login';
-			$loginUrlArray["us"] = 'https://us.webgains.com/loginform.html?action=login';
-			$loginUrlArray["de"] = 'https://www.webgains.de/loginform.html?action=login';
-			$loginUrlArray["fr"] = 'https://www.webgains.fr/loginform.html?action=login';
-			$loginUrlArray["nl"] = 'https://www.webgains.nl/loginform.html?action=login';
-			$loginUrlArray["dk"] = 'https://www.webgains.dk/loginform.html?action=login';
-			$loginUrlArray["se"] = 'https://www.webgains.se/loginform.html?action=login';
-			$loginUrlArray["es"] = 'https://www.webgains.es/loginform.html?action=login';
-			$loginUrlArray["ie"] = 'https://www.webgains.ie/loginform.html?action=login';
-			$loginUrlArray["it"] = 'https://www.webgains.it/loginform.html?action=login';
+			$loginUrlArray["uk"] = 'http://www.webgains.com/loginform.html?action=login';
+			$loginUrlArray["fr"] = 'http://www.webgains.fr/loginform.html?action=login';
+			$loginUrlArray["us"] = 'http://us.webgains.com/loginform.html?action=login';
+			$loginUrlArray["de"] = 'http://www.webgains.de/loginform.html?action=login';
+			$loginUrlArray["fr"] = 'http://www.webgains.fr/loginform.html?action=login';
+			$loginUrlArray["nl"] = 'http://www.webgains.nl/loginform.html?action=login';
+			$loginUrlArray["dk"] = 'http://www.webgains.dk/loginform.html?action=login';
+			$loginUrlArray["se"] = 'http://www.webgains.se/loginform.html?action=login';
+			$loginUrlArray["es"] = 'http://www.webgains.es/loginform.html?action=login';
+			$loginUrlArray["ie"] = 'http://www.webgains.ie/loginform.html?action=login';
+			$loginUrlArray["it"] = 'http://www.webgains.it/loginform.html?action=login';
 
 			$valuesLogin = array(
 			new Oara_Curl_Parameter('user_type', 'affiliateuser'),
