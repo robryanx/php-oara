@@ -197,6 +197,7 @@ class Oara_Network_Publisher_WebGains extends Oara_Network {
 			$dEndDate->setHour("23");
 			$dEndDate->setMinute("59");
 			$dEndDate->setSecond("59");
+			
 
 			foreach ($this->_campaignMap as $campaignKey => $campaignValue) {
 				try{
@@ -223,18 +224,19 @@ class Oara_Network_Publisher_WebGains extends Oara_Network {
 						$transaction['amount'] = $transactionObject->saleValue;
 						$transaction['commission'] = $transactionObject->commission;
 
-						if ($transactionObject->status == 'confirmed') {
+						if ($transactionObject->paymentStatus == 'cleared' || $transactionObject->paymentStatus == 'paid') {
 							$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
 						} else
-						if ($transactionObject->status == 'delayed') {
+						if ($transactionObject->paymentStatus == 'notcleared') {
 							$transaction['status'] = Oara_Utilities::STATUS_PENDING;
 						} else
-						if ($transactionObject->status == 'cancelled') {
+						if ($transactionObject->paymentStatus == 'cancelled') {
 							$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
 						} else {
-							throw new Exception('Error in the transaction status');
+							throw new Exception('Error in the transaction status '. $transactionObject->paymentStatus);
 						}
 						$transaction['currency'] = $transactionObject->currency;
+						
 						$totalTransactions[] = $transaction;
 					}
 				}
