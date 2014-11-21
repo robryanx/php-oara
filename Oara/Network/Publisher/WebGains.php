@@ -200,11 +200,11 @@ class Oara_Network_Publisher_WebGains extends Oara_Network {
 
 			foreach ($this->_campaignMap as $campaignKey => $campaignValue) {
 				try{
-					$transactionList = $this->_soapClient->getDetailedEarnings($dStartDate->getIso(), $dEndDate->getIso(), $campaignKey, $this->_exportTransactionParameters['username'], $this->_exportTransactionParameters['password']);
+					$transactionList = $this->_soapClient->getFullEarningsWithCurrency($dStartDate->getIso(), $dEndDate->getIso(), $campaignKey, $this->_exportTransactionParameters['username'], $this->_exportTransactionParameters['password']);
 				} catch(Exception $e){
 					if (preg_match("/60 requests/", $e->getMessage())){
 						sleep(60);
-						$transactionList = $this->_soapClient->getDetailedEarnings($dStartDate->getIso(), $dEndDate->getIso(), $campaignKey, $this->_exportTransactionParameters['username'], $this->_exportTransactionParameters['password']);
+						$transactionList = $this->_soapClient->getFullEarningsWithCurrency($dStartDate->getIso(), $dEndDate->getIso(), $campaignKey, $this->_exportTransactionParameters['username'], $this->_exportTransactionParameters['password']);
 					}
 				}
 				foreach ($transactionList as $transactionObject) {
@@ -234,6 +234,7 @@ class Oara_Network_Publisher_WebGains extends Oara_Network {
 						} else {
 							throw new Exception('Error in the transaction status');
 						}
+						$transaction['currency'] = $transactionObject->currency;
 						$totalTransactions[] = $transaction;
 					}
 				}
