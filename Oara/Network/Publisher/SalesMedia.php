@@ -215,10 +215,9 @@ class Oara_Network_Publisher_SalesMedia extends Oara_Network {
 				$transactionDate = new Zend_Date ( $transactionExportArray [0], 'MM/dd/yyyy');
 				$transaction ['date'] = $transactionDate->toString ( "yyyy-MM-dd HH:mm:ss" );				
 				$transaction ['status'] = Oara_Utilities::STATUS_CONFIRMED;				
-	/**modify!!!*/			$transaction ['amount'] = Oara_Utilities::parseDouble ( preg_replace ( "/[^0-9\.,]/", "", $transactionExportArray [4] ) ); //Wartosc Sprzedazy
-				$transaction ['commission'] = Oara_Utilities::parseDouble ( preg_replace ( "/[^0-9\.,]/", "", $transactionExportArray [4] ) ); //Wyplata
+				$transaction ['amount'] = Oara_Utilities::parseDouble ( preg_replace ( "/[^0-9\.,]/", "", $transactionExportArray [4] ) ); //Wartosc Sprzedazy
+				$transaction ['commission'] = Oara_Utilities::parseDouble ( preg_replace ( "/[^0-9\.,]/", "", $transactionExportArray [6] ) ); //Wyplata
 				
-				//$transaction ['unique_id'] = $transactionExportArray [0];
 				
 				$totalTransactions [] = $transaction;
 				
