@@ -232,6 +232,9 @@ class Oara_Network_Publisher_Skimlinks extends Oara_Network {
 			} else {
 				throw new Exception ( "New status found {$transactionStatus}" );
 			}
+			if ($i["customID"] != null) {
+				$transaction['custom_id'] = $i["customID"];
+			}
 
 			$totalTransactions[] = $transaction;
 		}
