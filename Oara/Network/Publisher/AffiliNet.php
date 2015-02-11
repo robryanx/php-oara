@@ -139,6 +139,7 @@ class Oara_Network_Publisher_AffiliNet extends Oara_Network {
 	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = array();
 
+		
 		//Set the webservice
 		$publisherStatisticsServiceUrl = 'https://api.affili.net/V2.0/PublisherStatistics.svc?wsdl';
 		$publisherStatisticsService = new Oara_Import_Soap_Client($publisherStatisticsServiceUrl, array('compression'	 => SOAP_COMPRESSION_ACCEPT | SOAP_COMPRESSION_GZIP | SOAP_COMPRESSION_DEFLATE,
