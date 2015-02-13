@@ -151,7 +151,7 @@ class Oara_Network_Publisher_Daisycon extends Oara_Network {
 			$finish = false;
 				
 			while (!$finish){
-				$url = "https://services.daisycon.com:443/publishers/$publisherId/transactions?page=$page&per_page=$pageSize&date_approval_start=".urlencode($dStartDate->toString("yyyy-MM-dd HH:mm:ss"))."&date_approval_end=".urlencode($dEndDate->toString("yyyy-MM-dd HH:mm:ss"))."";
+				$url = "https://services.daisycon.com:443/publishers/$publisherId/transactions?page=$page&per_page=$pageSize&start=".urlencode($dStartDate->toString("yyyy-MM-dd HH:mm:ss"))."&end=".urlencode($dEndDate->toString("yyyy-MM-dd HH:mm:ss"))."";
 				// initialize curl resource
 				$ch = curl_init();
 				// set the http request authentication headers
