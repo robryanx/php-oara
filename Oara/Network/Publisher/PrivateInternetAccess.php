@@ -1,4 +1,23 @@
 <?php
+/**
+ The goal of the Open Affiliate Report Aggregator (OARA) is to develop a set
+ of PHP classes that can download affiliate reports from a number of affiliate networks, and store the data in a common format.
+
+ Copyright (C) 2014  Fubra Limited
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Affero General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or any later version.
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU Affero General Public License for more details.
+ You should have received a copy of the GNU Affero General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+ Contact
+ ------------
+ Fubra Limited <support@fubra.com> , +44 (0)1252 367 200
+ **/
 
 /**
  * Export Class
@@ -36,7 +55,7 @@ class Oara_Network_Publisher_PrivateInternetAccess extends Oara_Network {
 
 
 
-		$dir = realpath(dirname(__FILE__)).'/../../data/curl/'.$credentials['cookiesDir'].'/'.$credentials['cookiesSubDir'].'/';
+		$dir = COOKIES_BASE_DIR . DIRECTORY_SEPARATOR . $credentials['cookiesDir'] . DIRECTORY_SEPARATOR . $credentials['cookiesSubDir'] . DIRECTORY_SEPARATOR;
 
 		$cookieName = $credentials["cookieName"];
 		$cookies = $dir.$cookieName.'_cookies.txt';
@@ -150,7 +169,7 @@ class Oara_Network_Publisher_PrivateInternetAccess extends Oara_Network {
 		$dateArray = Oara_Utilities::daysOfDifference($dStartDate, $dEndDate);
 		$dateArraySize = sizeof($dateArray);
 
-			
+
 		for ($j = 0; $j < $dateArraySize; $j++) {
 			$valuesFormExport = array();
 			$valuesFormExport[] = new Oara_Curl_Parameter('date', $dateArray[$j]->toString("yyyy-MM-dd"));
@@ -164,7 +183,7 @@ class Oara_Network_Publisher_PrivateInternetAccess extends Oara_Network {
 			if (count($results) > 0) {
 				$exportData = self::htmlToCsv(self::DOMinnerHTML($results->current()));
 
-				for($z=1; $z < count($exportData)-2; $z++){
+				for($z=1; $z < count($exportData)-4; $z++){
 					$transactionLineArray = str_getcsv($exportData[$z], ";");
 					$numberTransactions = (int)$transactionLineArray[1];
 					$commission = preg_replace("/[^0-9\.,]/", "", $transactionLineArray[2]);

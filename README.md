@@ -17,7 +17,12 @@ code contributions from anyone.
 
 License
 -------
-The terms and conditions of the license are explained in the file FubraLimited-ContributorLicenseAgreement.docx
+PHP-OARA is available under a dual license model; either AGPL or a commercial license, depending on your requirements. If you wish to use php-oara in an open source project, or one for internal use only then you can choose the AGPL. If you wish to use php-oara in a commercial project that will be available to external users, then you should contact us for a commercial license.
+
+This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Affero General Public License (LICENSE.TXT).
+ 
+If you are interested in being a contributor to this project we encourage to read, fill and send this file (FubraLimited-ContributorLicenseAgreement.docx) to support@fubra.com.
 
 Networks Supported
 -------

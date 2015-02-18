@@ -1,5 +1,24 @@
 <?php
 /**
+ The goal of the Open Affiliate Report Aggregator (OARA) is to develop a set
+ of PHP classes that can download affiliate reports from a number of affiliate networks, and store the data in a common format.
+
+ Copyright (C) 2014  Fubra Limited
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Affero General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or any later version.
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU Affero General Public License for more details.
+ You should have received a copy of the GNU Affero General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+ Contact
+ ------------
+ Fubra Limited <support@fubra.com> , +44 (0)1252 367 200
+ **/
+/**
  * Export Class
  *
  * @author     Carlos Morillo Merino
@@ -126,6 +145,7 @@ class Oara_Network_Publisher_SkyParkSecure extends Oara_Network {
 			$transactionDate = new Zend_Date($booking->booking_date, 'yyyy.MMM.dd HH:mm:00', 'en');
 			$pickupDate = new Zend_Date($booking->dateA, 'yyyy.MMM.dd HH:mm:00', 'en');
 			$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+			$transaction['metadata'] = $booking->product_id;
 			if ($booking->booking_mode == "Booked" || $booking->booking_mode == "Amended"){
 				$transaction['status'] = Oara_Utilities::STATUS_PENDING;
 				if ($today > $pickupDate){
@@ -137,8 +157,8 @@ class Oara_Network_Publisher_SkyParkSecure extends Oara_Network {
 				throw new Exception("New status found");
 			}
 			
-			$transaction['amount'] = Oara_Utilities::parseDouble(preg_replace("/[^0-9\.,]/", "", $booking->sale_price));
-			$transaction['commission'] = Oara_Utilities::parseDouble(preg_replace("/[^0-9\.,]/", "",  $booking->commission_affiliate));
+			$transaction['amount'] = Oara_Utilities::parseDouble(preg_replace("/[^0-9\.,]/", "", $booking->sale_price))/1.2;
+			$transaction['commission'] = Oara_Utilities::parseDouble(preg_replace("/[^0-9\.,]/", "",  $booking->commission_affiliate))/1.2;
 
 			$totalTransactions[] = $transaction;
 

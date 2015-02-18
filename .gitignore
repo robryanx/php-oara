@@ -4,3 +4,6 @@
 .project
 # Composer
 vendor
+composer.phar
+composer.lock
+tmp

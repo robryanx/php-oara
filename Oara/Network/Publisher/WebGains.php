@@ -1,5 +1,24 @@
 <?php
 /**
+ The goal of the Open Affiliate Report Aggregator (OARA) is to develop a set
+ of PHP classes that can download affiliate reports from a number of affiliate networks, and store the data in a common format.
+
+ Copyright (C) 2014  Fubra Limited
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Affero General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or any later version.
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU Affero General Public License for more details.
+ You should have received a copy of the GNU Affero General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+ Contact
+ ------------
+ Fubra Limited <support@fubra.com> , +44 (0)1252 367 200
+ **/
+/**
  * Api Class
  *
  * @author     Carlos Morillo Merino
@@ -93,17 +112,17 @@ class Oara_Network_Publisher_WebGains extends Oara_Network {
 			$serverArray["it"] = 'www.webgains.it';
 			
 			$loginUrlArray = array();
-			$loginUrlArray["uk"] = 'https://www.webgains.com/loginform.html?action=login';
-			$loginUrlArray["fr"] = 'https://www.webgains.fr/loginform.html?action=login';
-			$loginUrlArray["us"] = 'https://us.webgains.com/loginform.html?action=login';
-			$loginUrlArray["de"] = 'https://www.webgains.de/loginform.html?action=login';
-			$loginUrlArray["fr"] = 'https://www.webgains.fr/loginform.html?action=login';
-			$loginUrlArray["nl"] = 'https://www.webgains.nl/loginform.html?action=login';
-			$loginUrlArray["dk"] = 'https://www.webgains.dk/loginform.html?action=login';
-			$loginUrlArray["se"] = 'https://www.webgains.se/loginform.html?action=login';
-			$loginUrlArray["es"] = 'https://www.webgains.es/loginform.html?action=login';
-			$loginUrlArray["ie"] = 'https://www.webgains.ie/loginform.html?action=login';
-			$loginUrlArray["it"] = 'https://www.webgains.it/loginform.html?action=login';
+			$loginUrlArray["uk"] = 'http://www.webgains.com/loginform.html?action=login';
+			$loginUrlArray["fr"] = 'http://www.webgains.fr/loginform.html?action=login';
+			$loginUrlArray["us"] = 'http://us.webgains.com/loginform.html?action=login';
+			$loginUrlArray["de"] = 'http://www.webgains.de/loginform.html?action=login';
+			$loginUrlArray["fr"] = 'http://www.webgains.fr/loginform.html?action=login';
+			$loginUrlArray["nl"] = 'http://www.webgains.nl/loginform.html?action=login';
+			$loginUrlArray["dk"] = 'http://www.webgains.dk/loginform.html?action=login';
+			$loginUrlArray["se"] = 'http://www.webgains.se/loginform.html?action=login';
+			$loginUrlArray["es"] = 'http://www.webgains.es/loginform.html?action=login';
+			$loginUrlArray["ie"] = 'http://www.webgains.ie/loginform.html?action=login';
+			$loginUrlArray["it"] = 'http://www.webgains.it/loginform.html?action=login';
 
 			$valuesLogin = array(
 			new Oara_Curl_Parameter('user_type', 'affiliateuser'),
@@ -178,14 +197,15 @@ class Oara_Network_Publisher_WebGains extends Oara_Network {
 			$dEndDate->setHour("23");
 			$dEndDate->setMinute("59");
 			$dEndDate->setSecond("59");
+			
 
 			foreach ($this->_campaignMap as $campaignKey => $campaignValue) {
 				try{
-					$transactionList = $this->_soapClient->getDetailedEarnings($dStartDate->getIso(), $dEndDate->getIso(), $campaignKey, $this->_exportTransactionParameters['username'], $this->_exportTransactionParameters['password']);
+					$transactionList = $this->_soapClient->getFullEarningsWithCurrency($dStartDate->getIso(), $dEndDate->getIso(), $campaignKey, $this->_exportTransactionParameters['username'], $this->_exportTransactionParameters['password']);
 				} catch(Exception $e){
 					if (preg_match("/60 requests/", $e->getMessage())){
 						sleep(60);
-						$transactionList = $this->_soapClient->getDetailedEarnings($dStartDate->getIso(), $dEndDate->getIso(), $campaignKey, $this->_exportTransactionParameters['username'], $this->_exportTransactionParameters['password']);
+						$transactionList = $this->_soapClient->getFullEarningsWithCurrency($dStartDate->getIso(), $dEndDate->getIso(), $campaignKey, $this->_exportTransactionParameters['username'], $this->_exportTransactionParameters['password']);
 					}
 				}
 				foreach ($transactionList as $transactionObject) {
@@ -204,17 +224,19 @@ class Oara_Network_Publisher_WebGains extends Oara_Network {
 						$transaction['amount'] = $transactionObject->saleValue;
 						$transaction['commission'] = $transactionObject->commission;
 
-						if ($transactionObject->status == 'confirmed') {
+						if ($transactionObject->paymentStatus == 'cleared' || $transactionObject->paymentStatus == 'paid') {
 							$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
 						} else
-						if ($transactionObject->status == 'delayed') {
+						if ($transactionObject->paymentStatus == 'notcleared') {
 							$transaction['status'] = Oara_Utilities::STATUS_PENDING;
 						} else
-						if ($transactionObject->status == 'cancelled') {
+						if ($transactionObject->paymentStatus == 'cancelled') {
 							$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
 						} else {
-							throw new Exception('Error in the transaction status');
+							throw new Exception('Error in the transaction status '. $transactionObject->paymentStatus);
 						}
+						$transaction['currency'] = $transactionObject->currency;
+						
 						$totalTransactions[] = $transaction;
 					}
 				}

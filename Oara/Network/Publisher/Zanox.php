@@ -1,5 +1,24 @@
 <?php
 /**
+ The goal of the Open Affiliate Report Aggregator (OARA) is to develop a set
+ of PHP classes that can download affiliate reports from a number of affiliate networks, and store the data in a common format.
+
+ Copyright (C) 2014  Fubra Limited
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Affero General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or any later version.
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU Affero General Public License for more details.
+ You should have received a copy of the GNU Affero General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+ Contact
+ ------------
+ Fubra Limited <support@fubra.com> , +44 (0)1252 367 200
+ **/
+/**
  * Api Class
  *
  * @author     Carlos Morillo Merino
@@ -8,6 +27,9 @@
  * @version    Release: 01.00
  *
  */
+
+require "Zanox/Zapi/ApiClient.php";
+
 class Oara_Network_Publisher_Zanox extends Oara_Network {
 	/**
 	 * Soap client.
@@ -26,7 +48,7 @@ class Oara_Network_Publisher_Zanox extends Oara_Network {
 	 */
 	public function __construct($credentials) {
 
-		$api = Oara_Network_Publisher_Zanox_Zapi_ApiClient::factory(PROTOCOL_SOAP, VERSION_2011_03_01);
+		$api = ApiClient::factory(PROTOCOL_SOAP, VERSION_2011_03_01);
 
 		$connectId = $credentials['connectId'];
 		$secretKey = $credentials['secretKey'];
@@ -97,11 +119,13 @@ class Oara_Network_Publisher_Zanox extends Oara_Network {
 		$dateArray = Oara_Utilities::daysOfDifference($dStartDate, $dEndDate);
 		foreach ($dateArray as $date) {
 			$totalAuxTransactions = array();
-			$transactionList = $this->_apiClient->getSales($date->toString("yyyy-MM-dd"), 'trackingDate', null, null, null, 0, $this->_pageSize);
+			$transactionList = $this->getSales($date->toString("yyyy-MM-dd"), 0, $this->_pageSize);
+			
 			if ($transactionList->total > 0) {
 				$iteration = self::calculeIterationNumber($transactionList->total, $this->_pageSize);
-				for ($i = 0; $i < $iteration; $i++) {
-					$transactionList = $this->_apiClient->getSales($date->toString("yyyy-MM-dd"), 'trackingDate', null, null, null, $i, $this->_pageSize);
+				$totalAuxTransactions = array_merge($totalAuxTransactions, $transactionList->saleItems->saleItem);
+				for ($i = 1; $i < $iteration; $i++) {
+					$transactionList = $this->getSales($date->toString("yyyy-MM-dd"), $i, $this->_pageSize);
 					$totalAuxTransactions = array_merge($totalAuxTransactions, $transactionList->saleItems->saleItem);
 					unset($transactionList);
 					gc_collect_cycles();
@@ -111,7 +135,8 @@ class Oara_Network_Publisher_Zanox extends Oara_Network {
 			$leadList = $this->_apiClient->getLeads($date->toString("yyyy-MM-dd"), 'trackingDate', null, null, null, 0, $this->_pageSize);
 			if ($leadList->total > 0) {
 				$iteration = self::calculeIterationNumber($leadList->total, $this->_pageSize);
-				for ($i = 0; $i < $iteration; $i++) {
+				$totalAuxTransactions = array_merge($totalAuxTransactions, $leadList->leadItems->leadItem );
+				for ($i = 1; $i < $iteration; $i++) {
 					$leadList = $this->_apiClient->getLeads($date->toString("yyyy-MM-dd"), 'trackingDate', null, null, null, $i, $this->_pageSize);
 					$totalAuxTransactions = array_merge($totalAuxTransactions, $leadList->leadItems->leadItem );
 					unset($leadList);
@@ -195,6 +220,21 @@ class Oara_Network_Publisher_Zanox extends Oara_Network {
 		}
 		*/
 		return $paymentHistory;
+	}
+	
+	private function getSales($date, $page, $pageSize, $iteration = 0){
+		$transactionList = array();
+		try{
+			$transactionList = $this->_apiClient->getSales($date, 'trackingDate', null, null, null, $page, $pageSize, $iteration);
+		} catch (Exception $e){
+			$iteration++;
+			if ($iteration < 5){
+				$transactionList = self::getSales($date, $page, $pageSize, $iteration);
+			}
+			
+		}
+		return $transactionList;
+		
 	}
 
 	/**

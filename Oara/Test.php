@@ -1,5 +1,24 @@
 <?php
 /**
+   The goal of the Open Affiliate Report Aggregator (OARA) is to develop a set 
+   of PHP classes that can download affiliate reports from a number of affiliate networks, and store the data in a common format.
+   
+    Copyright (C) 2014  Fubra Limited
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU Affero General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or any later version.
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+    You should have received a copy of the GNU Affero General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+	
+	Contact
+	------------
+	Fubra Limited <support@fubra.com> , +44 (0)1252 367 200
+**/	
+/**
  * Test Class
  *
  * @author     Carlos Morillo Merino
@@ -93,6 +112,17 @@ class Oara_Test {
 		}
 	}
 
+	public static function report($type, $merchant, $startDate, $endDate, $data){
+		$dir = "tmp/affjet/".$merchant."/$type/";
+		if(!is_dir($dir)) mkdir($dir, 0777, true);
+		$fname = $dir;
+		$fname .= $startDate->toString("yyyyMMdd");
+		$fname .= '-'.$endDate->toString("yyyyMMdd").'.json';
+		$fp = fopen($fname, 'w');
+		fwrite($fp, json_encode($data));
+		fclose($fp);
+	}
+
 	/**
 	 * The affjet cli , read the arguments and build the report requested
 	 * @param array arguments, Map of the cli arguments
@@ -123,6 +153,8 @@ class Oara_Test {
 				//Get all the payments for this network.
 				$paymentsList = $network->getPaymentHistory();
 
+				self::report("payments", $arguments['n'], $startDate, $endDate, $paymentsList);
+
 				fwrite(STDERR, "Number of payments: ".count($paymentsList)."\n\n");
 				fwrite(STDERR, "------------------------------------------------------------------------\n");
 				fwrite(STDERR, "ID			DATE					VALUE\n");
@@ -146,6 +178,8 @@ class Oara_Test {
 			$merchantList = $network->getMerchantList(array());
 
 			if (!isset($arguments['t']) || $arguments['t'] == 'merchant') {
+
+				self::report("merchants", $arguments['n'], $startDate, $endDate, $merchantList);
 
 				fwrite(STDERR, "Number of merchants: ".count($merchantList)."\n\n");
 				fwrite(STDERR, "--------------------------------------------------\n");
@@ -196,6 +230,9 @@ class Oara_Test {
 					$transactionList = $network->getTransactionList($merchantIdList, $monthStartDate, $monthEndDate, $merchantMap);
 
 					if (!isset($arguments['t']) || $arguments['t'] == 'transaction') {
+						
+						self::report("transactions", $arguments['n'], $startDate, $endDate, $transactionList);
+
 						fwrite(STDERR, "Number of transactions: ".count($transactionList)."\n\n");
 
 						$totalAmount = 0;

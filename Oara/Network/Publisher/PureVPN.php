@@ -1,5 +1,24 @@
 <?php
 /**
+ The goal of the Open Affiliate Report Aggregator (OARA) is to develop a set
+ of PHP classes that can download affiliate reports from a number of affiliate networks, and store the data in a common format.
+
+ Copyright (C) 2014  Fubra Limited
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Affero General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or any later version.
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU Affero General Public License for more details.
+ You should have received a copy of the GNU Affero General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+ Contact
+ ------------
+ Fubra Limited <support@fubra.com> , +44 (0)1252 367 200
+ **/
+/**
  * Export Class
  *
  * @author     Alejandro Muñoz Odero
@@ -16,7 +35,7 @@ class Oara_Network_Publisher_PureVPN extends Oara_Network {
 	 * @var unknown_type
 	 */
 	private $_s = null;
-	
+
 	/**
 	 * Client
 	 * @var unknown_type
@@ -39,14 +58,14 @@ class Oara_Network_Publisher_PureVPN extends Oara_Network {
 
 	}
 	private function logIn() {
-		
+
 
 		$valuesLogin = array(
 		new Oara_Curl_Parameter('username', $this->_credentials['user']),
 		new Oara_Curl_Parameter('password', $this->_credentials['password']),
 		);
-		
-		$cookies = realpath(dirname(__FILE__)).'/../../data/curl/'.$this->_credentials['cookiesDir'].'/'.$this->_credentials['cookiesSubDir'].'/'.$this->_credentials["cookieName"].'_cookies.txt';
+
+		$cookies = COOKIES_BASE_DIR . DIRECTORY_SEPARATOR . $this->_credentials['cookiesDir'] . DIRECTORY_SEPARATOR . $this->_credentials['cookiesSubDir'] . DIRECTORY_SEPARATOR . $this->_credentials["cookieName"].'_cookies.txt';
 		unlink($cookies);
 		$this->_options = array (
 				CURLOPT_USERAGENT => "Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:26.0) Gecko/20100101 Firefox/26.0",
@@ -70,7 +89,7 @@ class Oara_Network_Publisher_PureVPN extends Oara_Network {
 		curl_setopt_array ( $rch, $options );
 		$html = curl_exec ( $rch );
 		curl_close ( $rch );
-		
+
 		sleep(10);
 		$rch = curl_init ();
 		$options = $this->_options;
@@ -78,7 +97,7 @@ class Oara_Network_Publisher_PureVPN extends Oara_Network {
 		curl_setopt_array ( $rch, $options );
 		$html = curl_exec ( $rch );
 		curl_close ( $rch );
-		
+
 		$dom = new Zend_Dom_Query($html);
 		$hidden = $dom->query('#frmlogin input[name="token"][type="hidden"]');
 
@@ -88,9 +107,9 @@ class Oara_Network_Publisher_PureVPN extends Oara_Network {
 		$rch = curl_init ();
 		$options = $this->_options;
 		curl_setopt ( $rch, CURLOPT_URL, "https://billing.purevpn.com/dologin.php?goto=clientarea.php" );
-		
+
 		$options[CURLOPT_HTTPHEADER] =  array('Referer: https://billing.purevpn.com/clientarea.php', 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8','Accept-Language: es,en-us;q=0.7,en;q=0.3','Accept-Encoding: gzip, deflate','Connection: keep-alive', 'Cache-Control: max-age=0');
-		
+
 		$options [CURLOPT_POST] = true;
 		$arg = array ();
 		foreach ( $valuesLogin as $parameter ) {
@@ -100,8 +119,8 @@ class Oara_Network_Publisher_PureVPN extends Oara_Network {
 		curl_setopt_array ( $rch, $options );
 		$html = curl_exec ( $rch );
 		curl_close ( $rch );
-		
-		
+
+
 		$rch = curl_init ();
 		$options = $this->_options;
 		$options[CURLOPT_URL] =  "https://billing.purevpn.com/check_affiliate.php?check=affiliate";
@@ -113,19 +132,19 @@ class Oara_Network_Publisher_PureVPN extends Oara_Network {
 		preg_match ( '/Location:(.*?)\n/', $header, $matches );
 		$newurl = trim ( array_pop ( $matches ) );
 		curl_close ( $rch );
-		
+
 		if (preg_match ( "/S=(.*)/", $newurl, $matches )) {
 			$this->_s = $matches [1];
 		}
-		
+
 		$rch = curl_init ();
 		$options = $this->_options;
 		$options[CURLOPT_URL] =  $newurl;
 		$options[CURLOPT_HTTPHEADER] =  array('Referer: https://billing.purevpn.com/affiliates.php', 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8','Accept-Language: es,en-us;q=0.7,en;q=0.3','Accept-Encoding: gzip, deflate','Connection: keep-alive', 'Cache-Control: max-age=0');
 		curl_setopt_array ( $rch, $options );
 		$content = curl_exec ( $rch );
-		
-		
+
+
 	}
 	/**
 	 * Check the connection
@@ -164,8 +183,8 @@ class Oara_Network_Publisher_PureVPN extends Oara_Network {
 
 		$chip = $this->_s;
 		if ($this->_transactionList == null){
-			
-			
+
+
 			$rch = curl_init ();
 			$options = $this->_options;
 			$options[CURLOPT_HTTPHEADER] =  array("Referer: https://billing.purevpn.com/affiliates/affiliates/panel.php?S=$chip", 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8','Accept-Language: es,en-us;q=0.7,en;q=0.3','Accept-Encoding: gzip, deflate','Connection: keep-alive', 'Cache-Control: max-age=0');
@@ -181,7 +200,7 @@ class Oara_Network_Publisher_PureVPN extends Oara_Network {
 
 		$num = count($exportData);
 		for ($i = 1; $i < $num; $i++) {
-				
+
 			$transactionExportArray = str_getcsv($exportData[$i], ",");
 			//print_r($transactionExportArray);
 

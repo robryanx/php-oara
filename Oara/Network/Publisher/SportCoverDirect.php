@@ -1,5 +1,24 @@
 <?php
 /**
+ The goal of the Open Affiliate Report Aggregator (OARA) is to develop a set
+ of PHP classes that can download affiliate reports from a number of affiliate networks, and store the data in a common format.
+
+ Copyright (C) 2014  Fubra Limited
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Affero General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or any later version.
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU Affero General Public License for more details.
+ You should have received a copy of the GNU Affero General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+ Contact
+ ------------
+ Fubra Limited <support@fubra.com> , +44 (0)1252 367 200
+ **/
+/**
  * Export Class
  *
  * @author     Carlos Morillo Merino
@@ -24,18 +43,18 @@ class Oara_Network_Publisher_SportCoverDirect extends Oara_Network {
 
 		$user = $credentials['user'];
 		$password = $credentials['password'];
-		
+
 		$valuesLogin = array(
 		new Oara_Curl_Parameter('Username', $user),
 		new Oara_Curl_Parameter('Password', $password),
 		);
-		
-		$dir = realpath ( dirname ( __FILE__ ) ) . '/../../data/curl/' . $credentials ['cookiesDir'] . '/' . $credentials ['cookiesSubDir'] . '/';
-		
+
+		$dir = COOKIES_BASE_DIR . DIRECTORY_SEPARATOR . $credentials ['cookiesDir'] . DIRECTORY_SEPARATOR . $credentials ['cookiesSubDir'] . DIRECTORY_SEPARATOR;
+
 		if (! Oara_Utilities::mkdir_recursive ( $dir, 0777 )) {
 			throw new Exception ( 'Problem creating folder in Access' );
 		}
-		$cookies = realpath(dirname(__FILE__)).'/../../data/curl/'.$credentials['cookiesDir'].'/'.$credentials['cookiesSubDir'].'/'.$credentials["cookieName"].'_cookies.txt';
+		$cookies = $dir . $credentials["cookieName"] . '_cookies.txt';
 		unlink($cookies);
 		$this->_options = array (
 				CURLOPT_USERAGENT => "Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:26.0) Gecko/20100101 Firefox/26.0",
@@ -59,7 +78,7 @@ class Oara_Network_Publisher_SportCoverDirect extends Oara_Network {
 		curl_setopt_array ( $rch, $options );
 		$html = curl_exec ( $rch );
 		curl_close ( $rch );
-		
+
 		$dom = new Zend_Dom_Query($html);
 		$hidden = $dom->query('input[type="hidden"]');
 
@@ -84,18 +103,18 @@ class Oara_Network_Publisher_SportCoverDirect extends Oara_Network {
 	 */
 	public function checkConnection() {
 		$connection = false;
-		
+
 		$rch = curl_init ();
 		$options = $this->_options;
 		curl_setopt ( $rch, CURLOPT_URL, 'https://www.sportscoverdirect.com/promoters/account/update' );
 		curl_setopt_array ( $rch, $options );
 		$html = curl_exec ( $rch );
 		curl_close ( $rch );
-			
+
 		if (preg_match("/You're logged in as/", $html, $matches)) {
 			$connection = true;
 		}
-		
+
 		return $connection;
 	}
 	/**
@@ -117,14 +136,14 @@ class Oara_Network_Publisher_SportCoverDirect extends Oara_Network {
 	 */
 	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = Array();
-		
+
 		$rch = curl_init ();
 		$options = $this->_options;
 		curl_setopt ( $rch, CURLOPT_URL, 'https://www.sportscoverdirect.com/promoters/earn' );
 		curl_setopt_array ( $rch, $options );
 		$html = curl_exec ( $rch );
 		curl_close ( $rch );
-		
+
 		$dom = new Zend_Dom_Query($html);
 		$results = $dom->query('.performance');
 		if (count($results) > 0) {
@@ -132,20 +151,20 @@ class Oara_Network_Publisher_SportCoverDirect extends Oara_Network {
 			$num = count($exportData) - 1; //the last row is show-more show-less
 			for ($i = 1; $i < $num; $i++) {
 				$overviewExportArray = str_getcsv($exportData[$i], ";");
-		
+
 				$transaction = Array();
-		
+
 				$transaction['merchantId'] = 1;
-				
+
 				$date = new Zend_Date($overviewExportArray[0], "dd/MM/yyyy");
 				$transaction['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
 				$transaction ['amount'] = Oara_Utilities::parseDouble ( preg_replace ( "/[^0-9\.,]/", "", $overviewExportArray[1] ) );
 				$transaction['commission'] = Oara_Utilities::parseDouble ( preg_replace ( "/[^0-9\.,]/", "", $overviewExportArray[1] ) );
 				$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
-				
+
 				$totalTransactions[] = $transaction;
 			}
-		}		
+		}
 
 		return $totalTransactions;
 
@@ -160,14 +179,14 @@ class Oara_Network_Publisher_SportCoverDirect extends Oara_Network {
 		$html = str_replace ( array (
 				"\t",
 				"\r",
-				"\n" 
+				"\n"
 		), "", $html );
 		$csv = "";
 		$dom = new Zend_Dom_Query ( $html );
 		$results = $dom->query ( 'tr' );
 		$count = count ( $results ); // get number of matches: 4
 		foreach ( $results as $result ) {
-			
+
 			$domTd = new Zend_Dom_Query ( self::DOMinnerHTML($result) );
 			$resultsTd = $domTd->query ( 'td' );
 			$countTd = count ( $resultsTd );

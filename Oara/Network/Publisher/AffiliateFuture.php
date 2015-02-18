@@ -1,5 +1,24 @@
 <?php
 /**
+ The goal of the Open Affiliate Report Aggregator (OARA) is to develop a set
+ of PHP classes that can download affiliate reports from a number of affiliate networks, and store the data in a common format.
+
+ Copyright (C) 2014  Fubra Limited
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Affero General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or any later version.
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU Affero General Public License for more details.
+ You should have received a copy of the GNU Affero General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+ Contact
+ ------------
+ Fubra Limited <support@fubra.com> , +44 (0)1252 367 200
+ **/
+/**
  * Export Class
  *
  * @author     Carlos Morillo Merino
@@ -25,6 +44,8 @@ class Oara_Network_Publisher_AffiliateFuture extends Oara_Network {
 	 * @var unknown_type
 	 */
 	private $_client = null;
+	
+	private $_credentials = null;
 	/**
 	 * Constructor and Login
 	 * @param $af
@@ -52,6 +73,7 @@ class Oara_Network_Publisher_AffiliateFuture extends Oara_Network {
 			new Oara_Curl_Parameter('password', $password));
 
 		$this->_exportOverviewParameters = array();
+		$this->_credentials = $credentials;
 
 	}
 	/**
@@ -170,23 +192,17 @@ class Oara_Network_Publisher_AffiliateFuture extends Oara_Network {
 		$exportReport = $this->_client->get($urls);
 
 		/*** load the html into the object ***/
-		$doc = new DOMDocument();
-		libxml_use_internal_errors(true);
-		$doc->validateOnParse = true;
-		$doc->loadHTML($exportReport[0]);
-		$tableList = $doc->getElementsByTagName('table');
-
-		$merchantTable = $tableList->item(16)->childNodes;
-		for ($i = 1; $i < $merchantTable->length - 1; $i++) {
+		$dom = new Zend_Dom_Query ( $exportReport[0] );
+		$results = $dom->query ( '#DataGrid1' );
+		
+		$merchantCsv = self::htmlToCsv(self::DOMinnerHTML($results->current()));
+		
+		for ($i = 1; $i < count($merchantCsv)-1; $i++) {
 			$merchant = array();
+			$merchantLine = str_getcsv( $merchantCsv[$i],";");
+			$merchant['name'] = $merchantLine[0];
 
-			$registerLine = $merchantTable->item($i);
-			$register = $registerLine->childNodes;
-			$attributeName = trim($register->item(0)->nodeValue);
-			$attributeUrl = $register->item(1)->childNodes->item(0)->childNodes->item(1)->getAttribute('href');
-			$merchant['name'] = trim($attributeName);
-
-			$parseUrl = parse_url($attributeUrl);
+			$parseUrl = parse_url($merchantLine[2]);
 			$parameters = explode('&', $parseUrl['query']);
 			$oaraCurlParameters = array();
 			foreach ($parameters as $parameter) {
@@ -230,6 +246,7 @@ class Oara_Network_Publisher_AffiliateFuture extends Oara_Network {
 	 * @see Oara/Network/Oara_Network_Publisher_Base#getPaymentHistory()
 	 */
 	public function getPaymentHistory() {
+		self::__construct($this->_credentials);
 		$paymentHistory = array();
 		$filter = new Zend_Filter_LocalizedToNormalized(array('precision' => 2));
 		$urls = array();
@@ -261,6 +278,68 @@ class Oara_Network_Publisher_AffiliateFuture extends Oara_Network {
 		}
 
 		return $paymentHistory;
+	}
+	
+	/**
+	 *
+	 *
+	 * Function that Convert from a table to Csv
+	 *
+	 * @param unknown_type $html
+	 */
+	private function htmlToCsv($html) {
+		$html = str_replace ( array (
+				"\t",
+				"\r",
+				"\n"
+		), "", $html );
+		$csv = "";
+		$dom = new Zend_Dom_Query ( $html );
+		$results = $dom->query ( 'tr' );
+		$count = count ( $results ); // get number of matches: 4
+		foreach ( $results as $result ) {
+				
+			$domTd = new Zend_Dom_Query ( self::DOMinnerHTML($result) );
+			$resultsTd = $domTd->query ( 'td' );
+			$countTd = count ( $resultsTd );
+			$i = 0;
+			foreach( $resultsTd as $resultTd) {
+				$value = $resultTd->nodeValue;
+				
+				$domLink = new Zend_Dom_Query ( self::DOMinnerHTML($resultTd) );
+				$resultsA = $domLink->query ( 'a' );
+				foreach( $resultsA as $resultA) {
+					$value = $resultA->getAttribute("href");
+				}
+				
+				if ($i != $countTd - 1) {
+					$csv .= trim ( $value ) . ";,";
+				} else {
+					$csv .= trim ( $value );
+				}
+				$i++;
+			}
+			$csv .= "\n";
+		}
+		$exportData = str_getcsv ( $csv, "\n" );
+		return $exportData;
+	}
+	/**
+	 *
+	 *
+	 * Function that returns the innet HTML code
+	 *
+	 * @param unknown_type $element
+	 */
+	private function DOMinnerHTML($element) {
+		$innerHTML = "";
+		$children = $element->childNodes;
+		foreach ( $children as $child ) {
+			$tmp_dom = new DOMDocument ();
+			$tmp_dom->appendChild ( $tmp_dom->importNode ( $child, true ) );
+			$innerHTML .= trim ( $tmp_dom->saveHTML () );
+		}
+		return $innerHTML;
 	}
 
 }
