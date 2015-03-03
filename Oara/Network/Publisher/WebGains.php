@@ -272,13 +272,12 @@ class Oara_Network_Publisher_WebGains extends Oara_Network {
 		 */
 		public function getPaymentHistory() {
 			$paymentHistory = array();
-			
+			/*
 			$urls = array();
 
 			$urls[] = new Oara_Curl_Request("https://{$this->_server}/affiliates/payment.html", array());
 			$exportReport = $this->_webClient->get($urls);
 
-			/*** load the html into the object ***/
 			$doc = new DOMDocument();
 			libxml_use_internal_errors(true);
 			$doc->validateOnParse = true;
@@ -323,7 +322,7 @@ class Oara_Network_Publisher_WebGains extends Oara_Network {
 				$obj['method'] = $registerLine->item(6)->nodeValue;
 				$paymentHistory[] = $obj;
 			}
-
+			*/
 			return $paymentHistory;
 		}
 }
