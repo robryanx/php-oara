@@ -245,7 +245,7 @@ class Oara_Network_Publisher_Omg extends Oara_Network {
 			foreach ( $exportData as $exportRow ) {
 				if ($rowNumber > 0 && $rowNumber != count($exportData) - 1) {
 					$row = str_getcsv ( $exportRow, "," );
-					$date = new Zend_Date ( $row [5], "dd-MM-yyyy HH:mm:ss" );
+					$date = new Zend_Date ( $row [9], "dd-MM-yyyy HH:mm:ss" );
 					if (in_array ( ( int ) $row [10], $merchantList )) {
 							
 						$obj ['unique_id'] = $row [1];
@@ -255,22 +255,22 @@ class Oara_Network_Publisher_Omg extends Oara_Network {
 						$obj ['amount'] = 0;
 						$obj ['commission'] = 0;
 							
-						if ($row [2] != null) {
-							$obj ['custom_id'] = $row [2];
+						if ($row [3] != null) {
+							$obj ['custom_id'] = $row [3];
 						}
 							
-						if ($row [11] != null) {
-							$obj ['amount'] = Oara_Utilities::parseDouble ( $row [11] );
+						if ($row [14] != null) {
+							$obj ['amount'] = Oara_Utilities::parseDouble ( $row [14] );
 						}
-						if ($row [13] != null) {
-							$obj ['commission'] = Oara_Utilities::parseDouble ( $row [13] );
+						if ($row [16] != null) {
+							$obj ['commission'] = Oara_Utilities::parseDouble ( $row [16] );
 						}
 							
-						if ($row [12] == 'Validated') {
+						if ($row [15] == 'Validated') {
 							$obj ['status'] = Oara_Utilities::STATUS_CONFIRMED;
-						} else if ($row [12] == 'Pending') {
+						} else if ($row [15] == 'Pending') {
 							$obj ['status'] = Oara_Utilities::STATUS_PENDING;
-						} else if ($row [12] == 'Rejected') {
+						} else if ($row [15] == 'Rejected') {
 							$obj ['status'] = Oara_Utilities::STATUS_DECLINED;
 						}
 							
