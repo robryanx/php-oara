@@ -69,7 +69,6 @@ class Oara_Network_Publisher_ClickBank extends Oara_Network {
 		$urls = array();
 		$urls[] = new Oara_Curl_Request("https://".$user.".accounts.clickbank.com/account/profile.htm", array());
 		$result = $this->_client->get($urls);
-		echo $result[0];
 		if (preg_match_all("/(API-(.*)?)\s</", $result[0], $matches)) {
 			$this->_api = $matches[1][0];
 		}

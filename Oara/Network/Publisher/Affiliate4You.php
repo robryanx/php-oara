@@ -86,12 +86,19 @@ class Oara_Network_Publisher_Affiliate4You extends Oara_Network {
 			$valuesFromExport = array();
 			$valuesFromExport[] = new Oara_Curl_Parameter('email', $this->_user);
 			$valuesFromExport[] = new Oara_Curl_Parameter('apikey', $this->_pass);
-			$valuesFromExport[] = new Oara_Curl_Parameter('limit', $totalRows);
+			$valuesFromExport[] = new Oara_Curl_Parameter('limit', 100);
 			$valuesFromExport[] = new Oara_Curl_Parameter('page', $page);
 			$urls[] = new Oara_Curl_Request("http://api.affiliate4you.nl/1.0/campagnes/all.csv?", $valuesFromExport);
 			$result = $this->_client->get($urls);
 			$exportData = str_getcsv($result[0], "\n");
 
+			for ($i = 1; $i < count($exportData); $i++){
+				$merchantExportArray = str_getcsv($exportData[$i], ";");
+				$obj = Array();
+				$obj['cid'] = $merchantExportArray[1];
+				$obj['name'] = $merchantExportArray[2];
+				$merchants[] = $obj;
+			}
 
 			if (count($exportData) != ($totalRows + 1)){
 				$import = false;
@@ -100,13 +107,7 @@ class Oara_Network_Publisher_Affiliate4You extends Oara_Network {
 
 		}
 
-		for ($i = 1; $i < count($exportData); $i++){
-			$merchantExportArray = str_getcsv($exportData[$i], ";");
-			$obj = Array();
-			$obj['cid'] = $merchantExportArray[1];
-			$obj['name'] = $merchantExportArray[2];
-			$merchants[] = $obj;
-		}
+
 
 
 
@@ -132,7 +133,7 @@ class Oara_Network_Publisher_Affiliate4You extends Oara_Network {
 			$valuesFromExport[] = new Oara_Curl_Parameter('apikey', $this->_pass);
 			$valuesFromExport[] = new Oara_Curl_Parameter('from', $dStartDate->toString("yyyy-MM-dd"));
 			$valuesFromExport[] = new Oara_Curl_Parameter('to', $dEndDate->toString("yyyy-MM-dd"));
-			$valuesFromExport[] = new Oara_Curl_Parameter('limit', $totalRows);
+			$valuesFromExport[] = new Oara_Curl_Parameter('limit', 300);
 			$valuesFromExport[] = new Oara_Curl_Parameter('page', $page);
 			$urls[] = new Oara_Curl_Request("http://api.affiliate4you.nl/1.0/orders.csv?", $valuesFromExport);
 			try{
@@ -140,8 +141,39 @@ class Oara_Network_Publisher_Affiliate4You extends Oara_Network {
 			} catch (Exception $e){
 				return $transactions;
 			}
-			
+
 			$exportData = str_getcsv($result[0], "\n");
+
+			for ($i = 1; $i < count($exportData); $i++){
+
+				$transactionExportArray = str_getcsv($exportData[$i], ";");
+				if (in_array($transactionExportArray[12], $merchantList)){
+					$transaction = Array();
+					$transaction['unique_id'] = $transactionExportArray[3];
+					$transaction['merchantId'] = $transactionExportArray[12];
+					$transactionDate = new Zend_Date($transactionExportArray[0], 'yyyy-MM-dd HH:mm:ss');
+					$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+
+					if ($transactionExportArray[8] != null) {
+						$transaction['custom_id'] = $transactionExportArray[8];
+					}
+
+					if ($transactionExportArray[5] == 'approved') {
+						$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
+					} else
+					if ($transactionExportArray[5] == 'new' || $transactionExportArray[5] == 'onhold') {
+						$transaction['status'] = Oara_Utilities::STATUS_PENDING;
+					} else
+					if ($transactionExportArray[5] == 'declined') {
+						$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
+					}
+
+					$transaction['amount'] = $transactionExportArray[4];
+
+					$transaction['commission'] = $transactionExportArray[1];
+					$transactions[] = $transaction;
+				}
+			}
 
 
 			if (count($exportData) != ($totalRows + 1)){
@@ -151,36 +183,7 @@ class Oara_Network_Publisher_Affiliate4You extends Oara_Network {
 
 		}
 
-		for ($i = 1; $i < count($exportData); $i++){
-				
-			$transactionExportArray = str_getcsv($exportData[$i], ";");
-			if (in_array($transactionExportArray[13], $merchantList)){
-				$transaction = Array();
-				$transaction['unique_id'] = $transactionExportArray[3];
-				$transaction['merchantId'] = $transactionExportArray[13];
-				$transactionDate = new Zend_Date($transactionExportArray[0], 'yyyy-MM-dd HH:mm:ss');
-				$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 
-				if ($transactionExportArray[8] != null) {
-					$transaction['custom_id'] = $transactionExportArray[8];
-				}
-
-				if ($transactionExportArray[5] == 'approved') {
-					$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
-				} else
-				if ($transactionExportArray[5] == 'new' || $transactionExportArray[5] == 'onhold') {
-					$transaction['status'] = Oara_Utilities::STATUS_PENDING;
-				} else
-				if ($transactionExportArray[5] == 'declined') {
-					$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
-				}
-
-				$transaction['amount'] = $transactionExportArray[4];
-
-				$transaction['commission'] = $transactionExportArray[1];
-				$transactions[] = $transaction;
-			}
-		}
 
 		return $transactions;
 	}
