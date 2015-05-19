@@ -107,64 +107,33 @@ class Oara_Network_Publisher_TerraVision extends Oara_Network {
 	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = Array();
 		
-		$totalOverviews = Array();
+		$stringToFind = $dStartDate->toString("MMMM yyyy");
 		
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://book.terravision.eu/partner/my/stats', array());
+		$urls[] = new Oara_Curl_Request('http://book.terravision.eu/partner/my/payments', array());
 		$exportReport = $this->_client->get($urls);
-		$dom = new Zend_Dom_Query($exportReport[0]);
-		$results = $dom->query('input[name="form[_token]"]');
-		$token = null;
-		foreach ($results as $result) {
-			$token = $result->getAttribute("value");
-		}
-		
-		$valuesFormExport = array();
-		$valuesFormExport[] = new Oara_Curl_Parameter('form[year]', $dStartDate->toString("yyyy"));
-		$valuesFormExport[] = new Oara_Curl_Parameter('fform[_token]', $token);
-		$valuesFormExport[] = new Oara_Curl_Parameter('show', 'Show');
-		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://book.terravision.eu/partner/my/stats?', $valuesFormExport);
-		$exportReport = $this->_client->post($urls);
-		
-		$stringToFind = $dStartDate->toString("MM-yyyy");
 		/*** load the html into the object ***/
 		$dom = new Zend_Dom_Query($exportReport[0]);
-		$results = $dom->query('.frame > table');
+		$results = $dom->query('#navigation > table');
 		$exportData = self::htmlToCsv(self::DOMinnerHTML($results->current()));
 		$num = count($exportData);
 		
-		$transactionCounter = 0;
-		$valueCounter = 0;
-		$commissionCounter = 0;
 		
 		for ($i = 1; $i < $num - 1; $i++) {
 			$transactionArray = str_getcsv($exportData[$i], ";");
 			if ($transactionArray[0] == $stringToFind){
 				
-				$transactionCounter = $transactionArray[12];
-				$valueCounter += $transactionArray[14];
-				$commissionCounter += $transactionArray[16];
-			}
-		}
-		
-		
-		if ($transactionCounter > 0){
-			$dateList = Oara_Utilities::daysOfDifference($dStartDate, $dEndDate);
-			for ($i = 0; $i < count($dateList); $i++){
-		
 				$transaction = array();
 				$transaction['merchantId'] = 1;
 				$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
 					
-				$transaction['date'] = $dateList[$i]->toString("yyyy-MM-dd HH:mm:ss");
+				$transaction['date'] = $dEndDate->toString("yyyy-MM-dd HH:mm:ss");
 		
-				$transaction['amount'] = $valueCounter/count($dateList);
-				$transaction['commission'] = $commissionCounter/count($dateList);
+				$transaction['amount'] = Oara_Utilities::parseDouble ( preg_replace ( "/[^0-9\.,]/", "", $transactionArray [2] ) );
+				$transaction['commission'] = Oara_Utilities::parseDouble ( preg_replace ( "/[^0-9\.,]/", "", $transactionArray [2] ) );
 		
 				$totalTransactions[] = $transaction;
 			}
-		
 		}
 
 		return $totalTransactions;
