@@ -72,7 +72,6 @@ class Oara_Network_Publisher_AffiliateGateway extends Oara_Network {
 		}
 		$this->_extension = $extension;
 		
-		
 		$loginUrl = "{$this->_extension}/login.html";
 		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
 
@@ -108,7 +107,8 @@ class Oara_Network_Publisher_AffiliateGateway extends Oara_Network {
 		$urls[] = new Oara_Curl_Request("{$this->_extension}/affiliate_home.html", array());
 		$exportReport = $this->_client->get($urls);
 		$dom = new Zend_Dom_Query($exportReport[0]);
-		$results = $dom->query('.logout-a');
+		
+		$results = $dom->query('.logout');
 		if (count($results) > 0) {
 			$connection = true;
 		}
