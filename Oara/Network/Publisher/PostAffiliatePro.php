@@ -28,13 +28,13 @@
  *
  */
 class Oara_Network_Publisher_PostAffiliatePro extends Oara_Network {
-	private $_credentials = null;
+	public $_credentials = null;
 	/**
 	 * Client
 	 *
 	 * @var unknown_type
 	 */
-	private $_session = null;
+	public $_session = null;
 
 	/**
 	 * Constructor and Login
