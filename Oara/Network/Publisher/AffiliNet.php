@@ -178,9 +178,9 @@ class Oara_Network_Publisher_AffiliNet extends Oara_Network {
 					$transactionCollection = $transactionList->TransactionCollection->Transaction;
 				}
 
-				$transactionList = Oara_Utilities::soapConverter($transactionCollection, $this->_transactionConverterConfiguration);
+				$transactionListObject = Oara_Utilities::soapConverter($transactionCollection, $this->_transactionConverterConfiguration);
 
-				foreach ($transactionList as $transaction) {
+				foreach ($transactionListObject as $transaction) {
 					//$transaction['merchantId'] = 3901;
 					$tDate = new Zend_Date($transaction["date"],"yyyy-MM-ddTHH:mm:ss");
 					$transaction["date"] = $tDate->toString("yyyy-MM-dd HH:mm:ss");
@@ -195,6 +195,7 @@ class Oara_Network_Publisher_AffiliNet extends Oara_Network {
 							}
 					$totalTransactions[] = $transaction;
 				}
+				echo "page index $currentPage\n";
 				$currentPage++;
 				$transactionList = self::affilinetCall('transaction', $publisherStatisticsService, $params, 0, $currentPage);
 			}

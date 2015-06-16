@@ -35,7 +35,7 @@ class Oara_Network_Publisher_VpnAffiliates extends Oara_Network_Publisher_PostAf
 	public function checkConnection() {
 		// If not login properly the construct launch an exception
 		$connection = true;
-		$session = new Gpf_Api_Session("https://vpnaffiliates.com/scripts/server.php");
+		$session = new Gpf_Api_Session("https://vpnaffiliates.com/affiliates/scripts/server.php");
 		if(!@$session->login( $this->_credentials ["user"], $this->_credentials ["password"], Gpf_Api_Session::AFFILIATE)) {
 			$connection = false;
 		}
