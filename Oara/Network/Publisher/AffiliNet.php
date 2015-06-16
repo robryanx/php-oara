@@ -195,7 +195,6 @@ class Oara_Network_Publisher_AffiliNet extends Oara_Network {
 							}
 					$totalTransactions[] = $transaction;
 				}
-				echo "page index $currentPage\n";
 				$currentPage++;
 				$transactionList = self::affilinetCall('transaction', $publisherStatisticsService, $params, 0, $currentPage);
 			}
