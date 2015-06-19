@@ -53,7 +53,7 @@ class Oara_Network_Publisher_Skimlinks extends Oara_Network {
 		}
 
 		$cookies = $dir . $credentials["cookieName"] . '_cookies.txt';
-		unlink($cookies);
+		@unlink($cookies);
 		$this->_options = array (
 				CURLOPT_USERAGENT => "Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:26.0) Gecko/20100101 Firefox/26.0",
 				CURLOPT_RETURNTRANSFER => true,
