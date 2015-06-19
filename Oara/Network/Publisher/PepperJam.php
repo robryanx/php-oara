@@ -67,7 +67,7 @@ class Oara_Network_Publisher_PepperJam extends Oara_Network {
 		$urls[] = new Oara_Curl_Request('http://www.pepperjamnetwork.com/affiliate/transactionrep.php', array());
 		$exportReport = $this->_client->get($urls);
 
-		if (preg_match("/\/logout\.php/", $exportReport[0], $matches)) {
+		if (preg_match('/\/logout\.php/', $exportReport[0], $matches)) {
 			$connection = true;
 		}
 		return $connection;
@@ -136,22 +136,21 @@ class Oara_Network_Publisher_PepperJam extends Oara_Network {
 					$transaction['custom_id'] = $transactionExportArray[4];
 				}
 
-				if ($transactionExportArray[10] == 'Pending' || $transactionExportArray[10] == 'Delayed' || $transactionExportArray[10] == 'Updated Pending Commission') {
+				$status = $transactionExportArray[11];
+				if ($status == 'Pending' || $status == 'Delayed' || $status == 'Updated Pending Commission') {
 					$transaction['status'] = Oara_Utilities::STATUS_PENDING;
-				} else
-				if ($transactionExportArray[10] == 'Locked') {
+				} elseif ($status == 'Locked') {
 					$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
-				} else
-				if ($transactionExportArray[10] == 'Paid') {
+				} elseif ($status == 'Paid') {
 					$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
 				} else {
-					throw new Exception("Status {$transactionExportArray[10]} unknown");
+					throw new Exception("Status {$status} unknown");
 				}
 
-				if (preg_match("/[-+]?[0-9]*\.?[0-9]+/", $transactionExportArray[7], $match)){
+				if (preg_match('/[-+]?[0-9]*\.?[0-9]+/', $transactionExportArray[7], $match)){
 					$transaction['amount'] = (double)$match[0];
 				}
-				if (preg_match("/[-+]?[0-9]*\.?[0-9]+/", $transactionExportArray[8], $match)){
+				if (preg_match('/[-+]?[0-9]*\.?[0-9]+/', $transactionExportArray[8], $match)){
 					$transaction['commission'] = (double)$match[0];
 				}
 				$totalTransactions[] = $transaction;
@@ -194,7 +193,7 @@ class Oara_Network_Publisher_PepperJam extends Oara_Network {
 				$obj = array();
 				$obj['date'] = $paymentExportArray[5];
 				$obj['pid'] = $paymentExportArray[0];
-				if (preg_match("/[-+]?[0-9]*\.?[0-9]+/", $paymentExportArray[4], $match)){
+				if (preg_match('/[-+]?[0-9]*\.?[0-9]+/', $paymentExportArray[4], $match)){
 					$obj['value'] = (double)$match[0];
 				}
 				$obj['method'] = $paymentExportArray[2];
