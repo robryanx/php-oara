@@ -98,7 +98,7 @@ class Oara_Network_Publisher_TradeTracker extends Oara_Network {
 		$affiliateSitesList = $this->_apiClient->getAffiliateSites();
 		foreach ($affiliateSitesList as $affiliateSite) {
 			foreach ($this->_apiClient->getConversionTransactions($affiliateSite->ID, $options) as $transaction) {
-				if (in_array((int) $transaction->campaign->ID, $merchantList)) {
+				if ($merchantList == null || in_array((int) $transaction->campaign->ID, $merchantList)) {
 					$object = array();
 
 					$object['unique_id'] = $transaction->ID;

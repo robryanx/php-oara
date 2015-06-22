@@ -146,7 +146,7 @@ class Oara_Network_Publisher_Zanox extends Oara_Network {
 
 			foreach ($totalAuxTransactions as $transaction) {
 
-				if (in_array($transaction->program->id, $merchantList)) {
+				if ($merchantList == null || in_array($transaction->program->id, $merchantList)) {
 					$obj = array();
 					
 					$obj['currency'] = $transaction->currency;
