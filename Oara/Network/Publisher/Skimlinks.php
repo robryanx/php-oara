@@ -221,7 +221,8 @@ class Oara_Network_Publisher_Skimlinks extends Oara_Network {
 
 			$transaction['merchantId'] = $i["merchantID"];
 			$transaction['unique_id'] =  $i["commissionID"];
-			$transaction['date'] = $i["date"];
+			$transactionDate = new Zend_Date($i["date"], 'YYYY-MM-DD', 'en');
+			$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 			$transaction['amount'] = (double)$i["orderValue"]/100;
 			$transaction['commission'] = (double)$i["commissionValue"]/100;
 			$transactionStatus = $i["status"];
