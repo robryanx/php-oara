@@ -95,7 +95,7 @@ class Oara_Network_Publisher_AffiliateWindow extends Oara_Network {
 				//login through darwin
 				$loginUrl = 'https://darwin.affiliatewindow.com/login?';
 
-				$valuesLogin = array(new Oara_Curl_Parameter('email', $user), new Oara_Curl_Parameter('password', $passwordExport), new Oara_Curl_Parameter('formuserloginlogin', ''));
+				$valuesLogin = array(new Oara_Curl_Parameter('email', $user), new Oara_Curl_Parameter('password', $passwordExport), new Oara_Curl_Parameter('Login', ''));
 				$this->_exportClient = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
 
 				$urls = array();

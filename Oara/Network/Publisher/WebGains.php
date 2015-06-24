@@ -215,7 +215,7 @@ class Oara_Network_Publisher_WebGains extends Oara_Network {
 						$transaction['merchantId'] = $transactionObject->programID;
 						$transactionDate = new Zend_Date($transactionObject->date, "yyyy-MM-ddTHH:mm:ss");
 						$transaction["date"] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
-
+						$transaction['unique_id'] = $transactionObject->transactionID;
 						if ($transactionObject->clickRef != null) {
 							$transaction['custom_id'] = $transactionObject->clickRef;
 						}
