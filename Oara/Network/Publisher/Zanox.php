@@ -146,7 +146,7 @@ class Oara_Network_Publisher_Zanox extends Oara_Network {
 
 			foreach ($totalAuxTransactions as $transaction) {
 
-				if (in_array($transaction->program->id, $merchantList)) {
+				if ($merchantList == null || in_array($transaction->program->id, $merchantList)) {
 					$obj = array();
 					
 					$obj['currency'] = $transaction->currency;
@@ -181,6 +181,7 @@ class Oara_Network_Publisher_Zanox extends Oara_Network {
 					$transactionDate = new Zend_Date($transaction->trackingDate, "yyyy-MM-dd HH:mm:ss");
 					$obj['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 					$obj['merchantId'] = $transaction->program->id;
+					$obj['approved'] = $transaction->reviewState == 'approved' ? true : false;
 					$totalTransactions[] = $obj;
 				}
 

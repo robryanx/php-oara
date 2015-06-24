@@ -166,7 +166,7 @@ class Oara_Network_Publisher_Daisycon extends Oara_Network {
 
 				foreach ($transactionList as $transaction){
 					$merchantId = $transaction['program_id'];
-					if (in_array($merchantId, $merchantList)) {
+					if ($merchantList == null || in_array($merchantId, $merchantList)) {
 
 						$transactionArray = Array();
 						$transactionArray['unique_id'] = $transaction['affiliatemarketing_id'];
