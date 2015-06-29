@@ -231,7 +231,7 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 		if (preg_match("/logout%26openid.ns/", $exportReport[0])) {
 			$dom = new Zend_Dom_Query($exportReport[0]);
 			$idBox = array();
-			$results = $dom->query('select[name="idbox_store_id"]');
+			$results = $dom->query('select[name="idbox_tracking_id"]');
 			$count = count($results);
 			if ($count == 0) {
 				$idBox[] = "";
@@ -317,7 +317,7 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 		$valuesFromExport[] = new Oara_Curl_Parameter('endDay', $endDate->toString("d"));
 		$valuesFromExport[] = new Oara_Curl_Parameter('endMonth', (int) $endDate->toString("M") - 1);
 		$valuesFromExport[] = new Oara_Curl_Parameter('endYear', $endDate->toString("yyyy"));
-		$valuesFromExport[] = new Oara_Curl_Parameter('idbox_store_id', $id);
+		$valuesFromExport[] = new Oara_Curl_Parameter('idbox_tracking_id', $id);
 
 		$urls = array();
 		$urls[] = new Oara_Curl_Request($this->_networkServer."/gp/associates/network/reports/report.html?", $valuesFromExport);
@@ -378,7 +378,7 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 		foreach ($this->_idBox as $id) {
 			$urls = array();
 			$paymentExport = array();
-			$paymentExport[] = new Oara_Curl_Parameter('idbox_store_id', $id);
+			$paymentExport[] = new Oara_Curl_Parameter('idbox_tracking_id', $id);
 			$urls[] = new Oara_Curl_Request($this->_networkServer."/gp/associates/network/your-account/payment-history.html?", $paymentExport);
 			$exportReport = $this->_client->get($urls);
 			$dom = new Zend_Dom_Query($exportReport[0]);
