@@ -225,10 +225,11 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 		//If not login properly the construct launch an exception
 		$connection = false;
 		$urls = array();
-		$urls[] = new Oara_Curl_Request($this->_networkServer."/gp/associates/network/main.html", array());
+		$urls[] = new Oara_Curl_Request($this->_networkServer."/gp/associates/network/reports/main.html", array());
 		$exportReport = $this->_client->get($urls);
 
 		if (preg_match("/logout%26openid.ns/", $exportReport[0])) {
+
 			$dom = new Zend_Dom_Query($exportReport[0]);
 			$idBox = array();
 			$results = $dom->query('select[name="idbox_tracking_id"]');
@@ -248,12 +249,23 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 				}
 			}
 
+			$results = $dom->query('input[name="combinedReports"]');
+			foreach($results as $n) {
+				if ($n->getAttribute('checked') === 'checked') {
+					// Combined reports have been selected, use an empty idBox -> download data only once
+					$idBox = array('');
+					break;
+				}
+			}
+
+			// Use idBox only for US
 			$this->_idBox = $idBox;
 			$connection = true;
 		}
 
 		return $connection;
 	}
+
 	/**
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getMerchantList()
