@@ -158,8 +158,8 @@ class Oara_Network_Publisher_SportCoverDirect extends Oara_Network {
 
 				$date = new Zend_Date($overviewExportArray[0], "dd/MM/yyyy");
 				$transaction['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
-				$transaction ['amount'] = Oara_Utilities::parseDouble ( preg_replace ( "/[^0-9\.,]/", "", $overviewExportArray[1] ) );
-				$transaction['commission'] = Oara_Utilities::parseDouble ( preg_replace ( "/[^0-9\.,]/", "", $overviewExportArray[1] ) );
+				$transaction ['amount'] = Oara_Utilities::parseDouble ( preg_replace ( '/[^0-9\.,]/', "", $overviewExportArray[1] ) );
+				$transaction['commission'] = Oara_Utilities::parseDouble ( preg_replace ( '/[^0-9\.,]/', "", $overviewExportArray[1] ) );
 				$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
 
 				$totalTransactions[] = $transaction;

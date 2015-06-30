@@ -199,7 +199,7 @@ class Oara_Network_Publisher_Ebay extends Oara_Network {
 				$obj['date'] = $paymentDate->toString("yyyy-MM-dd HH:mm:ss");
 				$obj['pid'] = $paymentDate->toString("yyyyMMdd");
 				$obj['method'] = 'BACS';
-				if (preg_match("/[-+]?[0-9]*,?[0-9]*\.?[0-9]+/", $paymentExportArray[2], $matches)) {
+				if (preg_match('/[-+]?[0-9]*,?[0-9]*\.?[0-9]+/', $paymentExportArray[2], $matches)) {
 					$obj['value'] = Oara_Utilities::parseDouble($matches[0]);
 				} else {
 					throw new Exception("Problem reading payments");

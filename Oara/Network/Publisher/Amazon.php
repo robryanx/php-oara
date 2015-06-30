@@ -396,7 +396,7 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 					$obj['date'] = $paymentDate->toString("yyyy-MM-dd HH:mm:ss");
 					$obj['pid'] = ($paymentDate->toString("yyyyMMdd").substr((string) base_convert(md5($id), 16, 10), 0, 5));
 					$obj['method'] = 'BACS';
-					if (preg_match("/[0-9]*,?[0-9]*\.?[0-9]+/", $paymentExportArray[4], $matches)) {
+					if (preg_match('/[0-9]*,?[0-9]*\.?[0-9]+/', $paymentExportArray[4], $matches)) {
 						$obj['value'] = Oara_Utilities::parseDouble($matches[0]);
 						$paymentHistory[] = $obj;
 					}

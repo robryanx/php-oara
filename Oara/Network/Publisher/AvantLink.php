@@ -169,8 +169,8 @@ class Oara_Network_Publisher_AvantLink extends Oara_Network {
 				}
 
 				$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
-				$transaction['amount'] = Oara_Utilities::parseDouble(preg_replace("/[^0-9\.,]/", "", $transactionExportArray[6]));
-				$transaction['commission'] = Oara_Utilities::parseDouble(preg_replace("/[^0-9\.,]/", "", $transactionExportArray[7]));
+				$transaction['amount'] = Oara_Utilities::parseDouble(preg_replace('/[^0-9\.,]/', "", $transactionExportArray[6]));
+				$transaction['commission'] = Oara_Utilities::parseDouble(preg_replace('/[^0-9\.,]/', "", $transactionExportArray[7]));
 				$totalTransactions[] = $transaction;
 			}
 		}

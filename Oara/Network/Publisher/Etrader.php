@@ -138,12 +138,12 @@ class Oara_Network_Publisher_Etrader extends Oara_Network {
 				$transaction ['status'] = Oara_Utilities::STATUS_CONFIRMED;
 				
 				if ($transactionDetail[3] != null){
-					preg_match("/[-+]?[0-9]*\.?[0-9]+/", $transactionDetail[3], $match);
+					preg_match('/[-+]?[0-9]*\.?[0-9]+/', $transactionDetail[3], $match);
 					$transaction['amount'] = (double)$match[0];
 					$transaction['commission'] = (double)$match[0];
 					
 				} else if ($transactionDetail[4] != null){
-					preg_match("/[-+]?[0-9]*\.?[0-9]+/", $transactionDetail[4], $match);
+					preg_match('/[-+]?[0-9]*\.?[0-9]+/', $transactionDetail[4], $match);
 					$transaction['amount'] = (double)$match[0];
 					$transaction['commission'] = (double)$match[0];
 				}

@@ -70,7 +70,7 @@ class Oara_Network_Publisher_NetAffiliation extends Oara_Network {
 
 		$cookieContent = file_get_contents($cookieLocalion);
 		$serverNumber = null;
-		if (preg_match("/www(.)\.netaffiliation\.com/", $cookieContent, $matches)) {
+		if (preg_match('/www(.)\.netaffiliation\.com/', $cookieContent, $matches)) {
 			$this->_serverNumber = $matches[1];
 		}
 

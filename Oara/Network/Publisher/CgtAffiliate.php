@@ -133,8 +133,8 @@ class Oara_Network_Publisher_CgtAffiliate extends Oara_Network {
 				$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
 			}
 				
-			$transaction['amount'] = preg_replace("/[^0-9\.,]/", "", $transactionExportArray[2]);
-			$transaction['commission'] = preg_replace("/[^0-9\.,]/", "", $transactionExportArray[2]);
+			$transaction['amount'] = preg_replace('/[^0-9\.,]/', "", $transactionExportArray[2]);
+			$transaction['commission'] = preg_replace('/[^0-9\.,]/', "", $transactionExportArray[2]);
 			$totalTransactions[] = $transaction;
 		}
 		return $totalTransactions;

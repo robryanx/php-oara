@@ -211,10 +211,10 @@ class Oara_Network_Publisher_ClixGalore extends Oara_Network {
 						$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
 					}
 
-					if (preg_match("/[0-9]*,?[0-9]*\.?[0-9]+/", $transactionExportArray[4], $matches)) {
+					if (preg_match('/[0-9]*,?[0-9]*\.?[0-9]+/', $transactionExportArray[4], $matches)) {
 						$transaction['amount'] = Oara_Utilities::parseDouble($matches[0]);
 					}
-					if (preg_match("/[0-9]*,?[0-9]*\.?[0-9]+/", $transactionExportArray[5], $matches)) {
+					if (preg_match('/[0-9]*,?[0-9]*\.?[0-9]+/', $transactionExportArray[5], $matches)) {
 						$transaction['commission'] = Oara_Utilities::parseDouble($matches[0]);
 					}
 
@@ -267,7 +267,7 @@ class Oara_Network_Publisher_ClixGalore extends Oara_Network {
 					$obj['date'] = $paymentDate->toString("yyyy-MM-dd HH:mm:ss");
 					$obj['pid'] = $paymentDate->toString("yyyyMMdd");
 					$obj['method'] = 'BACS';
-					if (preg_match("/[-+]?[0-9]*,?[0-9]*\.?[0-9]+/", $paymentExportArray[2], $matches)) {
+					if (preg_match('/[-+]?[0-9]*,?[0-9]*\.?[0-9]+/', $paymentExportArray[2], $matches)) {
 						$obj['value'] = Oara_Utilities::parseDouble($matches[0]);
 					} else {
 						throw new Exception("Problem reading payments");
