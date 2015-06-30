@@ -186,7 +186,7 @@ class Oara_Network_Publisher_PrivateInternetAccess extends Oara_Network {
 				for($z=1; $z < count($exportData)-4; $z++){
 					$transactionLineArray = str_getcsv($exportData[$z], ";");
 					$numberTransactions = (int)$transactionLineArray[1];
-					$commission = preg_replace("/[^0-9\.,]/", "", $transactionLineArray[2]);
+					$commission = preg_replace('/[^0-9\.,]/', "", $transactionLineArray[2]);
 					$commission = ((double)$commission)/$numberTransactions;
 					for($y=0; $y < $numberTransactions; $y++){
 						$transaction = Array();

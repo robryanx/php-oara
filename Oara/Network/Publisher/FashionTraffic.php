@@ -187,10 +187,10 @@ class Oara_Network_Publisher_FashionTraffic extends Oara_Network {
 					throw new Exception("Status {$transactionExportArray[10]} unknown");
 				}
 
-				if (preg_match("/[-+]?[0-9]*\.?[0-9]+/", $transactionExportArray[9], $match)){
+				if (preg_match('/[-+]?[0-9]*\.?[0-9]+/', $transactionExportArray[9], $match)){
 					$transaction['amount'] = (double)$match[0];
 				}
-				if (preg_match("/[-+]?[0-9]*\.?[0-9]+/", $transactionExportArray[9], $match)){
+				if (preg_match('/[-+]?[0-9]*\.?[0-9]+/', $transactionExportArray[9], $match)){
 					$transaction['commission'] = (double)$match[0];
 				}
 				$totalTransactions[] = $transaction;

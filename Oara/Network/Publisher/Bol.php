@@ -62,7 +62,7 @@ class Oara_Network_Publisher_Bol extends Oara_Network {
 		$urls[] = new Oara_Curl_Request('https://partnerprogramma.bol.com/partner/index.do?', array());
 		$exportReport = $this->_client->get($urls);
 
-		if (preg_match("/partner\/logout\.do/", $exportReport[0], $match)) {
+		if (preg_match('/partner\/logout\.do/', $exportReport[0], $match)) {
 			$connection = true;
 		}
 		return $connection;

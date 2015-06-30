@@ -229,9 +229,9 @@ class Oara_Network_Publisher_AffiliateGateway extends Oara_Network {
 				$obj = array();
 				$date = new Zend_Date($paymentExportArray[1], "dd/MM/yyyy");
 				$obj['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
-				$obj['pid'] = preg_replace("/[^0-9\.,]/", "", $paymentExportArray[0]);
+				$obj['pid'] = preg_replace('/[^0-9\.,]/', "", $paymentExportArray[0]);
 				$obj['method'] = 'BACS';
-				$value = preg_replace("/[^0-9\.,]/", "", $paymentExportArray[8]);
+				$value = preg_replace('/[^0-9\.,]/', "", $paymentExportArray[8]);
 				$obj['value'] = Oara_Utilities::parseDouble($value);
 				$paymentHistory[] = $obj;
 			}

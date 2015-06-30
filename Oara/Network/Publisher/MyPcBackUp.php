@@ -119,10 +119,10 @@ class Oara_Network_Publisher_MyPcBackUP extends Oara_Network {
 			$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 			unset($transactionDate);
 
-			if (preg_match("/[-+]?[0-9]*\.?[0-9]+/", $transactionExportArray[5], $match)){
+			if (preg_match('/[-+]?[0-9]*\.?[0-9]+/', $transactionExportArray[5], $match)){
 				$transaction['amount'] = (double)$match[0];
 			}
-			if (preg_match("/[-+]?[0-9]*\.?[0-9]+/", $transactionExportArray[5], $match)){
+			if (preg_match('/[-+]?[0-9]*\.?[0-9]+/', $transactionExportArray[5], $match)){
 				$transaction['commission'] = (double)$match[0];
 			}
 			if ($transactionExportArray[4] == "Sale"){
@@ -164,9 +164,9 @@ class Oara_Network_Publisher_MyPcBackUP extends Oara_Network {
 					$obj = array();
 					$date = new Zend_Date($paymentExportArray[14], "MM/dd/yyyy");
 					$obj['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
-					$obj['pid'] = preg_replace("/[^0-9\.,]/", "", $paymentExportArray[14]);
+					$obj['pid'] = preg_replace('/[^0-9\.,]/', "", $paymentExportArray[14]);
 					$obj['method'] = $paymentExportArray[16];
-					$value = preg_replace("/[^0-9\.,]/", "", $paymentExportArray[12]);
+					$value = preg_replace('/[^0-9\.,]/', "", $paymentExportArray[12]);
 					
 					$obj['value'] = Oara_Utilities::parseDouble($value);
 					$paymentHistory[] = $obj;

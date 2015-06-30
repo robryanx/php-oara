@@ -297,7 +297,7 @@ class Oara_Network_Advertiser_CommissionJunction extends Oara_Network {
 		*/
 		$urls[] = new Oara_Curl_Request('https://members.cj.com/member/'.$this->_memberId.'/accounts/advertiser/listmypublishers.do?&download=Go&format=CSV', array());
 		$exportReport = $this->_client->get($urls);
-		if (!preg_match("/Sorry, No Results Found\./", $exportReport[0], $matches)) {
+		if (!preg_match('/Sorry, No Results Found\./', $exportReport[0], $matches)) {
 			$exportData = str_getcsv($exportReport[0], "\n");
 			$merchantReportList = Array();
 			$num = count($exportData);
@@ -319,7 +319,7 @@ class Oara_Network_Advertiser_CommissionJunction extends Oara_Network {
 		$urls = array();
 		$urls[] = new Oara_Curl_Request('https://members.cj.com/member/cj/publisher/paymentStatus', array());
 		$exportReport = $this->_client->get($urls);
-		if (preg_match("/\/publisher\/getpublisherpaymenthistory\.do/", $exportReport[0], $matches)) {
+		if (preg_match('/\/publisher\/getpublisherpaymenthistory\.do/', $exportReport[0], $matches)) {
 			$urls = array();
 			$valuesFromExport = $this->_exportPaymentParameters;
 			$urls[] = new Oara_Curl_Request('https://members.cj.com/member/'.$this->_memberId.'/publisher/getpublisherpaymenthistory.do?', $valuesFromExport);

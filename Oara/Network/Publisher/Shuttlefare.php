@@ -189,8 +189,8 @@ class Oara_Network_Publisher_Shuttlefare extends Oara_Network {
 				$transactionDate = new Zend_Date ( $transactionExportArray [5], 'MM/dd/yyyy');
 				$transaction ['date'] = $transactionDate->toString ( "yyyy-MM-dd HH:mm:ss" );				
 				$transaction ['status'] = Oara_Utilities::STATUS_CONFIRMED;				
-				$transaction ['amount'] = Oara_Utilities::parseDouble ( preg_replace ( "/[^0-9\.,]/", "", $transactionExportArray [1] ) );
-				$transaction ['commission'] = Oara_Utilities::parseDouble ( preg_replace ( "/[^0-9\.,]/", "", $transactionExportArray [2] ) );
+				$transaction ['amount'] = Oara_Utilities::parseDouble ( preg_replace ( '/[^0-9\.,]/', "", $transactionExportArray [1] ) );
+				$transaction ['commission'] = Oara_Utilities::parseDouble ( preg_replace ( '/[^0-9\.,]/', "", $transactionExportArray [2] ) );
 				
 				$totalTransactions [] = $transaction;
 				

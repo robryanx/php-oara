@@ -126,8 +126,8 @@ class Oara_Network_Publisher_FoxTransfer extends Oara_Network {
 				throw new Exception("New status found");
 			}
 			
-			$transaction['amount'] = Oara_Utilities::parseDouble(preg_replace("/[^0-9\.,]/", "", $transactionExportArray[10]));
-			$transaction['commission'] = Oara_Utilities::parseDouble(preg_replace("/[^0-9\.,]/", "", $transactionExportArray[13]));
+			$transaction['amount'] = Oara_Utilities::parseDouble(preg_replace('/[^0-9\.,]/', "", $transactionExportArray[10]));
+			$transaction['commission'] = Oara_Utilities::parseDouble(preg_replace('/[^0-9\.,]/', "", $transactionExportArray[13]));
 
 			$totalTransactions[] = $transaction;
 
