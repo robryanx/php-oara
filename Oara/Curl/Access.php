@@ -165,7 +165,7 @@ class Oara_Curl_Access {
 			$ch = curl_init ();
 
 			$options = $this->_options;
-			$options [CURLOPT_URL] = str_replace ( "/publisher/..", "", $location );
+			$options [CURLOPT_URL] = trim(str_replace ( "/publisher/..", "", $location ));
 			$options [CURLOPT_HEADER] = true;
 			$options [CURLOPT_FOLLOWLOCATION] = false;
 
