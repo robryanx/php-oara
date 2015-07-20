@@ -126,7 +126,7 @@ class Oara_Network_Publisher_BTGuard extends Oara_Network {
 					$transactionLineArray = str_getcsv($exportData[$z], ";");
 					$numberTransactions = (int)$transactionLineArray[2];
 					if ($numberTransactions != 0){
-						$commission = preg_replace("/[^0-9\.,]/", "", $transactionLineArray[3]);
+						$commission = preg_replace('/[^0-9\.,]/', "", $transactionLineArray[3]);
 						$commission = ((double)$commission)/$numberTransactions;
 						for($y=0; $y < $numberTransactions; $y++){
 							$transaction = Array();
@@ -170,7 +170,7 @@ class Oara_Network_Publisher_BTGuard extends Oara_Network {
 				$obj['date'] = $paymentDate->toString("yyyy-MM-dd HH:mm:ss");
 				$obj['pid'] = $paymentDate->toString("yyyyMMdd");
 				$obj['method'] = 'BACS';
-				if (preg_match("/[-+]?[0-9]*,?[0-9]*\.?[0-9]+/", $paymentExportArray[2], $matches)) {
+				if (preg_match('/[-+]?[0-9]*,?[0-9]*\.?[0-9]+/', $paymentExportArray[2], $matches)) {
 					$obj['value'] = Oara_Utilities::parseDouble($matches[0]);
 				} else {
 					throw new Exception("Problem reading payments");

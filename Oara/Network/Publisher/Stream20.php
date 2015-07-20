@@ -247,7 +247,7 @@ class Oara_Network_Publisher_Stream20 extends Oara_Network {
 		$urls = array();
 		$urls[] = new Oara_Curl_Request('http://publisher.tradedoubler.com/pan/aReport3Selection.action?reportName=aAffiliateProgramOverviewReport', array());
 		$exportReport = $this->_client->get($urls);
-		if (preg_match("/\(([a-zA-Z]{0,2}[\/\.][a-zA-Z]{0,2}[\/\.][a-zA-Z]{0,2})\)/", $exportReport[0], $match)) {
+		if (preg_match('/\(([a-zA-Z]{0,2}[\/\.][a-zA-Z]{0,2}[\/\.][a-zA-Z]{0,2})\)/', $exportReport[0], $match)) {
 			$this->_dateFormat = $match[1];
 		}
 
@@ -380,9 +380,9 @@ class Oara_Network_Publisher_Stream20 extends Oara_Network {
 
 	public function checkReportError($content, $request, $try = 0) {
 
-		if (preg_match("/\/report\/published\/aAffiliateEventBreakdownReport/", $content, $matches)) {
+		if (preg_match('/\/report\/published\/aAffiliateEventBreakdownReport/', $content, $matches)) {
 			//report too big, we have to download it and read it
-			if (preg_match("/(\/report\/published\/(aAffiliateEventBreakdownReport(.*))\.zip)/", $content, $matches)) {
+			if (preg_match('/(\/report\/published\/(aAffiliateEventBreakdownReport(.*))\.zip)/', $content, $matches)) {
 
 				$file = "http://publisher.tradedoubler.com".$matches[0];
 				$newfile = realpath ( dirname ( COOKIES_BASE_DIR ) ) . '/pdf/'.$matches[2].'.zip';
@@ -470,7 +470,7 @@ class Oara_Network_Publisher_Stream20 extends Oara_Network {
 						$obj['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
 						$obj['pid'] = $pid;
 						$obj['method'] = 'BACS';
-						if (preg_match("/[-+]?[0-9]*,?[0-9]*\.?[0-9]+/", substr($paymentLine, 10), $matches)) {
+						if (preg_match('/[-+]?[0-9]*,?[0-9]*\.?[0-9]+/', substr($paymentLine, 10), $matches)) {
 							$obj['value'] = $filter->filter($matches[0]);
 						} else {
 							throw new Exception("Problem reading payments");

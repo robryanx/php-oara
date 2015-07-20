@@ -366,7 +366,7 @@ class Oara_Network_Publisher_SilverTap extends Oara_Network {
 						$exit_code = proc_close($pdfReader);
 					}
 
-					if (preg_match_all("/[0-9]*,?[0-9]*\.[0-9]+/", $pdfContent, $matches)) {
+					if (preg_match_all('/[0-9]*,?[0-9]*\.[0-9]+/', $pdfContent, $matches)) {
 						$obj['value'] = Oara_Utilities::parseDouble($matches[0][count($matches[0]) - 1]);
 					} else {
 						throw new Exception('Problem getting value in payments');

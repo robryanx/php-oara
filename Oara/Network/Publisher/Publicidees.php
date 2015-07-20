@@ -89,7 +89,7 @@ class Oara_Network_Publisher_Publicidees extends Oara_Network {
 		$urls[] = new Oara_Curl_Request('http://affilie.publicidees.com/', array());
 		$exportReport = $this->_client->get($urls);
 
-		if (preg_match("/deconnexion\.php/", $exportReport[0], $matches)) {
+		if (preg_match('/deconnexion\.php/', $exportReport[0], $matches)) {
 			$connection = true;
 		}
 		return $connection;

@@ -270,7 +270,7 @@ echo $html;
 				$status = $transactionExportArray [4];
 				if ($status == "Zaplaceno") {
 					$transaction ['status'] = Oara_Utilities::STATUS_CONFIRMED;
-				} else if ($status == "Neprodáno") {
+				} else if ($status == "Neprodï¿½no") {
 					$transaction ['status'] = Oara_Utilities::STATUS_PENDING;
 				} else if ($status == "Storno") {
 					$transaction ['status'] = Oara_Utilities::STATUS_DECLINED;
@@ -279,8 +279,8 @@ echo $html;
 				}
 				
 				
-				$transaction ['amount'] = Oara_Utilities::parseDouble ( preg_replace ( "/[^0-9\.,]/", "", $transactionExportArray [6] ) );
-				$transaction ['commission'] = Oara_Utilities::parseDouble ( preg_replace ( "/[^0-9\.,]/", "", $transactionExportArray [6] ) );
+				$transaction ['amount'] = Oara_Utilities::parseDouble ( preg_replace ( '/[^0-9\.,]/', "", $transactionExportArray [6] ) );
+				$transaction ['commission'] = Oara_Utilities::parseDouble ( preg_replace ( '/[^0-9\.,]/', "", $transactionExportArray [6] ) );
 				
 				
 				$transaction ['merchantId'] = 1;

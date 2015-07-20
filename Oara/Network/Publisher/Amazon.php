@@ -225,13 +225,14 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 		//If not login properly the construct launch an exception
 		$connection = false;
 		$urls = array();
-		$urls[] = new Oara_Curl_Request($this->_networkServer."/gp/associates/network/main.html", array());
+		$urls[] = new Oara_Curl_Request($this->_networkServer."/gp/associates/network/reports/main.html", array());
 		$exportReport = $this->_client->get($urls);
 
 		if (preg_match("/logout%26openid.ns/", $exportReport[0])) {
+
 			$dom = new Zend_Dom_Query($exportReport[0]);
 			$idBox = array();
-			$results = $dom->query('select[name="idbox_store_id"]');
+			$results = $dom->query('select[name="idbox_tracking_id"]');
 			$count = count($results);
 			if ($count == 0) {
 				$idBox[] = "";
@@ -248,12 +249,23 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 				}
 			}
 
+			$results = $dom->query('input[name="combinedReports"]');
+			foreach($results as $n) {
+				if ($n->getAttribute('checked') === 'checked') {
+					// Combined reports have been selected, use an empty idBox -> download data only once
+					$idBox = array('');
+					break;
+				}
+			}
+
+			// Use idBox only for US
 			$this->_idBox = $idBox;
 			$connection = true;
 		}
 
 		return $connection;
 	}
+
 	/**
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getMerchantList()
@@ -317,7 +329,7 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 		$valuesFromExport[] = new Oara_Curl_Parameter('endDay', $endDate->toString("d"));
 		$valuesFromExport[] = new Oara_Curl_Parameter('endMonth', (int) $endDate->toString("M") - 1);
 		$valuesFromExport[] = new Oara_Curl_Parameter('endYear', $endDate->toString("yyyy"));
-		$valuesFromExport[] = new Oara_Curl_Parameter('idbox_store_id', $id);
+		$valuesFromExport[] = new Oara_Curl_Parameter('idbox_tracking_id', $id);
 
 		$urls = array();
 		$urls[] = new Oara_Curl_Request($this->_networkServer."/gp/associates/network/reports/report.html?", $valuesFromExport);
@@ -378,7 +390,7 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 		foreach ($this->_idBox as $id) {
 			$urls = array();
 			$paymentExport = array();
-			$paymentExport[] = new Oara_Curl_Parameter('idbox_store_id', $id);
+			$paymentExport[] = new Oara_Curl_Parameter('idbox_tracking_id', $id);
 			$urls[] = new Oara_Curl_Request($this->_networkServer."/gp/associates/network/your-account/payment-history.html?", $paymentExport);
 			$exportReport = $this->_client->get($urls);
 			$dom = new Zend_Dom_Query($exportReport[0]);
@@ -396,7 +408,7 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 					$obj['date'] = $paymentDate->toString("yyyy-MM-dd HH:mm:ss");
 					$obj['pid'] = ($paymentDate->toString("yyyyMMdd").substr((string) base_convert(md5($id), 16, 10), 0, 5));
 					$obj['method'] = 'BACS';
-					if (preg_match("/[0-9]*,?[0-9]*\.?[0-9]+/", $paymentExportArray[4], $matches)) {
+					if (preg_match('/[0-9]*,?[0-9]*\.?[0-9]+/', $paymentExportArray[4], $matches)) {
 						$obj['value'] = Oara_Utilities::parseDouble($matches[0]);
 						$paymentHistory[] = $obj;
 					}

@@ -250,7 +250,7 @@ class Oara_Network_Publisher_Wehkamp extends Oara_Network {
 		$exportReport = $this->_client->get($urls);
 		
 		
-		if (preg_match("/publisher\/jsp\/general\/logout\.jsp/", $exportReport[0], $match)) {	
+		if (preg_match('/publisher\/jsp\/general\/logout\.jsp/', $exportReport[0], $match)) {
 			$connection = true;
 		}
 		return $connection;
@@ -365,9 +365,9 @@ class Oara_Network_Publisher_Wehkamp extends Oara_Network {
 	
 	public function checkReportError($content, $request, $try = 0) {
 
-		if (preg_match("/\/report\/published\/aAffiliateEventBreakdownReport/", $content, $matches)) {
+		if (preg_match('/\/report\/published\/aAffiliateEventBreakdownReport/', $content, $matches)) {
 			//report too big, we have to download it and read it
-			if (preg_match("/(\/report\/published\/(aAffiliateEventBreakdownReport(.*))\.zip)/", $content, $matches)) {
+			if (preg_match('/(\/report\/published\/(aAffiliateEventBreakdownReport(.*))\.zip)/', $content, $matches)) {
 
 				$file = "https://affiliates.wehkamp.nl".$matches[0];
 				$newfile = realpath ( dirname ( COOKIES_BASE_DIR ) ) . '/pdf/'.$matches[2].'.zip';

@@ -115,7 +115,7 @@ class Oara_Network_Publisher_Smg extends Oara_Network {
 		$urls[] = new Oara_Curl_Request('https://member.impactradius.co.uk/secure/mediapartner/home/pview.ihtml', array());
 		$exportReport = $this->_newClient->get($urls);
 		$newCheck = false;
-		if (preg_match("/\/logOut\.user/", $exportReport[0], $match)) {
+		if (preg_match('/\/logOut\.user/', $exportReport[0], $match)) {
 			$newCheck = true;
 		}
 
@@ -260,7 +260,7 @@ class Oara_Network_Publisher_Smg extends Oara_Network {
 			$obj['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
 			$obj['pid'] = $paymentExportArray[0];
 			$obj['method'] = 'BACS';
-			if (preg_match("/[-+]?[0-9]*,?[0-9]*\.?[0-9]+/", $paymentExportArray[6], $matches)) {
+			if (preg_match('/[-+]?[0-9]*,?[0-9]*\.?[0-9]+/', $paymentExportArray[6], $matches)) {
 				$obj['value'] = $filter->filter($matches[0]);
 			} else {
 				throw new Exception("Problem reading payments");

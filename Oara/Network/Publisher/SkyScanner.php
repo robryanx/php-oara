@@ -108,7 +108,7 @@ class Oara_Network_Publisher_SkyScanner extends Oara_Network {
 		$exportReport = array();
 		$exportReport = $this->_client->get($urls);
 		$dump = var_export($exportReport[0], true);
-		$dump = preg_replace("/ \. /", "", $dump);
+		$dump = preg_replace('/ \. /', "", $dump);
 	    $dump = preg_replace("/\"\\\\0\"/", "", $dump);
 	    $dump = preg_replace("/'/", "", $dump);
 	    

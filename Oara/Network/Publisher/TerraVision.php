@@ -129,8 +129,8 @@ class Oara_Network_Publisher_TerraVision extends Oara_Network {
 					
 				$transaction['date'] = $dEndDate->toString("yyyy-MM-dd HH:mm:ss");
 		
-				$transaction['amount'] = Oara_Utilities::parseDouble ( preg_replace ( "/[^0-9\.,]/", "", $transactionArray [2] ) );
-				$transaction['commission'] = Oara_Utilities::parseDouble ( preg_replace ( "/[^0-9\.,]/", "", $transactionArray [2] ) );
+				$transaction['amount'] = Oara_Utilities::parseDouble ( preg_replace ( '/[^0-9\.,]/', "", $transactionArray [2] ) );
+				$transaction['commission'] = Oara_Utilities::parseDouble ( preg_replace ( '/[^0-9\.,]/', "", $transactionArray [2] ) );
 		
 				$totalTransactions[] = $transaction;
 			}

@@ -106,7 +106,7 @@ class Oara_Network_Publisher_Chegg extends Oara_Network {
 		$exportReport = $this->_client->get($urls);
 		echo $exportReport[0];
 		
-		if (preg_match("/Welcome\/Logout\.aspx/", $exportReport[0])) {
+		if (preg_match('/Welcome\/Logout\.aspx/', $exportReport[0])) {
 			$connection = true;
 		}
 		return $connection;
