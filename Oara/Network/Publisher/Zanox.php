@@ -176,6 +176,11 @@ class Oara_Network_Publisher_Zanox extends Oara_Network {
 							}
 						}
 					}
+					
+					if(isset($transaction->trackingCategory->_) && $transaction->trackingCategory->_ != null) {
+						$obj['title'] = $transaction->trackingCategory->_;
+					}
+					
 					$obj['unique_id'] = $transaction->id;
 					$obj['commission'] = $transaction->commission;
 					$transactionDate = new Zend_Date($transaction->trackingDate, "yyyy-MM-dd HH:mm:ss");
