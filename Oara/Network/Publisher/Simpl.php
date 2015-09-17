@@ -157,7 +157,9 @@ class Oara_Network_Publisher_Simpl extends Oara_Network {
 				$transaction ['status'] = Oara_Utilities::STATUS_DECLINED;
 			} else if ($transactionStatus == "paid") {
 				$transaction ['status'] = Oara_Utilities::STATUS_PAID;
-			} else {
+			} else if ($transactionStatus == "confirmed") {
+				$transaction ['status'] = Oara_Utilities::STATUS_CONFIRMED;
+			}  else {
 				throw new Exception ( "New status found {$transactionStatus}" );
 			}
 			$totalTransactions[] = $transaction;

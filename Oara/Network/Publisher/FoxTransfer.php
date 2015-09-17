@@ -48,16 +48,15 @@ class Oara_Network_Publisher_FoxTransfer extends Oara_Network {
 	}
 
 	private function logIn() {
-		
+
 		$valuesLogin = array(
 			new Oara_Curl_Parameter('action', "user_login"),
 			new Oara_Curl_Parameter('email', $this->_credentials['user']),
 			new Oara_Curl_Parameter('password', $this->_credentials['password']),
 		);
-
 		$loginUrl = 'http://www.foxtransfer.eu/index.php?page=login&out=1&language=1';
 		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $this->_credentials);
-		
+
 	}
 	/**
 	 * Check the connection

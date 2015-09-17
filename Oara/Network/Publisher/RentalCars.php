@@ -124,8 +124,10 @@ class Oara_Network_Publisher_RentalCars extends Oara_Network {
 		
 		for($z = 3; $z < count ( $array["Worksheet"]["Table"]["Row"] ) - 2; $z ++) {
 			$transactionDetails = array();
-			for ($i=0; $i < count($array["Worksheet"]["Table"]["Row"][$z]["Cell"]);$i++){
-				$transactionDetails[$headerIndex[$i]] = $array["Worksheet"]["Table"]["Row"][$z]["Cell"][$i]["Data"];
+			for ($i=0; $i < count($array["Worksheet"]["Table"]["Row"][$z]["Cell"]);$i++) {
+				if (isset($array["Worksheet"]["Table"]["Row"][$z]["Cell"][$i]["Data"])) {
+					$transactionDetails[$headerIndex[$i]] = $array["Worksheet"]["Table"]["Row"][$z]["Cell"][$i]["Data"];
+				}
 			}
 				
 			$cancelledMap[$transactionDetails["Res. Number"]] = true;
@@ -146,21 +148,25 @@ class Oara_Network_Publisher_RentalCars extends Oara_Network {
 		
 		$headerIndex = array();
 		for ($i=0; $i < count($array["Worksheet"]["Table"]["Row"][2]["Cell"]);$i++){
-			$headerIndex[$i] = $array["Worksheet"]["Table"]["Row"][2]["Cell"][$i]["Data"];
+			if (isset($array["Worksheet"]["Table"]["Row"][2]["Cell"][$i]["Data"])) {
+				$headerIndex[$i] = $array["Worksheet"]["Table"]["Row"][2]["Cell"][$i]["Data"];
+			}
 		}
 		
 		
 		for($z = 3; $z < count ( $array["Worksheet"]["Table"]["Row"] ) - 2; $z ++) {
 			$transactionDetails = array();
 			for ($i=0; $i < count($array["Worksheet"]["Table"]["Row"][$z]["Cell"]);$i++){
-				$transactionDetails[$headerIndex[$i]] = $array["Worksheet"]["Table"]["Row"][$z]["Cell"][$i]["Data"];
+				if (isset($array["Worksheet"]["Table"]["Row"][$z]["Cell"][$i]["Data"])) {
+					$transactionDetails[$headerIndex[$i]] = $array["Worksheet"]["Table"]["Row"][$z]["Cell"][$i]["Data"];
+				}
 			}
 			
 			$transaction = Array ();
 			$transaction ['merchantId'] = "1";
 			$transaction ['unique_id'] = $transactionDetails["Res. Number"];
 			
-			if ($transactionDetails["Payment Date"] != null){
+			if (isset($transactionDetails["Payment Date"]) && $transactionDetails["Payment Date"] != null){
 				$date = new Zend_Date($transactionDetails["Payment Date"], "dd MMM yyyy - HH:ii", "en_GB");
 			} else {
 				$date = new Zend_Date($transactionDetails["Book Date"], "dd MMM yyyy - HH:ii", "en_GB");
@@ -176,7 +182,7 @@ class Oara_Network_Publisher_RentalCars extends Oara_Network {
 			
 			$transaction ['date'] = $date->toString ( "yyyy-MM-dd HH:mm:00" );
 			
-			if ($transactionDetails["Payment Date"] != null){
+			if (isset($transactionDetails["Payment Date"]) && $transactionDetails["Payment Date"] != null){
 				$transaction ['status'] = Oara_Utilities::STATUS_CONFIRMED;
 			} else {
 				$transaction ['status'] = Oara_Utilities::STATUS_PENDING;
@@ -186,12 +192,19 @@ class Oara_Network_Publisher_RentalCars extends Oara_Network {
 			if (isset($cancelledMap[$transaction ['unique_id']])){
 				$transaction ['status'] = Oara_Utilities::STATUS_DECLINED;
 			}
+            $rate = 0;
+            if ($transactionDetails["Total Commission"] != 0){
+                $rate = $transactionDetails["Booking Value"] / $transactionDetails["Total Commission"];
+            }
+            $euros = 0;
+            if ($transactionDetails["Total Commission in Euros"] != 0){
+                $euros = "Total Commission in Euros";
+            }
+
 			
-			$rate = $transactionDetails["Booking Value"] / $transactionDetails["Total Commission"];
-			
-			$transaction ['amount'] = $transactionDetails["Total Commission in Euros"]*$rate;
+			$transaction ['amount'] = $euros*$rate;
 			$transaction ['currency'] = "EUR";
-			$transaction ['commission'] = $transactionDetails["Total Commission in Euros"];
+			$transaction ['commission'] = $euros;
 			$totalTransactions [] = $transaction;
 			
 		}
