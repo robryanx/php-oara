@@ -169,8 +169,8 @@ class Oara_Network_Publisher_Zanox extends Oara_Network {
 					if (isset($transaction->gpps) && $transaction->gpps != null) {
 						foreach ($transaction->gpps->gpp as $gpp) {
 							if ($gpp->id == "zpar0") {
-								if (strlen($gpp->_) > 100) {
-									$gpp->_ = substr($gpp->_, 0, 100);
+								if (strlen($gpp->_) > 150) {
+									$gpp->_ = substr($gpp->_, 0, 150);
 								}
 								$obj['custom_id'] = $gpp->_;
 							}
