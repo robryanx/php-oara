@@ -193,13 +193,14 @@ class Oara_Network_Publisher_RentalCars extends Oara_Network {
 				$transaction ['status'] = Oara_Utilities::STATUS_DECLINED;
 			}
             $rate = 0;
-            if ($transactionDetails["Total Commission"] != 0){
+            if (isset($transactionDetails["Total Commission"]) && $transactionDetails["Total Commission"] != 0){
                 $rate = $transactionDetails["Booking Value"] / $transactionDetails["Total Commission"];
             }
             $euros = 0;
-            if ($transactionDetails["Total Commission in Euros"] != 0){
-                $euros = "Total Commission in Euros";
+            if (isset($transactionDetails["Total Commission in Euros"]) && $transactionDetails["Total Commission in Euros"] != 0){
+                $euros = $transactionDetails["Total Commission in Euros"];
             }
+
 
 			
 			$transaction ['amount'] = $euros*$rate;
