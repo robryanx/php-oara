@@ -188,8 +188,6 @@ class Oara_Network_Publisher_Tyroo extends Oara_Network {
 	 * Check the connection
 	 */
 	public function checkConnection() {
-		$connection = false;
-
 		$postdata = http_build_query(
 				array('class' => 'Publisher',
 						'method' => 'getPublisher',
@@ -201,12 +199,6 @@ class Oara_Network_Publisher_Tyroo extends Oara_Network {
 				'content' => $postdata));
 		$context  = stream_context_create($opts);
 		$result = unserialize(file_get_contents('http://www.tyroocentral.com/www/api/v2/xmlrpc/APICall.php', false, $context));
-		//$json=json_encode($result);
-		//var_dump($json);
-
-		//$jsonArray = json_decode($json, true);
-
-		//$connection = $jsonArray[0];
 		$connection = $result[0];
 
 		return $connection;
@@ -263,83 +255,34 @@ class Oara_Network_Publisher_Tyroo extends Oara_Network {
 	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = array();
 
-
-
-
-		$valuesFromExport = array(
-				new Oara_Curl_Parameter('affiliateid', $this->_publisherID),
-				new Oara_Curl_Parameter('statsBreakdown', 'day'),
-				new Oara_Curl_Parameter('listorder', 'key'),
-				new Oara_Curl_Parameter('orderdirection', 'up'),
-				new Oara_Curl_Parameter('day', ''),
-				new Oara_Curl_Parameter('setPerPage', '15'),
-				new Oara_Curl_Parameter('entity', 'affiliate'),
-				new Oara_Curl_Parameter('breakdown', 'history'),
-				new Oara_Curl_Parameter('sessId', $this->_sessionIDCurl),
-				new Oara_Curl_Parameter('type', 'TRAFFICKER'),
-				new Oara_Curl_Parameter('windowid', $this->_windowid),
-				new Oara_Curl_Parameter('period_preset', 'specific'),
-				new Oara_Curl_Parameter('period_start',$dStartDate->toString("dd MMMM yyyy", 'en_US')),/* new Oara_Curl_Parameter('period_start', "01+June+2014"),*/
-				new Oara_Curl_Parameter('period_end', $dEndDate->toString("dd MMMM yyyy", 'en_US')),/* new Oara_Curl_Parameter('period_end', "25+June+2014"),*/
-				new Oara_Curl_Parameter('plugin', 'advertiser:statshistory')
-		);
-
-		$rch = curl_init ();
-		$options = $this->_options;
-		$arg = array ();
-		foreach ( $valuesFromExport as $parameter ) {
-			$arg [] = $parameter->getKey () . '=' . urlencode ( $parameter->getValue () );
-		}
-		curl_setopt ( $rch, CURLOPT_URL, 'http://www.tyroocentral.com/www/admin/stats.php?'.implode ( '&', $arg ) );
-
-		curl_setopt_array ( $rch, $options );
-		$html = curl_exec ( $rch );
-		curl_close ( $rch );
-
-		$folder = realpath ( dirname ( COOKIES_BASE_DIR ) ) . '/pdf/';
-		$my_file = $folder.mt_rand().'.csv';
-		$handle = fopen($my_file, 'w') or die('Cannot open file:  '.$my_file);
-		fwrite($handle, $html);
-		fclose($handle);
-
-		$objReader = PHPExcel_IOFactory::createReader('CSV');
-		$objReader->setReadDataOnly(true);
-
-		$objPHPExcel = @$objReader->load($my_file);
-		$objWorksheet = $objPHPExcel->getActiveSheet();
-
-		$highestRow = $objWorksheet->getHighestRow();
-		$highestColumn = $objWorksheet->getHighestColumn();
-
-		for ($row = 5; $row <= $highestRow; ++$row) {
-
-			$day = $objWorksheet->getCellByColumnAndRow(0, $row)->getValue();
-			$subConv = $objWorksheet->getCellByColumnAndRow(6, $row)->getValue();
-			$pendConv = $objWorksheet->getCellByColumnAndRow(10, $row)->getValue();
-
-			if($subConv!=0){
+		$postdata = http_build_query(
+			array('class' => 'Publisher',
+				'method' => 'getPublisherDailyStatistics',
+				'val1' => $this->_sessionIDCurl,
+				'val2' => $this->_publisherID,
+				'val3' => $dStartDate->toString("yyyy-MM-dd", 'en_US'),
+				'val4' => $dEndDate->toString("yyyy-MM-dd", 'en_US'),
+				'val5' => 'Asia/Calcutta',
+				'val6' => ''));
+		$opts = array('http' =>array('method'  => 'POST',
+			'header'  => 'Content-type: application/x-www-form-urlencoded',
+			'content' => $postdata));
+		$context  = stream_context_create($opts);
+		$result = unserialize(file_get_contents('http://www.tyroocentral.com/www/api/v2/xmlrpc/APICall.php', false, $context));
+		$json = json_encode($result);
+		$transactionsList = json_decode($json, true);
+		foreach ($transactionsList[1] as $transactionJson){
+			if ($transactionJson["revenue"] != 0){
 				$transaction = Array();
 				$transaction['merchantId'] = "1";
-				$transaction['date'] = $day;
-				$transaction['amount'] = Oara_Utilities::parseDouble($subConv);
-				$transaction['commission'] = Oara_Utilities::parseDouble($subConv);
+				$transaction['date'] = $transactionJson["day"];
+				$transaction['amount'] = Oara_Utilities::parseDouble($transactionJson["revenue"]);
+				$transaction['commission'] = Oara_Utilities::parseDouble($transactionJson["revenue"]);
 				$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
 				$totalTransactions[] = $transaction;
 			}
-
-			if($pendConv!=0){
-				$transaction = Array();
-				$transaction['merchantId'] = "1";
-				$transaction['date'] = $day;
-				$transaction['amount'] = Oara_Utilities::parseDouble($pendConv);
-				$transaction['commission'] = Oara_Utilities::parseDouble($pendConv);
-				$transaction['status'] = Oara_Utilities::STATUS_PENDING;
-				$totalTransactions[] = $transaction;
-			}
-
 		}
 
-		unlink($my_file);
 
 
 		return $totalTransactions;
