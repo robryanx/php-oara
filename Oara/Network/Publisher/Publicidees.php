@@ -117,57 +117,58 @@ class Oara_Network_Publisher_Publicidees extends Oara_Network
             $valuesFromExport[] = new Oara_Curl_Parameter('Submit', "Voir");
             $urls = array();
             $urls[] = new Oara_Curl_Request('http://affilie.publicidees.com/index.php?', $valuesFromExport);
-            $exportReport = $this->_client->get($urls);
-            $numExport = count($exportReport);
-            for ($i = 0; $i < $numExport; $i++) {
-                $exportData = str_getcsv(utf8_decode($exportReport[$i]), "\n");
-                $num = count($exportData);
+            try{
+                $exportReport = $this->_client->get($urls);
+            } catch (\Exception $e){
+                echo "problem getting date ". $dateArray[$i]->toString("dd/MM/yyyy")."\n" ;
+                continue;
+            }
 
-                $headerArray = str_getcsv($exportData[0], ";");
-                $headerMap = array();
-                if (count($headerArray) > 1) {
+            $exportData = str_getcsv(utf8_decode($exportReport[0]), "\n");
+            $num = count($exportData);
 
-                    for ($j = 0; $j < count($headerArray); $j++) {
-                        if ($headerArray[$j] == "" && $headerArray[$j - 1] == "Ventes") {
-                            $headerMap["pendingVentes"] = $j;
-                        } else
-                            if ($headerArray[$j] == "" && $headerArray[$j - 1] == "CA") {
-                                $headerMap["pendingCA"] = $j;
-                            } else {
-                                $headerMap[$headerArray[$j]] = $j;
-                            }
-                    }
+            $headerArray = str_getcsv($exportData[0], ";");
+            $headerMap = array();
+            if (count($headerArray) > 1) {
+
+                for ($j = 0; $j < count($headerArray); $j++) {
+                    if ($headerArray[$j] == "" && $headerArray[$j - 1] == "Ventes") {
+                        $headerMap["pendingVentes"] = $j;
+                    } else
+                        if ($headerArray[$j] == "" && $headerArray[$j - 1] == "CA") {
+                            $headerMap["pendingCA"] = $j;
+                        } else {
+                            $headerMap[$headerArray[$j]] = $j;
+                        }
                 }
+            }
 
-                for ($j = 1; $j < $num; $j++) {
+            for ($j = 1; $j < $num; $j++) {
+                $transactionExportArray = str_getcsv($exportData[$j], ";");
+                if (isset($headerMap["Ventes"]) && isset($headerMap["pendingVentes"])) {
+                    $confirmedTransactions = (int)$transactionExportArray[$headerMap["Ventes"]];
+                    $pendingTransactions = (int)$transactionExportArray[$headerMap["pendingVentes"]];
 
-                    $transactionExportArray = str_getcsv($exportData[$j], ";");
-                    if (isset($headerMap["Ventes"]) && isset($headerMap["pendingVentes"])) {
-                        $confirmedTransactions = (int)$transactionExportArray[$headerMap["Ventes"]];
-                        $pendingTransactions = (int)$transactionExportArray[$headerMap["pendingVentes"]];
-
-                        for ($z = 0; $z < $confirmedTransactions; $z++) {
-                            $transaction = Array();
-                            $transaction['merchantId'] = 1;
-                            $parameters = $urls[$i]->getParameters();
-                            $transaction['date'] = $dateArray[$i]->toString("yyyy-MM-dd HH:mm:ss");
-                            $transaction['amount'] = ((double)$filter->filter(substr($transactionExportArray[$headerMap["CA"]], 0, -2)) / $confirmedTransactions);
-                            $transaction['commission'] = ((double)$filter->filter(substr($transactionExportArray[$headerMap["CA"]], 0, -2)) / $confirmedTransactions);
-                            $transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
-                            $totalTransactions[] = $transaction;
-                        }
-
-                        for ($z = 0; $z < $pendingTransactions; $z++) {
-                            $transaction = Array();
-                            $transaction['merchantId'] = 1;
-                            $transaction['date'] = $dateArray[$i]->toString("yyyy-MM-dd HH:mm:ss");
-                            $transaction['amount'] = (double)$transactionExportArray[$headerMap["pendingCA"]] / $pendingTransactions;
-                            $transaction['commission'] = (double)$transactionExportArray[$headerMap["pendingCA"]] / $pendingTransactions;
-                            $transaction['status'] = Oara_Utilities::STATUS_PENDING;
-                            $totalTransactions[] = $transaction;
-                        }
-
+                    for ($z = 0; $z < $confirmedTransactions; $z++) {
+                        $transaction = Array();
+                        $transaction['merchantId'] = 1;
+                        $transaction['date'] = $dateArray[$i]->toString("yyyy-MM-dd HH:mm:ss");
+                        $transaction['amount'] = ((double)$filter->filter(substr($transactionExportArray[$headerMap["CA"]], 0, -2)) / $confirmedTransactions);
+                        $transaction['commission'] = ((double)$filter->filter(substr($transactionExportArray[$headerMap["CA"]], 0, -2)) / $confirmedTransactions);
+                        $transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
+                        $totalTransactions[] = $transaction;
                     }
+
+                    for ($z = 0; $z < $pendingTransactions; $z++) {
+                        $transaction = Array();
+                        $transaction['merchantId'] = 1;
+                        $transaction['date'] = $dateArray[$i]->toString("yyyy-MM-dd HH:mm:ss");
+                        $transaction['amount'] = (double)$transactionExportArray[$headerMap["pendingCA"]] / $pendingTransactions;
+                        $transaction['commission'] = (double)$transactionExportArray[$headerMap["pendingCA"]] / $pendingTransactions;
+                        $transaction['status'] = Oara_Utilities::STATUS_PENDING;
+                        $totalTransactions[] = $transaction;
+                    }
+
                 }
             }
         }
