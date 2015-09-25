@@ -117,7 +117,13 @@ class Oara_Network_Publisher_GetCake extends Oara_Network {
 							
 						$transactionDate = new Zend_Date($transactionApi["conversion_date"], 'yyyy-MM-ddTHH:mm:ss', 'en');
 						$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
-						$transaction ['uniqueId'] = $transactionApi["order_id"];
+
+						if (!isset($transactionApi["order_id"])){
+							$transaction ['uniqueId'] = $transactionApi["conversion_id"];
+						} else {
+							$transaction ['uniqueId'] = $transactionApi["order_id"];
+						}
+
 						if (count($transactionApi["subid_1"]) > 0) {
 							$transaction['custom_id'] = implode(",", $transactionApi["subid_1"]);
 						}

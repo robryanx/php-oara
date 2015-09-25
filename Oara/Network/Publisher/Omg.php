@@ -246,10 +246,10 @@ class Oara_Network_Publisher_Omg extends Oara_Network {
 				if ($rowNumber > 0 && $rowNumber != count($exportData) - 1) {
 					$row = str_getcsv ( $exportRow, "," );
 					$date = new Zend_Date ( $row [9], "dd-MM-yyyy HH:mm:ss" );
-					if (in_array ( ( int ) $row [10], $merchantList )) {
+					if (in_array ( ( int ) $row [13], $merchantList )) {
 							
 						$obj ['unique_id'] = $row [1];
-						$obj ['merchantId'] = $row [10];
+						$obj ['merchantId'] = $row [13];
 						$obj ['date'] = $date->toString ( "yyyy-MM-dd HH:mm:ss" );
 							
 						$obj ['amount'] = 0;
@@ -273,6 +273,8 @@ class Oara_Network_Publisher_Omg extends Oara_Network {
 						} else if ($row [15] == 'Rejected') {
 							$obj ['status'] = Oara_Utilities::STATUS_DECLINED;
 						}
+
+                        //$obj ['currency'] = $row [23];
 							
 						$transactions [] = $obj;
 					} else {
