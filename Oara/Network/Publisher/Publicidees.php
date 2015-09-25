@@ -104,7 +104,7 @@ class Oara_Network_Publisher_Publicidees extends Oara_Network
         $filter = new Zend_Filter_LocalizedToNormalized(array('precision' => 2, 'locale' => 'fr'));
         $dateArray = Oara_Utilities::daysOfDifference($dStartDate, $dEndDate);
         $dateArraySize = sizeof($dateArray);
-        $urls = array();
+
         for ($i = 0; $i < $dateArraySize; $i++) {
             $valuesFromExport = array();
             $valuesFromExport[] = new Oara_Curl_Parameter('action', "myresume");
@@ -115,8 +115,8 @@ class Oara_Network_Publisher_Publicidees extends Oara_Network
             $valuesFromExport[] = new Oara_Curl_Parameter('expAct', "1");
             $valuesFromExport[] = new Oara_Curl_Parameter('tabid', "0");
             $valuesFromExport[] = new Oara_Curl_Parameter('Submit', "Voir");
+            $urls = array();
             $urls[] = new Oara_Curl_Request('http://affilie.publicidees.com/index.php?', $valuesFromExport);
-
             $exportReport = $this->_client->get($urls);
             $numExport = count($exportReport);
             for ($i = 0; $i < $numExport; $i++) {
