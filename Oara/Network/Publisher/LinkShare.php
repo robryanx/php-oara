@@ -68,6 +68,8 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network {
 			$this->_nid = '5';
 		} else if ($credentials ['network'] == 'fr') {
 			$this->_nid = '7';
+		} else if ($credentials ['network'] == 'br') {
+			$this->_nid = '8';
 		} else if ($credentials ['network'] == 'de') {
 			$this->_nid = '9';
 		} else if ($credentials ['network'] == 'eu') {
