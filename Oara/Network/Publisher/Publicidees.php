@@ -120,7 +120,6 @@ class Oara_Network_Publisher_Publicidees extends Oara_Network
             try{
                 $exportReport = $this->_client->get($urls);
             } catch (\Exception $e){
-                echo "problem getting date ". $dateArray[$i]->toString("dd/MM/yyyy")."\n" ;
                 continue;
             }
 
