@@ -101,7 +101,7 @@ class Oara_Network_Publisher_HasOffers extends Oara_Network {
 		$loop = true;
 		while ($loop){
 
-			$apiURL = "http://api.hasoffers.com/v3/Affiliate_Report.json?limit=$limit&page=$page&Method=getConversions&api_key={$this->_apiPassword}&NetworkId={$this->_domain}&fields[]=Stat.offer_id&fields[]=Stat.affiliate_info1&fields[]=Stat.datetime&fields[]=Offer.name&fields[]=Stat.conversion_status&fields[]=Stat.payout&fields[]=Stat.conversion_sale_amount&fields[]=Stat.ip&fields[]=Stat.ad_id&fields[]=Stat.affiliate_info1&sort[Stat.datetime]=desc&filters[Stat.date][conditional]=BETWEEN&filters[Stat.date][values][]={$dStartDate->toString("yyyy-MM-dd")}&filters[Stat.date][values][]={$dEndDate->toString("yyyy-MM-dd")}&data_start={$dStartDate->toString("yyyy-MM-dd")}&data_end={$dEndDate->toString("yyyy-MM-dd")}";
+			$apiURL = "http://api.hasoffers.com/v3/Affiliate_Report.json?limit=$limit&page=$page&Method=getConversions&api_key={$this->_apiPassword}&NetworkId={$this->_domain}&fields[]=Stat.offer_id&fields[]=Stat.datetime&fields[]=Offer.name&fields[]=Stat.conversion_status&fields[]=Stat.payout&fields[]=Stat.conversion_sale_amount&fields[]=Stat.ip&fields[]=Stat.ad_id&fields[]=Stat.affiliate_info1&sort[Stat.datetime]=desc&filters[Stat.date][conditional]=BETWEEN&filters[Stat.date][values][]={$dStartDate->toString("yyyy-MM-dd")}&filters[Stat.date][values][]={$dEndDate->toString("yyyy-MM-dd")}&data_start={$dStartDate->toString("yyyy-MM-dd")}&data_end={$dEndDate->toString("yyyy-MM-dd")}";
 
 			$response = self::call($apiURL);
 			foreach ($response["response"]["data"]["data"] as $transactionApi){
