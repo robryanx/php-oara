@@ -53,7 +53,7 @@ class Oara_Network_Publisher_Publicidees extends Oara_Network
         );
         $this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
         $result = json_decode($this->_client->getConstructResult());
-        $loginUrl = 'http://affilie.publicidees.com/entree_affilies.php';
+        $loginUrl = 'http://publisher.publicideas.com/entree_affilies.php';
         $valuesLogin = array(new Oara_Curl_Parameter('login', $result->login),
             new Oara_Curl_Parameter('pass', $result->pass),
             new Oara_Curl_Parameter('submit', 'Ok'),
@@ -71,7 +71,7 @@ class Oara_Network_Publisher_Publicidees extends Oara_Network
         $connection = false;
 
         $urls = array();
-        $urls[] = new Oara_Curl_Request('http://affilie.publicidees.com/', array());
+        $urls[] = new Oara_Curl_Request('http://publisher.publicideas.com/', array());
         $exportReport = $this->_client->get($urls);
         if (preg_match('/deconnexion\.php/', $exportReport[0], $matches)) {
             $connection = true;
@@ -106,9 +106,12 @@ class Oara_Network_Publisher_Publicidees extends Oara_Network
         $dateArraySize = sizeof($dateArray);
 
         for ($i = 0; $i < $dateArraySize; $i++) {
+
             $valuesFromExport = array();
             $valuesFromExport[] = new Oara_Curl_Parameter('action', "myresume");
-            $valuesFromExport[] = new Oara_Curl_Parameter('progid', 0);
+            $valuesFromExport[] = new Oara_Curl_Parameter('monthDisplay', 0);
+            //$valuesFromExport[] = new Oara_Curl_Parameter('currency', 'EUR');
+            $valuesFromExport[] = new Oara_Curl_Parameter('tout', 1);
             $valuesFromExport[] = new Oara_Curl_Parameter('dD', $dateArray[$i]->toString("dd/MM/yyyy"));
             $valuesFromExport[] = new Oara_Curl_Parameter('dF', $dateArray[$i]->toString("dd/MM/yyyy"));
             $valuesFromExport[] = new Oara_Curl_Parameter('periode', "0");
@@ -116,9 +119,9 @@ class Oara_Network_Publisher_Publicidees extends Oara_Network
             $valuesFromExport[] = new Oara_Curl_Parameter('tabid', "0");
             $valuesFromExport[] = new Oara_Curl_Parameter('Submit', "Voir");
             $urls = array();
-            $urls[] = new Oara_Curl_Request('http://affilie.publicidees.com/index.php?', $valuesFromExport);
+            $urls[] = new Oara_Curl_Request('http://publisher.publicideas.com/index.php?', $valuesFromExport);
             try{
-                $exportReport = $this->_client->get($urls);
+                $exportReport = $this->_client->get($urls, 'content', 5);
             } catch (\Exception $e){
                 continue;
             }
