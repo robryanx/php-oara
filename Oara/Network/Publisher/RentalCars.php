@@ -198,7 +198,7 @@ class Oara_Network_Publisher_RentalCars extends Oara_Network {
                 $rate = $transactionDetails["Booking Value"] / $transactionDetails["Total Commission"];
             }
             $euros = 0;
-            if (isset($transactionDetails["Total Commission in Euros"]) && $transactionDetails["Total Commission in Euros"] != 0){
+            if (isset($transactionDetails["Total Commission in Euros"]) && !is_array($transactionDetails["Total Commission in Euros"]) && $transactionDetails["Total Commission in Euros"] != 0){
                 $euros = $transactionDetails["Total Commission in Euros"];
             }
 
