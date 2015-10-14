@@ -193,7 +193,7 @@ class Oara_Network_Publisher_RentalCars extends Oara_Network {
 				$transaction ['status'] = Oara_Utilities::STATUS_DECLINED;
 			}
             $rate = 0;
-            if (isset($transactionDetails["Total Commission"]) && $transactionDetails["Total Commission"] != 0){
+            if (isset($transactionDetails["Total Commission"])  && !is_array($transactionDetails["Total Commission"]) && $transactionDetails["Total Commission"] != 0){
 				echo "a -> {$transactionDetails["Booking Value"]} b-> {$transactionDetails["Total Commission"]}\n";
                 $rate = $transactionDetails["Booking Value"] / $transactionDetails["Total Commission"];
             }
