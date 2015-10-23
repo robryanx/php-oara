@@ -201,7 +201,6 @@ class Oara_Network_Publisher_RentalCars extends Oara_Network {
                 $euros = $transactionDetails["Total Commission in Euros"];
             }
 
-
 			
 			$transaction ['amount'] = $euros*$rate;
 			$transaction ['currency'] = "EUR";

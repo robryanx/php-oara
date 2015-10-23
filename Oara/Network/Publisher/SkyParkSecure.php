@@ -77,16 +77,15 @@ class Oara_Network_Publisher_SkyParkSecure extends Oara_Network {
 		}
 		//Getting APIKEY
 		if ($connection){
-			if (!preg_match("/self.api_key = '(.*)?';/", $exportReport[0], $match)){
+			if (!preg_match("/self.api_key='(.*)?';/", $exportReport[0], $match)){
 				$connection = false;
 			} else {
 				$this->_apiKey = $match[1];
 			}
-			
 		}
 		
 		if ($connection){
-			if (!preg_match("/self.agent = '(.*)?';/", $exportReport[0], $match)){
+			if (!preg_match("/self.agent='(.*)?';self.date1/", $exportReport[0], $match)){
 				$connection = false;
 			} else {
 				$this->_agent = $match[1];
@@ -177,50 +176,4 @@ class Oara_Network_Publisher_SkyParkSecure extends Oara_Network {
 
 		return $paymentHistory;
 	}
-	
-	/**
-	 *
-	 * Function that Convert from a table to Csv
-	 * @param unknown_type $html
-	 */
-	private function htmlToCsv($html) {
-		$html = str_replace(array("\t", "\r", "\n"), "", $html);
-		$csv = "";
-		$dom = new Zend_Dom_Query($html);
-		$results = $dom->query('tr');
-		$count = count($results); // get number of matches: 4
-		foreach ($results as $result) {
-			$tdList = $result->childNodes;
-			$tdNumber = $tdList->length;
-			if ($tdNumber > 0) {
-				for ($i = 0; $i < $tdNumber; $i++) {
-					$value = $tdList->item($i)->nodeValue;
-					if ($i != $tdNumber - 1) {
-						$csv .= trim($value).";";
-					} else {
-						$csv .= trim($value);
-					}
-				}
-				$csv .= "\n";
-			}
-		}
-		$exportData = str_getcsv($csv, "\n");
-		return $exportData;
-	}
-	/**
-	 *
-	 * Function that returns the innet HTML code
-	 * @param unknown_type $element
-	 */
-	private function DOMinnerHTML($element) {
-		$innerHTML = "";
-		$children = $element->childNodes;
-		foreach ($children as $child) {
-			$tmp_dom = new DOMDocument();
-			$tmp_dom->appendChild($tmp_dom->importNode($child, true));
-			$innerHTML .= trim($tmp_dom->saveHTML());
-		}
-		return $innerHTML;
-	}
-
 }
