@@ -291,35 +291,34 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network
         $merchants = array();
         $merchantIdMap = array();
         foreach ($this->_siteList as $site) {
-            if (empty($this->_sitesAllowed) || in_array($site["id"], $this->_sitesAllowed)) {
-                $urls = array();
-                $urls [] = new Oara_Curl_Request ($site->url, array());
-                $result = $this->_client->get($urls);
 
-                $urls = array();
-                $urls [] = new Oara_Curl_Request ('http://cli.linksynergy.com/cli/publisher/programs/carDownload.php', array());
-                $result = $this->_client->get($urls);
+            $urls = array();
+            $urls [] = new Oara_Curl_Request ($site->url, array());
+            $result = $this->_client->get($urls);
 
-                $result [0] = str_replace("Baseline TrueLock\"\n", "Baseline TrueLock\",\n", $result [0]);
-                $exportData = explode(",\n", $result [0]);
+            $urls = array();
+            $urls [] = new Oara_Curl_Request ('http://cli.linksynergy.com/cli/publisher/programs/carDownload.php', array());
+            $result = $this->_client->get($urls);
 
-                $num = count($exportData);
-                for ($i = 1; $i < $num - 1; $i++) {
-                    $merchantArray = str_getcsv($exportData [$i], ",", '"');
-                    if (!in_array($merchantArray [2], $merchantIdMap)) {
-                        $obj = Array();
+            $result [0] = str_replace("Baseline TrueLock\"\n", "Baseline TrueLock\",\n", $result [0]);
+            $exportData = explode(",\n", $result [0]);
 
-                        if (!isset ($merchantArray [2])) {
-                            throw new Exception ("Error getting merchants");
-                        }
+            $num = count($exportData);
+            for ($i = 1; $i < $num - 1; $i++) {
+                $merchantArray = str_getcsv($exportData [$i], ",", '"');
+                if (!in_array($merchantArray [2], $merchantIdMap)) {
+                    $obj = Array();
 
-                        $obj ['cid'] = ( int )$merchantArray [2];
-                        $obj ['name'] = $merchantArray [0];
-                        $obj ['description'] = $merchantArray [3];
-                        $obj ['url'] = $merchantArray [1];
-                        $merchants [] = $obj;
-                        $merchantIdMap [] = $obj ['cid'];
+                    if (!isset ($merchantArray [2])) {
+                        throw new Exception ("Error getting merchants");
                     }
+
+                    $obj ['cid'] = ( int )$merchantArray [2];
+                    $obj ['name'] = $merchantArray [0];
+                    $obj ['description'] = $merchantArray [3];
+                    $obj ['url'] = $merchantArray [1];
+                    $merchants [] = $obj;
+                    $merchantIdMap [] = $obj ['cid'];
                 }
             }
         }
@@ -342,49 +341,50 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network
             'precision' => 2
         ));
         foreach ($this->_siteList as $site) {
+            if (empty($this->_sitesAllowed) || in_array($site["id"], $this->_sitesAllowed)) {
+                echo "getting Transactions for site " . $site->id . "\n\n";
 
-            echo "getting Transactions for site " . $site->id . "\n\n";
+                $url = "https://reportws.linksynergy.com/downloadreport.php?bdate=" . $dStartDate->toString("yyyyMMdd") . "&edate=" . $dEndDate->toString("yyyyMMdd") . "&token=" . $site->secureToken . "&nid=" . $this->_nid . "&reportid=12";
+                $result = file_get_contents($url);
+                if (preg_match("/You cannot request/", $result)) {
+                    throw new Exception ("Reached the limit");
+                }
+                $exportData = str_getcsv($result, "\n");
+                $num = count($exportData);
+                for ($j = 1; $j < $num; $j++) {
+                    $transactionData = str_getcsv($exportData [$j], ",");
 
-            $url = "https://reportws.linksynergy.com/downloadreport.php?bdate=" . $dStartDate->toString("yyyyMMdd") . "&edate=" . $dEndDate->toString("yyyyMMdd") . "&token=" . $site->secureToken . "&nid=" . $this->_nid . "&reportid=12";
-            $result = file_get_contents($url);
-            if (preg_match("/You cannot request/", $result)) {
-                throw new Exception ("Reached the limit");
-            }
-            $exportData = str_getcsv($result, "\n");
-            $num = count($exportData);
-            for ($j = 1; $j < $num; $j++) {
-                $transactionData = str_getcsv($exportData [$j], ",");
+                    if (in_array(( int )$transactionData [1], $merchantList)) {
+                        $transaction = Array();
+                        $transaction ['merchantId'] = ( int )$transactionData [1];
+                        $transactionDate = new Zend_Date ($transactionData [10] . " " . $transactionData [11], "MM/dd/yyyy HH:mm:ss");
+                        $transaction ['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 
-                if (in_array(( int )$transactionData [1], $merchantList)) {
-                    $transaction = Array();
-                    $transaction ['merchantId'] = ( int )$transactionData [1];
-                    $transactionDate = new Zend_Date ($transactionData [10] . " " . $transactionData [11], "MM/dd/yyyy HH:mm:ss");
-                    $transaction ['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+                        if ($transactionData [0] != '<none>') {
+                            $transaction ['custom_id'] = $transactionData [0];
+                        }
+                        $transaction ['unique_id'] = $transactionData [3] . "_" . $transactionData [6];
 
-                    if ($transactionData [0] != '<none>') {
-                        $transaction ['custom_id'] = $transactionData [0];
+                        $sales = $filter->filter($transactionData [7]);
+
+                        if ($sales != 0) {
+                            $transaction ['status'] = Oara_Utilities::STATUS_CONFIRMED;
+                        } else if ($sales == 0) {
+                            $transaction ['status'] = Oara_Utilities::STATUS_PENDING;
+                        }
+
+                        $transaction ['amount'] = $filter->filter($transactionData [7]);
+
+                        $transaction ['commission'] = $filter->filter($transactionData [9]);
+
+                        if ($transaction ['commission'] < 0) {
+                            $transaction ['amount'] = 0;
+                            $transaction ['commission'] = 0;
+                            $transaction ['status'] = Oara_Utilities::STATUS_DECLINED;
+                        }
+
+                        $totalTransactions [] = $transaction;
                     }
-                    $transaction ['unique_id'] = $transactionData [3] . "_" . $transactionData [6];
-
-                    $sales = $filter->filter($transactionData [7]);
-
-                    if ($sales != 0) {
-                        $transaction ['status'] = Oara_Utilities::STATUS_CONFIRMED;
-                    } else if ($sales == 0) {
-                        $transaction ['status'] = Oara_Utilities::STATUS_PENDING;
-                    }
-
-                    $transaction ['amount'] = $filter->filter($transactionData [7]);
-
-                    $transaction ['commission'] = $filter->filter($transactionData [9]);
-
-                    if ($transaction ['commission'] < 0) {
-                        $transaction ['amount'] = 0;
-                        $transaction ['commission'] = 0;
-                        $transaction ['status'] = Oara_Utilities::STATUS_DECLINED;
-                    }
-
-                    $totalTransactions [] = $transaction;
                 }
             }
         }
