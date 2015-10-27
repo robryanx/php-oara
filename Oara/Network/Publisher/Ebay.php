@@ -64,7 +64,7 @@ class Oara_Network_Publisher_Ebay extends Oara_Network {
         $yesterday = new \Zend_Date ();
         $yesterday->subDay(2);
         $urls = array();
-        $urls[] = new Oara_Curl_Request("https://publisher.ebaypartnernetwork.com/PublisherReportsTx?pt=2&start_date={$yesterday->toSTring("M/d/yyyy")}&end_date={$yesterday->toSTring("M/d/yyyy")}&user_name={$this->_credentials['user']}&user_password={$this->_credentials['password']}&advIdProgIdCombo=&tx_fmt=1&submit_tx=Download", array());
+        $urls[] = new Oara_Curl_Request("https://publisher.ebaypartnernetwork.com/PublisherReportsTx?pt=2&start_date={$yesterday->toSTring("M/d/yyyy")}&end_date={$yesterday->toSTring("M/d/yyyy")}&user_name={$this->_credentials['user']}&user_password={$this->_credentials['password']}&advIdProgIdCombo=&tx_fmt=2&submit_tx=Download", array());
         $exportReport = $this->_client->get($urls);
 
         if (preg_match("/DOCTYPE html PUBLIC/", $exportReport[0])){
@@ -96,6 +96,7 @@ class Oara_Network_Publisher_Ebay extends Oara_Network {
         $totalTransactions = array();
         $urls = array();
         $urls[] = new Oara_Curl_Request("https://publisher.ebaypartnernetwork.com/PublisherReportsTx?pt=2&start_date={$dStartDate->toSTring("M/d/yyyy")}&end_date={$dEndDate->toSTring("M/d/yyyy")}&user_name={$this->_credentials['user']}&user_password={$this->_credentials['password']}&advIdProgIdCombo=&tx_fmt=3&submit_tx=Download", array());
+        $exportData = array();
         try{
             $exportReport = $this->_client->get($urls, 'content', 5);
             $exportData = str_getcsv($exportReport[0], "\n");
