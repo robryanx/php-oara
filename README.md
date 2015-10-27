@@ -9,11 +9,11 @@ We provide a simple structure and make it easy to add new networks using
 the tools available.
 
 This project is being used as part of [AffJet](http://www.affjet.com/),
-which offers a hosted Affiliate Aggregator service, with a web interface 
-and additional analysis tools. 
+which offers a hosted Affiliate Aggregator service, with a web interface
+and additional analysis tools.
 
-Development is sponsored by [AffJet](http://www.affjet.com) but we welcome 
-code contributions from anyone. 
+Development is sponsored by [AffJet](http://www.affjet.com) but we welcome
+code contributions from anyone.
 
 License
 -------
@@ -21,7 +21,7 @@ PHP-OARA is available under a dual license model; either AGPL or a commercial li
 
 This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU Affero General Public License (LICENSE.TXT).
- 
+
 If you are interested in being a contributor to this project we encourage to read, fill and send this file (FubraLimited-ContributorLicenseAgreement.docx) to support@fubra.com.
 
 Networks Supported
@@ -30,7 +30,7 @@ Networks Supported
 The list of supported networks for Publishers so far is:
 
 
-* [Affiliate Window](http://www.affiliatewindow.com/) 
+* [Affiliate Window](http://www.affiliatewindow.com/)
 * [Affiliate Future](http://www.affiliatefuture.com/)
 * [Trade Doubler](http://www.tradedoubler.com/)
 * [Google AdSense](https://www.google.com/accounts/ServiceLogin?service=adsense)
@@ -118,22 +118,22 @@ for the different networks.
 ### Follow the steps
 
 	1. Create the folder with the clone of the code.
-	
+
 	git clone https://github.com/fubralimited/php-oara.git php-oara
-	
+
 	2. Change the directory to the root of the project
-	
+
 	cd php-oara
-	
+
 	3. Initialise composer
-	
+
 	curl -s https://getcomposer.org/installer | php --
 	php composer.phar self-update
 	php composer.phar install
-	
+
 	5. Credentials.ini.sample
-	
-	In the example folder a "credentials.ini.sample" has been provided. 
+
+	In the example folder a "credentials.ini.sample" has been provided.
 	Please rename it to "credentials.ini" and follow the intructions
 	in order to fill your crendentials.
 
@@ -175,13 +175,13 @@ please pay attention to the next rules:
 	* getTransactionList
 	* getPaymentHistory
 	* paymentTransactions
-	
+
 * Add the credentials to the credentials.ini.sample. (Please add also information about how to find your credentials)
 
 * Add the generic example to the examples folder.
 
 
-Network 
+Network
 ------------
 
 The network classes must implement the Oara_Network interface, which includes these methods.
@@ -226,20 +226,20 @@ Gets the Transactions Id for a paymentId
 
 * return Array ( Array of Transcation unique_id )
 
-Merchant 
+Merchant
 ------------
 
 It's an array with the following keys:
 
-* name (not null) - Merchant's name 
+* name (not null) - Merchant's name
 
-* cid (not null) - Merchant's unique id 
+* cid (not null) - Merchant's unique id
 
-* description - Merchant's description 
+* description - Merchant's description
 
-* url - Merchant's url 
+* url - Merchant's url
 
-Transaction 
+Transaction
 ------------
 
 It's an array with the following keys:
@@ -252,7 +252,7 @@ It's an array with the following keys:
 
 * commission (not null) - Transaction commission (double)
 
-* status (not null) - Three different statuses :
+* status (not null) - Four different statuses:
 	* Oara_Utilities::STATUS_CONFIRMED
 	* Oara_Utilities::STATUS_PENDING
 	* Oara_Utilities::STATUS_DECLINED
@@ -262,7 +262,7 @@ It's an array with the following keys:
 * custom_id - Custom id (or sub id) for the transaction (string), custom param you put on your links to see the performance or who made the sale.
 
 
-Payment 
+Payment
 ------------
 
 It's an array with the next keys:
@@ -282,5 +282,5 @@ Contact
 
 If you have any question, go to the project's [website](http://php-oara.affjet.com/) or
 send an email to support@affjet.com
-	
+
 
