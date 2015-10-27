@@ -43,7 +43,7 @@ class Oara_Network_Publisher_HasOffers extends Oara_Network {
 	 *
 	 * @param
 	 *        	$affiliateWindow
-	 * @return Oara_Network_Publisher_Aw_Api
+	 * @return Oara_Network_Publisher_HasOffers
 	 */
 	public function __construct($credentials) {
 		ini_set ( 'default_socket_timeout', '120' );
