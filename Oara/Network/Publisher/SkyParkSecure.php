@@ -77,7 +77,7 @@ class Oara_Network_Publisher_SkyParkSecure extends Oara_Network {
 		}
 		//Getting APIKEY
 		if ($connection){
-			if (!preg_match("/self.api_key = '(.*)?';/", $exportReport[0], $match)){
+			if (!preg_match("/self.api_key\s*=\s*'(.*)?';/", $exportReport[0], $match)){
 				$connection = false;
 			} else {
 				$this->_apiKey = $match[1];
@@ -85,7 +85,7 @@ class Oara_Network_Publisher_SkyParkSecure extends Oara_Network {
 		}
 		
 		if ($connection){
-			if (!preg_match("/self.agent = '(.*)?';/", $exportReport[0], $match)){
+			if (!preg_match("/self.agent\s*=\s*'(.*)?';self.date1/", $exportReport[0], $match)){
 				$connection = false;
 			} else {
 				$this->_agent = $match[1];

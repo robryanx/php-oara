@@ -43,7 +43,7 @@ class Oara_Network_Publisher_TerraVision extends Oara_Network {
 
 		$user = $credentials['user'];
 		$password = $credentials['password'];
-		$loginUrl = 'http://book.terravision.eu/login_check?';
+		$loginUrl = 'https://book.terravision.eu/login_check?';
 
 		$valuesLogin = array(new Oara_Curl_Parameter('_username', $user),
 			new Oara_Curl_Parameter('_password', $password),
@@ -53,7 +53,7 @@ class Oara_Network_Publisher_TerraVision extends Oara_Network {
 		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
 
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://book.terravision.eu/login', array());
+		$urls[] = new Oara_Curl_Request('https://book.terravision.eu/login', array());
 		$exportReport = $this->_client->get($urls);
 		$dom = new Zend_Dom_Query($exportReport[0]);
 		$results = $dom->query('input[name="_csrf_token"]');
@@ -79,9 +79,9 @@ class Oara_Network_Publisher_TerraVision extends Oara_Network {
 		$connection = false;
 
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://book.terravision.eu/partner/my/', array());
+		$urls[] = new Oara_Curl_Request('https://book.terravision.eu/partner/my/', array());
 		$exportReport = $this->_client->get($urls);
-		if (preg_match("/\/logout/", $exportReport[0], $matches)) {
+		if (preg_match("/logout/", $exportReport[0], $matches)) {
 			$connection = true;
 		}
 		return $connection;
@@ -110,7 +110,7 @@ class Oara_Network_Publisher_TerraVision extends Oara_Network {
 		$stringToFind = $dStartDate->toString("MMMM yyyy");
 		
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://book.terravision.eu/partner/my/payments', array());
+		$urls[] = new Oara_Curl_Request('https://book.terravision.eu/partner/my/payments', array());
 		$exportReport = $this->_client->get($urls);
 		/*** load the html into the object ***/
 		$dom = new Zend_Dom_Query($exportReport[0]);
