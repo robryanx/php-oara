@@ -115,8 +115,8 @@ class Oara_Network_Publisher_Ebay extends Oara_Network {
                 $transactionDate = new Zend_Date($transactionExportArray[1], 'yyyy-MM-dd', 'en');
                 $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
                 unset($transactionDate);
-                if ($transactionExportArray[12] != null) {
-                    $transaction['custom_id'] = $transactionExportArray[12];
+                if ($transactionExportArray[10] != null) {
+                    $transaction['custom_id'] = $transactionExportArray[10];
                 }
 
                 $transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
