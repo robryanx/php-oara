@@ -92,8 +92,9 @@ class Oara_Network_Publisher_TradeTracker extends Oara_Network {
 	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = array();
 
-		$options = array('registrationDateFrom'	 => $dStartDate->toString('yyyy-MM-dd'),
-			'registrationDateTo'	 => $dEndDate->toString('yyyy-MM-dd'),
+		$options = array(
+			'registrationDateFrom'	 => $dStartDate->toString('yyyy-MM-dd'),
+			'registrationDateTo'	 => $dEndDate->addDay(1)->toString('yyyy-MM-dd'),
 		);
 		$affiliateSitesList = $this->_apiClient->getAffiliateSites();
 		foreach ($affiliateSitesList as $affiliateSite) {
