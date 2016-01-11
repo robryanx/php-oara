@@ -55,7 +55,7 @@ class Oara_Network_Publisher_AutoEurope extends Oara_Network
     {
         $user = $credentials ['user'];
         $password = $credentials ['password'];
-        $loginUrl = 'https://www.auto-europe.co.uk/afftools/index.cfm';
+        $loginUrl = 'https://www.autoeurope.co.uk/afftools/index.cfm';
         $valuesLogin = array(
             new Oara_Curl_Parameter ('action', 'runreport'),
             new Oara_Curl_Parameter ('alldates', 'all'),
@@ -80,7 +80,7 @@ class Oara_Network_Publisher_AutoEurope extends Oara_Network
     {
         $connection = false;
         $urls = array();
-        $urls [] = new Oara_Curl_Request ('https://www.auto-europe.co.uk/afftools/index.cfm', array());
+        $urls [] = new Oara_Curl_Request ('https://www.autoeurope.co.uk/afftools/index.cfm', array());
         $exportReport = $this->_client->get($urls);
         if (preg_match('/logout\.cfm/', $exportReport [0], $matches)) {
             $connection = true;
@@ -99,7 +99,7 @@ class Oara_Network_Publisher_AutoEurope extends Oara_Network
         $obj = Array();
         $obj ['cid'] = 1;
         $obj ['name'] = 'Auto Europe';
-        $obj ['url'] = 'https://www.auto-europe.co.uk';
+        $obj ['url'] = 'https://www.autoeurope.co.uk';
         $merchants [] = $obj;
 
         return $merchants;
@@ -119,7 +119,7 @@ class Oara_Network_Publisher_AutoEurope extends Oara_Network
         $valuesFormExport [] = new Oara_Curl_Parameter ('pDate1', $dStartDate->toString("MM/d/yyyy"));
         $valuesFormExport [] = new Oara_Curl_Parameter ('pDate2', $dEndDate->toString("MM/d/yyyy"));
         $urls = array();
-        $urls [] = new Oara_Curl_Request ('https://www.auto-europe.co.uk/afftools/iatareport_popup.cfm?', $valuesFormExport);
+        $urls [] = new Oara_Curl_Request ('https://www.autoeurope.co.uk/afftools/iatareport_popup.cfm?', $valuesFormExport);
         $exportReport = $this->_client->post($urls);
         $xmlTransactionList = self::readTransactions($exportReport [0]);
 
