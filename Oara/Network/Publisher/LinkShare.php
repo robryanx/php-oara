@@ -341,7 +341,7 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network
             'precision' => 2
         ));
         foreach ($this->_siteList as $site) {
-            if (empty($this->_sitesAllowed) || in_array($site["id"], $this->_sitesAllowed)) {
+            if (empty($this->_sitesAllowed) || in_array($site->id, $this->_sitesAllowed)) {
                 echo "getting Transactions for site " . $site->id . "\n\n";
 
                 $url = "https://reportws.linksynergy.com/downloadreport.php?bdate=" . $dStartDate->toString("yyyyMMdd") . "&edate=" . $dEndDate->toString("yyyyMMdd") . "&token=" . $site->secureToken . "&nid=" . $this->_nid . "&reportid=12";
