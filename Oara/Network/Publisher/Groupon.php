@@ -138,7 +138,7 @@ class Oara_Network_Publisher_Groupon extends Oara_Network {
     			$transactionExportArray = str_getcsv($exportData[$i], ",");
     			$transaction = Array();
     			$transaction['merchantId'] = "1";
-    			$transaction['date'] = $date->toString("yyyy-MM-ddTHH:mm:ss");
+    			$transaction['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
     			$transaction['unique_id'] =  $transactionExportArray[0];
     			$transaction['currency'] = $transactionExportArray[4];
     
