@@ -149,11 +149,11 @@ class Oara_Network_Publisher_Afilio extends Oara_Network {
 				$transaction ['customId'] = $transactionExportArray [5];
 				
 				
-				if ($transactionExportArray [7] == "Accepted" || $transactionExportArray [7] == "Accepté") {
+				if ($transactionExportArray [7] == "Accepted" || $transactionExportArray [7] == "Accepté" || $transactionExportArray [7] == "Aceito") {
 					$transaction ['status'] = Oara_Utilities::STATUS_CONFIRMED;
-				} else if ($transactionExportArray [7] == "Pending" || $transactionExportArray [7] == "En attente") {
+				} else if ($transactionExportArray [7] == "Pending" || $transactionExportArray [7] == "En attente"|| $transactionExportArray [7] == "Pendente") {
 					$transaction ['status'] = Oara_Utilities::STATUS_PENDING;
-				} else if ($transactionExportArray [7] == "Rejected" || $transactionExportArray [7] == "Refusé" || $transactionExportArray [7] == "Refused") {
+				} else if ($transactionExportArray [7] == "Rejected" || $transactionExportArray [7] == "Refusé" || $transactionExportArray [7] == "Refused" || $transactionExportArray [7] == "Recusado") {
 					$transaction ['status'] = Oara_Utilities::STATUS_DECLINED;
 				} else {
 					throw new Exception ( "New status found {$transactionExportArray [7]}" );

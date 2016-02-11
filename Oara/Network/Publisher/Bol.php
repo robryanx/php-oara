@@ -144,9 +144,9 @@ class Oara_Network_Publisher_Bol extends Oara_Network {
 		   		echo "new status ".$objWorksheet->getCellByColumnAndRow(14, $row)->getValue();
 		   	}
 		   	
-		   	$transaction['amount'] = $objWorksheet->getCellByColumnAndRow(11, $row)->getValue();
+		   	$transaction['amount'] = round($objWorksheet->getCellByColumnAndRow(11, $row)->getValue(),2);
 		   	
-		   	$transaction['commission'] = $objWorksheet->getCellByColumnAndRow(12, $row)->getValue();
+		   	$transaction['commission'] = round($objWorksheet->getCellByColumnAndRow(12, $row)->getValue(),2);
 		   	$totalTransactions[] = $transaction;
 		    
 		}

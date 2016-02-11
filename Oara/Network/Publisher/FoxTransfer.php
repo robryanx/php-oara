@@ -123,7 +123,7 @@ class Oara_Network_Publisher_FoxTransfer extends Oara_Network {
 			} else if ($transactionExportArray[7] == "Cancelled"){
 				$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
 			} else {
-				throw new Exception("New status found");
+				throw new Exception("New status found {$transaction['status']}");
 			}
 			
 			$transaction['amount'] = Oara_Utilities::parseDouble(preg_replace('/[^0-9\.,]/', "", $transactionExportArray[10]));
