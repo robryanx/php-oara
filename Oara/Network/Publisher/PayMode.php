@@ -140,7 +140,7 @@ class Oara_Network_Publisher_PayMode extends Oara_Network {
 		$urls[] = new Oara_Curl_Request('https://secure.paymode.com/paymode/home.jsp?', array());
 		$exportReport = $this->_client->get($urls);
 
-		if (preg_match('/paymode\/logout\.jsp/', $exportReport[0], $matches)) {
+		if (preg_match('/class="logout"/', $exportReport[0], $matches)) {
 
 			$urls = array();
 			$urls[] = new Oara_Curl_Request('https://secure.paymode.com/paymode/reports-pre_commission_history.jsp?', array());
