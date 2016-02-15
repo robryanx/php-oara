@@ -66,7 +66,7 @@ class Oara_Network_Publisher_RentalCars extends Oara_Network {
 		// If not login properly the construct launch an exception
 		$connection = false;
 		$urls = array ();
-		$urls [] = new Oara_Curl_Request ( 'https://secure.rentalcars.com/affiliates/?master=1', array () );
+		$urls [] = new \Oara\Curl\Request ( 'https://secure.rentalcars.com/affiliates/?master=1', array () );
 		
 		$exportReport = $this->_client->get ( $urls );
 		
@@ -100,7 +100,7 @@ class Oara_Network_Publisher_RentalCars extends Oara_Network {
 	 * 
 	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = array ();
 		
 		
@@ -109,7 +109,7 @@ class Oara_Network_Publisher_RentalCars extends Oara_Network {
 		$valuesFormExport [] = new Oara_Curl_Parameter ( 'cancelled', 'cancelled' );
 		
 		$urls = array ();
-		$urls [] = new Oara_Curl_Request ( 'https://secure.rentalcars.com/affiliates/booked_excel?date_start=' . $dStartDate->toString ( "yyyy-MM-dd" ) . '&date_end=' . $dEndDate->toString ( "yyyy-MM-dd" ) , $valuesFormExport );
+		$urls [] = new \Oara\Curl\Request ( 'https://secure.rentalcars.com/affiliates/booked_excel?date_start=' . $dStartDate->toString ( "yyyy-MM-dd" ) . '&date_end=' . $dEndDate->toString ( "yyyy-MM-dd" ) , $valuesFormExport );
 		$exportReport = $this->_client->post ( $urls );
 		
 		$xml = simplexml_load_string ( $exportReport [0] );
@@ -139,7 +139,7 @@ class Oara_Network_Publisher_RentalCars extends Oara_Network {
 		$valuesFormExport [] = new Oara_Curl_Parameter ( 'booking', 'booking' );
 		
 		$urls = array ();
-		$urls [] = new Oara_Curl_Request ( 'https://secure.rentalcars.com/affiliates/booked_excel?date_start=' . $dStartDate->toString ( "yyyy-MM-dd" ) . '&date_end=' . $dEndDate->toString ( "yyyy-MM-dd" ), $valuesFormExport );
+		$urls [] = new \Oara\Curl\Request ( 'https://secure.rentalcars.com/affiliates/booked_excel?date_start=' . $dStartDate->toString ( "yyyy-MM-dd" ) . '&date_end=' . $dEndDate->toString ( "yyyy-MM-dd" ), $valuesFormExport );
 		$exportReport = $this->_client->post ( $urls );
 		
 		$xml = simplexml_load_string ( $exportReport [0] );
@@ -167,9 +167,9 @@ class Oara_Network_Publisher_RentalCars extends Oara_Network {
 			$transaction ['unique_id'] = $transactionDetails["Res. Number"];
 			
 			if (isset($transactionDetails["Payment Date"]) && $transactionDetails["Payment Date"] != null){
-				$date = new Zend_Date($transactionDetails["Payment Date"], "dd MMM yyyy - HH:ii", "en_GB");
+				$date = new \DateTime($transactionDetails["Payment Date"], "dd MMM yyyy - HH:ii", "en_GB");
 			} else {
-				$date = new Zend_Date($transactionDetails["Book Date"], "dd MMM yyyy - HH:ii", "en_GB");
+				$date = new \DateTime($transactionDetails["Book Date"], "dd MMM yyyy - HH:ii", "en_GB");
 			}
 			
 			

@@ -137,7 +137,7 @@ class Oara_Network_Publisher_Daisycon extends Oara_Network {
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = array();
 
 
@@ -172,7 +172,7 @@ class Oara_Network_Publisher_Daisycon extends Oara_Network {
 						$transactionArray['unique_id'] = $transaction['affiliatemarketing_id'];
 
 						$transactionArray['merchantId'] = $merchantId;
-						$transactionDate = new Zend_Date($transaction['date'], 'dd-MM-yyyyTHH:mm:ss');
+						$transactionDate = new \DateTime($transaction['date'], 'dd-MM-yyyyTHH:mm:ss');
 						$transactionArray['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 							
 						$parts = current($transaction['parts']);

@@ -103,14 +103,14 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network
         $connection = false;
 
         $urls = array();
-        $urls [] = new Oara_Curl_Request ('http://cli.linksynergy.com/cli/publisher/home.php', array());
+        $urls [] = new \Oara\Curl\Request ('http://cli.linksynergy.com/cli/publisher/home.php', array());
         $result = $this->_client->get($urls);
 
         // Check if the credentials are right
         if (preg_match('/https:\/\/cli\.linksynergy\.com\/cli\/common\/logout\.php/', $result [0], $matches)) {
 
             $urls = array();
-            $urls [] = new Oara_Curl_Request ('https://cli.linksynergy.com/cli/publisher/my_account/marketingChannels.php', array());
+            $urls [] = new \Oara\Curl\Request ('https://cli.linksynergy.com/cli/publisher/my_account/marketingChannels.php', array());
             $resultHtml = $this->_client->get($urls);
 
             $dom = new Zend_Dom_Query ($resultHtml [0]);
@@ -151,11 +151,11 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network
                 $site->id = $attributeMap ['sid'];
                 // Login into the Site ID
                 $urls = array();
-                $urls [] = new Oara_Curl_Request ($site->url, array());
+                $urls [] = new \Oara\Curl\Request ($site->url, array());
                 $result = $this->_client->get($urls);
 
                 $urls = array();
-                $urls [] = new Oara_Curl_Request ('http://cli.linksynergy.com/cli/publisher/links/webServices.php', array());
+                $urls [] = new \Oara\Curl\Request ('http://cli.linksynergy.com/cli/publisher/links/webServices.php', array());
                 $result = $this->_client->get($urls);
 
                 // Getting the API Token
@@ -182,7 +182,7 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network
                     $urlParams [] = new Oara_Curl_Parameter ('analyticchannel', '');
                     $urlParams [] = new Oara_Curl_Parameter ('analyticpage', '');
                     $urlParams [] = new Oara_Curl_Parameter ('doUpdateToken', 'Y');
-                    $urls [] = new Oara_Curl_Request ('http://cli.linksynergy.com/cli/publisher/links/webServices.php?', $urlParams);
+                    $urls [] = new \Oara\Curl\Request ('http://cli.linksynergy.com/cli/publisher/links/webServices.php?', $urlParams);
                     $result = $this->_client->post($urls);
                     // Getting the API Token
                     $dom = new Zend_Dom_Query ($result [0]);
@@ -206,7 +206,7 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network
                     $urlParams [] = new Oara_Curl_Parameter ('analyticchannel', '');
                     $urlParams [] = new Oara_Curl_Parameter ('analyticpage', '');
                     $urlParams [] = new Oara_Curl_Parameter ('doUpdateSecureToken', 'Y');
-                    $urls [] = new Oara_Curl_Request ('http://cli.linksynergy.com/cli/publisher/links/webServices.php?', $urlParams);
+                    $urls [] = new \Oara\Curl\Request ('http://cli.linksynergy.com/cli/publisher/links/webServices.php?', $urlParams);
                     $result = $this->_client->post($urls);
                     // Getting the API Token
                     $dom = new Zend_Dom_Query ($result [0]);
@@ -293,11 +293,11 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network
         foreach ($this->_siteList as $site) {
 
             $urls = array();
-            $urls [] = new Oara_Curl_Request ($site->url, array());
+            $urls [] = new \Oara\Curl\Request ($site->url, array());
             $result = $this->_client->get($urls);
 
             $urls = array();
-            $urls [] = new Oara_Curl_Request ('http://cli.linksynergy.com/cli/publisher/programs/carDownload.php', array());
+            $urls [] = new \Oara\Curl\Request ('http://cli.linksynergy.com/cli/publisher/programs/carDownload.php', array());
             $result = $this->_client->get($urls);
 
             $result [0] = str_replace("Baseline TrueLock\"\n", "Baseline TrueLock\",\n", $result [0]);
@@ -327,13 +327,13 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network
 
     /**
      * @param null $merchantList
-     * @param Zend_Date|null $dStartDate
-     * @param Zend_Date|null $dEndDate
+     * @param \DateTime|null $dStartDate
+     * @param \DateTime|null $dEndDate
      * @param null $merchantMap
      * @return array
      * @throws Exception
      */
-    public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null)
+    public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null)
     {
         $totalTransactions = Array();
 
@@ -357,7 +357,7 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network
                     if (in_array(( int )$transactionData [1], $merchantList)) {
                         $transaction = Array();
                         $transaction ['merchantId'] = ( int )$transactionData [1];
-                        $transactionDate = new Zend_Date ($transactionData [10] . " " . $transactionData [11], "MM/dd/yyyy HH:mm:ss");
+                        $transactionDate = new \DateTime ($transactionData [10] . " " . $transactionData [11], "MM/dd/yyyy HH:mm:ss");
                         $transaction ['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 
                         if ($transactionData [0] != '<none>') {
@@ -403,8 +403,8 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network
         $filter = new Zend_Filter_LocalizedToNormalized (array(
             'precision' => 2
         ));
-        $past = new Zend_Date ("01-01-2010", "dd-MM-yyyy");
-        $now = new Zend_Date ();
+        $past = new \DateTime ("01-01-2010", "dd-MM-yyyy");
+        $now = new \DateTime ();
         $dateList = Oara_Utilities::yearsOfDifference($past, $now);
         $dateList [] = $now;
         foreach ($this->_siteList as $site) {
@@ -427,7 +427,7 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network
                 for ($j = 1; $j < $number; $j++) {
                     $paymentData = str_getcsv($paymentLines [$j], ",");
                     $obj = array();
-                    $date = new Zend_Date ($paymentData [1], "yyyy-MM-dd");
+                    $date = new \DateTime ($paymentData [1], "yyyy-MM-dd");
                     $obj ['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
 
                     $obj ['value'] = $filter->filter($paymentData [5]);

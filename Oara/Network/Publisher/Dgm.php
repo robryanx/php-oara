@@ -116,7 +116,7 @@ class Oara_Network_Publisher_Dgm extends Oara_Network {
 	 * 
 	 * @see library/Oara/Network/Oara_Network_Publisher_Base#getTransactionList($merchantId, $dStartDate, $dEndDate)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = Array ();
 		
 		$transactionXml = $this->_apiClient->GetSales ( $this->_user, $this->_pass, 0, 'all', 'validated', $dStartDate->toString ( "yyyy-MM-dd" ), $dEndDate->toString ( "yyyy-MM-dd" ) );
@@ -140,7 +140,7 @@ class Oara_Network_Publisher_Dgm extends Oara_Network {
 					$transaction = Array ();
 					$transaction ['unique_id'] = ( string ) $sale->OrderID;
 					$transaction ['merchantId'] = $campaignIdList [( string ) $sale->CampaignID];
-					$transactionDate = new Zend_Date ( ( string ) $sale->SaleDate, 'yyyy-MM-dd HH:mm:ss' );
+					$transactionDate = new \DateTime ( ( string ) $sale->SaleDate, 'yyyy-MM-dd HH:mm:ss' );
 					$transaction ['date'] = $transactionDate->toString ( "yyyy-MM-dd HH:mm:ss" );
 					
 					if (( string ) $sale->CompanyID != null) {

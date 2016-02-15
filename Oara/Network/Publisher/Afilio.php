@@ -66,7 +66,7 @@ class Oara_Network_Publisher_Afilio extends Oara_Network {
 	public function checkConnection() {
 		$connection = false;
 		$urls = array ();
-		$urls [] = new Oara_Curl_Request ( 'http://v2.afilio.com.br/aff/', array () );
+		$urls [] = new \Oara\Curl\Request ( 'http://v2.afilio.com.br/aff/', array () );
 		$exportReport = $this->_client->get ( $urls );
 		if (preg_match ( "/logout/", $exportReport [0], $matches )) {
 			$connection = true;
@@ -84,7 +84,7 @@ class Oara_Network_Publisher_Afilio extends Oara_Network {
 		
 		$valuesFromExport = array ();
 		$urls = array ();
-		$urls [] = new Oara_Curl_Request ( 'http://v2.afilio.com.br/aff/aff_manage_sale.php', $valuesFromExport );
+		$urls [] = new \Oara\Curl\Request ( 'http://v2.afilio.com.br/aff/aff_manage_sale.php', $valuesFromExport );
 		$exportReport = $this->_client->get ( $urls );
 		
 		$dom = new Zend_Dom_Query ( $exportReport [0] );
@@ -110,7 +110,7 @@ class Oara_Network_Publisher_Afilio extends Oara_Network {
 	 *
 	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = array ();
 		
 		$valuesFromExport = array ();
@@ -127,7 +127,7 @@ class Oara_Network_Publisher_Afilio extends Oara_Network {
 		$valuesFromExport [] = new Oara_Curl_Parameter ( 'p_nPage', '1' );
 		
 		$urls = array ();
-		$urls [] = new Oara_Curl_Request ( 'http://v2.afilio.com.br/include/lib/aff_lib_manage_sale.php?', $valuesFromExport );
+		$urls [] = new \Oara\Curl\Request ( 'http://v2.afilio.com.br/include/lib/aff_lib_manage_sale.php?', $valuesFromExport );
 		
 		$exportReport = $this->_client->get ( $urls );
 		$dom = new Zend_Dom_Query ( $exportReport [0] );
@@ -143,7 +143,7 @@ class Oara_Network_Publisher_Afilio extends Oara_Network {
 				$transaction = Array ();
 				$transaction ['merchantId'] = $merchantMap [$transactionExportArray [0]];
 				$transaction ['unique_id'] = $transactionExportArray [4];
-				$transactionDate = new Zend_Date ( $transactionExportArray [1], 'dd/MM/yy HH:mm:dd', 'en' );
+				$transactionDate = new \DateTime ( $transactionExportArray [1], 'dd/MM/yy HH:mm:dd', 'en' );
 				$transaction ['date'] = $transactionDate->toString ( "yyyy-MM-dd HH:mm:ss" );
 				
 				$transaction ['customId'] = $transactionExportArray [5];

@@ -172,7 +172,7 @@ class Oara_Network_Advertiser_WebGains extends Oara_Network
     {
         $campaingMap = array();
         $urls = array();
-        $urls[] = new Oara_Curl_Request("http://{$this->_server}/affiliates/report.html?f=0&action=sf", array());
+        $urls[] = new \Oara\Curl\Request("http://{$this->_server}/affiliates/report.html?f=0&action=sf", array());
         $exportReport = $this->_webClient->get($urls);
         $matches = array();
         if (preg_match("/<select name=\"campaignswitchid\" class=\"formelement\" style=\"width:134px\">([^\t]*)<\/select>/", $exportReport[0], $matches)) {
@@ -201,7 +201,7 @@ class Oara_Network_Advertiser_WebGains extends Oara_Network
      * (non-PHPdoc)
      * @see library/Oara/Network/Oara_Network_Publisher_Base#getTransactionList($merchantId,$dStartDate,$dEndDate)
      */
-    public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null)
+    public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null)
     {
         $totalTransactions = Array();
 
@@ -231,7 +231,7 @@ class Oara_Network_Advertiser_WebGains extends Oara_Network
         $valuesFromExport[] = new Oara_Curl_Parameter('resultsperpage', '0');
         $valuesFromExport[] = new Oara_Curl_Parameter('numdecimalplaces', '2');
         $urls = array();
-        $urls [] = new Oara_Curl_Request ("http://www.webgains.com/merchants/{$this->_merchantId}/report.html?", $valuesFromExport);
+        $urls [] = new \Oara\Curl\Request ("http://www.webgains.com/merchants/{$this->_merchantId}/report.html?", $valuesFromExport);
         $exportReport = $this->_webClient->get($urls);
 
         $exportData = str_getcsv($exportReport[0], "\n");
@@ -244,7 +244,7 @@ class Oara_Network_Advertiser_WebGains extends Oara_Network
 
                 $transaction = array();
                 $transaction['merchantId'] = $transactionExportArray[4];
-                $transactionDate = new Zend_Date($transactionExportArray[9], "dd/MM/yy HH:mm:ss");
+                $transactionDate = new \DateTime($transactionExportArray[9], "dd/MM/yy HH:mm:ss");
                 $transaction["date"] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
                 $transaction['unique_id'] = $transactionExportArray[13];
 

@@ -89,7 +89,7 @@ class Oara_Network_Publisher_Itunes extends Oara_Network {
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
 		$transactions = array();
 
 
@@ -116,7 +116,7 @@ class Oara_Network_Publisher_Itunes extends Oara_Network {
 						$transaction = Array();
 						$transaction['unique_id'] = $conversion["conversion_id"];
 						$transaction['merchantId'] = $conversion["campaign_id"];
-						$transactionDate = new Zend_Date($conversion["conversion_time"], 'yyyy-MM-dd HH:mm:ss');
+						$transactionDate = new \DateTime($conversion["conversion_time"], 'yyyy-MM-dd HH:mm:ss');
 						$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 
 						if ($conversion["publisher_reference"] != null) {
@@ -168,7 +168,7 @@ class Oara_Network_Publisher_Itunes extends Oara_Network {
 			foreach ($paymentList["selfbills"] as $selfbill){
 				$selfbill = $selfbill["selfbill"];
 				$obj = array();
-				$date = new Zend_Date($selfbill["payment_date"], "yyyy-MM-dd HH:mm:ss");
+				$date = new \DateTime($selfbill["payment_date"], "yyyy-MM-dd HH:mm:ss");
 				$obj['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
 				$obj['pid'] = intval($selfbill["publisher_self_bill_id"]);
 				$obj['value'] = $selfbill["total_value"];

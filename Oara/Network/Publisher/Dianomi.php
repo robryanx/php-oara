@@ -63,7 +63,7 @@ class Oara_Network_Publisher_Dianomi extends Oara_Network {
 		$connection = false;
 
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('https://my.dianomi.com/Campaign-Analysis-378_1.html?', array());
+		$urls[] = new \Oara\Curl\Request('https://my.dianomi.com/Campaign-Analysis-378_1.html?', array());
 		$exportReport = $this->_client->get($urls);
 		if (preg_match("/app=logout&amp;page=378&amp;partner=1/", $exportReport[0], $matches)) {
 			$connection = true;
@@ -87,7 +87,7 @@ class Oara_Network_Publisher_Dianomi extends Oara_Network {
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Publisher_Base#getTransactionList($merchantId, $dStartDate, $dEndDate)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = Array();
 		
 		$valuesFormExport = array();
@@ -106,7 +106,7 @@ class Oara_Network_Publisher_Dianomi extends Oara_Network {
 		$valuesFormExport[] = new Oara_Curl_Parameter('action', 'partnerLeads');
 		$valuesFormExport[] = new Oara_Curl_Parameter('subaction', 'RevenueOverTime');
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('https://my.dianomi.com/Campaign-Analysis-378_1.html?', $valuesFormExport);
+		$urls[] = new \Oara\Curl\Request('https://my.dianomi.com/Campaign-Analysis-378_1.html?', $valuesFormExport);
 		$exportReport = $this->_client->get($urls);
 		$dom = new Zend_Dom_Query($exportReport[0]);
 		$results = $dom->query('.tabular');
@@ -119,7 +119,7 @@ class Oara_Network_Publisher_Dianomi extends Oara_Network {
 				$transaction = Array();
 		
 				$transaction['merchantId'] = 1;
-				$date = new Zend_Date($overviewExportArray[0], "yyyy-MM-dd");
+				$date = new \DateTime($overviewExportArray[0], "yyyy-MM-dd");
 				$transaction['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
 				$transaction['amount'] = $overviewExportArray[1];
 				$transaction['commission'] = $overviewExportArray[1];

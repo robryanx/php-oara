@@ -137,13 +137,13 @@ class Oara_Network_Publisher_PayMode extends Oara_Network {
 		//If not login properly the construct launch an exception
 		$connection = false;
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('https://secure.paymode.com/paymode/home.jsp?', array());
+		$urls[] = new \Oara\Curl\Request('https://secure.paymode.com/paymode/home.jsp?', array());
 		$exportReport = $this->_client->get($urls);
 
 		if (preg_match('/class="logout"/', $exportReport[0], $matches)) {
 
 			$urls = array();
-			$urls[] = new Oara_Curl_Request('https://secure.paymode.com/paymode/reports-pre_commission_history.jsp?', array());
+			$urls[] = new \Oara\Curl\Request('https://secure.paymode.com/paymode/reports-pre_commission_history.jsp?', array());
 			$exportReport = $this->_client->get($urls);
 			$dom = new Zend_Dom_Query($exportReport[0]);
 			$results = $dom->query('input[type="checkbox"]');
@@ -175,14 +175,14 @@ class Oara_Network_Publisher_PayMode extends Oara_Network {
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
 
 		$totalTransactions = array();
 		$filter = new Zend_Filter_LocalizedToNormalized(array('precision' => 2));
 
 		$valuesFromExport = array();
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('https://secure.paymode.com/paymode/reports-baiv2.jsp?', array());
+		$urls[] = new \Oara\Curl\Request('https://secure.paymode.com/paymode/reports-baiv2.jsp?', array());
 		$exportReport = $this->_client->get($urls);
 		$dom = new Zend_Dom_Query($exportReport[0]);
 		$results = $dom->query('input[type="hidden"]');
@@ -208,7 +208,7 @@ class Oara_Network_Publisher_PayMode extends Oara_Network {
 			$valuesFromExportTemp = Oara_Utilities::cloneArray($valuesFromExport);
 			$valuesFromExportTemp[] = new Oara_Curl_Parameter('date', $date->toString("MM/dd/yyyy"));
 
-			$urls[] = new Oara_Curl_Request('https://secure.paymode.com/paymode/reports-do_csv.jsp?closeJQS=true?', $valuesFromExportTemp);
+			$urls[] = new \Oara\Curl\Request('https://secure.paymode.com/paymode/reports-do_csv.jsp?closeJQS=true?', $valuesFromExportTemp);
 		}
 
 		$exportReport = $this->_client->get($urls);
@@ -219,7 +219,7 @@ class Oara_Network_Publisher_PayMode extends Oara_Network {
 		foreach ($exportReport as $report){
 			$reportParameters = $urls[$j]->getParameters();
 			$reportDate = $reportParameters[count($reportParameters) -1]->getValue();
-			$transactionDate = new Zend_Date($reportDate, 'MM/dd/yyyy', 'en');
+			$transactionDate = new \DateTime($reportDate, 'MM/dd/yyyy', 'en');
 			if (!preg_match("/logout.jsp/", $report)){
 				$exportReportData = str_getcsv($report, "\n");
 				$num = count($exportReportData);
@@ -263,8 +263,8 @@ class Oara_Network_Publisher_PayMode extends Oara_Network {
 		$paymentHistory = array();
 
 		$filter = new Zend_Filter_LocalizedToNormalized(array('precision' => 2));
-		$startDate = new Zend_Date("01-01-2012", "dd-MM-yyyy");
-		$endDate = new Zend_Date();
+		$startDate = new \DateTime("01-01-2012", "dd-MM-yyyy");
+		$endDate = new \DateTime();
 
 		$dateList = Oara_Utilities::monthsOfDifference($startDate, $endDate);
 		foreach ($dateList as $date) {
@@ -313,7 +313,7 @@ class Oara_Network_Publisher_PayMode extends Oara_Network {
 			$valuesFromExport[] = new Oara_Curl_Parameter('remitVendorName', "");
 
 			$urls = array();
-			$urls[] = new Oara_Curl_Request('https://secure.paymode.com/paymode/payment-DB-search.jsp?dataSource=1', $valuesFromExport);
+			$urls[] = new \Oara\Curl\Request('https://secure.paymode.com/paymode/payment-DB-search.jsp?dataSource=1', $valuesFromExport);
 			$exportReport = $this->_client->post($urls);
 
 
@@ -331,7 +331,7 @@ class Oara_Network_Publisher_PayMode extends Oara_Network {
 						$dateCsv = self::htmlToCsv(self::DOMinnerHTML($dateResult->current()));
 						$dateArray = str_getcsv($dateCsv[2], ";");
 
-						$paymentDate = new Zend_Date($dateArray[1], 'dd-MMM-yyyy', 'en');
+						$paymentDate = new \DateTime($dateArray[1], 'dd-MMM-yyyy', 'en');
 						$payment['date'] = $paymentDate->toString("yyyy-MM-dd HH:mm:ss");
 
 						$paymentArray = str_getcsv($tableCsv[3], ";");
@@ -350,7 +350,7 @@ class Oara_Network_Publisher_PayMode extends Oara_Network {
 							$payment = Array();
 							$paymentArray = str_getcsv($tableCsv[$i], ";");
 							$payment['pid'] = $paymentArray[0];
-							$paymentDate = new Zend_Date($paymentArray[3], 'MM/dd/yyyy', 'en');
+							$paymentDate = new \DateTime($paymentArray[3], 'MM/dd/yyyy', 'en');
 							$payment['date'] = $paymentDate->toString("yyyy-MM-dd HH:mm:ss");
 							$payment['value'] = Oara_Utilities::parseDouble($paymentArray[9]);
 							$payment['method'] = "BACS";

@@ -80,12 +80,12 @@ class Oara_Network_Publisher_AdSense extends Oara_Network {
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = array();
 		
 		$report = $this->_adsense->reports->generate($dStartDate->toString("YYYY-MM-dd"), $dEndDate->toString("YYYY-MM-dd"), array("dimension" => "DATE", "metric" => array("PAGE_VIEWS", "CLICKS", "EARNINGS"), "sort" => "DATE"));
 		
-		$firstDayMonth = new Zend_Date();
+		$firstDayMonth = new \DateTime();
 		$firstDayMonth->setDay(1);
 		$firstDayMonth->setHour("00");
 		$firstDayMonth->setMinute("00");
@@ -94,7 +94,7 @@ class Oara_Network_Publisher_AdSense extends Oara_Network {
 			foreach ($report["rows"] as $row) {
 				$obj = array();
 				$obj['merchantId'] = 1;
-				$tDate = new Zend_Date($row[0], "yyyy-MM-dd");
+				$tDate = new \DateTime($row[0], "yyyy-MM-dd");
 				$tDate->setHour("00");
 				$tDate->setMinute("00");
 				$tDate->setSecond("00");

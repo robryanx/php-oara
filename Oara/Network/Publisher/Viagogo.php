@@ -141,7 +141,7 @@ class Oara_Network_Publisher_Viagogo extends Oara_Network {
 	 *
 	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = array();
 
 		$valuesFromExport = array(
@@ -187,7 +187,7 @@ class Oara_Network_Publisher_Viagogo extends Oara_Network {
 			$transaction['unique_id'] = $transactionExportArray[0];
 			if ($transaction['unique_id'] != null){
 				$transaction['merchantId'] = "1";
-				$transactionDate = new Zend_Date($transactionExportArray[1], "dd/MM/yyyy");
+				$transactionDate = new \DateTime($transactionExportArray[1], "dd/MM/yyyy");
 				$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 				$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
 				$transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[4]);

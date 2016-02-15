@@ -53,7 +53,7 @@ class Oara_Network_Publisher_VigLink extends Oara_Network {
 	public function checkConnection() {
 		$connection = false;
 		
-		$now = new Zend_Date();
+		$now = new \DateTime();
 		
 		$apiURL = "https://www.viglink.com/service/v1/cuidRevenue?lastDate={$now->toString("yyyy/MM/dd")}&period=month&secret={$this->_apiPassword}";
 		$response = self::call($apiURL);
@@ -80,7 +80,7 @@ class Oara_Network_Publisher_VigLink extends Oara_Network {
 	 *
 	 * @see library/Oara/Network/Oara_Network_Publisher_Base#getTransactionList($merchantId,$dStartDate,$dEndDate)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = array ();
 		
 		$apiURL = "https://www.viglink.com/service/v1/cuidRevenue?lastDate={$dEndDate->toString("yyyy/MM/dd")}&period=month&secret={$this->_apiPassword}";
@@ -93,7 +93,7 @@ class Oara_Network_Publisher_VigLink extends Oara_Network {
 					
 					$transaction['merchantId'] = "1";
 					
-					$transactionDate = new Zend_Date($date, 'yyyy/MM/dd 00:00:00', 'en');
+					$transactionDate = new \DateTime($date, 'yyyy/MM/dd 00:00:00', 'en');
 					$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 	
 					$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;

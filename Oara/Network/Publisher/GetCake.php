@@ -96,7 +96,7 @@ class Oara_Network_Publisher_GetCake extends Oara_Network {
 	 *
 	 * @see library/Oara/Network/Oara_Network_Publisher_Base#getTransactionList($merchantId,$dStartDate,$dEndDate)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = array ();
 		
 		$rowIndex = 1;
@@ -115,7 +115,7 @@ class Oara_Network_Publisher_GetCake extends Oara_Network {
 					if (in_array($merchantId, $merchantList)){
 						$transaction['merchantId'] = $merchantId;
 							
-						$transactionDate = new Zend_Date($transactionApi["conversion_date"], 'yyyy-MM-ddTHH:mm:ss', 'en');
+						$transactionDate = new \DateTime($transactionApi["conversion_date"], 'yyyy-MM-ddTHH:mm:ss', 'en');
 						$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 
 						if (!isset($transactionApi["order_id"])){

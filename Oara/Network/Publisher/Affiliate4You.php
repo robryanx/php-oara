@@ -60,7 +60,7 @@ class Oara_Network_Publisher_Affiliate4You extends Oara_Network {
 		$valuesFromExport[] = new Oara_Curl_Parameter('email', $this->_user);
 		$valuesFromExport[] = new Oara_Curl_Parameter('apikey', $this->_pass);
 		$valuesFromExport[] = new Oara_Curl_Parameter('limit', "1");
-		$urls[] = new Oara_Curl_Request("http://api.affiliate4you.nl/1.0/campagnes/all.csv?", $valuesFromExport);
+		$urls[] = new \Oara\Curl\Request("http://api.affiliate4you.nl/1.0/campagnes/all.csv?", $valuesFromExport);
 
 		try{
 			$result = $this->_client->get($urls);
@@ -88,7 +88,7 @@ class Oara_Network_Publisher_Affiliate4You extends Oara_Network {
 			$valuesFromExport[] = new Oara_Curl_Parameter('apikey', $this->_pass);
 			$valuesFromExport[] = new Oara_Curl_Parameter('limit', 100);
 			$valuesFromExport[] = new Oara_Curl_Parameter('page', $page);
-			$urls[] = new Oara_Curl_Request("http://api.affiliate4you.nl/1.0/campagnes/all.csv?", $valuesFromExport);
+			$urls[] = new \Oara\Curl\Request("http://api.affiliate4you.nl/1.0/campagnes/all.csv?", $valuesFromExport);
 			$result = $this->_client->get($urls);
 			$exportData = str_getcsv($result[0], "\n");
 
@@ -118,7 +118,7 @@ class Oara_Network_Publisher_Affiliate4You extends Oara_Network {
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
 		$transactions = array();
 		$page = 1;
 		$import = true;
@@ -135,7 +135,7 @@ class Oara_Network_Publisher_Affiliate4You extends Oara_Network {
 			$valuesFromExport[] = new Oara_Curl_Parameter('to', $dEndDate->toString("yyyy-MM-dd"));
 			$valuesFromExport[] = new Oara_Curl_Parameter('limit', 300);
 			$valuesFromExport[] = new Oara_Curl_Parameter('page', $page);
-			$urls[] = new Oara_Curl_Request("http://api.affiliate4you.nl/1.0/orders.csv?", $valuesFromExport);
+			$urls[] = new \Oara\Curl\Request("http://api.affiliate4you.nl/1.0/orders.csv?", $valuesFromExport);
 			try{
 				$result = $this->_client->get($urls);
 			} catch (Exception $e){
@@ -151,7 +151,7 @@ class Oara_Network_Publisher_Affiliate4You extends Oara_Network {
 					$transaction = Array();
 					$transaction['unique_id'] = $transactionExportArray[3];
 					$transaction['merchantId'] = $transactionExportArray[12];
-					$transactionDate = new Zend_Date($transactionExportArray[0], 'yyyy-MM-dd HH:mm:ss');
+					$transactionDate = new \DateTime($transactionExportArray[0], 'yyyy-MM-dd HH:mm:ss');
 					$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 
 					if ($transactionExportArray[8] != null) {

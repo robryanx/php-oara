@@ -89,7 +89,7 @@ class Oara_Network_Publisher_TradeTracker extends Oara_Network {
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Publisher_Base#getTransactionList($merchantId,$dStartDate,$dEndDate)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = array();
 
 		$options = array(
@@ -105,7 +105,7 @@ class Oara_Network_Publisher_TradeTracker extends Oara_Network {
 					$object['unique_id'] = $transaction->ID;
 
 					$object['merchantId'] = $transaction->campaign->ID;
-					$transactionDate = new Zend_Date($transaction->registrationDate, "dd/MM/YY HH:mm:ss");
+					$transactionDate = new \DateTime($transaction->registrationDate, "dd/MM/YY HH:mm:ss");
 					$object['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 
 					if ($transaction->reference != null) {
@@ -145,7 +145,7 @@ class Oara_Network_Publisher_TradeTracker extends Oara_Network {
 
 		foreach ($this->_apiClient->getPayments($options) as $payment) {
 			$obj = array();
-			$date = new Zend_Date($payment->billDate, "dd/MM/yy");
+			$date = new \DateTime($payment->billDate, "dd/MM/yy");
 			$obj['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
 			$obj['pid'] = $date->toString("yyyyMMdd");
 			$obj['method'] = 'BACS';

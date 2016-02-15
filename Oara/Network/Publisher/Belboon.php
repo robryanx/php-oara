@@ -89,7 +89,7 @@ class Oara_Network_Publisher_Belboon extends Oara_Network {
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Publisher_Base#getTransactionList($merchantId,$dStartDate,$dEndDate)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = array();
 
 		$result = $this->_client->getEventList(null, null, null, null, null, $dStartDate->toString("YYYY-MM-dd"), $dEndDate->toString("YYYY-MM-dd"), null, null, null, null, 0);

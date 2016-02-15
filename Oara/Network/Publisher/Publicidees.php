@@ -71,7 +71,7 @@ class Oara_Network_Publisher_Publicidees extends Oara_Network
         $connection = false;
 
         $urls = array();
-        $urls[] = new Oara_Curl_Request('http://publisher.publicideas.com/', array());
+        $urls[] = new \Oara\Curl\Request('http://publisher.publicideas.com/', array());
         $exportReport = $this->_client->get($urls);
         if (preg_match('/deconnexion\.php/', $exportReport[0], $matches)) {
             $connection = true;
@@ -98,7 +98,7 @@ class Oara_Network_Publisher_Publicidees extends Oara_Network
      * (non-PHPdoc)
      * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate)
      */
-    public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null)
+    public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null)
     {
         $totalTransactions = array();
         $filter = new Zend_Filter_LocalizedToNormalized(array('precision' => 2, 'locale' => 'fr'));
@@ -119,7 +119,7 @@ class Oara_Network_Publisher_Publicidees extends Oara_Network
             $valuesFromExport[] = new Oara_Curl_Parameter('tabid', "0");
             $valuesFromExport[] = new Oara_Curl_Parameter('Submit', "Voir");
             $urls = array();
-            $urls[] = new Oara_Curl_Request('http://publisher.publicideas.com/index.php?', $valuesFromExport);
+            $urls[] = new \Oara\Curl\Request('http://publisher.publicideas.com/index.php?', $valuesFromExport);
             try{
                 $exportReport = $this->_client->get($urls, 'content', 5);
             } catch (\Exception $e){

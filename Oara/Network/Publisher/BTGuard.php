@@ -67,7 +67,7 @@ class Oara_Network_Publisher_BTGuard extends Oara_Network {
 		//If not login properly the construct launch an exception
 		$connection = true;
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('https://affiliate.btguard.com/member', array());
+		$urls[] = new \Oara\Curl\Request('https://affiliate.btguard.com/member', array());
 
 		$exportReport = $this->_client->get($urls);
 
@@ -99,7 +99,7 @@ class Oara_Network_Publisher_BTGuard extends Oara_Network {
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
 
 		$totalTransactions = array();
 		$valuesFormExport = array();
@@ -115,7 +115,7 @@ class Oara_Network_Publisher_BTGuard extends Oara_Network {
 			$valuesFormExport[] = new Oara_Curl_Parameter('prerange', '0');
 
 			$urls = array();
-			$urls[] = new Oara_Curl_Request('https://affiliate.btguard.com/reports?', $valuesFormExport);
+			$urls[] = new \Oara\Curl\Request('https://affiliate.btguard.com/reports?', $valuesFormExport);
 			$exportReport = $this->_client->get($urls);
 			$dom = new Zend_Dom_Query($exportReport[0]);
 			$results = $dom->query('.title table[cellspacing="12"]');
@@ -155,7 +155,7 @@ class Oara_Network_Publisher_BTGuard extends Oara_Network {
 		$paymentHistory = array();
 
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('https://publisher.ebaypartnernetwork.com/PublisherAccountPaymentHistory', array());
+		$urls[] = new \Oara\Curl\Request('https://publisher.ebaypartnernetwork.com/PublisherAccountPaymentHistory', array());
 		$exportReport = $this->_client->get($urls);
 
 		$dom = new Zend_Dom_Query($exportReport[0]);
@@ -166,7 +166,7 @@ class Oara_Network_Publisher_BTGuard extends Oara_Network {
 
 				$paymentExportArray = str_getcsv($exportData[$j], ";");
 				$obj = array();
-				$paymentDate = new Zend_Date($paymentExportArray[0], "dd/MM/yy", "en");
+				$paymentDate = new \DateTime($paymentExportArray[0], "dd/MM/yy", "en");
 				$obj['date'] = $paymentDate->toString("yyyy-MM-dd HH:mm:ss");
 				$obj['pid'] = $paymentDate->toString("yyyyMMdd");
 				$obj['method'] = 'BACS';

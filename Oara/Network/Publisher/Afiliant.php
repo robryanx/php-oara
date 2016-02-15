@@ -62,7 +62,7 @@ class Oara_Network_Publisher_Afiliant extends Oara_Network {
 	public function checkConnection() {
 		$connection = false;
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://www.afiliant.com/publisher/index.php', array());
+		$urls[] = new \Oara\Curl\Request('http://www.afiliant.com/publisher/index.php', array());
 		$exportReport = $this->_client->get($urls);
 		if (!preg_match("/index.php?a=logout/", $exportReport[0], $matches)) {
 			$connection = true;
@@ -82,7 +82,7 @@ class Oara_Network_Publisher_Afiliant extends Oara_Network {
 		new Oara_Curl_Parameter('a', 'listMonth')
 		);
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://www.afiliant.com/publisher/index.php?', $valuesFromExport);
+		$urls[] = new \Oara\Curl\Request('http://www.afiliant.com/publisher/index.php?', $valuesFromExport);
 		$exportReport = $this->_client->get($urls);
 
 		$dom = new Zend_Dom_Query($exportReport[0]);
@@ -107,18 +107,18 @@ class Oara_Network_Publisher_Afiliant extends Oara_Network {
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = array();
 
 		$valuesFromExport = array();
 		$valuesFromExport[] = new Oara_Curl_Parameter('c', 'stats');
 		$valuesFromExport[] = new Oara_Curl_Parameter('id_shop', '');
 		$valuesFromExport[] = new Oara_Curl_Parameter('a', 'listMonthDayOrder');
-		$valuesFromExport[] = new Oara_Curl_Parameter('month', $dEndDate->get(Zend_Date::YEAR)."-".$dEndDate->get(Zend_Date::MONTH));
+		$valuesFromExport[] = new Oara_Curl_Parameter('month', $dEndDate->get(\DateTime::YEAR)."-".$dEndDate->get(\DateTime::MONTH));
 		$valuesFromExport[] = new Oara_Curl_Parameter('export', 'csv');
 
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://www.afiliant.com/publisher/index.php?', $valuesFromExport);
+		$urls[] = new \Oara\Curl\Request('http://www.afiliant.com/publisher/index.php?', $valuesFromExport);
 
 		$exportData = null;
 		try{
@@ -136,7 +136,7 @@ class Oara_Network_Publisher_Afiliant extends Oara_Network {
 					$transaction = Array();
 					$merchantId = (int) $merchantMap[$transactionExportArray[1]];
 					$transaction['merchantId'] = $merchantId;
-					$transactionDate = new Zend_Date($transactionExportArray[0], 'yyyy-MM-dd');
+					$transactionDate = new \DateTime($transactionExportArray[0], 'yyyy-MM-dd');
 					$transaction['date'] = $transactionDate->toString("yyyy-MM-dd 00:00:00");
 					$transaction['unique_id'] = $transactionExportArray[3];
 

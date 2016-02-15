@@ -80,7 +80,7 @@ class Oara_Network_Publisher_CommissionFactory extends Oara_Network {
 	 * 
 	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
 		$transactions = array();
 		$transactionsExportList = self::request ( "https://api.commissionfactory.com.au/V1/Affiliate/Transactions?apiKey={$this->_apiKey}&fromDate={$dStartDate->toString("yyyy-MM-dd")}&toDate={$dEndDate->toString("yyyy-MM-dd")}" );
 		
@@ -92,7 +92,7 @@ class Oara_Network_Publisher_CommissionFactory extends Oara_Network {
 				
 				$obj ['merchantId'] = $transaction ["MerchantId"];
 				
-				$date = new Zend_Date ( $transaction ["DateCreated"], "yyyy-MM-ddTHH:mm:ss" );
+				$date = new \DateTime ( $transaction ["DateCreated"], "yyyy-MM-ddTHH:mm:ss" );
 				$obj ['date'] = $date->toString ( "yyyy-MM-dd HH:mm:ss" );
 				
 				if ($transaction ["UniqueId"] != null) {
@@ -126,12 +126,12 @@ class Oara_Network_Publisher_CommissionFactory extends Oara_Network {
 	public function getPaymentHistory() {
 		$paymentHistory = array ();
 		
-		$today = new Zend_Date();
+		$today = new \DateTime();
 		$paymentExportList = self::request ( "https://api.commissionfactory.com.au/V1/Affiliate/Payments?apiKey={$this->_apiKey}&fromDate=2000-01-01&toDate={$today->toString("yyyy-MM-dd")}" );
 	
 		foreach ($paymentExportList as  $payment) {
 			$obj = array ();
-			$date = new Zend_Date ( $payment["DateCreated"], "yyyy-MM-ddTHH:mm:ss" );
+			$date = new \DateTime ( $payment["DateCreated"], "yyyy-MM-ddTHH:mm:ss" );
 			$obj ['date'] = $date->toString ( "yyyy-MM-dd HH:mm:ss" );
 			$obj ['pid'] = $payment["Id"];
 			$obj ['value'] = $payment["Amount"];

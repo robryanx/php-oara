@@ -196,14 +196,14 @@ Gets the merchants joined for the network
 
 * return Array ( Array of Merchants )
 
-### getTransactionList(array $merchantList, Zend_Date $dStartDate, Zend_Date $dEndDate, array $merchantMap)
+### getTransactionList(array $merchantList, \DateTime $dStartDate, \DateTime $dEndDate, array $merchantMap)
 Gets the transactions for the network, from the "dStartDate" until "dEndDate" for the merchants provided
 
 * @param array $merchantList - array with the merchants unique id we want to retrieve the data from
 
-* @param Zend_Date $dStartDate - start date (included)
+* @param \DateTime $dStartDate - start date (included)
 
-* @param Zend_Date $dEndDate - end date (included)
+* @param \DateTime $dEndDate - end date (included)
 
 * @param array $merchantMap - array with the merchants indexed by name, only in case we can't get the merchant id in the transaction report, we may need to link it by name.
 
@@ -222,7 +222,7 @@ Gets the Transactions Id for a paymentId
 
 * @param array $merchantList - array with the merchants we want to retrieve the data from
 
-* @param Zend_Date $startDate - start date ,it may be useful to filter the data in some networks
+* @param \DateTime $startDate - start date ,it may be useful to filter the data in some networks
 
 * return Array ( Array of Transcation unique_id )
 

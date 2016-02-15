@@ -61,7 +61,7 @@ class Oara_Network_Publisher_CgtAffiliate extends Oara_Network {
 		//If not login properly the construct launch an exception
 		$connection = false;
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://www.cgtaffiliate.com/idevaffiliate/account.php', array());
+		$urls[] = new \Oara\Curl\Request('http://www.cgtaffiliate.com/idevaffiliate/account.php', array());
 		$exportReport = $this->_client->get($urls);
 		
 		if (preg_match("/Logout/", $exportReport[0])) {
@@ -88,21 +88,21 @@ class Oara_Network_Publisher_CgtAffiliate extends Oara_Network {
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
 
 		$totalTransactions = array();
 
 		$transactionUrl = array();
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://www.cgtaffiliate.com/idevaffiliate/account.php?page=4&report=1', array());
+		$urls[] = new \Oara\Curl\Request('http://www.cgtaffiliate.com/idevaffiliate/account.php?page=4&report=1', array());
 		$exportReport = $this->_client->get($urls);
 		$totalTransactions = array_merge($totalTransactions, self::readTransactions($exportReport[0]));
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://www.cgtaffiliate.com/idevaffiliate/account.php?page=4&report=3', array());
+		$urls[] = new \Oara\Curl\Request('http://www.cgtaffiliate.com/idevaffiliate/account.php?page=4&report=3', array());
 		$exportReport = $this->_client->get($urls);
 		$totalTransactions = array_merge($totalTransactions, self::readTransactions($exportReport[0]));
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://www.cgtaffiliate.com/idevaffiliate/account.php?page=4&report=4', array());
+		$urls[] = new \Oara\Curl\Request('http://www.cgtaffiliate.com/idevaffiliate/account.php?page=4&report=4', array());
 		$exportReport = $this->_client->get($urls);
 		$totalTransactions = array_merge($totalTransactions, self::readTransactions($exportReport[0]));
 

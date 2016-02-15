@@ -66,7 +66,7 @@ class Oara_Network_Publisher_FashionTraffic extends Oara_Network {
 	public function checkConnection() {
 		$connection = false;
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://system.fashiontraffic.com/', array());
+		$urls[] = new \Oara\Curl\Request('http://system.fashiontraffic.com/', array());
 		$exportReport = $this->_client->get($urls);
 
 		if (preg_match("/\/logout/", $exportReport[0], $matches)) {
@@ -83,7 +83,7 @@ class Oara_Network_Publisher_FashionTraffic extends Oara_Network {
 
 		$valuesFormExport = array();
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://system.fashiontraffic.com/stats/ajax_filter_options/Offers', $valuesFormExport);
+		$urls[] = new \Oara\Curl\Request('http://system.fashiontraffic.com/stats/ajax_filter_options/Offers', $valuesFormExport);
 
 		$exportReport = $this->_client->post($urls);
 		$dom = new Zend_Dom_Query($exportReport[0]);
@@ -107,12 +107,12 @@ class Oara_Network_Publisher_FashionTraffic extends Oara_Network {
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Publisher_Base#getTransactionList($merchantId, $dStartDate, $dEndDate)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = Array();
 
 		$valuesFormExport = array();
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://system.fashiontraffic.com/stats/lead_report', $valuesFormExport);
+		$urls[] = new \Oara\Curl\Request('http://system.fashiontraffic.com/stats/lead_report', $valuesFormExport);
 		$exportReport = $this->_client->post($urls);
 		$dom = new Zend_Dom_Query($exportReport[0]);
 
@@ -151,7 +151,7 @@ class Oara_Network_Publisher_FashionTraffic extends Oara_Network {
 		$valuesFormExport[] = new Oara_Curl_Parameter("data[DateRange][end_date]", $dEndDate->toString("yyyy-MM-dd"));
 
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://system.fashiontraffic.com/stats/lead_report', $valuesFormExport);
+		$urls[] = new \Oara\Curl\Request('http://system.fashiontraffic.com/stats/lead_report', $valuesFormExport);
 		$exportReport = $this->_client->post($urls);
 		
 		$csvUrl = null;
@@ -162,7 +162,7 @@ class Oara_Network_Publisher_FashionTraffic extends Oara_Network {
 		
 		$valuesFormExport = array();
 		$urls = array();
-		$urls[] = new Oara_Curl_Request($csvUrl, $valuesFormExport);
+		$urls[] = new \Oara\Curl\Request($csvUrl, $valuesFormExport);
 		$exportReport = $this->_client->get($urls);
 		$exportData = str_getcsv($exportReport[0], "\n");
 

@@ -139,11 +139,11 @@ class Oara_Network_Publisher_SilverTap extends Oara_Network
         $exporUser = null;
 
         $urls = array();
-        $urls[] = new Oara_Curl_Request($this->_serverUrl . 'Reports/Default.aspx?', array(new Oara_Curl_Parameter('report', 'Performance')));
+        $urls[] = new \Oara\Curl\Request($this->_serverUrl . 'Reports/Default.aspx?', array(new Oara_Curl_Parameter('report', 'Performance')));
         $result = $this->_client->get($urls);
 
         $urls = array();
-        $urls[] = new Oara_Curl_Request($this->_serverUrl . '/Reports/RemoteHelp.aspx?', array());
+        $urls[] = new \Oara\Curl\Request($this->_serverUrl . '/Reports/RemoteHelp.aspx?', array());
         $result = $this->_client->get($urls);
 
         /*** load the html into the object ***/
@@ -188,7 +188,7 @@ class Oara_Network_Publisher_SilverTap extends Oara_Network
         $merchants = Array();
 
         $urls = array();
-        $urls[] = new Oara_Curl_Request($this->_serverUrl . 'Feeds/Merchantfeed.aspx?', $this->_exportMerchantParameters);
+        $urls[] = new \Oara\Curl\Request($this->_serverUrl . 'Feeds/Merchantfeed.aspx?', $this->_exportMerchantParameters);
         $result = $this->_client->get($urls);
 
         $exportData = str_getcsv($result[0], "\n");
@@ -207,7 +207,7 @@ class Oara_Network_Publisher_SilverTap extends Oara_Network
      * (non-PHPdoc)
      * @see library/Oara/Network/Oara_Network_Publisher_Base#getTransactionList($merchantId, $dStartDate, $dEndDate)
      */
-    public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null)
+    public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null)
     {
         $totalTransactions = Array();
         $startDate = $dStartDate->toString('dd/MM/yyyy');
@@ -227,7 +227,7 @@ class Oara_Network_Publisher_SilverTap extends Oara_Network
         $valuesFormExport[] = new Oara_Curl_Parameter('datefrom', $startDate);
         $valuesFormExport[] = new Oara_Curl_Parameter('dateto', $endDate);
         $urls = array();
-        $urls[] = new Oara_Curl_Request($this->_serverUrl . 'reports/remote.aspx?', $valuesFormExport);
+        $urls[] = new \Oara\Curl\Request($this->_serverUrl . 'reports/remote.aspx?', $valuesFormExport);
         $exportReport = $this->_client->get($urls);
         $exportData = str_getcsv($exportReport[0], "\r\n");
         $num = count($exportData);
@@ -237,7 +237,7 @@ class Oara_Network_Publisher_SilverTap extends Oara_Network
                 $transaction = Array();
                 $transaction['unique_id'] = \preg_replace('/\D/', '', $transactionExportArray[0]);
                 $transaction['merchantId'] = $transactionExportArray[4];
-                $transactionDate = new Zend_Date($transactionExportArray[2], "dd/MM/YY HH:mm:ss");
+                $transactionDate = new \DateTime($transactionExportArray[2], "dd/MM/YY HH:mm:ss");
                 $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 
                 if ($transactionExportArray[7] != null) {

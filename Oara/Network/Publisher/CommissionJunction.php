@@ -199,7 +199,7 @@ class Oara_Network_Publisher_CommissionJunction extends Oara_Network {
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($idMerchant, $dStartDate, $dEndDate)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
 		
 		$totalTransactions = Array();
 		//The end data for the API has to be one day more
@@ -265,7 +265,7 @@ class Oara_Network_Publisher_CommissionJunction extends Oara_Network {
 					
 					$transaction = Array();
 					$transaction['merchantId'] = self::findAttribute($singleTransaction, 'cid');
-					$transactionDate = new Zend_Date(self::findAttribute($singleTransaction, 'event-date'), 'yyyy-MM-ddTHH:mm:ss');
+					$transactionDate = new \DateTime(self::findAttribute($singleTransaction, 'event-date'), 'yyyy-MM-ddTHH:mm:ss');
 					$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 					unset($transactionDate);
 
@@ -321,12 +321,12 @@ class Oara_Network_Publisher_CommissionJunction extends Oara_Network {
 		$valuesFromExport = $this->_exportMerchantParameters;
 
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('https://members.cj.com/member/'.$this->_memberId.'/publisher/accounts/listmyadvertisers.do', array());
+		$urls[] = new \Oara\Curl\Request('https://members.cj.com/member/'.$this->_memberId.'/publisher/accounts/listmyadvertisers.do', array());
 		$exportReport = $this->_client->get($urls);
 		
 		if (!preg_match('/Sorry, No Results Found\./', $exportReport[0], $matches)) {
 			$urls = array();
-			$urls[] = new Oara_Curl_Request('https://members.cj.com/member/'.$this->_memberId.'/publisher/accounts/listmyadvertisers.do', $valuesFromExport);
+			$urls[] = new \Oara\Curl\Request('https://members.cj.com/member/'.$this->_memberId.'/publisher/accounts/listmyadvertisers.do', $valuesFromExport);
 			$exportReport = $this->_client->post($urls);
 			$exportData = str_getcsv($exportReport[0], "\n");
 			$merchantReportList = Array();
@@ -346,19 +346,19 @@ class Oara_Network_Publisher_CommissionJunction extends Oara_Network {
 	public function getPaymentHistory() {
 		$paymentHistory = array();
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('https://members.cj.com/member/cj/publisher/paymentStatus', array());
+		$urls[] = new \Oara\Curl\Request('https://members.cj.com/member/cj/publisher/paymentStatus', array());
 		$exportReport = $this->_client->get($urls);
 		if (preg_match('/\/publisher\/getpublisherpaymenthistory\.do/', $exportReport[0], $matches)) {
 			$urls = array();
 			$valuesFromExport = $this->_exportPaymentParameters;
-			$urls[] = new Oara_Curl_Request('https://members.cj.com/member/'.$this->_memberId.'/publisher/getpublisherpaymenthistory.do?', $valuesFromExport);
+			$urls[] = new \Oara\Curl\Request('https://members.cj.com/member/'.$this->_memberId.'/publisher/getpublisherpaymenthistory.do?', $valuesFromExport);
 			$exportReport = $this->_client->get($urls);
 			$exportData = str_getcsv($exportReport[0], "\n");
 			$num = count($exportData);
 			for ($j = 1; $j < $num; $j++) {
 				$paymentData = str_getcsv($exportData[$j], ",");
 				$obj = array();
-				$date = new Zend_Date($paymentData[0], "dd-MMM-yyyy HH:mm", 'en_US');
+				$date = new \DateTime($paymentData[0], "dd-MMM-yyyy HH:mm", 'en_US');
 				$obj['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
 				$obj['value'] = Oara_Utilities::parseDouble($paymentData[1]);
 				$obj['method'] = $paymentData[2];
@@ -389,7 +389,7 @@ class Oara_Network_Publisher_CommissionJunction extends Oara_Network {
 		}
 		$startDate = date("Y-m-d", strtotime($startDate));
 		$endDate = date("Y-m-d", strtotime($endDate));
-		$exportReport = $this->_client->get(array(new Oara_Curl_Request('https://members.cj.com/member/publisher/' . $this->_accountId .'/transactionReport.json?startDate=' . $startDate . '&endDate=' . $endDate . '&allowAllDateRanges=true&columnSort=amount%09DESC&startRow=1&endRow=1000', array())));
+		$exportReport = $this->_client->get(array(new \Oara\Curl\Request('https://members.cj.com/member/publisher/' . $this->_accountId .'/transactionReport.json?startDate=' . $startDate . '&endDate=' . $endDate . '&allowAllDateRanges=true&columnSort=amount%09DESC&startRow=1&endRow=1000', array())));
 		$advertiserPaymentIds = array();
 		foreach (json_decode($exportReport[0])->{'records'}->{'record'} as $advertiser) {
 			if (($advertiser->{'advertiserId'} != '-3') && (!in_array($advertiser->{'txnId'}, $advertiserPaymentIds))) {
@@ -397,7 +397,7 @@ class Oara_Network_Publisher_CommissionJunction extends Oara_Network {
 			}
 		}
 		foreach ($advertiserPaymentIds as $id) {
-			$exportReport = $this->_client->get(array(new Oara_Curl_Request('https://members.cj.com/member/publisher/' . $this->_accountId . '/commissionReport/detailForTransactionId.json?allowAllDateRanges=true&txnId=' . $id . '&columnSort=publisherCommission%09DESC&startRow=1&endRow=1000', array())));
+			$exportReport = $this->_client->get(array(new \Oara\Curl\Request('https://members.cj.com/member/publisher/' . $this->_accountId . '/commissionReport/detailForTransactionId.json?allowAllDateRanges=true&txnId=' . $id . '&columnSort=publisherCommission%09DESC&startRow=1&endRow=1000', array())));
 			$transactions = json_decode($exportReport[0])->{'records'}->{'record'};
 			if (!isset($transactions->{'advertiserId'})) {
 				foreach ($transactions as $transaction) {

@@ -76,7 +76,7 @@ class Oara_Network_Publisher_ParkAndGo extends Oara_Network {
 				new Oara_Curl_Parameter('pword', $this->_credentials['password']),
 		);
 		
-		$urls[] = new Oara_Curl_Request('https://www.parkandgo.co.uk/agents/', $valuesLogin);
+		$urls[] = new \Oara\Curl\Request('https://www.parkandgo.co.uk/agents/', $valuesLogin);
 		$exportReport = $this->_client->post($urls);
 		if (!preg_match("/Produce Report/", $exportReport[0], $match)){
 			$connection = false;
@@ -104,7 +104,7 @@ class Oara_Network_Publisher_ParkAndGo extends Oara_Network {
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
 
 		$totalTransactions = array();
 		
@@ -116,10 +116,10 @@ class Oara_Network_Publisher_ParkAndGo extends Oara_Network {
 				new Oara_Curl_Parameter('todate', $dEndDate->toString("dd-MM-yyyy")),
 				new Oara_Curl_Parameter('rqtype', "report")
 		);
-		$urls[] = new Oara_Curl_Request('https://www.parkandgo.co.uk/agents/', $exportParams);
+		$urls[] = new \Oara\Curl\Request('https://www.parkandgo.co.uk/agents/', $exportParams);
 		$exportReport = $this->_client->post($urls);
 		
-		$today = new Zend_Date();
+		$today = new \DateTime();
 		$today->setHour(0);
 		$today->setMinute(0);
 		
@@ -129,12 +129,12 @@ class Oara_Network_Publisher_ParkAndGo extends Oara_Network {
 				
 			$transactionExportArray = str_getcsv ( $exportData [$i], "," );
 			
-			$arrivalDate = new Zend_Date ( $transactionExportArray [3], 'yyyy-MM-dd 00:00:00', 'en' );
+			$arrivalDate = new \DateTime ( $transactionExportArray [3], 'yyyy-MM-dd 00:00:00', 'en' );
 			
 			$transaction = Array ();
 			$transaction ['merchantId'] = 1;
 			$transaction ['unique_id'] = $transactionExportArray [0];
-			$transactionDate = new Zend_Date ( $transactionExportArray [2], 'yyyy-MM-dd 00:00:00', 'en' );
+			$transactionDate = new \DateTime ( $transactionExportArray [2], 'yyyy-MM-dd 00:00:00', 'en' );
 			$transaction ['date'] = $transactionDate->toString ( "yyyy-MM-dd HH:mm:ss" );
 			unset ( $transactionDate );
 			$transaction ['status'] = Oara_Utilities::STATUS_PENDING;

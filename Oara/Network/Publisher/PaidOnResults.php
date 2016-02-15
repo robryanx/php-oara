@@ -84,7 +84,7 @@ class Oara_Network_Publisher_PaidOnResults extends Oara_Network {
 		);
 
 		$urls = array();
-		$urls[] = new Oara_Curl_Request($loginUrl, $valuesFormExport);
+		$urls[] = new \Oara\Curl\Request($loginUrl, $valuesFormExport);
 		$exportReport = $this->_client->post($urls);
 		if (!preg_match("/session=(.*)\"/", $exportReport[0], $matches)) {
 			throw new Exception("No session found");
@@ -92,7 +92,7 @@ class Oara_Network_Publisher_PaidOnResults extends Oara_Network {
 		$this->_sessionId = $matches[1];
 		if (preg_match("/URL=(.*)\"/", $exportReport[0], $matches)) {
 			$urls = array();
-			$urls[] = new Oara_Curl_Request($matches[1], array());
+			$urls[] = new \Oara\Curl\Request($matches[1], array());
 			$exportReport = $this->_client->get($urls);
 		}
 
@@ -135,7 +135,7 @@ class Oara_Network_Publisher_PaidOnResults extends Oara_Network {
 
 		$valuesFormExport = Oara_Utilities::cloneArray($this->_exportMerchantParameters);
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://affiliate.paidonresults.com/api/merchant-directory?', $valuesFormExport);
+		$urls[] = new \Oara\Curl\Request('http://affiliate.paidonresults.com/api/merchant-directory?', $valuesFormExport);
 		$exportReport = $this->_client->get($urls);
 		$exportData = str_getcsv($exportReport[0], "\r\n");
 		$exportData = preg_replace("/\n/", "", $exportData);
@@ -154,7 +154,7 @@ class Oara_Network_Publisher_PaidOnResults extends Oara_Network {
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Publisher_Base#getTransactionList($merchantId, $dStartDate, $dEndDate)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = Array();
 
 		$valuesFormExport = Oara_Utilities::cloneArray($this->_exportTransactionParameters);
@@ -162,7 +162,7 @@ class Oara_Network_Publisher_PaidOnResults extends Oara_Network {
 		$urls = array();
 		$valuesFormExport[] = new Oara_Curl_Parameter('DateFrom', $dStartDate->toString("yyyy-MM-dd"));
 		$valuesFormExport[] = new Oara_Curl_Parameter('DateTo', $dEndDate->toString("yyyy-MM-dd"));
-		$urls[] = new Oara_Curl_Request('http://affiliate.paidonresults.com/api/transactions?', $valuesFormExport);
+		$urls[] = new \Oara\Curl\Request('http://affiliate.paidonresults.com/api/transactions?', $valuesFormExport);
 		$exportReport = $this->_client->get($urls);
 
 		$exportData = str_getcsv($exportReport[0], "\r\n");
@@ -175,7 +175,7 @@ class Oara_Network_Publisher_PaidOnResults extends Oara_Network {
 				$transaction = array();
 				$transaction['merchantId'] = $transactionExportArray[0];
 
-				$transactionDate = new Zend_Date($transactionExportArray[1], "dd/MM/yyyy HH:mm:ss");
+				$transactionDate = new \DateTime($transactionExportArray[1], "dd/MM/yyyy HH:mm:ss");
 				$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 
 				$transaction['unique_id'] = $transactionExportArray[2];
@@ -215,7 +215,7 @@ class Oara_Network_Publisher_PaidOnResults extends Oara_Network {
 		$paymentExport[] = new Oara_Curl_Parameter('session', $this->_sessionId);
 
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://affiliate.paidonresults.com/cgi-bin/invoice-status.pl?', $paymentExport);
+		$urls[] = new \Oara\Curl\Request('http://affiliate.paidonresults.com/cgi-bin/invoice-status.pl?', $paymentExport);
 		$exportReport = $this->_client->get($urls);
 
 		$dom = new Zend_Dom_Query($exportReport[0]);
@@ -229,7 +229,7 @@ class Oara_Network_Publisher_PaidOnResults extends Oara_Network {
 				if (preg_match('/[0-9]+(,[0-9]{3})*(\.[0-9]{2})?$/', $value, $matches)) {
 					$obj = array();
 					$obj['pid'] = $childrenList->item(4)->nodeValue;
-					$date = new Zend_Date($childrenList->item(0)->nodeValue, "dd/MMM/yyyy");
+					$date = new \DateTime($childrenList->item(0)->nodeValue, "dd/MMM/yyyy");
 					$obj['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
 					$obj['value'] = Oara_Utilities::parseDouble($matches[0]);
 					$obj['method'] = 'BACS';
@@ -251,9 +251,9 @@ class Oara_Network_Publisher_PaidOnResults extends Oara_Network {
 
 		$paymentTransactionList = array();
 
-		$paymentHistory = Oara_Utilities::registerBubbleSort($this->_paymentHistory);
+		$paymentHistory = $this->_paymentHistory;
 
-		$paymentStartDate = new Zend_Date($startDate, "yyyy-MM-dd HH:mm:ss");
+		$paymentStartDate = new \DateTime($startDate, "yyyy-MM-dd HH:mm:ss");
 		$paymentEndDate = null;
 
 		$enc = false;
@@ -263,7 +263,7 @@ class Oara_Network_Publisher_PaidOnResults extends Oara_Network {
 			$payment = $paymentHistory[$i];
 			if ($payment['pid'] == $paymentId) {
 				$enc = true;
-				$paymentEndDate = new Zend_Date($payment['date'], "yyyy-MM-dd HH:mm:ss");
+				$paymentEndDate = new \DateTime($payment['date'], "yyyy-MM-dd HH:mm:ss");
 			}
 			$i++;
 		}
@@ -271,7 +271,7 @@ class Oara_Network_Publisher_PaidOnResults extends Oara_Network {
 		if ($enc && $paymentStartDate->compare($paymentEndDate) <= 0) {
 			$totalTransactions = array();
 
-			$dateArray = Oara_Utilities::monthsOfDifference(new Zend_Date($startDate, "yyyy-MM-dd HH:mm:ss"), $paymentEndDate);
+			$dateArray = Oara_Utilities::monthsOfDifference(new \DateTime($startDate, "yyyy-MM-dd HH:mm:ss"), $paymentEndDate);
 			for ($i = 0; $i < count($dateArray); $i++) {
 				$monthStartDate = clone $dateArray[$i];
 				$monthEndDate = null;
@@ -294,7 +294,7 @@ class Oara_Network_Publisher_PaidOnResults extends Oara_Network {
 				$valuesFormExport = Oara_Utilities::cloneArray($this->_exportTransactionParameters);
 				$valuesFormExport[] = new Oara_Curl_Parameter('DateFrom', $monthStartDate->toString("yyyy-MM-dd"));
 				$valuesFormExport[] = new Oara_Curl_Parameter('DateTo', $monthEndDate->toString("yyyy-MM-dd"));
-				$urls[] = new Oara_Curl_Request('http://affiliate.paidonresults.com/api/transactions?', $valuesFormExport);
+				$urls[] = new \Oara\Curl\Request('http://affiliate.paidonresults.com/api/transactions?', $valuesFormExport);
 				$exportReport = $this->_client->get($urls);
 
 				$exportData = str_getcsv($exportReport[0], "\r\n");
@@ -304,7 +304,7 @@ class Oara_Network_Publisher_PaidOnResults extends Oara_Network {
 					$paid = $transactionExportArray[7] == "YES" ? true : false;
 					if (in_array($transactionExportArray[0], $merchantList) && $paid) {
 
-						$transactionDate = new Zend_Date($transactionExportArray[8], "dd/MM/yyyy HH:mm:ss");
+						$transactionDate = new \DateTime($transactionExportArray[8], "dd/MM/yyyy HH:mm:ss");
 						echo $paymentEndDate->toString("yyyy-MM-dd")."  ".$transactionDate->toString("yyyy-MM-dd")."\n\n";
 						if ($paymentEndDate->toString("yyyy-MM-dd") == $transactionDate->toString("yyyy-MM-dd")) {
 							$paymentTransactionList[] = $transactionExportArray[2];

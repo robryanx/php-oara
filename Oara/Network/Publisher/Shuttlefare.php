@@ -141,12 +141,12 @@ class Oara_Network_Publisher_Shuttlefare extends Oara_Network {
 
 	/**
 	 * @param null $merchantList
-	 * @param Zend_Date|null $dStartDate
-	 * @param Zend_Date|null $dEndDate
+	 * @param \DateTime|null $dStartDate
+	 * @param \DateTime|null $dEndDate
 	 * @param null $merchantMap
 	 * @return array
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = array();
 
 		$valuesFromExport = array(
@@ -175,7 +175,7 @@ class Oara_Network_Publisher_Shuttlefare extends Oara_Network {
                 $transaction = Array ();
                 $transaction ['merchantId'] = 1;
                 $transaction ['unique_id'] = $transactionExportArray [0];
-                $transactionDate = new Zend_Date ( $transactionExportArray [7], 'MM/dd/yyyy');
+                $transactionDate = new \DateTime ( $transactionExportArray [7], 'MM/dd/yyyy');
                 $transaction ['date'] = $transactionDate->toString ( "yyyy-MM-dd HH:mm:ss" );
                 $transaction ['status'] = Oara_Utilities::STATUS_CONFIRMED;
                 $transaction ['amount'] = Oara_Utilities::parseDouble ( preg_replace ( '/[^0-9\.,]/', "", $transactionExportArray [2] ) );

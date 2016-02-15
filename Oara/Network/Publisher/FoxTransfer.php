@@ -66,7 +66,7 @@ class Oara_Network_Publisher_FoxTransfer extends Oara_Network {
 		//If not login properly the construct launch an exception
 		$connection = true;
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('https://foxtransfer.eu/index.php?language=1', array());
+		$urls[] = new \Oara\Curl\Request('https://foxtransfer.eu/index.php?language=1', array());
 		$exportReport = $this->_client->get($urls);
 		if (!preg_match("/Log Out/", $exportReport[0], $match)){
 			$connection = false;
@@ -93,13 +93,13 @@ class Oara_Network_Publisher_FoxTransfer extends Oara_Network {
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
 
 		$totalTransactions = array();
 
 		$urls = array();
 		$url = "https://foxtransfer.eu/index.php?q=prices.en.html&page=affiliate_orders&language=1&basedir=theme2&what=record_time&what=record_time&fy={$dStartDate->toString("yyyy")}&fm={$dStartDate->toString("M")}&fd={$dStartDate->toString("d")}&ty={$dEndDate->toString("yyyy")}&tm={$dEndDate->toString("M")}&td={$dEndDate->toString("d")}";
-		$urls[] = new Oara_Curl_Request($url, array());
+		$urls[] = new \Oara\Curl\Request($url, array());
 
 		$exportReport = array();
 		$exportReport = $this->_client->get($urls);

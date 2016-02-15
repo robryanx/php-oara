@@ -59,7 +59,7 @@ class Oara_Network_Publisher_Bol extends Oara_Network {
 		//If not login properly the construct launch an exception
 		$connection = false;
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('https://partnerprogramma.bol.com/partner/index.do?', array());
+		$urls[] = new \Oara\Curl\Request('https://partnerprogramma.bol.com/partner/index.do?', array());
 		$exportReport = $this->_client->get($urls);
 
 		if (preg_match('/partner\/logout\.do/', $exportReport[0], $match)) {
@@ -86,7 +86,7 @@ class Oara_Network_Publisher_Bol extends Oara_Network {
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
 		$folder = realpath ( dirname ( COOKIES_BASE_DIR ) ) . '/pdf/';
 		$totalTransactions = array();
 		$valuesFromExport = array();
@@ -99,7 +99,7 @@ class Oara_Network_Publisher_Bol extends Oara_Network {
 		$valuesFromExport[] = new Oara_Curl_Parameter('dayEnd', $dEndDate->toString("dd"));
 		
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('https://partnerprogramma.bol.com/partner/s/excelReport/orders?', $valuesFromExport);
+		$urls[] = new \Oara\Curl\Request('https://partnerprogramma.bol.com/partner/s/excelReport/orders?', $valuesFromExport);
 		$exportReport = $this->_client->get($urls);
 		
 		$my_file = $folder.mt_rand().'.xlsx';
@@ -126,7 +126,7 @@ class Oara_Network_Publisher_Bol extends Oara_Network {
 		   	$transaction['unique_id'] = $objWorksheet->getCellByColumnAndRow(0, $row)->getValue()."_".$objWorksheet->getCellByColumnAndRow(1, $row)->getValue();
 		   	$transaction['merchantId'] = "1";
 		   	
-		   	$transactionDate = new Zend_Date($objWorksheet->getCellByColumnAndRow(2, $row)->getValue(), 'dd-MM-yyyy');
+		   	$transactionDate = new \DateTime($objWorksheet->getCellByColumnAndRow(2, $row)->getValue(), 'dd-MM-yyyy');
 		   	$transaction['date'] = $transactionDate->toString("yyyy-MM-dd 00:00:00");
 		   	
 		   	$transaction['custom_id'] = $objWorksheet->getCellByColumnAndRow(8, $row)->getValue();

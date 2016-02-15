@@ -32,14 +32,4 @@ define('COOKIES_BASE_DIR', realpath ( dirname ( __FILE__ ) ) . DIRECTORY_SEPARAT
 
 //set up default timezone
 date_default_timezone_set('GMT');
-
 umask(0002);
-
-//Adding the credentials ini into the Zend Registry
-//Allow for external credentials for git deployment
-if (is_file(BI_PATH_BASE.DS.'examples/credentials.ini')) {
-	$config = new Zend_Config_Ini(BI_PATH_BASE.DS.'examples/credentials.ini', 'production');
-} else {
-	$config = new Zend_Config_Ini(BI_PATH_BASE.DS.'../credentials.ini', 'production');
-}
-Zend_Registry::getInstance()->set('credentialsIni', $config);

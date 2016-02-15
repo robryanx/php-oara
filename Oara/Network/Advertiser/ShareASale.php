@@ -116,7 +116,7 @@ class Oara_Network_Advertiser_ShareASale extends Oara_Network {
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($idMerchant, $dStartDate, $dEndDate)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = array();
 		$returnResult = self::makeCall("transactiondetail","&dateStart=".$dStartDate->toString("MM/dd/yyyy")."&dateEnd=".$dEndDate->toString("MM/dd/yyyy"));
 		$exportData = str_getcsv($returnResult, "\r\n");
@@ -127,7 +127,7 @@ class Oara_Network_Advertiser_ShareASale extends Oara_Network {
 				$transaction = Array();
 				$merchantId = (int) $transactionExportArray[1];
 				$transaction['merchantId'] = $merchantId;
-				$transactionDate = new Zend_Date($transactionExportArray[2], 'MM-dd-yyyy HH:mm:ss');
+				$transactionDate = new \DateTime($transactionExportArray[2], 'MM-dd-yyyy HH:mm:ss');
 				$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 				$transaction['unique_id'] = (int)$transactionExportArray[0];
 

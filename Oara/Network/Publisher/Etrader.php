@@ -65,7 +65,7 @@ class Oara_Network_Publisher_Etrader extends Oara_Network {
 		// If not login properly the construct launch an exception
 		$connection = false;
 		$urls = array ();
-		$urls [] = new Oara_Curl_Request ( 'https://etrader.kalahari.com/view/affiliate/home', array () );
+		$urls [] = new \Oara\Curl\Request ( 'https://etrader.kalahari.com/view/affiliate/home', array () );
 		
 		$exportReport = $this->_client->get ( $urls );
 		
@@ -96,7 +96,7 @@ class Oara_Network_Publisher_Etrader extends Oara_Network {
 	 * 
 	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = array ();
 		
 		$page = 1;
@@ -109,7 +109,7 @@ class Oara_Network_Publisher_Etrader extends Oara_Network {
 			$valuesFormExport [] = new Oara_Curl_Parameter ( 'numberOfPages', '1' );
 			
 			$urls = array ();
-			$urls [] = new Oara_Curl_Request ( 'https://etrader.kalahari.com/view/affiliate/transactionreport', $valuesFormExport );
+			$urls [] = new \Oara\Curl\Request ( 'https://etrader.kalahari.com/view/affiliate/transactionreport', $valuesFormExport );
 			$exportReport = $this->_client->post ( $urls );
 			
 			$dom = new Zend_Dom_Query ( $exportReport [0] );
@@ -133,7 +133,7 @@ class Oara_Network_Publisher_Etrader extends Oara_Network {
 					$transaction ['custom_id'] = $match[1];
 				}
 				
-				$date = new Zend_Date($transactionDetail[0], "dd MMM yyyy", "en_GB");
+				$date = new \DateTime($transactionDetail[0], "dd MMM yyyy", "en_GB");
 				$transaction ['date'] = $date->toString ( "yyyy-MM-dd 00:00:00" );
 				$transaction ['status'] = Oara_Utilities::STATUS_CONFIRMED;
 				

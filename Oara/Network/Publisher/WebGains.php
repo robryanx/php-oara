@@ -186,7 +186,7 @@ class Oara_Network_Publisher_WebGains extends Oara_Network {
 		 * (non-PHPdoc)
 		 * @see library/Oara/Network/Oara_Network_Publisher_Base#getTransactionList($merchantId,$dStartDate,$dEndDate)
 		 */
-		public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+		public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
 			$totalTransactions = Array();
 
 			$dStartDate = clone $dStartDate;
@@ -213,7 +213,7 @@ class Oara_Network_Publisher_WebGains extends Oara_Network {
 							
 						$transaction = array();
 						$transaction['merchantId'] = $transactionObject->programID;
-						$transactionDate = new Zend_Date($transactionObject->date, "yyyy-MM-ddTHH:mm:ss");
+						$transactionDate = new \DateTime($transactionObject->date, "yyyy-MM-ddTHH:mm:ss");
 						$transaction["date"] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 						$transaction['unique_id'] = $transactionObject->transactionID;
 						if ($transactionObject->clickRef != null) {
@@ -275,7 +275,7 @@ class Oara_Network_Publisher_WebGains extends Oara_Network {
 			/*
 			$urls = array();
 
-			$urls[] = new Oara_Curl_Request("https://{$this->_server}/affiliates/payment.html", array());
+			$urls[] = new \Oara\Curl\Request("https://{$this->_server}/affiliates/payment.html", array());
 			$exportReport = $this->_webClient->get($urls);
 
 			$doc = new DOMDocument();
@@ -314,7 +314,7 @@ class Oara_Network_Publisher_WebGains extends Oara_Network {
 				}
 
 				$registerLine = $registerLines->item($i)->childNodes;
-				$date = new Zend_Date($registerLine->item(0)->nodeValue, "dd/MM/yy");
+				$date = new \DateTime($registerLine->item(0)->nodeValue, "dd/MM/yy");
 				$obj['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
 				$value = $registerLine->item(2)->nodeValue;
 				preg_match('/[0-9]+(,[0-9]{3})*(\.[0-9]{2})?$/', $value, $matches);

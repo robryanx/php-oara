@@ -66,7 +66,7 @@ class Oara_Network_Publisher_AffiliateFuture extends Oara_Network {
 		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
 
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://affiliates.affiliatefuture.com/login.aspx?', $valuesLogin);
+		$urls[] = new \Oara\Curl\Request('http://affiliates.affiliatefuture.com/login.aspx?', $valuesLogin);
 		$this->_client->get($urls);
 
 		$this->_exportTransactionParameters = array(new Oara_Curl_Parameter('username', $user),
@@ -83,7 +83,7 @@ class Oara_Network_Publisher_AffiliateFuture extends Oara_Network {
 		//If not login properly the construct launch an exception
 		$connection = true;
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://affiliates.affiliatefuture.com/myaccount/invoices.aspx', array());
+		$urls[] = new \Oara\Curl\Request('http://affiliates.affiliatefuture.com/myaccount/invoices.aspx', array());
 
 		$result = $this->_client->get($urls);
 		if (!preg_match("/Logout/", $result[0], $matches)) {
@@ -112,9 +112,9 @@ class Oara_Network_Publisher_AffiliateFuture extends Oara_Network {
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
 
-		$nowDate = new Zend_Date();
+		$nowDate = new \DateTime();
 
 		$dStartDate = clone $dStartDate;
 		$dStartDate->setLocale('en');
@@ -131,8 +131,8 @@ class Oara_Network_Publisher_AffiliateFuture extends Oara_Network {
 		$valuesFromExport[] = new Oara_Curl_Parameter('endDate', $dEndDate->toString("dd-MMM-yyyy"));
 		$transactions = Array();
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://ws-external.afnt.co.uk/apiv1/AFFILIATES/affiliatefuture.asmx/GetTransactionListbyDate?', $valuesFromExport);
-		$urls[] = new Oara_Curl_Request('http://ws-external.afnt.co.uk/apiv1/AFFILIATES/affiliatefuture.asmx/GetCancelledTransactionListbyDate?', $valuesFromExport);
+		$urls[] = new \Oara\Curl\Request('http://ws-external.afnt.co.uk/apiv1/AFFILIATES/affiliatefuture.asmx/GetTransactionListbyDate?', $valuesFromExport);
+		$urls[] = new \Oara\Curl\Request('http://ws-external.afnt.co.uk/apiv1/AFFILIATES/affiliatefuture.asmx/GetCancelledTransactionListbyDate?', $valuesFromExport);
 		$exportReport = $this->_client->get($urls);
 		for ($i = 0; $i < count($urls); $i++) {
 			$xml = self::loadXml($exportReport[$i]);
@@ -141,7 +141,7 @@ class Oara_Network_Publisher_AffiliateFuture extends Oara_Network {
 			}
 			if (isset($xml->TransactionList)) {
 				foreach ($xml->TransactionList as $transaction) {
-					$date = new Zend_Date(self::findAttribute($transaction, 'TransactionDate'), "yyyy-MM-ddTHH:mm:ss");
+					$date = new \DateTime(self::findAttribute($transaction, 'TransactionDate'), "yyyy-MM-ddTHH:mm:ss");
 
 					if (in_array((int) self::findAttribute($transaction, 'ProgrammeID'), $merchantList) && $date->compare($dStartDate) >= 0 && $date->compare($dEndDate) <= 0) {
 
@@ -155,7 +155,8 @@ class Oara_Network_Publisher_AffiliateFuture extends Oara_Network {
 						$obj['unique_id'] = self::findAttribute($transaction, 'TransactionID');
 
 						if ($i == 0) {
-							if (Oara_Utilities::numberOfDaysBetweenTwoDates($date, $nowDate) > 5) {
+							if (Oara_Utilities::
+									($date, $nowDate) > 5) {
 								$obj['status'] = Oara_Utilities::STATUS_CONFIRMED;
 							} else {
 								$obj['status'] = Oara_Utilities::STATUS_PENDING;
@@ -188,7 +189,7 @@ class Oara_Network_Publisher_AffiliateFuture extends Oara_Network {
 	public function readMerchants() {
 		$merchantList = array();
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://affiliates.affiliatefuture.com/myprogrammes/default.aspx', array());
+		$urls[] = new \Oara\Curl\Request('http://affiliates.affiliatefuture.com/myprogrammes/default.aspx', array());
 		$exportReport = $this->_client->get($urls);
 
 		/*** load the html into the object ***/
@@ -250,7 +251,7 @@ class Oara_Network_Publisher_AffiliateFuture extends Oara_Network {
 		$paymentHistory = array();
 		$filter = new Zend_Filter_LocalizedToNormalized(array('precision' => 2));
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://affiliates.affiliatefuture.com/myaccount/invoices.aspx', array());
+		$urls[] = new \Oara\Curl\Request('http://affiliates.affiliatefuture.com/myaccount/invoices.aspx', array());
 		$exportReport = $this->_client->get($urls);
 
 		/*** load the html into the object ***/
@@ -268,7 +269,7 @@ class Oara_Network_Publisher_AffiliateFuture extends Oara_Network {
 		for ($i = 1; $i < $registerLines->length ; $i++) {
 			$registerLine = $registerLines->item($i)->childNodes;
 			$obj = array();
-			$date = new Zend_Date(trim($registerLine->item(1)->nodeValue), "dd/MM/yyyy");
+			$date = new \DateTime(trim($registerLine->item(1)->nodeValue), "dd/MM/yyyy");
 			$obj['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
 			$obj['pid'] = trim($registerLine->item(0)->nodeValue);
 			$value = trim(substr(trim($registerLine->item(4)->nodeValue), 4));

@@ -104,7 +104,7 @@ class Oara_Network_Publisher_Zanox extends Oara_Network {
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Publisher_Base#getTransactionList($merchantId,$dStartDate,$dEndDate)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = array();
 
 		$dStartDate = clone $dStartDate;
@@ -183,7 +183,7 @@ class Oara_Network_Publisher_Zanox extends Oara_Network {
 					
 					$obj['unique_id'] = $transaction->id;
 					$obj['commission'] = $transaction->commission;
-					$transactionDate = new Zend_Date($transaction->trackingDate, "yyyy-MM-dd HH:mm:ss");
+					$transactionDate = new \DateTime($transaction->trackingDate, "yyyy-MM-dd HH:mm:ss");
 					$obj['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 					$obj['merchantId'] = $transaction->program->id;
 					$obj['approved'] = $transaction->reviewState == 'approved' ? true : false;
@@ -213,7 +213,7 @@ class Oara_Network_Publisher_Zanox extends Oara_Network {
 				$paymentList = $this->_apiClient->getPayments($j, $this->_pageSize);
 				foreach ($paymentList->paymentItems->paymentItem as $payment) {
 					$obj = array();
-					$paymentDate = new Zend_Date($payment->createDate, "yyyy-MM-ddTHH:mm:ss");
+					$paymentDate = new \DateTime($payment->createDate, "yyyy-MM-ddTHH:mm:ss");
 					$obj['method'] = 'BACS';
 					$obj['pid'] = $paymentDate->toString("yyyyMMddHHmmss");
 					$obj['value'] = $payment->amount;

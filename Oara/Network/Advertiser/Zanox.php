@@ -94,14 +94,14 @@ class Oara_Network_Advertiser_Zanox extends Oara_Network {
 		 * (non-PHPdoc)
 		 * @see library/Oara/Network/Oara_Network_Publisher_Base#getTransactionList($merchantId,$dStartDate,$dEndDate)
 		 */
-		public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {		
+		public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
 			
 				
 			$totalTransactions = array ();
 			
 			/**/
-			$dStartDate = new Zend_Date('2014-08-05', 'yyyy-MM-dd');
-			$dEndDate  	= new Zend_Date('2014-08-05', 'yyyy-MM-dd');
+			$dStartDate = new \DateTime('2014-08-05', 'yyyy-MM-dd');
+			$dEndDate  	= new \DateTime('2014-08-05', 'yyyy-MM-dd');
 			/**/
 			$options = $this->_client->getOptions();
 			$options[CURLOPT_ENCODING] = "gzip,deflate";
@@ -116,7 +116,7 @@ class Oara_Network_Advertiser_Zanox extends Oara_Network {
 				
 			
 			$urls = array ();
-			$urls [] = new Oara_Curl_Request ( "https://advertiser.zanox.com/advertisertransactionconfirmation/main/app?dest=sales&program=7641", array () );
+			$urls [] = new \Oara\Curl\Request ( "https://advertiser.zanox.com/advertisertransactionconfirmation/main/app?dest=sales&program=7641", array () );
 			$exportReport = $this->_client->get ( $urls );
 
 			$timestampStartDate = strtotime($dStartDate->toString ( "dd-MM-yyyy" ));  //'05-08-2014'
@@ -146,7 +146,7 @@ class Oara_Network_Advertiser_Zanox extends Oara_Network {
 			$valuesFromExport [] = new Oara_Curl_Parameter ( 'locale_name', 'en_US' );			
 
 			$urls = array ();
-			$urls [] = new Oara_Curl_Request ( 'https://advertiser.zanox.com/advertisertransactionconfirmation/main/export?', $valuesFromExport );
+			$urls [] = new \Oara\Curl\Request ( 'https://advertiser.zanox.com/advertisertransactionconfirmation/main/export?', $valuesFromExport );
 			$result = $this->_client->get($urls);
 			
 			echo $result[0];
@@ -170,7 +170,7 @@ while(!feof($csvfile)) {
 					$transaction['custom_id'] = $exportData[$j][4];
 					$transaction['unique_id'] = $exportData[$j][2];
 					$transaction['merchantId'] = $this->_idProgram;
-					$transactionDate = new Zend_Date($exportData[$j][12], 'dd/MM/yy HH:mm CEST');
+					$transactionDate = new \DateTime($exportData[$j][12], 'dd/MM/yy HH:mm CEST');
 					$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 					$transaction['amount'] = $exportData[$j][7];
 					$transaction['commission'] = $exportData[$j][8];

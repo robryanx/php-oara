@@ -246,7 +246,7 @@ class Oara_Network_Publisher_Wehkamp extends Oara_Network {
 		$this->_dateFormat = "d-M-yy";
 		
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('https://affiliates.wehkamp.nl/pan/aReport3Selection.action?reportName=aAffiliateProgramOverviewReport', array());
+		$urls[] = new \Oara\Curl\Request('https://affiliates.wehkamp.nl/pan/aReport3Selection.action?reportName=aAffiliateProgramOverviewReport', array());
 		$exportReport = $this->_client->get($urls);
 		
 		
@@ -265,7 +265,7 @@ class Oara_Network_Publisher_Wehkamp extends Oara_Network {
 		$valuesFormExport = $this->_exportMerchantParameters;
 		$valuesFormExport[] = new Oara_Curl_Parameter('programAffiliateStatusId', '3');
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('https://affiliates.wehkamp.nl/pan/aReport3Internal.action?', $valuesFormExport);
+		$urls[] = new \Oara\Curl\Request('https://affiliates.wehkamp.nl/pan/aReport3Internal.action?', $valuesFormExport);
 		$exportReport = $this->_client->post($urls);
 		$exportReport[0] = self::checkReportError($exportReport[0], $urls[0]);
 		$merchantReportList = self::getExportMerchantReport($exportReport[0]);
@@ -273,7 +273,7 @@ class Oara_Network_Publisher_Wehkamp extends Oara_Network {
 		$valuesFormExport = $this->_exportMerchantParameters;
 		$valuesFormExport[] = new Oara_Curl_Parameter('programAffiliateStatusId', '4');
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('https://affiliates.wehkamp.nl/pan/aReport3Internal.action?', $valuesFormExport);
+		$urls[] = new \Oara\Curl\Request('https://affiliates.wehkamp.nl/pan/aReport3Internal.action?', $valuesFormExport);
 		$exportReport = $this->_client->post($urls);
 		$exportReport[0] = self::checkReportError($exportReport[0], $urls[0]);
 		$merchantReportListAux = self::getExportMerchantReport($exportReport[0]);
@@ -300,7 +300,7 @@ class Oara_Network_Publisher_Wehkamp extends Oara_Network {
 	 * (non-PHPdoc)
 	 * @see Oara_Network::getTransactionList()
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = Array();
 		$filter = new Zend_Filter_LocalizedToNormalized(array('precision' => 2));
 		self::login();
@@ -309,7 +309,7 @@ class Oara_Network_Publisher_Wehkamp extends Oara_Network {
 		$valuesFormExport[] = new Oara_Curl_Parameter('startDate', self::formatDate($dStartDate));
 		$valuesFormExport[] = new Oara_Curl_Parameter('endDate', self::formatDate($dEndDate));
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('https://affiliates.wehkamp.nl/pan/aReport3Internal.action?', $valuesFormExport);
+		$urls[] = new \Oara\Curl\Request('https://affiliates.wehkamp.nl/pan/aReport3Internal.action?', $valuesFormExport);
 		$exportReport = $this->_client->get($urls);
 		$exportReport[0] = self::checkReportError($exportReport[0], $urls[0]);
 		$exportData = str_getcsv($exportReport[0], "\r\n");
@@ -418,7 +418,7 @@ class Oara_Network_Publisher_Wehkamp extends Oara_Network {
 		$paymentHistory = array();
 
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('https://affiliates.wehkamp.nl/pan/reportSelection/Payment?', array());
+		$urls[] = new \Oara\Curl\Request('https://affiliates.wehkamp.nl/pan/reportSelection/Payment?', array());
 		$exportReport = $this->_client->get($urls);
 		/*** load the html into the object ***/
 		$doc = new DOMDocument();
@@ -475,7 +475,7 @@ class Oara_Network_Publisher_Wehkamp extends Oara_Network {
 		$valuesFormExport = array();
 		$valuesFormExport[] = new Oara_Curl_Parameter('popup', 'true');
 		$valuesFormExport[] = new Oara_Curl_Parameter('payment_id', $paymentId);
-		$urls[] = new Oara_Curl_Request('https://affiliates.wehkamp.nl/pan/reports/Payment.html?', $valuesFormExport);
+		$urls[] = new \Oara\Curl\Request('https://affiliates.wehkamp.nl/pan/reports/Payment.html?', $valuesFormExport);
 		$exportReport = $this->_client->get($urls);
 		$dom = new Zend_Dom_Query($exportReport[0]);
 		$results = $dom->query('a');
@@ -483,7 +483,7 @@ class Oara_Network_Publisher_Wehkamp extends Oara_Network {
 		$urls = array();
 		foreach ($results as $result) {
 			$url = $result->getAttribute('href');
-			$urls[] = new Oara_Curl_Request("https://affiliates.wehkamp.nl".$url."&format=CSV", array());
+			$urls[] = new \Oara\Curl\Request("https://affiliates.wehkamp.nl".$url."&format=CSV", array());
 		}
 		$exportReportList = $this->_client->get($urls);
 		foreach ($exportReportList as $exportReport) {
@@ -551,28 +551,28 @@ class Oara_Network_Publisher_Wehkamp extends Oara_Network {
 	private function toDate($dateString) {
 		$transactionDate = null;
 		if ($this->_dateFormat == 'dd/MM/yy') {
-			$transactionDate = new Zend_Date(trim($dateString), "dd/MM/yy HH:mm:ss");
+			$transactionDate = new \DateTime(trim($dateString), "dd/MM/yy HH:mm:ss");
 		} else
 		if ($this->_dateFormat == 'M/d/yy') {
-			$transactionDate = new Zend_Date(trim($dateString), "M/d/yy HH:mm:ss");
+			$transactionDate = new \DateTime(trim($dateString), "M/d/yy HH:mm:ss");
 		} else
 		if ($this->_dateFormat == 'd/MM/yy') {
-			$transactionDate = new Zend_Date(trim($dateString), "d/MM/yy HH:mm:ss");
+			$transactionDate = new \DateTime(trim($dateString), "d/MM/yy HH:mm:ss");
 		} else
 		if ($this->_dateFormat == 'tt.MM.uu') {
-			$transactionDate = new Zend_Date(trim($dateString), "dd.MM.yy HH:mm:ss");
+			$transactionDate = new \DateTime(trim($dateString), "dd.MM.yy HH:mm:ss");
 		} else
 		if ($this->_dateFormat == 'jj-MM-aa') {
-			$transactionDate = new Zend_Date(trim($dateString), "dd-MM-yy HH:mm:ss");
+			$transactionDate = new \DateTime(trim($dateString), "dd-MM-yy HH:mm:ss");
 		} else
 		if ($this->_dateFormat == 'jj/MM/aa') {
-			$transactionDate = new Zend_Date(trim($dateString), "dd/MM/yy HH:mm:ss");
+			$transactionDate = new \DateTime(trim($dateString), "dd/MM/yy HH:mm:ss");
 		} else
 		if ($this->_dateFormat == 'dd.MM.yy') {
-			$transactionDate = new Zend_Date(trim($dateString), "dd.MM.yy HH:mm:ss");
+			$transactionDate = new \DateTime(trim($dateString), "dd.MM.yy HH:mm:ss");
 		} else
 		if ($this->_dateFormat == 'd-M-yy') {
-			$transactionDate = new Zend_Date(trim($dateString), "d-M-yy HH:mm:ss");
+			$transactionDate = new \DateTime(trim($dateString), "d-M-yy HH:mm:ss");
 		} else {
 			throw new Exception("\n Date Format not supported ".$this->_dateFormat."\n");
 		}

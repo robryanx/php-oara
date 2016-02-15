@@ -68,7 +68,7 @@ class Oara_Network_Publisher_AvantLink extends Oara_Network {
 		$connection = false;
 			
 		$urls = array ();
-		$urls [] = new Oara_Curl_Request ( 'https://www.avantlink.ca/affiliate/view_edit_auth_key.php', array () );
+		$urls [] = new \Oara\Curl\Request ( 'https://www.avantlink.ca/affiliate/view_edit_auth_key.php', array () );
 		$result = $this->_client->get ( $urls );
 		if (preg_match ( "/<p><strong>Affiliate ID:<\/strong> (.*)?<\/p>/", $result [0], $matches )) {
 			$this->_id = $matches[1];
@@ -94,7 +94,7 @@ class Oara_Network_Publisher_AvantLink extends Oara_Network {
 		);
 		
 		$urls = array ();
-		$urls [] = new Oara_Curl_Request ( $this->_domain.'/affiliate/merchants.php',$params );
+		$urls [] = new \Oara\Curl\Request ( $this->_domain.'/affiliate/merchants.php',$params );
 		$result = $this->_client->post ( $urls );
 		
 		$folder = realpath ( dirname ( COOKIES_BASE_DIR ) ) . '/pdf/';
@@ -133,7 +133,7 @@ class Oara_Network_Publisher_AvantLink extends Oara_Network {
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($idMerchant, $dStartDate, $dEndDate)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = array();
 		
 		
@@ -160,7 +160,7 @@ class Oara_Network_Publisher_AvantLink extends Oara_Network {
 				$transaction = Array();
 				$merchantId = (int) $transactionExportArray[17];
 				$transaction['merchantId'] = $merchantId;
-				$transactionDate = new Zend_Date($transactionExportArray[11], 'MM-dd-yyyy HH:mm:ss');
+				$transactionDate = new \DateTime($transactionExportArray[11], 'MM-dd-yyyy HH:mm:ss');
 				$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 				$transaction['unique_id'] = (int)$transactionExportArray[5];
 

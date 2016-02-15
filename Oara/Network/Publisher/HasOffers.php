@@ -90,7 +90,7 @@ class Oara_Network_Publisher_HasOffers extends Oara_Network {
 	 *
 	 * @see library/Oara/Network/Oara_Network_Publisher_Base#getTransactionList($merchantId,$dStartDate,$dEndDate)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = array ();
 
 		//fields[]=Stat.offer_id&fields[]=Stat.datetime&fields[]=Offer.name&fields[]=Stat.conversion_status&fields[]=Stat.payout&fields[]=Stat.conversion_sale_amount&fields[]=Stat.ip&fields[]=Stat.ad_id&fields[]=Stat.affiliate_info1&sort[Stat.datetime]=desc&filters[Stat.date][conditional]=BETWEEN&filters[Stat.date][values][]=2014-03-13&filters[Stat.date][values][]=2014-03-19&data_start=2014-03-13&data_end=2014-03-19
@@ -112,7 +112,7 @@ class Oara_Network_Publisher_HasOffers extends Oara_Network {
 				if ($merchantList == null || in_array($merchantId, $merchantList)) {
 					$transaction['merchantId'] = $merchantId;
 
-					$transactionDate = new Zend_Date($transactionApi["Stat"]["datetime"], 'yyyy-MM-dd HH:mm:ss', 'en');
+					$transactionDate = new \DateTime($transactionApi["Stat"]["datetime"], 'yyyy-MM-dd HH:mm:ss', 'en');
 					$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 
 					if ($transactionApi["Stat"]["ad_id"] != null) {

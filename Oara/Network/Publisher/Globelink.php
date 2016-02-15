@@ -73,7 +73,7 @@ class Oara_Network_Publisher_Globelink extends Oara_Network {
 
 		$valuesFormExport = array();
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://affiliate.globelink.co.uk/home/', $valuesFormExport);
+		$urls[] = new \Oara\Curl\Request('http://affiliate.globelink.co.uk/home/', $valuesFormExport);
 		$exportReport = $this->_client->get($urls);
 		if (!preg_match("/\/form\/CMSFormsUsersLogout/", $exportReport[0], $matches)) {
 			$connection = false;
@@ -101,13 +101,13 @@ class Oara_Network_Publisher_Globelink extends Oara_Network {
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = array();
 		
 		
 		$urls = array();
 		$valuesFormExport = array();
-		$urls[] = new Oara_Curl_Request('http://affiliate.globelink.co.uk/home/', $valuesFormExport);
+		$urls[] = new \Oara\Curl\Request('http://affiliate.globelink.co.uk/home/', $valuesFormExport);
 		$exportReport = $this->_client->get($urls);
 		$commmisionUrl = "";
 		if (preg_match("/\/profile\/(.*)\/sales/", $exportReport[0], $matches)) {
@@ -122,7 +122,7 @@ class Oara_Network_Publisher_Globelink extends Oara_Network {
 			$valuesFormExport = array();
 			$valuesFormExport[] = new Oara_Curl_Parameter('page', $page);
 			$valuesFormExport[] = new Oara_Curl_Parameter('count', 20);
-			$urls[] = new Oara_Curl_Request($commmisionUrl, $valuesFormExport);
+			$urls[] = new \Oara\Curl\Request($commmisionUrl, $valuesFormExport);
 			$exportReport = $this->_client->get($urls);
 			$dom = new Zend_Dom_Query($exportReport[0]);
 			$results = $dom->query('.affs-list-r');
@@ -147,7 +147,7 @@ class Oara_Network_Publisher_Globelink extends Oara_Network {
 		}
 		
 		foreach  ($auxTransactionList as $auxTransaction) {
-			$transactionDate = new Zend_Date($auxTransaction[0], "yyyy-MM-dd HH:mm:ss");
+			$transactionDate = new \DateTime($auxTransaction[0], "yyyy-MM-dd HH:mm:ss");
 			
 			if ($dStartDate->compare($transactionDate) <= 0 && $dEndDate->compare($transactionDate) >= 0) {
 				$transaction = Array();

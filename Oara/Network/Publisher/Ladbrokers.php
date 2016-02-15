@@ -66,7 +66,7 @@ class Oara_Network_Publisher_Ladbrokers extends Oara_Network {
 		//If not login properly the construct launch an exception
 		$connection = false;
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('https://portal.ladbrokespartners.com/portal/dashboard.jhtm?currentLanguage=en', array());
+		$urls[] = new \Oara\Curl\Request('https://portal.ladbrokespartners.com/portal/dashboard.jhtm?currentLanguage=en', array());
 		$exportReport = $this->_client->get($urls);
 
 		
@@ -94,7 +94,7 @@ class Oara_Network_Publisher_Ladbrokers extends Oara_Network {
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
 
 		$totalTransactions = array();
 

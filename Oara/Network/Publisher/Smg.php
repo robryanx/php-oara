@@ -75,7 +75,7 @@ class Oara_Network_Publisher_Smg extends Oara_Network
         $this->_newClient = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
 
         $urls = array();
-        $urls[] = new Oara_Curl_Request('https://member.impactradius.co.uk/secure/mediapartner/accountSettings/mp-wsapi-flow.ihtml?', array());
+        $urls[] = new \Oara\Curl\Request('https://member.impactradius.co.uk/secure/mediapartner/accountSettings/mp-wsapi-flow.ihtml?', array());
         $exportReport = $this->_newClient->get($urls);
         $dom = new Zend_Dom_Query($exportReport[0]);
         $results = $dom->query('div .uitkFields');
@@ -84,10 +84,10 @@ class Oara_Network_Publisher_Smg extends Oara_Network
 
             $activeAPI = array(new Oara_Curl_Parameter('_eventId', "activate"));
             $urls = array();
-            $urls[] = new Oara_Curl_Request('https://member.impactradius.co.uk/secure/mediapartner/accountSettings/mp-wsapi-flow.ihtml?', $activeAPI);
+            $urls[] = new \Oara\Curl\Request('https://member.impactradius.co.uk/secure/mediapartner/accountSettings/mp-wsapi-flow.ihtml?', $activeAPI);
             $exportReport = $this->_newClient->post($urls);
             $urls = array();
-            $urls[] = new Oara_Curl_Request('https://member.impactradius.co.uk/secure/mediapartner/accountSettings/mp-wsapi-flow.ihtml?', array());
+            $urls[] = new \Oara\Curl\Request('https://member.impactradius.co.uk/secure/mediapartner/accountSettings/mp-wsapi-flow.ihtml?', array());
             $exportReport = $this->_newClient->get($urls);
             $dom = new Zend_Dom_Query($exportReport[0]);
             $results = $dom->query('div .uitkFields');
@@ -117,7 +117,7 @@ class Oara_Network_Publisher_Smg extends Oara_Network
 
         //Checking connection for the impact Radius website
         $urls = array();
-        $urls[] = new Oara_Curl_Request('https://member.impactradius.co.uk/secure/mediapartner/home/pview.ihtml', array());
+        $urls[] = new \Oara\Curl\Request('https://member.impactradius.co.uk/secure/mediapartner/home/pview.ihtml', array());
         $exportReport = $this->_newClient->get($urls);
         $newCheck = false;
         if (preg_match('/\/logOut\.user/', $exportReport[0], $match)) {
@@ -191,7 +191,7 @@ class Oara_Network_Publisher_Smg extends Oara_Network
      * (non-PHPdoc)
      * @see library/Oara/Network/Oara_Network_Publisher_Base#getTransactionList($merchantId, $dStartDate, $dEndDate)
      */
-    public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null)
+    public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null)
     {
         $totalTransactions = Array();
         $filter = new Zend_Filter_LocalizedToNormalized(array('precision' => 2));
@@ -210,7 +210,7 @@ class Oara_Network_Publisher_Smg extends Oara_Network
                     $transaction = Array();
                     $transaction['merchantId'] = (int)$action->CampaignId;
 
-                    $transactionDate = new Zend_Date((string)$action->EventDate, "yyyy-MM-dd HH:mm:ss");
+                    $transactionDate = new \DateTime((string)$action->EventDate, "yyyy-MM-dd HH:mm:ss");
                     $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 
                     $transaction['unique_id'] = (string)$action->Id;
@@ -259,7 +259,7 @@ class Oara_Network_Publisher_Smg extends Oara_Network
 
 
         $urls = array();
-        $urls[] = new Oara_Curl_Request('https://member.impactradius.co.uk/secure/nositemesh/accounting/getPayStubParamsCSV.csv', array());
+        $urls[] = new \Oara\Curl\Request('https://member.impactradius.co.uk/secure/nositemesh/accounting/getPayStubParamsCSV.csv', array());
         $exportReport = $this->_newClient->get($urls);
         $exportData = str_getcsv($exportReport[0], "\n");
 
@@ -269,7 +269,7 @@ class Oara_Network_Publisher_Smg extends Oara_Network
 
             $obj = array();
 
-            $date = new Zend_Date($paymentExportArray[1], "dd MMM, yyyy");
+            $date = new \DateTime($paymentExportArray[1], "dd MMM, yyyy");
 
             $obj['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
             $obj['pid'] = $paymentExportArray[0];

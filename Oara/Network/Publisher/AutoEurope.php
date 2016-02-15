@@ -80,7 +80,7 @@ class Oara_Network_Publisher_AutoEurope extends Oara_Network
     {
         $connection = false;
         $urls = array();
-        $urls [] = new Oara_Curl_Request ('https://www.autoeurope.co.uk/afftools/index.cfm', array());
+        $urls [] = new \Oara\Curl\Request ('https://www.autoeurope.co.uk/afftools/index.cfm', array());
         $exportReport = $this->_client->get($urls);
         if (preg_match('/logout\.cfm/', $exportReport [0], $matches)) {
             $connection = true;
@@ -110,7 +110,7 @@ class Oara_Network_Publisher_AutoEurope extends Oara_Network
      *
      * @see library/Oara/Network/Oara_Network_Publisher_Base#getTransactionList($merchantId, $dStartDate, $dEndDate)
      */
-    public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null)
+    public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null)
     {
         $totalTransactions = Array();
 
@@ -119,7 +119,7 @@ class Oara_Network_Publisher_AutoEurope extends Oara_Network
         $valuesFormExport [] = new Oara_Curl_Parameter ('pDate1', $dStartDate->toString("MM/d/yyyy"));
         $valuesFormExport [] = new Oara_Curl_Parameter ('pDate2', $dEndDate->toString("MM/d/yyyy"));
         $urls = array();
-        $urls [] = new Oara_Curl_Request ('https://www.autoeurope.co.uk/afftools/iatareport_popup.cfm?', $valuesFormExport);
+        $urls [] = new \Oara\Curl\Request ('https://www.autoeurope.co.uk/afftools/iatareport_popup.cfm?', $valuesFormExport);
         $exportReport = $this->_client->post($urls);
         $xmlTransactionList = self::readTransactions($exportReport [0]);
 
@@ -153,8 +153,8 @@ class Oara_Network_Publisher_AutoEurope extends Oara_Network
      * Read the html table in the report
      *
      * @param string $htmlReport
-     * @param Zend_Date $startDate
-     * @param Zend_Date $endDate
+     * @param \DateTime $startDate
+     * @param \DateTime $endDate
      * @param int $iteration
      * @return array:
      */
@@ -169,7 +169,7 @@ class Oara_Network_Publisher_AutoEurope extends Oara_Network
         }
 
         $urls = array();
-        $urls [] = new Oara_Curl_Request ($pdfUrl, array());
+        $urls [] = new \Oara\Curl\Request ($pdfUrl, array());
         $exportReport = $this->_client->get($urls);
         // writing temp pdf
         $exportReportUrl = explode('/', $pdfUrl);

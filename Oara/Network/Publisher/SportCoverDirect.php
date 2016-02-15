@@ -134,7 +134,7 @@ class Oara_Network_Publisher_SportCoverDirect extends Oara_Network {
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Publisher_Base#getTransactionList($merchantId, $dStartDate, $dEndDate)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = Array();
 
 		$rch = curl_init ();
@@ -156,7 +156,7 @@ class Oara_Network_Publisher_SportCoverDirect extends Oara_Network {
 
 				$transaction['merchantId'] = 1;
 
-				$date = new Zend_Date($overviewExportArray[0], "dd/MM/yyyy");
+				$date = new \DateTime($overviewExportArray[0], "dd/MM/yyyy");
 				$transaction['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
 				$transaction ['amount'] = Oara_Utilities::parseDouble ( preg_replace ( '/[^0-9\.,]/', "", $overviewExportArray[1] ) );
 				$transaction['commission'] = Oara_Utilities::parseDouble ( preg_replace ( '/[^0-9\.,]/', "", $overviewExportArray[1] ) );

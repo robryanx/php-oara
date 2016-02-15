@@ -83,7 +83,7 @@ class Oara_Network_Publisher_PostAffiliatePro extends Oara_Network {
 	 *
 	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = array ();
 
 			
@@ -103,7 +103,7 @@ class Oara_Network_Publisher_PostAffiliatePro extends Oara_Network {
 			$transaction = Array ();
 			$transaction ['merchantId'] = 1;
 			$transaction ['uniqueId'] = $rec->get('orderid');
-			$transactionDate = new Zend_Date ( $rec->get('dateinserted'), 'yyyy-MM-dd HH:mm:ss', 'en' );
+			$transactionDate = new \DateTime ( $rec->get('dateinserted'), 'yyyy-MM-dd HH:mm:ss', 'en' );
 			$transaction ['date'] = $transactionDate->toString ( "yyyy-MM-dd HH:mm:ss" );
 			unset ( $transactionDate );
 			$transaction ['status'] = Oara_Utilities::STATUS_CONFIRMED;
@@ -130,7 +130,7 @@ class Oara_Network_Publisher_PostAffiliatePro extends Oara_Network {
 					$transaction = Array ();
 					$transaction ['merchantId'] = 1;
 					$transaction ['uniqueId'] = $rec->get('orderid');
-					$transactionDate = new Zend_Date ( $rec->get('dateinserted'), 'yyyy-MM-dd HH:mm:ss', 'en' );
+					$transactionDate = new \DateTime ( $rec->get('dateinserted'), 'yyyy-MM-dd HH:mm:ss', 'en' );
 					$transaction ['date'] = $transactionDate->toString ( "yyyy-MM-dd HH:mm:ss" );
 					unset ( $transactionDate );
 					

@@ -136,7 +136,7 @@ class Oara_Network_Publisher_AffiliNet extends Oara_Network {
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Publisher_Base#getTransactionList($merchantId,$dStartDate,$dEndDate)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = array();
 
 		
@@ -182,7 +182,7 @@ class Oara_Network_Publisher_AffiliNet extends Oara_Network {
 
 				foreach ($transactionListObject as $transaction) {
 					//$transaction['merchantId'] = 3901;
-					$tDate = new Zend_Date($transaction["date"],"yyyy-MM-ddTHH:mm:ss");
+					$tDate = new \DateTime($transaction["date"],"yyyy-MM-ddTHH:mm:ss");
 					$transaction["date"] = $tDate->toString("yyyy-MM-dd HH:mm:ss");
 					if ($transaction['status'] == 'Confirmed') {
 						$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
@@ -232,11 +232,11 @@ class Oara_Network_Publisher_AffiliNet extends Oara_Network {
 		//Set the webservice
 
 		//At first, we need to be sure that there are some data.
-		$auxStartDate = new Zend_Date("01-01-1990", "dd-MM-yyyy");
+		$auxStartDate = new \DateTime("01-01-1990", "dd-MM-yyyy");
 		$auxStartDate->setHour("00");
 		$auxStartDate->setMinute("00");
 		$auxStartDate->setSecond("00");
-		$auxEndDate = new Zend_Date();
+		$auxEndDate = new \DateTime();
 		$params = array(
 			'CredentialToken'	 => $this->_token,
 			'PublisherId'		 => $this->_user,

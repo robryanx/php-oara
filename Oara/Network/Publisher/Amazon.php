@@ -225,7 +225,7 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 		//If not login properly the construct launch an exception
 		$connection = false;
 		$urls = array();
-		$urls[] = new Oara_Curl_Request($this->_networkServer."/gp/associates/network/reports/main.html", array());
+		$urls[] = new \Oara\Curl\Request($this->_networkServer."/gp/associates/network/reports/main.html", array());
 		$exportReport = $this->_client->get($urls);
 
 		if (preg_match("/logout%26openid.ns/", $exportReport[0])) {
@@ -286,7 +286,7 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
 
 		$totalTransactions = array();
 		foreach ($this->_idBox as $id) {
@@ -332,7 +332,7 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 		$valuesFromExport[] = new Oara_Curl_Parameter('idbox_tracking_id', $id);
 
 		$urls = array();
-		$urls[] = new Oara_Curl_Request($this->_networkServer."/gp/associates/network/reports/report.html?", $valuesFromExport);
+		$urls[] = new \Oara\Curl\Request($this->_networkServer."/gp/associates/network/reports/report.html?", $valuesFromExport);
 		$exportReport = $this->_client->get($urls);
 
 		if (preg_match("/DOCTYPE/", $exportReport[0])){
@@ -348,7 +348,7 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 			}
 			$transactionExportArray = str_getcsv(str_replace("\"", "", $exportData[$index]), "\t");
 
-			$transactionDate = new Zend_Date($transactionExportArray[5], 'MMMM d,yyyy', 'en');
+			$transactionDate = new \DateTime($transactionExportArray[5], 'MMMM d,yyyy', 'en');
 		} catch (Exception $e){
 			$index = 3;
 		}
@@ -356,7 +356,7 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 		$num = count($exportData);
 		for ($i = $index; $i < $num; $i++) {
 			$transactionExportArray = str_getcsv(str_replace("\"", "", $exportData[$i]), "\t");
-			$transactionDate = new Zend_Date($transactionExportArray[5], 'MMMM d,yyyy', 'en');
+			$transactionDate = new \DateTime($transactionExportArray[5], 'MMMM d,yyyy', 'en');
 			$transaction = Array();
 			$transaction['merchantId'] = 1;
 			if (!isset($transactionExportArray[5])) {
@@ -391,7 +391,7 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 			$urls = array();
 			$paymentExport = array();
 			$paymentExport[] = new Oara_Curl_Parameter('idbox_tracking_id', $id);
-			$urls[] = new Oara_Curl_Request($this->_networkServer."/gp/associates/network/your-account/payment-history.html?", $paymentExport);
+			$urls[] = new \Oara\Curl\Request($this->_networkServer."/gp/associates/network/your-account/payment-history.html?", $paymentExport);
 			$exportReport = $this->_client->get($urls);
 			$dom = new Zend_Dom_Query($exportReport[0]);
 			$results = $dom->query('.paymenthistory');
@@ -404,7 +404,7 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 					$paymentExportArray = str_getcsv($paymentReport[$i], ";");
 
 					$obj = array();
-					$paymentDate = new Zend_Date($paymentExportArray[0], "M d yyyy", "en");
+					$paymentDate = new \DateTime($paymentExportArray[0], "M d yyyy", "en");
 					$obj['date'] = $paymentDate->toString("yyyy-MM-dd HH:mm:ss");
 					$obj['pid'] = ($paymentDate->toString("yyyyMMdd").substr((string) base_convert(md5($id), 16, 10), 0, 5));
 					$obj['method'] = 'BACS';

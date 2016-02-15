@@ -61,10 +61,10 @@ class Oara_Network_Publisher_Ebay extends Oara_Network {
     public function checkConnection() {
         //If not login properly the construct launch an exception
         $connection = true;
-        $yesterday = new \Zend_Date ();
+        $yesterday = new \\DateTime ();
         $yesterday->subDay(2);
         $urls = array();
-        $urls[] = new Oara_Curl_Request("https://publisher.ebaypartnernetwork.com/PublisherReportsTx?pt=2&start_date={$yesterday->toSTring("M/d/yyyy")}&end_date={$yesterday->toSTring("M/d/yyyy")}&user_name={$this->_credentials['user']}&user_password={$this->_credentials['password']}&advIdProgIdCombo=&tx_fmt=2&submit_tx=Download", array());
+        $urls[] = new \Oara\Curl\Request("https://publisher.ebaypartnernetwork.com/PublisherReportsTx?pt=2&start_date={$yesterday->toSTring("M/d/yyyy")}&end_date={$yesterday->toSTring("M/d/yyyy")}&user_name={$this->_credentials['user']}&user_password={$this->_credentials['password']}&advIdProgIdCombo=&tx_fmt=2&submit_tx=Download", array());
         $exportReport = $this->_client->get($urls);
 
         if (preg_match("/DOCTYPE html PUBLIC/", $exportReport[0])){
@@ -92,10 +92,10 @@ class Oara_Network_Publisher_Ebay extends Oara_Network {
      * (non-PHPdoc)
      * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
      */
-    public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+    public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
         $totalTransactions = array();
         $urls = array();
-        $urls[] = new Oara_Curl_Request("https://publisher.ebaypartnernetwork.com/PublisherReportsTx?pt=2&start_date={$dStartDate->toSTring("M/d/yyyy")}&end_date={$dEndDate->toSTring("M/d/yyyy")}&user_name={$this->_credentials['user']}&user_password={$this->_credentials['password']}&advIdProgIdCombo=&tx_fmt=3&submit_tx=Download", array());
+        $urls[] = new \Oara\Curl\Request("https://publisher.ebaypartnernetwork.com/PublisherReportsTx?pt=2&start_date={$dStartDate->toSTring("M/d/yyyy")}&end_date={$dEndDate->toSTring("M/d/yyyy")}&user_name={$this->_credentials['user']}&user_password={$this->_credentials['password']}&advIdProgIdCombo=&tx_fmt=3&submit_tx=Download", array());
         $exportData = array();
         try{
             $exportReport = $this->_client->get($urls, 'content', 5);
@@ -112,7 +112,7 @@ class Oara_Network_Publisher_Ebay extends Oara_Network {
 
                 $transaction = Array();
                 $transaction['merchantId'] = 1;
-                $transactionDate = new Zend_Date($transactionExportArray[1], 'yyyy-MM-dd', 'en');
+                $transactionDate = new \DateTime($transactionExportArray[1], 'yyyy-MM-dd', 'en');
                 $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
                 unset($transactionDate);
                 if ($transactionExportArray[10] != null) {

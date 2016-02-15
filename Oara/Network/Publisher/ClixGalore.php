@@ -85,7 +85,7 @@ class Oara_Network_Publisher_ClixGalore extends Oara_Network {
 		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
 
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('https://www.clixgalore.co.uk/CreateAffiliateProgram.aspx', array());
+		$urls[] = new \Oara\Curl\Request('https://www.clixgalore.co.uk/CreateAffiliateProgram.aspx', array());
 		$exportReport = $this->_client->get($urls);
 		$dom = new Zend_Dom_Query($exportReport[0]);
 
@@ -140,7 +140,7 @@ class Oara_Network_Publisher_ClixGalore extends Oara_Network {
 
 		foreach (array_keys($this->_websiteList) as $websiteId) {
 			$urls = array();
-			$urls[] = new Oara_Curl_Request('http://www.clixgalore.co.uk/AffiliateAdvancedReporting.aspx', array());
+			$urls[] = new \Oara\Curl\Request('http://www.clixgalore.co.uk/AffiliateAdvancedReporting.aspx', array());
 			$exportReport = $this->_client->get($urls);
 			$dom = new Zend_Dom_Query($exportReport[0]);
 			$results = $dom->query('#dd_AffAdv_program_list_aff_adv_program_list');
@@ -170,7 +170,7 @@ class Oara_Network_Publisher_ClixGalore extends Oara_Network {
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
 
 		$totalTransactions = array();
 
@@ -184,7 +184,7 @@ class Oara_Network_Publisher_ClixGalore extends Oara_Network {
 			$valuesFromExport[] = new Oara_Curl_Parameter('Status', $status);
 
 			$urls = array();
-			$urls[] = new Oara_Curl_Request('http://www.clixgalore.co.uk/AffiliateTransactionSentReport_Excel.aspx?', $valuesFromExport);
+			$urls[] = new \Oara\Curl\Request('http://www.clixgalore.co.uk/AffiliateTransactionSentReport_Excel.aspx?', $valuesFromExport);
 			$exportReport = $this->_client->get($urls);
 			$exportData = self::htmlToCsv($exportReport[0]);
 			$num = count($exportData);
@@ -194,7 +194,7 @@ class Oara_Network_Publisher_ClixGalore extends Oara_Network {
 					$transaction = Array();
 					$merchantId = (int) $merchantMap[$transactionExportArray[2]];
 					$transaction['merchantId'] = $merchantId;
-					$transactionDate = new Zend_Date($transactionExportArray[0], 'dd MMM yyyy HH:mm', 'en');
+					$transactionDate = new \DateTime($transactionExportArray[0], 'dd MMM yyyy HH:mm', 'en');
 					$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 
 					if ($transactionExportArray[6] != null) {
@@ -236,7 +236,7 @@ class Oara_Network_Publisher_ClixGalore extends Oara_Network {
 			$paymentExport = Oara_Utilities::cloneArray($this->_exportPaymentParameters);
 
 			$urls = array();
-			$urls[] = new Oara_Curl_Request('http://www.clixgalore.co.uk/AffiliatePaymentDetail.aspx?', array());
+			$urls[] = new \Oara\Curl\Request('http://www.clixgalore.co.uk/AffiliatePaymentDetail.aspx?', array());
 			$exportReport = $this->_client->post($urls);
 
 			$dom = new Zend_Dom_Query($exportReport[0]);
@@ -251,7 +251,7 @@ class Oara_Network_Publisher_ClixGalore extends Oara_Network {
 			$paymentExport[] = new Oara_Curl_Parameter('AffProgramDropDown1$aff_program_list', $websiteId);
 
 			$urls = array();
-			$urls[] = new Oara_Curl_Request('http://www.clixgalore.co.uk/AffiliatePaymentDetail.aspx', $paymentExport);
+			$urls[] = new \Oara\Curl\Request('http://www.clixgalore.co.uk/AffiliatePaymentDetail.aspx', $paymentExport);
 			$exportReport = $this->_client->post($urls);
 
 			$dom = new Zend_Dom_Query($exportReport[0]);
@@ -263,7 +263,7 @@ class Oara_Network_Publisher_ClixGalore extends Oara_Network {
 
 					$paymentExportArray = str_getcsv($exportData[$j], ";");
 					$obj = array();
-					$paymentDate = new Zend_Date($paymentExportArray[0], "MMM d yyyy", "en");
+					$paymentDate = new \DateTime($paymentExportArray[0], "MMM d yyyy", "en");
 					$obj['date'] = $paymentDate->toString("yyyy-MM-dd HH:mm:ss");
 					$obj['pid'] = $paymentDate->toString("yyyyMMdd");
 					$obj['method'] = 'BACS';

@@ -53,7 +53,7 @@ class Oara_Network_Publisher_TerraVision extends Oara_Network {
 		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
 
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('https://book.terravision.eu/login', array());
+		$urls[] = new \Oara\Curl\Request('https://book.terravision.eu/login', array());
 		$exportReport = $this->_client->get($urls);
 		$dom = new Zend_Dom_Query($exportReport[0]);
 		$results = $dom->query('input[name="_csrf_token"]');
@@ -68,7 +68,7 @@ class Oara_Network_Publisher_TerraVision extends Oara_Network {
 			new Oara_Curl_Parameter('_csrf_token', $token)
 		);
 		$urls = array();
-		$urls[] = new Oara_Curl_Request($loginUrl, $valuesLogin);
+		$urls[] = new \Oara\Curl\Request($loginUrl, $valuesLogin);
 		$exportReport = $this->_client->post($urls);
 
 	}
@@ -79,7 +79,7 @@ class Oara_Network_Publisher_TerraVision extends Oara_Network {
 		$connection = false;
 
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('https://book.terravision.eu/partner/my/', array());
+		$urls[] = new \Oara\Curl\Request('https://book.terravision.eu/partner/my/', array());
 		$exportReport = $this->_client->get($urls);
 		if (preg_match("/logout/", $exportReport[0], $matches)) {
 			$connection = true;
@@ -104,13 +104,13 @@ class Oara_Network_Publisher_TerraVision extends Oara_Network {
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Publisher_Base#getTransactionList($merchantId, $dStartDate, $dEndDate)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = Array();
 		
 		$stringToFind = $dStartDate->toString("MMMM yyyy");
 		
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('https://book.terravision.eu/partner/my/payments', array());
+		$urls[] = new \Oara\Curl\Request('https://book.terravision.eu/partner/my/payments', array());
 		$exportReport = $this->_client->get($urls);
 		/*** load the html into the object ***/
 		$dom = new Zend_Dom_Query($exportReport[0]);

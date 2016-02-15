@@ -66,7 +66,7 @@ class Oara_Network_Publisher_MyPcBackUP extends Oara_Network {
 		//If not login properly the construct launch an exception
 		$connection = true;
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://affiliates.mypcbackup.com/', array());
+		$urls[] = new \Oara\Curl\Request('http://affiliates.mypcbackup.com/', array());
 
 		$exportReport = $this->_client->get($urls);
 		if (!preg_match("/logout/", $exportReport[0])) {
@@ -93,7 +93,7 @@ class Oara_Network_Publisher_MyPcBackUP extends Oara_Network {
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = array();
 
 		$urls = array();
@@ -106,7 +106,7 @@ class Oara_Network_Publisher_MyPcBackUP extends Oara_Network {
 		$valuesFromExport[] = new Oara_Curl_Parameter('start', $dStartDate->toString("MM/dd/yyyy"));
 		$valuesFromExport[] = new Oara_Curl_Parameter('end', $dEndDate->toString("MM/dd/yyyy"));
 			
-		$urls[] = new Oara_Curl_Request('http://affiliates.mypcbackup.com/transactions?', $valuesFromExport);
+		$urls[] = new \Oara\Curl\Request('http://affiliates.mypcbackup.com/transactions?', $valuesFromExport);
 		$exportReport = $this->_client->get($urls);
 		$exportData = str_getcsv($exportReport[0], "\n");
 		$num = count($exportData);
@@ -115,7 +115,7 @@ class Oara_Network_Publisher_MyPcBackUP extends Oara_Network {
 			$transaction = Array();
 			$transaction['merchantId'] = 1;
 			$transaction['uniqueId'] = $transactionExportArray[2];
-			$transactionDate = new Zend_Date($transactionExportArray[0]." ".$transactionExportArray[1], 'yyyy-MM-dd HH:mm:ss', 'en');
+			$transactionDate = new \DateTime($transactionExportArray[0]." ".$transactionExportArray[1], 'yyyy-MM-dd HH:mm:ss', 'en');
 			$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 			unset($transactionDate);
 
@@ -151,7 +151,7 @@ class Oara_Network_Publisher_MyPcBackUP extends Oara_Network {
 		$paymentHistory = array();
 
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://affiliates.mypcbackup.com/paychecks', array());
+		$urls[] = new \Oara\Curl\Request('http://affiliates.mypcbackup.com/paychecks', array());
 		$exportReport = $this->_client->get($urls);
 		$dom = new Zend_Dom_Query($exportReport[0]);
 		$tableList = $dom->query('.transtable');
@@ -162,7 +162,7 @@ class Oara_Network_Publisher_MyPcBackUP extends Oara_Network {
 				$paymentExportArray = str_getcsv($exportData[$i], ";");
 				try{
 					$obj = array();
-					$date = new Zend_Date($paymentExportArray[14], "MM/dd/yyyy");
+					$date = new \DateTime($paymentExportArray[14], "MM/dd/yyyy");
 					$obj['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
 					$obj['pid'] = preg_replace('/[^0-9\.,]/', "", $paymentExportArray[14]);
 					$obj['method'] = $paymentExportArray[16];

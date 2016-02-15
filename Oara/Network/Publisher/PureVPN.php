@@ -177,7 +177,7 @@ class Oara_Network_Publisher_PureVPN extends Oara_Network {
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = array();
 		$valuesFormExport = array();
 
@@ -207,7 +207,7 @@ class Oara_Network_Publisher_PureVPN extends Oara_Network {
 			$transaction = Array();
 			$transaction['merchantId'] = 1;
 			$transaction['uniqueId'] = $transactionExportArray[36];
-			$transactionDate = new Zend_Date($transactionExportArray[5], 'yyyy-MM-dd HH:mm:ss', 'en');
+			$transactionDate = new \DateTime($transactionExportArray[5], 'yyyy-MM-dd HH:mm:ss', 'en');
 			$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 			unset($transactionDate);
 			$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;

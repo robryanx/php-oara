@@ -68,7 +68,7 @@ class Oara_Network_Advertiser_TradeDoubler extends Oara_Network {
 		
 		$connection = false;
 		$urls = array ();
-		$urls [] = new Oara_Curl_Request ( 'https://login.tradedoubler.com/pan/mStartPage.action?resetMenu=true', array () );
+		$urls [] = new \Oara\Curl\Request ( 'https://login.tradedoubler.com/pan/mStartPage.action?resetMenu=true', array () );
 		$exportReport = $this->_client->get ( $urls );
 		if (preg_match ( "/logout/", $exportReport [0], $matches )) {
 			$connection = true;
@@ -87,7 +87,7 @@ class Oara_Network_Advertiser_TradeDoubler extends Oara_Network {
 		
 		$valuesFromExport = array ();
 		$urls = array ();
-		$urls [] = new Oara_Curl_Request ( 'https://login.tradedoubler.com/pan/mStartPage.action?resetMenu=true', $valuesFromExport );
+		$urls [] = new \Oara\Curl\Request ( 'https://login.tradedoubler.com/pan/mStartPage.action?resetMenu=true', $valuesFromExport );
 		$exportReport = $this->_client->get ( $urls );
 		
 		$dom = new Zend_Dom_Query ( $exportReport [0] );
@@ -113,7 +113,7 @@ class Oara_Network_Advertiser_TradeDoubler extends Oara_Network {
 	 *
 	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = array ();
 		
 		$valuesFromExport = array ();
@@ -194,7 +194,7 @@ class Oara_Network_Advertiser_TradeDoubler extends Oara_Network {
 			$programId = array_pop($valuesFromExport);
 			$valuesFromExport [] = new Oara_Curl_Parameter ( 'programId', $merchantList[$i] );
 			$urls = array ();
-			$urls [] = new Oara_Curl_Request ( 'https://login.tradedoubler.com/pan/mReport3.action?', $valuesFromExport );				
+			$urls [] = new \Oara\Curl\Request ( 'https://login.tradedoubler.com/pan/mReport3.action?', $valuesFromExport );
 			try{
 				$result = $this->_client->get($urls);
 			} catch (Exception $e){
@@ -212,7 +212,7 @@ class Oara_Network_Advertiser_TradeDoubler extends Oara_Network {
 						$transaction['custom_id'] = $transactionExportArray[26]; //epi1
 					}
 					$transaction['merchantId'] = $merchantList[$i];
-					$transactionDate = new Zend_Date($transactionExportArray[4], 'dd/MM/yy HH:mm:ss CEST');
+					$transactionDate = new \DateTime($transactionExportArray[4], 'dd/MM/yy HH:mm:ss CEST');
 					$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 					$transaction['amount'] = $transactionExportArray[17];
 					$transaction['commission'] = $transactionExportArray[24];

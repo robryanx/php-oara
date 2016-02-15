@@ -78,10 +78,10 @@ class Oara_Network_Publisher_Demo extends Oara_Network {
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Publisher_Base#getTransactionList($merchantId, $dStartDate, $dEndDate)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = Array();
 		$transactionNumber = rand(1, 200);
-		$twoMonthsAgoDate = new Zend_Date();
+		$twoMonthsAgoDate = new \DateTime();
 		$twoMonthsAgoDate->subMonth(2);
 		$dateArray = Oara_Utilities::daysOfDifference($dStartDate, $dEndDate);
 		for ($i = 0; $i < $transactionNumber; $i++) {
@@ -127,8 +127,8 @@ class Oara_Network_Publisher_Demo extends Oara_Network {
 	 */
 	public function getPaymentHistory() {
 		$paymentHistory = array();
-		$startDate = new Zend_Date('01-01-2011', 'dd-MM-yyyy');
-		$endDate = new Zend_Date();
+		$startDate = new \DateTime('01-01-2011', 'dd-MM-yyyy');
+		$endDate = new \DateTime();
 		$dateArray = Oara_Utilities::monthsOfDifference($startDate, $endDate);
 		for ($i = 0; $i < count($dateArray); $i++) {
 			$dateMonth = $dateArray[$i];

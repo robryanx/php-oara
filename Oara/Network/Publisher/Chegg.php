@@ -102,7 +102,7 @@ class Oara_Network_Publisher_Chegg extends Oara_Network {
 		//If not login properly the construct launch an exception
 		$connection = false;
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://cheggaffiliateprogram.com/Home.aspx?', array());
+		$urls[] = new \Oara\Curl\Request('http://cheggaffiliateprogram.com/Home.aspx?', array());
 		$exportReport = $this->_client->get($urls);
 		echo $exportReport[0];
 		
@@ -130,7 +130,7 @@ class Oara_Network_Publisher_Chegg extends Oara_Network {
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
 
 		$totalTransactions = array();
 
@@ -141,7 +141,7 @@ class Oara_Network_Publisher_Chegg extends Oara_Network {
 		$valuesFromExport[] = new Oara_Curl_Parameter('Link', '-1');
 
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('https://www.bet365affiliates.com/Members/Members/Statistics/Print.aspx?', $valuesFromExport);
+		$urls[] = new \Oara\Curl\Request('https://www.bet365affiliates.com/Members/Members/Statistics/Print.aspx?', $valuesFromExport);
 		$exportReport = $this->_client->get($urls);
 
 		$dom = new Zend_Dom_Query($exportReport[0]);
@@ -157,7 +157,7 @@ class Oara_Network_Publisher_Chegg extends Oara_Network {
 
 				$transaction = Array();
 				$transaction['merchantId'] = 1;
-				$transactionDate = new Zend_Date($transactionExportArray[1], 'dd-MM-yyyy', 'en');
+				$transactionDate = new \DateTime($transactionExportArray[1], 'dd-MM-yyyy', 'en');
 				$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 
 				$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;

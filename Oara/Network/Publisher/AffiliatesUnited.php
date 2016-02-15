@@ -62,7 +62,7 @@ class Oara_Network_Publisher_AffiliatesUnited extends Oara_Network {
 		//If not login properly the construct launch an exception
 		$connection = false;
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('https://affiliates.affutd.com/affiliates/Dashboard.aspx', array());
+		$urls[] = new \Oara\Curl\Request('https://affiliates.affutd.com/affiliates/Dashboard.aspx', array());
 		$exportReport = $this->_client->get($urls);
 
 		$dom = new Zend_Dom_Query($exportReport[0]);
@@ -93,14 +93,14 @@ class Oara_Network_Publisher_AffiliatesUnited extends Oara_Network {
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = array();
 		$valuesFromExport = array();
 		$valuesFromExport[] = new Oara_Curl_Parameter('ctl00$cphPage$reportFrom', $dStartDate->toString("yyyy-MM-dd"));
 		$valuesFromExport[] = new Oara_Curl_Parameter('ctl00$cphPage$reportTo', $dEndDate->toString("yyyy-MM-dd"));
 	
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('https://affiliates.affutd.com/affiliates/DataServiceWrapper/DataService.svc/Export/CSV/Affiliates_Reports_GeneralStats_DailyFigures', $valuesFromExport);
+		$urls[] = new \Oara\Curl\Request('https://affiliates.affutd.com/affiliates/DataServiceWrapper/DataService.svc/Export/CSV/Affiliates_Reports_GeneralStats_DailyFigures', $valuesFromExport);
 		$exportReport = $this->_client->post($urls);
 		$exportData = str_getcsv($exportReport[0], "\n");
 		$num = count($exportData);
@@ -109,7 +109,7 @@ class Oara_Network_Publisher_AffiliatesUnited extends Oara_Network {
 
 			$transaction = Array();
 			$transaction['merchantId'] = 1;
-			$transactionDate = new Zend_Date($transactionExportArray[0], 'dd-MM-yyyy', 'en');
+			$transactionDate = new \DateTime($transactionExportArray[0], 'dd-MM-yyyy', 'en');
 			$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 
 			$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;

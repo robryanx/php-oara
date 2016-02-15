@@ -67,7 +67,7 @@ class Oara_Network_Publisher_SkyScanner extends Oara_Network {
 		//If not login properly the construct launch an exception
 		$connection = true;
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://business.skyscanner.net/portal/en-GB/UK/Report/Show', array());
+		$urls[] = new \Oara\Curl\Request('http://business.skyscanner.net/portal/en-GB/UK/Report/Show', array());
 		$exportReport = $this->_client->get($urls);
 		if (!preg_match("/encrypedApiKey: \"(.*)?\",/", $exportReport[0], $match)){
 			$connection = false;
@@ -96,14 +96,14 @@ class Oara_Network_Publisher_SkyScanner extends Oara_Network {
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
 
 		$totalTransactions = array();
 
 		$urls = array();
 		
 		$url = 'http://business.skyscanner.net/apiservices/reporting/v1.0/reportdata/'.$dStartDate->toString("yyyy-MM-dd").'/'.$dEndDate->toString("yyyy-MM-dd").'?encryptedApiKey='.$this->_apiKey."&type=csv";
-		$urls[] = new Oara_Curl_Request($url, array());
+		$urls[] = new \Oara\Curl\Request($url, array());
 
 		$exportReport = array();
 		$exportReport = $this->_client->get($urls);
@@ -120,7 +120,7 @@ class Oara_Network_Publisher_SkyScanner extends Oara_Network {
 				$transactionExportArray = str_getcsv($exportData[$i], ",");
 				$transaction = Array();
 				$transaction['merchantId'] = 1;
-				$transactionDate = new Zend_Date($transactionExportArray[0], 'dd/MM/yyyy HH:mm:ss', 'en');
+				$transactionDate = new \DateTime($transactionExportArray[0], 'dd/MM/yyyy HH:mm:ss', 'en');
 				$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 				//unset($transactionDate);
 				$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;

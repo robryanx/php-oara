@@ -67,7 +67,7 @@ class Oara_Network_Publisher_ClickBank extends Oara_Network {
 		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
 
 		$urls = array();
-		$urls[] = new Oara_Curl_Request("https://".$user.".accounts.clickbank.com/account/profile.htm", array());
+		$urls[] = new \Oara\Curl\Request("https://".$user.".accounts.clickbank.com/account/profile.htm", array());
 		$result = $this->_client->get($urls);
 		if (preg_match_all("/(API-(.*)?)\s</", $result[0], $matches)) {
 			$this->_api = $matches[1][0];
@@ -106,7 +106,7 @@ class Oara_Network_Publisher_ClickBank extends Oara_Network {
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = array();
 		$filter = new Zend_Filter_LocalizedToNormalized(array('precision' => 2));
 		$number = self::returnApiData("https://api.clickbank.com/rest/1.3/orders/count?startDate=".$dStartDate->toString("yyyy-MM-dd")."&endDate=".$dEndDate->toString("yyyy-MM-dd"));
@@ -120,7 +120,7 @@ class Oara_Network_Publisher_ClickBank extends Oara_Network {
 
 					$transaction = Array();
 					$transaction['merchantId'] = 1;
-					$transactionDate = new Zend_Date(self::findAttribute($singleTransaction, 'date'), 'yyyy-MM-ddTHH:mm:ss');
+					$transactionDate = new \DateTime(self::findAttribute($singleTransaction, 'date'), 'yyyy-MM-ddTHH:mm:ss');
 					$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 					unset($transactionDate);
 

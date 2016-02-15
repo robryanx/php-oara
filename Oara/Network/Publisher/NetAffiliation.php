@@ -76,7 +76,7 @@ class Oara_Network_Publisher_NetAffiliation extends Oara_Network {
 
 		$urls = array();
 		$valuesFormExport = array();
-		$urls[] = new Oara_Curl_Request('http://www'.$this->_serverNumber.'.netaffiliation.com/affiliate/webservice', $valuesFormExport);
+		$urls[] = new \Oara\Curl\Request('http://www'.$this->_serverNumber.'.netaffiliation.com/affiliate/webservice', $valuesFormExport);
 		$exportReport = $this->_client->get($urls);
 		$dom = new Zend_Dom_Query($exportReport[0]);
 		$results = $dom->query('.margeHaut5');
@@ -85,12 +85,12 @@ class Oara_Network_Publisher_NetAffiliation extends Oara_Network {
 		}
 		if (!isset($this->_credentials["apiPassword"])){
 			$valuesFormExport = array();
-			$urls[] = new Oara_Curl_Request('http://www'.$this->_serverNumber.'.netaffiliation.com/affiliate/webservice?d=1', $valuesFormExport);
+			$urls[] = new \Oara\Curl\Request('http://www'.$this->_serverNumber.'.netaffiliation.com/affiliate/webservice?d=1', $valuesFormExport);
 			$exportReport = $this->_client->get($urls);
 		}
 		$urls = array();
 		$valuesFormExport = array();
-		$urls[] = new Oara_Curl_Request('http://www'.$this->_serverNumber.'.netaffiliation.com/affiliate/webservice', $valuesFormExport);
+		$urls[] = new \Oara\Curl\Request('http://www'.$this->_serverNumber.'.netaffiliation.com/affiliate/webservice', $valuesFormExport);
 		$exportReport = $this->_client->get($urls);
 		$dom = new Zend_Dom_Query($exportReport[0]);
 		$results = $dom->query('.margeHaut5');
@@ -108,7 +108,7 @@ class Oara_Network_Publisher_NetAffiliation extends Oara_Network {
 		//Checking connection to the platform
 		$valuesFormExport = array();
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://www'.$this->_serverNumber.'.netaffiliation.com/index.php/', $valuesFormExport);
+		$urls[] = new \Oara\Curl\Request('http://www'.$this->_serverNumber.'.netaffiliation.com/index.php/', $valuesFormExport);
 		$exportReport = $this->_client->get($urls);
 		if (!preg_match("/logout/", $exportReport[0], $matches) || !isset($this->_credentials["apiPassword"])) {
 			$connection = false;
@@ -125,7 +125,7 @@ class Oara_Network_Publisher_NetAffiliation extends Oara_Network {
 
 		$valuesFormExport = array();
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://www'.$this->_serverNumber.'.netaffiliation.com/index.php/affiliate/statistics', $valuesFormExport);
+		$urls[] = new \Oara\Curl\Request('http://www'.$this->_serverNumber.'.netaffiliation.com/index.php/affiliate/statistics', $valuesFormExport);
 
 		$exportReport = $this->_client->post($urls);
 		$dom = new Zend_Dom_Query($exportReport[0]);
@@ -152,7 +152,7 @@ class Oara_Network_Publisher_NetAffiliation extends Oara_Network {
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = array();
 
 		$valuesFormExport = array();
@@ -163,7 +163,7 @@ class Oara_Network_Publisher_NetAffiliation extends Oara_Network {
 		$valuesFormExport[] = new Oara_Curl_Parameter('debut', $dStartDate->toString("yyyy-MM-dd"));
 		$valuesFormExport[] = new Oara_Curl_Parameter('fin', $dEndDate->toString("yyyy-MM-dd"));
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('https://stat.netaffiliation.com/requete.php?', $valuesFormExport);
+		$urls[] = new \Oara\Curl\Request('https://stat.netaffiliation.com/requete.php?', $valuesFormExport);
 		$exportReport = $this->_client->get($urls);
 
 
@@ -175,7 +175,7 @@ class Oara_Network_Publisher_NetAffiliation extends Oara_Network {
 			if (in_array($transactionExportArray[0], $merchantList)) {
 				$transaction = Array();
 				$transaction['merchantId'] = $transactionExportArray[0];
-				$transactionDate = new Zend_Date($transactionExportArray[1], "dd/MM/yyyy HH:mm:ss");
+				$transactionDate = new \DateTime($transactionExportArray[1], "dd/MM/yyyy HH:mm:ss");
 				$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 
 				if ($transactionExportArray[3] != null) {

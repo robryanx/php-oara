@@ -137,7 +137,7 @@ class Oara_Network_Publisher_PrivateInternetAccess extends Oara_Network
         $connection = true;
         $valuesFormExport = array();
         $urls = array();
-        $urls[] = new Oara_Curl_Request('https://www.privateinternetaccess.com/affiliates/affiliate_dashboard', $valuesFormExport);
+        $urls[] = new \Oara\Curl\Request('https://www.privateinternetaccess.com/affiliates/affiliate_dashboard', $valuesFormExport);
         $exportReport = $this->_client->get($urls);
         $dom = new Zend_Dom_Query($exportReport[0]);
         $results = $dom->query('.login');
@@ -169,7 +169,7 @@ class Oara_Network_Publisher_PrivateInternetAccess extends Oara_Network
      * (non-PHPdoc)
      * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
      */
-    public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null)
+    public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null)
     {
         $totalTransactions = array();
         $dateArray = Oara_Utilities::daysOfDifference($dStartDate, $dEndDate);
@@ -182,7 +182,7 @@ class Oara_Network_Publisher_PrivateInternetAccess extends Oara_Network
             $valuesFormExport[] = new Oara_Curl_Parameter('period', 'day');
 
             $urls = array();
-            $urls[] = new Oara_Curl_Request('https://www.privateinternetaccess.com/affiliates/affiliate_dashboard?', $valuesFormExport);
+            $urls[] = new \Oara\Curl\Request('https://www.privateinternetaccess.com/affiliates/affiliate_dashboard?', $valuesFormExport);
             $exportReport = $this->_client->get($urls);
             $dom = new Zend_Dom_Query($exportReport[0]);
             $results = $dom->query('.coupon_code table');

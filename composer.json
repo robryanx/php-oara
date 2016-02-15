@@ -4,9 +4,9 @@
 
     "require": {
         "php": ">=5.3.0",
-        "zendframework/zendframework1": "1.12.*",
         "google/apiclient": "1.1.6",
-        "phpoffice/phpexcel": "1.8.*"
+        "phpoffice/phpexcel": "1.8.*",
+        "ext-curl": "*"
     },
 
     "autoload": {

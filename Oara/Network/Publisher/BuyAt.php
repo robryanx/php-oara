@@ -170,7 +170,7 @@ class Oara_Network_Publisher_BuyAt extends Oara_Network {
 		$connection = false;
 		$urls = array();
 		$valuesFromExport = $this->_exportMerchantParameters;
-		$urls[] = new Oara_Curl_Request('http://users.buy.at/ma/index.php/affiliateProgrammes/programmes?', $valuesFromExport);
+		$urls[] = new \Oara\Curl\Request('http://users.buy.at/ma/index.php/affiliateProgrammes/programmes?', $valuesFromExport);
 		$exportReport = $this->_client->get($urls);
 		if (!preg_match("/Password/", $exportReport[0], $matches)) {
 			$connection = true;
@@ -186,7 +186,7 @@ class Oara_Network_Publisher_BuyAt extends Oara_Network {
 		$valuesFromExport = $this->_exportMerchantParameters;
 		$merchants = Array();
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://users.buy.at/ma/index.php/affiliateProgrammes/programmes?', $valuesFromExport);
+		$urls[] = new \Oara\Curl\Request('http://users.buy.at/ma/index.php/affiliateProgrammes/programmes?', $valuesFromExport);
 		
 		$exportReport = $this->_client->get($urls);
 		echo $exportReport[0];
@@ -206,19 +206,19 @@ class Oara_Network_Publisher_BuyAt extends Oara_Network {
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = array();
 		$valuesFromExport = Oara_Utilities::cloneArray($this->_exportTransactionParameters);
-		$valuesFromExport[] = new Oara_Curl_Parameter('from_year', $dStartDate->get(Zend_Date::YEAR));
-		$valuesFromExport[] = new Oara_Curl_Parameter('from_month', $dStartDate->get(Zend_Date::MONTH));
-		$valuesFromExport[] = new Oara_Curl_Parameter('from_day', $dStartDate->get(Zend_Date::DAY));
-		$valuesFromExport[] = new Oara_Curl_Parameter('to_year', $dEndDate->get(Zend_Date::YEAR));
-		$valuesFromExport[] = new Oara_Curl_Parameter('to_month', $dEndDate->get(Zend_Date::MONTH));
-		$valuesFromExport[] = new Oara_Curl_Parameter('to_day', $dEndDate->get(Zend_Date::DAY));
+		$valuesFromExport[] = new Oara_Curl_Parameter('from_year', $dStartDate->get(\DateTime::YEAR));
+		$valuesFromExport[] = new Oara_Curl_Parameter('from_month', $dStartDate->get(\DateTime::MONTH));
+		$valuesFromExport[] = new Oara_Curl_Parameter('from_day', $dStartDate->get(\DateTime::DAY));
+		$valuesFromExport[] = new Oara_Curl_Parameter('to_year', $dEndDate->get(\DateTime::YEAR));
+		$valuesFromExport[] = new Oara_Curl_Parameter('to_month', $dEndDate->get(\DateTime::MONTH));
+		$valuesFromExport[] = new Oara_Curl_Parameter('to_day', $dEndDate->get(\DateTime::DAY));
 		$valuesFromExport[] = new Oara_Curl_Parameter('prog_id', '0');
 
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://users.buy.at/ma/index.php/affiliateReport/commissionValue?', $valuesFromExport);
+		$urls[] = new \Oara\Curl\Request('http://users.buy.at/ma/index.php/affiliateReport/commissionValue?', $valuesFromExport);
 
 		$exportReport = $this->_client->get($urls);
 		$exportData = str_getcsv($exportReport[0], "\r\n");
@@ -229,7 +229,7 @@ class Oara_Network_Publisher_BuyAt extends Oara_Network {
 				$transaction = Array();
 				$merchantId = (int) $transactionExportArray[12];
 				$transaction['merchantId'] = $merchantId;
-				$transactionDate = new Zend_Date($transactionExportArray[5], 'dd-MM-yyyy HH:mm:ss');
+				$transactionDate = new \DateTime($transactionExportArray[5], 'dd-MM-yyyy HH:mm:ss');
 				$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 				$transaction['unique_id'] = $transactionExportArray[8];
 
@@ -297,14 +297,14 @@ class Oara_Network_Publisher_BuyAt extends Oara_Network {
 
 		$urls = array();
 		$valuesFromExport = $this->_exportPaymentParameters;
-		$urls[] = new Oara_Curl_Request('http://users.buy.at/ma/index.php/affiliatePayments/paymentsHistory?', $valuesFromExport);
+		$urls[] = new \Oara\Curl\Request('http://users.buy.at/ma/index.php/affiliatePayments/paymentsHistory?', $valuesFromExport);
 		$exportReport = $this->_client->get($urls);
 		$exportData = str_getcsv($exportReport[0], "\r\n");
 		$num = count($exportData);
 		for ($j = 1; $j < $num; $j++) {
 			$paymentData = str_getcsv($exportData[$j], ",");
 			$obj = array();
-			$date = new Zend_Date($paymentData[0], "dd-MM-yyyy");
+			$date = new \DateTime($paymentData[0], "dd-MM-yyyy");
 			$obj['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
 			$obj['method'] = $paymentData[1];
 			$obj['value'] = Oara_Utilities::parseDouble($paymentData[2]);
@@ -325,7 +325,7 @@ class Oara_Network_Publisher_BuyAt extends Oara_Network {
 		$urls = array();
 		$valuesFormExport = $this->_exportPaymentDetailsParameters;
 		$valuesFormExport[] = new Oara_Curl_Parameter('payment_id', $paymentId);
-		$urls[] = new Oara_Curl_Request('https://users.buy.at/ma/index.php/affiliatePayments/paymentDetails?', $valuesFormExport);
+		$urls[] = new \Oara\Curl\Request('https://users.buy.at/ma/index.php/affiliatePayments/paymentDetails?', $valuesFormExport);
 		$exportReportList = $this->_client->get($urls);
 		foreach ($exportReportList as $exportReport) {
 			$exportReportData = str_getcsv($exportReport, "\r\n");

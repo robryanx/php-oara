@@ -96,7 +96,7 @@ class Oara_Network_Publisher_WowTrk extends Oara_Network {
 		$valuesFromExport[] = new Oara_Curl_Parameter('limit', 0);
 		
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://p.wowtrk.com/offers/offers.xml?', $valuesFromExport);
+		$urls[] = new \Oara\Curl\Request('http://p.wowtrk.com/offers/offers.xml?', $valuesFromExport);
 		$exportReport = $this->_exportClient->get($urls);
 
 		$exportData = self::loadXml($exportReport[0]);
@@ -124,7 +124,7 @@ class Oara_Network_Publisher_WowTrk extends Oara_Network {
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Publisher_Base#getTransactionList($merchantId,$dStartDate,$dEndDate)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = array();
 
 		$valuesFromExport = array();
@@ -134,7 +134,7 @@ class Oara_Network_Publisher_WowTrk extends Oara_Network {
 		$valuesFromExport[] = new Oara_Curl_Parameter('filter[Stat.offer_id]', implode(",", $merchantList));
 
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://p.wowtrk.com/stats/lead_report.xml?', $valuesFromExport);
+		$urls[] = new \Oara\Curl\Request('http://p.wowtrk.com/stats/lead_report.xml?', $valuesFromExport);
 		$exportReport = $this->_exportClient->get($urls);
 
 		$exportData = self::loadXml($exportReport[0]);
@@ -143,7 +143,7 @@ class Oara_Network_Publisher_WowTrk extends Oara_Network {
 			if (isset($merchantMap[(string) $transaction->offer])) {
 				$obj = array();
 				$obj['merchantId'] = $merchantMap[(string) $transaction->offer];
-				$date = new Zend_Date((string) $transaction->date_time, "yyyy-MM-dd HH:mm:ss");
+				$date = new \DateTime((string) $transaction->date_time, "yyyy-MM-dd HH:mm:ss");
 				$obj['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
 				$obj['status'] = Oara_Utilities::STATUS_CONFIRMED;
 				$obj['customId'] = (string) $transaction->sub_id;

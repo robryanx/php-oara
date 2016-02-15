@@ -65,7 +65,7 @@ class Oara_Network_Publisher_WinnerAffiliates extends Oara_Network {
 		//If not login properly the construct launch an exception
 		$connection = true;
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('https://www.winneraffiliates.com/', array());
+		$urls[] = new \Oara\Curl\Request('https://www.winneraffiliates.com/', array());
 
 		$exportReport = $this->_client->get($urls);
 
@@ -97,7 +97,7 @@ class Oara_Network_Publisher_WinnerAffiliates extends Oara_Network {
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
 
 		$totalTransactions = array();
 		$valuesFormExport = array();
@@ -120,7 +120,7 @@ class Oara_Network_Publisher_WinnerAffiliates extends Oara_Network {
 		$valuesFromExport[] = new Oara_Curl_Parameter('csvRequested', 'EXPORT CSV');
 
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('https://www.winneraffiliates.com/traffic-stats/advertiser', $valuesFromExport);
+		$urls[] = new \Oara\Curl\Request('https://www.winneraffiliates.com/traffic-stats/advertiser', $valuesFromExport);
 
 		$exportReport = array();
 		$exportReport = $this->_client->post($urls);
@@ -132,7 +132,7 @@ class Oara_Network_Publisher_WinnerAffiliates extends Oara_Network {
 				$transactionExportArray = str_getcsv($exportData[$i], ",");
 				$transaction = Array();
 				$transaction['merchantId'] = 1;
-				$transactionDate = new Zend_Date($transactionExportArray[0], 'yyyy-MM-dd HH:mm:ss', 'en');
+				$transactionDate = new \DateTime($transactionExportArray[0], 'yyyy-MM-dd HH:mm:ss', 'en');
 				$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 				//unset($transactionDate);
 				$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;

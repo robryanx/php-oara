@@ -72,7 +72,7 @@ class Oara_Network_Publisher_HideMyAss extends Oara_Network
 
 
         $urls = array();
-        $urls[] = new Oara_Curl_Request('https://affiliate.hidemyass.com/users/login', $valuesLogin);
+        $urls[] = new \Oara\Curl\Request('https://affiliate.hidemyass.com/users/login', $valuesLogin);
 
         $exportReport = $this->_client->post($urls);
 
@@ -86,7 +86,7 @@ class Oara_Network_Publisher_HideMyAss extends Oara_Network
         //If not login properly the construct launch an exception
         $connection = true;
         $urls = array();
-        $urls[] = new Oara_Curl_Request('https://affiliate.hidemyass.com/dashboard', array());
+        $urls[] = new \Oara\Curl\Request('https://affiliate.hidemyass.com/dashboard', array());
 
         $exportReport = $this->_client->post($urls);
         $dom = new Zend_Dom_Query($exportReport[0]);
@@ -119,7 +119,7 @@ class Oara_Network_Publisher_HideMyAss extends Oara_Network
      * (non-PHPdoc)
      * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
      */
-    public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null)
+    public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null)
     {
 
         $totalTransactions = array();
@@ -127,7 +127,7 @@ class Oara_Network_Publisher_HideMyAss extends Oara_Network
 
 
         $urls = array();
-        $urls[] = new Oara_Curl_Request('https://affiliate.hidemyass.com/reports', array());
+        $urls[] = new \Oara\Curl\Request('https://affiliate.hidemyass.com/reports', array());
         $exportReport = array();
         $exportReport = $this->_client->get($urls);
 
@@ -178,7 +178,7 @@ class Oara_Network_Publisher_HideMyAss extends Oara_Network
         $valuesFromExport[] = new Oara_Curl_Parameter('data[Conditions][chart]', 'count');
 
         $urls = array();
-        $urls[] = new Oara_Curl_Request('https://affiliate.hidemyass.com/reports/index_date?', $valuesFromExport);
+        $urls[] = new \Oara\Curl\Request('https://affiliate.hidemyass.com/reports/index_date?', $valuesFromExport);
 
         $exportReport = array();
         $exportReport = $this->_client->get($urls);
@@ -192,7 +192,7 @@ class Oara_Network_Publisher_HideMyAss extends Oara_Network
 
             $transaction = Array();
             $transaction['merchantId'] = 1;
-            $transactionDate = new Zend_Date($transactionExportArray[1], 'yyyy-MM-dd HH:mm:ss', 'en');
+            $transactionDate = new \DateTime($transactionExportArray[1], 'yyyy-MM-dd HH:mm:ss', 'en');
             $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
             //unset($transactionDate);
             $transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;

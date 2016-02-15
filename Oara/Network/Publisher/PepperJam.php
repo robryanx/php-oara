@@ -64,7 +64,7 @@ class Oara_Network_Publisher_PepperJam extends Oara_Network {
 	public function checkConnection() {
 		$connection = false;
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://www.pepperjamnetwork.com/affiliate/transactionrep.php', array());
+		$urls[] = new \Oara\Curl\Request('http://www.pepperjamnetwork.com/affiliate/transactionrep.php', array());
 		$exportReport = $this->_client->get($urls);
 
 		if (preg_match('/\/logout\.php/', $exportReport[0], $matches)) {
@@ -80,7 +80,7 @@ class Oara_Network_Publisher_PepperJam extends Oara_Network {
 		$merchants = Array();
 
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://www.pepperjamnetwork.com/affiliate/program/manage?statuses[]=1&csv=1', array());
+		$urls[] = new \Oara\Curl\Request('http://www.pepperjamnetwork.com/affiliate/program/manage?statuses[]=1&csv=1', array());
 		$exportReport = $this->_client->get($urls);
 
 		$merchantList = str_getcsv($exportReport[0], "\n");
@@ -98,7 +98,7 @@ class Oara_Network_Publisher_PepperJam extends Oara_Network {
 	 * (non-PHPdoc)
 	 * @see library/Oara/Network/Oara_Network_Publisher_Base#getTransactionList($merchantId, $dStartDate, $dEndDate)
 	 */
-	public function getTransactionList($merchantList = null, Zend_Date $dStartDate = null, Zend_Date $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
 		$totalTransactions = Array();
 
 		$valuesFormExport = array();
@@ -117,7 +117,7 @@ class Oara_Network_Publisher_PepperJam extends Oara_Network {
 		$valuesFormExport[] = new Oara_Curl_Parameter('saleIdSearch', '');
 
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://www.pepperjamnetwork.com/affiliate/report_transaction_detail.php?', $valuesFormExport);
+		$urls[] = new \Oara\Curl\Request('http://www.pepperjamnetwork.com/affiliate/report_transaction_detail.php?', $valuesFormExport);
 		$exportReport = $this->_client->get($urls);
 
 		$exportData = str_getcsv($exportReport[0], "\n");
@@ -169,8 +169,8 @@ class Oara_Network_Publisher_PepperJam extends Oara_Network {
 		$paymentHistory = array();
 
 
-		$pointer = new Zend_Date("2010-01-01", "yyyy-MM-dd");
-		$now = new Zend_Date();
+		$pointer = new \DateTime("2010-01-01", "yyyy-MM-dd");
+		$now = new \DateTime();
 		while ($now->getYear() >= $pointer->getYear()){
 			$valuesFormExport = array();
 			$valuesFormExport[] = new Oara_Curl_Parameter('csv', 'csv');
@@ -183,7 +183,7 @@ class Oara_Network_Publisher_PepperJam extends Oara_Network {
 			$valuesFormExport[] = new Oara_Curl_Parameter('payid_search', '');
 
 			$urls = array();
-			$urls[] = new Oara_Curl_Request('http://www.pepperjamnetwork.com/affiliate/report_payment_history.php?', $valuesFormExport);
+			$urls[] = new \Oara\Curl\Request('http://www.pepperjamnetwork.com/affiliate/report_payment_history.php?', $valuesFormExport);
 			$exportReport = $this->_client->get($urls);
 
 			$exportData = str_getcsv($exportReport[0], "\n");
@@ -223,7 +223,7 @@ class Oara_Network_Publisher_PepperJam extends Oara_Network {
 		$valuesFormExport[] = new Oara_Curl_Parameter('paymentid', $paymentId);
 
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://www.pepperjamnetwork.com/affiliate/report_payment_history_detail.php?', $valuesFormExport);
+		$urls[] = new \Oara\Curl\Request('http://www.pepperjamnetwork.com/affiliate/report_payment_history_detail.php?', $valuesFormExport);
 		$exportReport = $this->_client->get($urls);
 
 		$exportData = str_getcsv($exportReport[0], "\n");
