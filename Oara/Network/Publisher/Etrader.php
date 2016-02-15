@@ -1,9 +1,10 @@
 <?php
+namespace Oara\Network\Publisher;
 /**
  The goal of the Open Affiliate Report Aggregator (OARA) is to develop a set
  of PHP classes that can download affiliate reports from a number of affiliate networks, and store the data in a common format.
 
- Copyright (C) 2014  Fubra Limited
+ Copyright (C) 2016  Fubra Limited
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU Affero General Public License as published by
  the Free Software Foundation, either version 3 of the License, or any later version.
@@ -22,12 +23,12 @@
  * Export Class
  *
  * @author     Carlos Morillo Merino
- * @category   Oara_Network_Publisher_Etrader
+ * @category   Etrader
  * @copyright  Fubra Limited
  * @version    Release: 01.00
  *
  */
-class Oara_Network_Publisher_Etrader extends Oara_Network {
+class Etrader extends \Oara\Network {
 	private $_credentials = null;
 	/**
 	 * Client
@@ -40,7 +41,7 @@ class Oara_Network_Publisher_Etrader extends Oara_Network {
 	 * 
 	 * @param
 	 *        	$credentials
-	 * @return Oara_Network_Publisher_PureVPN
+	 * @return PureVPN
 	 */
 	public function __construct($credentials) {
 		$this->_credentials = $credentials;
@@ -48,14 +49,14 @@ class Oara_Network_Publisher_Etrader extends Oara_Network {
 	}
 	private function logIn() {
 		$valuesLogin = array (
-				new Oara_Curl_Parameter ( 'j_username', $this->_credentials ['user'] ),
-				new Oara_Curl_Parameter ( 'j_password', $this->_credentials ['password'] ),
-				new Oara_Curl_Parameter ( '_spring_security_remember_me', 'true' )
+				new \Oara\Curl\Parameter ( 'j_username', $this->_credentials ['user'] ),
+				new \Oara\Curl\Parameter ( 'j_password', $this->_credentials ['password'] ),
+				new \Oara\Curl\Parameter ( '_spring_security_remember_me', 'true' )
 		);
 		
 		
 		$loginUrl = 'http://etrader.kalahari.com/login?';
-		$this->_client = new Oara_Curl_Access ( $loginUrl, $valuesLogin, $this->_credentials );
+		$this->_client = new \Oara\Curl\Access ( $loginUrl, $valuesLogin, $this->_credentials );
 		
 	}
 	/**
@@ -77,7 +78,7 @@ class Oara_Network_Publisher_Etrader extends Oara_Network {
 	/**
 	 * (non-PHPdoc)
 	 * 
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getMerchantList()
+	 * @see library/Oara/Network/Interface#getMerchantList()
 	 */
 	public function getMerchantList() {
 		$merchants = array ();
@@ -94,19 +95,19 @@ class Oara_Network_Publisher_Etrader extends Oara_Network {
 	/**
 	 * (non-PHPdoc)
 	 * 
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
+	 * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
 	 */
-	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null) {
 		$totalTransactions = array ();
 		
 		$page = 1;
 		$continue = true;
 		while  ($continue){
 			$valuesFormExport = array ();
-			$valuesFormExport [] = new Oara_Curl_Parameter ( 'dateFrom', $dStartDate->toString("dd/MM/yyyy") );
-			$valuesFormExport [] = new Oara_Curl_Parameter ( 'dateTo', $dEndDate->toString("dd/MM/yyyy") );
-			$valuesFormExport [] = new Oara_Curl_Parameter ( 'startIndex', $page );
-			$valuesFormExport [] = new Oara_Curl_Parameter ( 'numberOfPages', '1' );
+			$valuesFormExport [] = new \Oara\Curl\Parameter ( 'dateFrom', $dStartDate->toString("dd/MM/yyyy") );
+			$valuesFormExport [] = new \Oara\Curl\Parameter ( 'dateTo', $dEndDate->toString("dd/MM/yyyy") );
+			$valuesFormExport [] = new \Oara\Curl\Parameter ( 'startIndex', $page );
+			$valuesFormExport [] = new \Oara\Curl\Parameter ( 'numberOfPages', '1' );
 			
 			$urls = array ();
 			$urls [] = new \Oara\Curl\Request ( 'https://etrader.kalahari.com/view/affiliate/transactionreport', $valuesFormExport );
@@ -135,7 +136,7 @@ class Oara_Network_Publisher_Etrader extends Oara_Network {
 				
 				$date = new \DateTime($transactionDetail[0], "dd MMM yyyy", "en_GB");
 				$transaction ['date'] = $date->toString ( "yyyy-MM-dd 00:00:00" );
-				$transaction ['status'] = Oara_Utilities::STATUS_CONFIRMED;
+				$transaction ['status'] = \Oara\Utilities::STATUS_CONFIRMED;
 				
 				if ($transactionDetail[3] != null){
 					preg_match('/[-+]?[0-9]*\.?[0-9]+/', $transactionDetail[3], $match);
@@ -160,7 +161,7 @@ class Oara_Network_Publisher_Etrader extends Oara_Network {
 	/**
 	 * (non-PHPdoc)
 	 * 
-	 * @see Oara/Network/Oara_Network_Publisher_Base#getPaymentHistory()
+	 * @see Oara/Network/Base#getPaymentHistory()
 	 */
 	public function getPaymentHistory() {
 		$paymentHistory = array ();

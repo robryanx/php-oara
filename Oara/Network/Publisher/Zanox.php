@@ -1,9 +1,10 @@
 <?php
+namespace Oara\Network\Publisher;
 /**
  The goal of the Open Affiliate Report Aggregator (OARA) is to develop a set
  of PHP classes that can download affiliate reports from a number of affiliate networks, and store the data in a common format.
 
- Copyright (C) 2014  Fubra Limited
+ Copyright (C) 2016  Fubra Limited
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU Affero General Public License as published by
  the Free Software Foundation, either version 3 of the License, or any later version.
@@ -22,7 +23,7 @@
  * Api Class
  *
  * @author     Carlos Morillo Merino
- * @category   Oara_Network_Publisher_Zn
+ * @category   Zn
  * @copyright  Fubra Limited
  * @version    Release: 01.00
  *
@@ -30,7 +31,7 @@
 
 require "Zanox/Zapi/ApiClient.php";
 
-class Oara_Network_Publisher_Zanox extends Oara_Network {
+class Zanox extends \Oara\Network {
 	/**
 	 * Soap client.
 	 */
@@ -44,7 +45,7 @@ class Oara_Network_Publisher_Zanox extends Oara_Network {
 	/**
 	 * Constructor.
 	 * @param $affiliateWindow
-	 * @return Oara_Network_Publisher_Zn_Api
+	 * @return Zn_Api
 	 */
 	public function __construct($credentials) {
 
@@ -76,7 +77,7 @@ class Oara_Network_Publisher_Zanox extends Oara_Network {
 	}
 	/**
 	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Oara_Network_Publisher_Base#getMerchantList()
+	 * @see library/Oara/Network/Base#getMerchantList()
 	 */
 	public function getMerchantList() {
 		$merchantList = array();
@@ -102,9 +103,9 @@ class Oara_Network_Publisher_Zanox extends Oara_Network {
 	}
 	/**
 	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Oara_Network_Publisher_Base#getTransactionList($merchantId,$dStartDate,$dEndDate)
+	 * @see library/Oara/Network/Base#getTransactionList($merchantId,$dStartDate,$dEndDate)
 	 */
-	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null) {
 		$totalTransactions = array();
 
 		$dStartDate = clone $dStartDate;
@@ -116,7 +117,7 @@ class Oara_Network_Publisher_Zanox extends Oara_Network {
 		$dEndDate->setMinute("59");
 		$dEndDate->setSecond("59");
 
-		$dateArray = Oara_Utilities::daysOfDifference($dStartDate, $dEndDate);
+		$dateArray = \Oara\Utilities::daysOfDifference($dStartDate, $dEndDate);
 		foreach ($dateArray as $date) {
 			$totalAuxTransactions = array();
 			$transactionList = $this->getSales($date->toString("yyyy-MM-dd"), 0, $this->_pageSize);
@@ -152,13 +153,13 @@ class Oara_Network_Publisher_Zanox extends Oara_Network {
 					$obj['currency'] = $transaction->currency;
 					
 					if ($transaction->reviewState == 'confirmed') {
-						$obj['status'] = Oara_Utilities::STATUS_CONFIRMED;
+						$obj['status'] = \Oara\Utilities::STATUS_CONFIRMED;
 					} else
 						if ($transaction->reviewState == 'open' || $transaction->reviewState == 'approved') {
-							$obj['status'] = Oara_Utilities::STATUS_PENDING;
+							$obj['status'] = \Oara\Utilities::STATUS_PENDING;
 						} else
 							if ($transaction->reviewState == 'rejected') {
-								$obj['status'] = Oara_Utilities::STATUS_DECLINED;
+								$obj['status'] = \Oara\Utilities::STATUS_DECLINED;
 							}
 					if (!isset($transaction->amount) || $transaction->amount == 0) {
 						$obj['amount'] = $transaction->commission;
@@ -199,7 +200,7 @@ class Oara_Network_Publisher_Zanox extends Oara_Network {
 	
 	/**
 	 * (non-PHPdoc)
-	 * @see Oara/Network/Oara_Network_Publisher_Base#getPaymentHistory()
+	 * @see Oara/Network/Base#getPaymentHistory()
 	 */
 
 	public function getPaymentHistory() {

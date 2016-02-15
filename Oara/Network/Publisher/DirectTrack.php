@@ -1,9 +1,10 @@
 <?php
+namespace Oara\Network\Publisher;
 /**
  The goal of the Open Affiliate Report Aggregator (OARA) is to develop a set
  of PHP classes that can download affiliate reports from a number of affiliate networks, and store the data in a common format.
 
- Copyright (C) 2014  Fubra Limited
+ Copyright (C) 2016  Fubra Limited
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU Affero General Public License as published by
  the Free Software Foundation, either version 3 of the License, or any later version.
@@ -22,13 +23,13 @@
  * Api Class
  *
  * @author Carlos Morillo Merino
- * @category Oara_Network_Publisher_DirectTrack
+ * @category DirectTrack
  * @copyright Fubra Limited
  * @version Release: 01.00
  *         
  *         
  */
-class Oara_Network_Publisher_DirectTrack extends Oara_Network {
+class DirectTrack extends \Oara\Network {
 	/**
 	 * Soap client.
 	 */
@@ -56,7 +57,7 @@ class Oara_Network_Publisher_DirectTrack extends Oara_Network {
 	 *
 	 * @param
 	 *        	$affiliateWindow
-	 * @return Oara_Network_Publisher_Aw_Api
+	 * @return Aw_Api
 	 */
 	public function __construct($credentials) {
 		ini_set ( 'default_socket_timeout', '120' );
@@ -83,7 +84,7 @@ class Oara_Network_Publisher_DirectTrack extends Oara_Network {
 	/**
 	 * (non-PHPdoc)
 	 *
-	 * @see library/Oara/Network/Oara_Network_Publisher_Base#getMerchantList()
+	 * @see library/Oara/Network/Base#getMerchantList()
 	 */
 	public function getMerchantList() {
 		$merchants = array ();
@@ -96,12 +97,12 @@ class Oara_Network_Publisher_DirectTrack extends Oara_Network {
 	/**
 	 * (non-PHPdoc)
 	 *
-	 * @see library/Oara/Network/Oara_Network_Publisher_Base#getTransactionList($merchantId,$dStartDate,$dEndDate)
+	 * @see library/Oara/Network/Base#getTransactionList($merchantId,$dStartDate,$dEndDate)
 	 */
-	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null) {
 		$totalTransactions = array ();
 		
-		$dateArray = Oara_Utilities::daysOfDifference($dStartDate, $dEndDate);
+		$dateArray = \Oara\Utilities::daysOfDifference($dStartDate, $dEndDate);
 		foreach ($dateArray as $date){
 				
 				$apiURL = "https://{$this->_domain}/apifleet/rest/{$this->_clientId}/{$this->_accessId}/statCampaign/quick/{$date->toString("yyyy-MM-dd")}";
@@ -112,7 +113,7 @@ class Oara_Network_Publisher_DirectTrack extends Oara_Network {
 					$transaction = Array ();
 					$transaction ['merchantId'] = "1";
 					$transaction ['date'] = $date->toString ( "yyyy-MM-dd HH:mm:ss" );
-					$transaction ['status'] = Oara_Utilities::STATUS_CONFIRMED;
+					$transaction ['status'] = \Oara\Utilities::STATUS_CONFIRMED;
 						
 					$transaction ['amount'] = $response["resource"]["saleAmount"];
 					$transaction ['commission'] = $response["resource"]["theyGet"];
@@ -130,7 +131,7 @@ class Oara_Network_Publisher_DirectTrack extends Oara_Network {
 	/**
 	 * (non-PHPdoc)
 	 *
-	 * @see Oara/Network/Oara_Network_Publisher_Base#getPaymentHistory()
+	 * @see Oara/Network/Base#getPaymentHistory()
 	 */
 	public function getPaymentHistory() {
 		$paymentHistory = array ();

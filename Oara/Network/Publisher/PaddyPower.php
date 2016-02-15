@@ -1,9 +1,10 @@
 <?php
+namespace Oara\Network\Publisher;
 /**
  The goal of the Open Affiliate Report Aggregator (OARA) is to develop a set
  of PHP classes that can download affiliate reports from a number of affiliate networks, and store the data in a common format.
 
- Copyright (C) 2014  Fubra Limited
+ Copyright (C) 2016  Fubra Limited
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU Affero General Public License as published by
  the Free Software Foundation, either version 3 of the License, or any later version.
@@ -22,12 +23,12 @@
  * Export Class
  *
  * @author     Alejandro Muñoz Odero
- * @category   Oara_Network_Publisher_PaddyPower
+ * @category   PaddyPower
  * @copyright  Fubra Limited
  * @version    Release: 01.00
  *
  */
-class Oara_Network_Publisher_PaddyPower extends Oara_Network {
+class PaddyPower extends \Oara\Network {
 	/**
 	 * Export Merchants Parameters
 	 * @var array
@@ -58,7 +59,7 @@ class Oara_Network_Publisher_PaddyPower extends Oara_Network {
 	/**
 	 * Constructor and Login
 	 * @param $credentials
-	 * @return Oara_Network_Publisher_HideMyAss
+	 * @return HideMyAss
 	 */
 	public function __construct($credentials) {
 		$this->_credentials = $credentials;
@@ -68,13 +69,13 @@ class Oara_Network_Publisher_PaddyPower extends Oara_Network {
 	private function logIn() {
 
 		$valuesLogin = array(
-			new Oara_Curl_Parameter('_method', 'POST'),
-			new Oara_Curl_Parameter('us', $this->_credentials['user']),
-			new Oara_Curl_Parameter('pa', $this->_credentials['password']),
+			new \Oara\Curl\Parameter('_method', 'POST'),
+			new \Oara\Curl\Parameter('us', $this->_credentials['user']),
+			new \Oara\Curl\Parameter('pa', $this->_credentials['password']),
 		);
 		
 		$loginUrl = 'http://affiliates.paddypartners.com/affiliates/login.aspx?';
-		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $this->_credentials);
+		$this->_client = new \Oara\Curl\Access($loginUrl, $valuesLogin, $this->_credentials);
 	}
 	/**
 	 * Check the connection
@@ -96,7 +97,7 @@ class Oara_Network_Publisher_PaddyPower extends Oara_Network {
 	}
 	/**
 	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getMerchantList()
+	 * @see library/Oara/Network/Interface#getMerchantList()
 	 */
 	public function getMerchantList() {
 		$merchants = array();
@@ -112,9 +113,9 @@ class Oara_Network_Publisher_PaddyPower extends Oara_Network {
 
 	/**
 	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
+	 * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
 	 */
-	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null) {
 
 		$totalTransactions = array();
 
@@ -133,7 +134,7 @@ class Oara_Network_Publisher_PaddyPower extends Oara_Network {
 			$transactionDate = new \DateTime($transactionExportArray[0], 'yyyy-MM-dd HH:mm:ss', 'en');
 			$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 			unset($transactionDate);
-			$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
+			$transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
 			$transaction['amount'] = (double)$transactionExportArray[2];
 			$transaction['commission'] = (double)$transactionExportArray[6];
 
@@ -148,7 +149,7 @@ class Oara_Network_Publisher_PaddyPower extends Oara_Network {
 
 	/**
 	 * (non-PHPdoc)
-	 * @see Oara/Network/Oara_Network_Publisher_Base#getPaymentHistory()
+	 * @see Oara/Network/Base#getPaymentHistory()
 	 */
 	public function getPaymentHistory() {
 		$paymentHistory = array();

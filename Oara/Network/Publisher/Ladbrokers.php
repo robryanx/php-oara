@@ -1,9 +1,10 @@
 <?php
+namespace Oara\Network\Publisher;
 /**
  The goal of the Open Affiliate Report Aggregator (OARA) is to develop a set
  of PHP classes that can download affiliate reports from a number of affiliate networks, and store the data in a common format.
 
- Copyright (C) 2014  Fubra Limited
+ Copyright (C) 2016  Fubra Limited
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU Affero General Public License as published by
  the Free Software Foundation, either version 3 of the License, or any later version.
@@ -22,12 +23,12 @@
  * Export Class
  *
  * @author     Carlos Morillo Merino
- * @category   Oara_Network_Publisher_Ladbrokers
+ * @category   Ladbrokers
  * @copyright  Fubra Limited
  * @version    Release: 01.00
  *
  */
-class Oara_Network_Publisher_Ladbrokers extends Oara_Network {
+class Ladbrokers extends \Oara\Network {
 
 	/**
 	 * Client
@@ -37,25 +38,25 @@ class Oara_Network_Publisher_Ladbrokers extends Oara_Network {
 	/**
 	 * Constructor and Login
 	 * @param $credentials
-	 * @return Oara_Network_Publisher_Daisycon
+	 * @return Daisycon
 	 */
 	public function __construct($credentials) {
 		$user = $credentials['user'];
 		$password = $credentials['password'];
 
 		$valuesLogin = array(
-		new Oara_Curl_Parameter('j_username', $user),
-		new Oara_Curl_Parameter('j_password', $password),
-		new Oara_Curl_Parameter('submit1', 'GO')
+		new \Oara\Curl\Parameter('j_username', $user),
+		new \Oara\Curl\Parameter('j_password', $password),
+		new \Oara\Curl\Parameter('submit1', 'GO')
 		);
 
 		
 		$loginUrl = 'https://portal.ladbrokespartners.com/portal/j_spring_security_check';
-		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
+		$this->_client = new \Oara\Curl\Access($loginUrl, $valuesLogin, $credentials);
 
 
-		$this->_exportPaymentParameters = array(new Oara_Curl_Parameter('action', 'do_report_payments'),
-		new Oara_Curl_Parameter('daterange', '7')
+		$this->_exportPaymentParameters = array(new \Oara\Curl\Parameter('action', 'do_report_payments'),
+		new \Oara\Curl\Parameter('daterange', '7')
 		);
 
 	}
@@ -77,7 +78,7 @@ class Oara_Network_Publisher_Ladbrokers extends Oara_Network {
 	}
 	/**
 	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getMerchantList()
+	 * @see library/Oara/Network/Interface#getMerchantList()
 	 */
 	public function getMerchantList() {
 		$merchants = array();
@@ -92,9 +93,9 @@ class Oara_Network_Publisher_Ladbrokers extends Oara_Network {
 
 	/**
 	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
+	 * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
 	 */
-	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null) {
 
 		$totalTransactions = array();
 

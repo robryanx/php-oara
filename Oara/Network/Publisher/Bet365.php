@@ -1,9 +1,10 @@
 <?php
+namespace Oara\Network\Publisher;
 /**
  The goal of the Open Affiliate Report Aggregator (OARA) is to develop a set
  of PHP classes that can download affiliate reports from a number of affiliate networks, and store the data in a common format.
 
- Copyright (C) 2014  Fubra Limited
+ Copyright (C) 2016  Fubra Limited
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU Affero General Public License as published by
  the Free Software Foundation, either version 3 of the License, or any later version.
@@ -22,12 +23,12 @@
  * Export Class
  *
  * @author     Carlos Morillo Merino
- * @category   Oara_Network_Publisher_Bet365
+ * @category   Bet365
  * @copyright  Fubra Limited
  * @version    Release: 01.00
  *
  */
-class Oara_Network_Publisher_Bet365 extends Oara_Network {
+class Bet365 extends \Oara\Network {
 
 
 	/**
@@ -38,7 +39,7 @@ class Oara_Network_Publisher_Bet365 extends Oara_Network {
 	/**
 	 * Constructor and Login
 	 * @param $credentials
-	 * @return Oara_Network_Publisher_Daisycon
+	 * @return Daisycon
 	 */
 	public function __construct($credentials) {
 		$user = $credentials['user'];
@@ -77,25 +78,25 @@ class Oara_Network_Publisher_Bet365 extends Oara_Network {
 		curl_close($ch);
 
 		$valuesLogin = array(
-		new Oara_Curl_Parameter('txtUserName', $user),
-		new Oara_Curl_Parameter('txtPassword', $password),
-		new Oara_Curl_Parameter('ctl00%24MasterHeaderPlaceHolder%24ctl00%24userNameTextbox', $user),
-		new Oara_Curl_Parameter('ctl00%24MasterHeaderPlaceHolder%24ctl00%24passwordTextbox', $password),
-		new Oara_Curl_Parameter('ctl00%24MasterHeaderPlaceHolder%24ctl00%24tempPasswordTextbox', 'Password'),
-		new Oara_Curl_Parameter('ctl00%24MasterHeaderPlaceHolder%24ctl00%24goButton.x', '19'),
-		new Oara_Curl_Parameter('ctl00%24MasterHeaderPlaceHolder%24ctl00%24goButton.y', '15')
+		new \Oara\Curl\Parameter('txtUserName', $user),
+		new \Oara\Curl\Parameter('txtPassword', $password),
+		new \Oara\Curl\Parameter('ctl00%24MasterHeaderPlaceHolder%24ctl00%24userNameTextbox', $user),
+		new \Oara\Curl\Parameter('ctl00%24MasterHeaderPlaceHolder%24ctl00%24passwordTextbox', $password),
+		new \Oara\Curl\Parameter('ctl00%24MasterHeaderPlaceHolder%24ctl00%24tempPasswordTextbox', 'Password'),
+		new \Oara\Curl\Parameter('ctl00%24MasterHeaderPlaceHolder%24ctl00%24goButton.x', '19'),
+		new \Oara\Curl\Parameter('ctl00%24MasterHeaderPlaceHolder%24ctl00%24goButton.y', '15')
 		);
 		$forbiddenList = array('txtPassword', 'txtUserName');
 		$dom = new Zend_Dom_Query($data);
 		$hiddenList = $dom->query('input[type="hidden"]');
 		foreach ($hiddenList as $hidden) {
 			if (!in_array($hidden->getAttribute("name"), $forbiddenList)) {
-				$valuesLogin[] = new Oara_Curl_Parameter($hidden->getAttribute("name"), $hidden->getAttribute("value"));
+				$valuesLogin[] = new \Oara\Curl\Parameter($hidden->getAttribute("name"), $hidden->getAttribute("value"));
 			}
 		}
 
 		$loginUrl = 'https://www.bet365affiliates.com/Members/CMSitePages/SiteLogin.aspx?lng=1';
-		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
+		$this->_client = new \Oara\Curl\Access($loginUrl, $valuesLogin, $credentials);
 
 
 
@@ -121,7 +122,7 @@ class Oara_Network_Publisher_Bet365 extends Oara_Network {
 	}
 	/**
 	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getMerchantList()
+	 * @see library/Oara/Network/Interface#getMerchantList()
 	 */
 	public function getMerchantList() {
 		$merchants = array();
@@ -136,17 +137,17 @@ class Oara_Network_Publisher_Bet365 extends Oara_Network {
 
 	/**
 	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
+	 * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
 	 */
-	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null) {
 
 		$totalTransactions = array();
 
 		$valuesFromExport = array();
-		$valuesFromExport[] = new Oara_Curl_Parameter('FromDate', $dStartDate->toString("dd/MM/yyyy"));
-		$valuesFromExport[] = new Oara_Curl_Parameter('ToDate', $dEndDate->toString("dd/MM/yyyy"));
-		$valuesFromExport[] = new Oara_Curl_Parameter('ReportType', 'dailyReport');
-		$valuesFromExport[] = new Oara_Curl_Parameter('Link', '-1');
+		$valuesFromExport[] = new \Oara\Curl\Parameter('FromDate', $dStartDate->toString("dd/MM/yyyy"));
+		$valuesFromExport[] = new \Oara\Curl\Parameter('ToDate', $dEndDate->toString("dd/MM/yyyy"));
+		$valuesFromExport[] = new \Oara\Curl\Parameter('ReportType', 'dailyReport');
+		$valuesFromExport[] = new \Oara\Curl\Parameter('Link', '-1');
 
 		$urls = array();
 		$urls[] = new \Oara\Curl\Request('https://www.bet365affiliates.com/Members/Members/Statistics/Print.aspx?', $valuesFromExport);
@@ -168,9 +169,9 @@ class Oara_Network_Publisher_Bet365 extends Oara_Network {
 				$transactionDate = new \DateTime($transactionExportArray[1], 'dd-MM-yyyy', 'en');
 				$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 
-				$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
-				$transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[27]);
-				$transaction['commission'] = Oara_Utilities::parseDouble($transactionExportArray[32]);
+				$transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
+				$transaction['amount'] = \Oara\Utilities::parseDouble($transactionExportArray[27]);
+				$transaction['commission'] = \Oara\Utilities::parseDouble($transactionExportArray[32]);
 				if ($transaction['amount'] != 0 && $transaction['commission'] != 0) {
 					$totalTransactions[] = $transaction;
 				}
@@ -182,7 +183,7 @@ class Oara_Network_Publisher_Bet365 extends Oara_Network {
 
 	/**
 	 * (non-PHPdoc)
-	 * @see Oara/Network/Oara_Network_Publisher_Base#getPaymentHistory()
+	 * @see Oara/Network/Base#getPaymentHistory()
 	 */
 	public function getPaymentHistory() {
 		$paymentHistory = array();

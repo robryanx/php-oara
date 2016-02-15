@@ -1,9 +1,10 @@
 <?php
+namespace Oara\Network\Publisher;
 /**
  The goal of the Open Affiliate Report Aggregator (OARA) is to develop a set
  of PHP classes that can download affiliate reports from a number of affiliate networks, and store the data in a common format.
 
- Copyright (C) 2014  Fubra Limited
+ Copyright (C) 2016  Fubra Limited
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU Affero General Public License as published by
  the Free Software Foundation, either version 3 of the License, or any later version.
@@ -22,12 +23,12 @@
  * API Class
  *
  * @author     Carlos Morillo Merino
- * @category   Oara_Network_Publisher_Afiliant
+ * @category   Afiliant
  * @copyright  Fubra Limited
  * @version    Release: 01.00
  *
  */
-class Oara_Network_Publisher_Afiliant extends Oara_Network {
+class Afiliant extends \Oara\Network {
 
 
 	/**
@@ -38,7 +39,7 @@ class Oara_Network_Publisher_Afiliant extends Oara_Network {
 	/**
 	 * Constructor and Login
 	 * @param $buy
-	 * @return Oara_Network_Publisher_Buy_Api
+	 * @return Buy_Api
 	 */
 	public function __construct($credentials) {
 
@@ -48,12 +49,12 @@ class Oara_Network_Publisher_Afiliant extends Oara_Network {
 		$loginUrl = 'https://ssl.afiliant.com/publisher/index.php?a=auth';
 
 
-		$valuesLogin = array(new Oara_Curl_Parameter('login', $user),
-		new Oara_Curl_Parameter('password', $password),
-		new Oara_Curl_Parameter('submit', "")
+		$valuesLogin = array(new \Oara\Curl\Parameter('login', $user),
+		new \Oara\Curl\Parameter('password', $password),
+		new \Oara\Curl\Parameter('submit', "")
 		);
 
-		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
+		$this->_client = new \Oara\Curl\Access($loginUrl, $valuesLogin, $credentials);
 
 	}
 	/**
@@ -72,14 +73,14 @@ class Oara_Network_Publisher_Afiliant extends Oara_Network {
 
 	/**
 	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getMerchantList()
+	 * @see library/Oara/Network/Interface#getMerchantList()
 	 */
 	public function getMerchantList() {
 		$merchants = Array();
 
 		$valuesFromExport = array(
-		new Oara_Curl_Parameter('c', 'stats'),
-		new Oara_Curl_Parameter('a', 'listMonth')
+		new \Oara\Curl\Parameter('c', 'stats'),
+		new \Oara\Curl\Parameter('a', 'listMonth')
 		);
 		$urls = array();
 		$urls[] = new \Oara\Curl\Request('http://www.afiliant.com/publisher/index.php?', $valuesFromExport);
@@ -105,17 +106,17 @@ class Oara_Network_Publisher_Afiliant extends Oara_Network {
 
 	/**
 	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate)
+	 * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate)
 	 */
-	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null) {
 		$totalTransactions = array();
 
 		$valuesFromExport = array();
-		$valuesFromExport[] = new Oara_Curl_Parameter('c', 'stats');
-		$valuesFromExport[] = new Oara_Curl_Parameter('id_shop', '');
-		$valuesFromExport[] = new Oara_Curl_Parameter('a', 'listMonthDayOrder');
-		$valuesFromExport[] = new Oara_Curl_Parameter('month', $dEndDate->get(\DateTime::YEAR)."-".$dEndDate->get(\DateTime::MONTH));
-		$valuesFromExport[] = new Oara_Curl_Parameter('export', 'csv');
+		$valuesFromExport[] = new \Oara\Curl\Parameter('c', 'stats');
+		$valuesFromExport[] = new \Oara\Curl\Parameter('id_shop', '');
+		$valuesFromExport[] = new \Oara\Curl\Parameter('a', 'listMonthDayOrder');
+		$valuesFromExport[] = new \Oara\Curl\Parameter('month', $dEndDate->get(\DateTime::YEAR)."-".$dEndDate->get(\DateTime::MONTH));
+		$valuesFromExport[] = new \Oara\Curl\Parameter('export', 'csv');
 
 		$urls = array();
 		$urls[] = new \Oara\Curl\Request('http://www.afiliant.com/publisher/index.php?', $valuesFromExport);
@@ -145,16 +146,16 @@ class Oara_Network_Publisher_Afiliant extends Oara_Network {
 					}
 
 					if ($transactionExportArray[6] == 'zaakceptowana') {
-						$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
+						$transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
 					} else
 					if ($transactionExportArray[6] == 'oczekuje') {
-						$transaction['status'] = Oara_Utilities::STATUS_PENDING;
+						$transaction['status'] = \Oara\Utilities::STATUS_PENDING;
 					} else
 					if ($transactionExportArray[6] == 'odrzucona') {
-						$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
+						$transaction['status'] = \Oara\Utilities::STATUS_DECLINED;
 					}
-					$transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[4]);
-					$transaction['commission'] = Oara_Utilities::parseDouble($transactionExportArray[5]);
+					$transaction['amount'] = \Oara\Utilities::parseDouble($transactionExportArray[4]);
+					$transaction['commission'] = \Oara\Utilities::parseDouble($transactionExportArray[5]);
 					$totalTransactions[] = $transaction;
 				}
 			}
@@ -167,7 +168,7 @@ class Oara_Network_Publisher_Afiliant extends Oara_Network {
 
 	/**
 	 * (non-PHPdoc)
-	 * @see Oara/Network/Oara_Network_Publisher_Base#getPaymentHistory()
+	 * @see Oara/Network/Base#getPaymentHistory()
 	 */
 	public function getPaymentHistory() {
 		$paymentHistory = array();

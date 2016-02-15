@@ -1,9 +1,10 @@
 <?php
+namespace Oara\Network\Publisher;
 /**
  The goal of the Open Affiliate Report Aggregator (OARA) is to develop a set
  of PHP classes that can download affiliate reports from a number of affiliate networks, and store the data in a common format.
 
- Copyright (C) 2014  Fubra Limited
+ Copyright (C) 2016  Fubra Limited
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU Affero General Public License as published by
  the Free Software Foundation, either version 3 of the License, or any later version.
@@ -22,12 +23,12 @@
  * Export Class
  *
  * @author     Carlos Morillo Merino
- * @category   Oara_Network_Publisher_Ebay
+ * @category   Ebay
  * @copyright  Fubra Limited
  * @version    Release: 01.00
  *
  */
-class Oara_Network_Publisher_Ebay extends Oara_Network {
+class Ebay extends \Oara\Network {
 
 	private $_credentials = null;
 	/**
@@ -45,14 +46,14 @@ class Oara_Network_Publisher_Ebay extends Oara_Network {
 		$this->_credentials = $credentials;
 
         $valuesLogin = array(
-            new Oara_Curl_Parameter('login_username', $this->_credentials['user']),
-            new Oara_Curl_Parameter('login_password', $this->_credentials['password']),
-            new Oara_Curl_Parameter('submit_btn', 'GO'),
-            new Oara_Curl_Parameter('hubpage', 'y')
+            new \Oara\Curl\Parameter('login_username', $this->_credentials['user']),
+            new \Oara\Curl\Parameter('login_password', $this->_credentials['password']),
+            new \Oara\Curl\Parameter('submit_btn', 'GO'),
+            new \Oara\Curl\Parameter('hubpage', 'y')
         );
 
         $loginUrl = 'https://ebaypartnernetwork.com/PublisherLogin?hubpage=y&lang=en-US?';
-        $this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $this->_credentials);
+        $this->_client = new \Oara\Curl\Access($loginUrl, $valuesLogin, $this->_credentials);
 	}
 
 	/**
@@ -74,7 +75,7 @@ class Oara_Network_Publisher_Ebay extends Oara_Network {
     }
 	/**
 	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getMerchantList()
+	 * @see library/Oara/Network/Interface#getMerchantList()
 	 */
 	public function getMerchantList() {
 		$merchants = array();
@@ -90,9 +91,9 @@ class Oara_Network_Publisher_Ebay extends Oara_Network {
 
     /**
      * (non-PHPdoc)
-     * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
+     * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
      */
-    public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
+    public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null) {
         $totalTransactions = array();
         $urls = array();
         $urls[] = new \Oara\Curl\Request("https://publisher.ebaypartnernetwork.com/PublisherReportsTx?pt=2&start_date={$dStartDate->toSTring("M/d/yyyy")}&end_date={$dEndDate->toSTring("M/d/yyyy")}&user_name={$this->_credentials['user']}&user_password={$this->_credentials['password']}&advIdProgIdCombo=&tx_fmt=3&submit_tx=Download", array());
@@ -119,10 +120,10 @@ class Oara_Network_Publisher_Ebay extends Oara_Network {
                     $transaction['custom_id'] = $transactionExportArray[10];
                 }
 
-                $transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
+                $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
 
-                $transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[3]);
-                $transaction['commission'] = Oara_Utilities::parseDouble($transactionExportArray[20]);
+                $transaction['amount'] = \Oara\Utilities::parseDouble($transactionExportArray[3]);
+                $transaction['commission'] = \Oara\Utilities::parseDouble($transactionExportArray[20]);
                 $totalTransactions[] = $transaction;
             }
         }
@@ -131,7 +132,7 @@ class Oara_Network_Publisher_Ebay extends Oara_Network {
 
 	/**
 	 * (non-PHPdoc)
-	 * @see Oara/Network/Oara_Network_Publisher_Base#getPaymentHistory()
+	 * @see Oara/Network/Base#getPaymentHistory()
 	 */
 	public function getPaymentHistory() {
 		$paymentHistory = array();

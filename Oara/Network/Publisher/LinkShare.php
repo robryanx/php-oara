@@ -1,9 +1,10 @@
 <?php
+namespace Oara\Network\Publisher;
 /**
  * The goal of the Open Affiliate Report Aggregator (OARA) is to develop a set
  * of PHP classes that can download affiliate reports from a number of affiliate networks, and store the data in a common format.
  *
- * Copyright (C) 2014  Fubra Limited
+ * Copyright (C) 2016  Fubra Limited
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or any later version.
@@ -23,12 +24,12 @@
  * Export Class
  *
  * @author     Carlos Morillo Merino
- * @category   Oara_Network_Publisher_Ls
+ * @category   Ls
  * @copyright  Fubra Limited
  * @version    Release: 01.00
  *
  */
-class Oara_Network_Publisher_LinkShare extends Oara_Network
+class LinkShare extends \Oara\Network
 {
 
     protected $_sitesAllowed = array();
@@ -82,16 +83,16 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network
         $loginUrl = 'https://cli.linksynergy.com/cli/common/authenticateUser.php';
 
         $valuesLogin = array(
-            new Oara_Curl_Parameter ('front_url', ''),
-            new Oara_Curl_Parameter ('postLoginDestination', ''),
-            new Oara_Curl_Parameter ('cuserid', ''),
-            new Oara_Curl_Parameter ('loginUsername', $user),
-            new Oara_Curl_Parameter ('loginPassword', $password),
-            new Oara_Curl_Parameter ('x', '28'),
-            new Oara_Curl_Parameter ('y', '10')
+            new \Oara\Curl\Parameter ('front_url', ''),
+            new \Oara\Curl\Parameter ('postLoginDestination', ''),
+            new \Oara\Curl\Parameter ('cuserid', ''),
+            new \Oara\Curl\Parameter ('loginUsername', $user),
+            new \Oara\Curl\Parameter ('loginPassword', $password),
+            new \Oara\Curl\Parameter ('x', '28'),
+            new \Oara\Curl\Parameter ('y', '10')
         );
         // Login to the Linkshare Application
-        $this->_client = new Oara_Curl_Access ($loginUrl, $valuesLogin, $credentials);
+        $this->_client = new \Oara\Curl\Access ($loginUrl, $valuesLogin, $credentials);
     }
 
     /**
@@ -179,9 +180,9 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network
                 if (!isset ($site->token)) {
                     $urls = array();
                     $urlParams = array();
-                    $urlParams [] = new Oara_Curl_Parameter ('analyticchannel', '');
-                    $urlParams [] = new Oara_Curl_Parameter ('analyticpage', '');
-                    $urlParams [] = new Oara_Curl_Parameter ('doUpdateToken', 'Y');
+                    $urlParams [] = new \Oara\Curl\Parameter ('analyticchannel', '');
+                    $urlParams [] = new \Oara\Curl\Parameter ('analyticpage', '');
+                    $urlParams [] = new \Oara\Curl\Parameter ('doUpdateToken', 'Y');
                     $urls [] = new \Oara\Curl\Request ('http://cli.linksynergy.com/cli/publisher/links/webServices.php?', $urlParams);
                     $result = $this->_client->post($urls);
                     // Getting the API Token
@@ -203,9 +204,9 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network
                 if (!isset ($site->secureToken)) {
                     $urls = array();
                     $urlParams = array();
-                    $urlParams [] = new Oara_Curl_Parameter ('analyticchannel', '');
-                    $urlParams [] = new Oara_Curl_Parameter ('analyticpage', '');
-                    $urlParams [] = new Oara_Curl_Parameter ('doUpdateSecureToken', 'Y');
+                    $urlParams [] = new \Oara\Curl\Parameter ('analyticchannel', '');
+                    $urlParams [] = new \Oara\Curl\Parameter ('analyticpage', '');
+                    $urlParams [] = new \Oara\Curl\Parameter ('doUpdateSecureToken', 'Y');
                     $urls [] = new \Oara\Curl\Request ('http://cli.linksynergy.com/cli/publisher/links/webServices.php?', $urlParams);
                     $result = $this->_client->post($urls);
                     // Getting the API Token
@@ -329,11 +330,10 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network
      * @param null $merchantList
      * @param \DateTime|null $dStartDate
      * @param \DateTime|null $dEndDate
-     * @param null $merchantMap
      * @return array
      * @throws Exception
      */
-    public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null)
+    public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
         $totalTransactions = Array();
 
@@ -368,9 +368,9 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network
                         $sales = $filter->filter($transactionData [7]);
 
                         if ($sales != 0) {
-                            $transaction ['status'] = Oara_Utilities::STATUS_CONFIRMED;
+                            $transaction ['status'] = \Oara\Utilities::STATUS_CONFIRMED;
                         } else if ($sales == 0) {
-                            $transaction ['status'] = Oara_Utilities::STATUS_PENDING;
+                            $transaction ['status'] = \Oara\Utilities::STATUS_PENDING;
                         }
 
                         $transaction ['amount'] = $filter->filter($transactionData [7]);
@@ -380,7 +380,7 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network
                         if ($transaction ['commission'] < 0) {
                             $transaction ['amount'] = 0;
                             $transaction ['commission'] = 0;
-                            $transaction ['status'] = Oara_Utilities::STATUS_DECLINED;
+                            $transaction ['status'] = \Oara\Utilities::STATUS_DECLINED;
                         }
 
                         $totalTransactions [] = $transaction;
@@ -405,7 +405,7 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network
         ));
         $past = new \DateTime ("01-01-2010", "dd-MM-yyyy");
         $now = new \DateTime ();
-        $dateList = Oara_Utilities::yearsOfDifference($past, $now);
+        $dateList = \Oara\Utilities::yearsOfDifference($past, $now);
         $dateList [] = $now;
         foreach ($this->_siteList as $site) {
             for ($i = 0; $i < count($dateList) - 1; $i++) {

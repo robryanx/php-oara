@@ -1,9 +1,10 @@
 <?php
+namespace Oara\Network\Publisher;
 /**
  The goal of the Open Affiliate Report Aggregator (OARA) is to develop a set
  of PHP classes that can download affiliate reports from a number of affiliate networks, and store the data in a common format.
 
- Copyright (C) 2014  Fubra Limited
+ Copyright (C) 2016  Fubra Limited
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU Affero General Public License as published by
  the Free Software Foundation, either version 3 of the License, or any later version.
@@ -23,12 +24,12 @@
  * Export Class
  *
  * @author     Carlos Morillo Merino
- * @category   Oara_Network_Publisher_ItunesConnect
+ * @category   ItunesConnect
  * @copyright  Fubra Limited
  * @version    Release: 01.00
  *
  */
-class Oara_Network_Publisher_ItunesConnect extends Oara_Network {
+class ItunesConnect extends \Oara\Network {
 	/**
 	 * Client
 	 * @var unknown_type
@@ -41,7 +42,7 @@ class Oara_Network_Publisher_ItunesConnect extends Oara_Network {
 	/**
 	 * Constructor and Login
 	 * @param $credentials
-	 * @return Oara_Network_Publisher_itunesConnect
+	 * @return itunesConnect
 	 */
 	public function __construct($credentials) {
 		$user = $credentials['user'];
@@ -50,11 +51,11 @@ class Oara_Network_Publisher_ItunesConnect extends Oara_Network {
 		$url = "https://itunesconnect.apple.com/WebObjects/iTunesConnect.woa/wo/2.1.9.3.5.2.1.1.3.1.1";
 
 		$valuesLogin = array(
-		new Oara_Curl_Parameter('theAccountName', $user),
-		new Oara_Curl_Parameter('theAccountPW', $password),
-		new Oara_Curl_Parameter('1.Continue.x', "56"),
-		new Oara_Curl_Parameter('1.Continue.y', "10"),
-		new Oara_Curl_Parameter('theAuxValue', ""),
+		new \Oara\Curl\Parameter('theAccountName', $user),
+		new \Oara\Curl\Parameter('theAccountPW', $password),
+		new \Oara\Curl\Parameter('1.Continue.x', "56"),
+		new \Oara\Curl\Parameter('1.Continue.y', "10"),
+		new \Oara\Curl\Parameter('theAuxValue', ""),
 		);
 
 		$this->_user = $user;
@@ -62,7 +63,7 @@ class Oara_Network_Publisher_ItunesConnect extends Oara_Network {
 		$this->_apiPassword = $credentials['apiPassword'];
 		
 		$this->_httpLogin = $credentials['httpLogin'];
-		//$this->_client = new Oara_Curl_Access($url, $valuesLogin, $credentials);
+		//$this->_client = new \Oara\Curl\Access($url, $valuesLogin, $credentials);
 		//$this->_constructResult =  $this->_client->getConstructResult();
 	}
 	/**
@@ -79,7 +80,7 @@ class Oara_Network_Publisher_ItunesConnect extends Oara_Network {
 	}
 	/**
 	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getMerchantList()
+	 * @see library/Oara/Network/Interface#getMerchantList()
 	 */
 	public function getMerchantList() {
 		$merchants = array();
@@ -95,9 +96,9 @@ class Oara_Network_Publisher_ItunesConnect extends Oara_Network {
 
 	/**
 	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
+	 * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
 	 */
-	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null) {
 		$totalTransactions = array();
 
 
@@ -168,18 +169,18 @@ class Oara_Network_Publisher_ItunesConnect extends Oara_Network {
 							$comission = 0.3;
 							if ($row[2] == "FUBRA1PETROLPRICES1" || $row[2] == "com.fubra.petrolpricespro.subscriptionYear"){
 								$value = 2.99;
-								$obj['amount'] = Oara_Utilities::parseDouble($value);
-								$obj['commission'] = Oara_Utilities::parseDouble($value - ($value*$comission));
+								$obj['amount'] = \Oara\Utilities::parseDouble($value);
+								$obj['commission'] = \Oara\Utilities::parseDouble($value - ($value*$comission));
 							} else if ($row[2] == "FUBRA1WORLDAIRPORTCODES1"){
 
 								if ($obj['date'] < "2013-04-23 00:00:00"){
 									$value = 0.69;
-									$obj['amount'] = Oara_Utilities::parseDouble($value);
-									$obj['commission'] = Oara_Utilities::parseDouble($value - ($value*$comission));
+									$obj['amount'] = \Oara\Utilities::parseDouble($value);
+									$obj['commission'] = \Oara\Utilities::parseDouble($value - ($value*$comission));
 								} else {
 									$value = 1.49;
-									$obj['amount'] = Oara_Utilities::parseDouble($value);
-									$obj['commission'] = Oara_Utilities::parseDouble($value - ($value*$comission));
+									$obj['amount'] = \Oara\Utilities::parseDouble($value);
+									$obj['commission'] = \Oara\Utilities::parseDouble($value - ($value*$comission));
 								}
 							} else {
 								throw new Exception("APP not found {$row[2]}");
@@ -190,7 +191,7 @@ class Oara_Network_Publisher_ItunesConnect extends Oara_Network {
 								$obj['commission'] = -$obj['commission'];
 							}
 
-							$obj['status'] = Oara_Utilities::STATUS_CONFIRMED;
+							$obj['status'] = \Oara\Utilities::STATUS_CONFIRMED;
 
 							$totalTransactions[] = $obj;
 						}
@@ -201,7 +202,7 @@ class Oara_Network_Publisher_ItunesConnect extends Oara_Network {
 
 		} else {
 
-			$dateArray = Oara_Utilities::daysOfDifference($dStartDate, $dEndDate);
+			$dateArray = \Oara\Utilities::daysOfDifference($dStartDate, $dEndDate);
 			$dateArraySize = sizeof($dateArray);
 			for ($z = 0; $z < $dateArraySize; $z++) {
 				$transactionDate = $dateArray[$z];
@@ -268,19 +269,19 @@ class Oara_Network_Publisher_ItunesConnect extends Oara_Network {
 								if ($row[2] == "FUBRA1PETROLPRICES1" || $row[2] == "com.fubra.petrolpricespro.subscriptionYear"){
 									$value = 2.99;
 									$comission = 0.3;
-									$obj['amount'] = Oara_Utilities::parseDouble($value);
-									$obj['commission'] = Oara_Utilities::parseDouble($value - ($value*$comission));
+									$obj['amount'] = \Oara\Utilities::parseDouble($value);
+									$obj['commission'] = \Oara\Utilities::parseDouble($value - ($value*$comission));
 								} else if ($row[2] == "FUBRA1WORLDAIRPORTCODES1"){
 
 									$comission = 0.3;
 									if ($obj['date'] < "2013-04-23 00:00:00"){
 										$value = 0.69;
-										$obj['amount'] = Oara_Utilities::parseDouble($value);
-										$obj['commission'] = Oara_Utilities::parseDouble($value - ($value*$comission));
+										$obj['amount'] = \Oara\Utilities::parseDouble($value);
+										$obj['commission'] = \Oara\Utilities::parseDouble($value - ($value*$comission));
 									} else {
 										$value = 1.49;
-										$obj['amount'] = Oara_Utilities::parseDouble($value);
-										$obj['commission'] = Oara_Utilities::parseDouble($value - ($value*$comission));
+										$obj['amount'] = \Oara\Utilities::parseDouble($value);
+										$obj['commission'] = \Oara\Utilities::parseDouble($value - ($value*$comission));
 									}
 								} else {
 									throw new Exception("APP not found {$row[2]}");
@@ -291,7 +292,7 @@ class Oara_Network_Publisher_ItunesConnect extends Oara_Network {
 									$obj['commission'] = -$obj['commission'];
 								}
 
-								$obj['status'] = Oara_Utilities::STATUS_CONFIRMED;
+								$obj['status'] = \Oara\Utilities::STATUS_CONFIRMED;
 
 								$totalTransactions[] = $obj;
 							}
@@ -310,7 +311,7 @@ class Oara_Network_Publisher_ItunesConnect extends Oara_Network {
 
 	/**
 	 * (non-PHPdoc)
-	 * @see Oara/Network/Oara_Network_Publisher_Base#getPaymentHistory()
+	 * @see Oara/Network/Base#getPaymentHistory()
 	 */
 	public function getPaymentHistory() {
 		$paymentHistory = array();

@@ -1,9 +1,10 @@
 <?php
+namespace Oara\Network\Publisher;
 /**
  * The goal of the Open Affiliate Report Aggregator (OARA) is to develop a set
  * of PHP classes that can download affiliate reports from a number of affiliate networks, and store the data in a common format.
  *
- * Copyright (C) 2014  Fubra Limited
+ * Copyright (C) 2016  Fubra Limited
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or any later version.
@@ -23,12 +24,12 @@
  * API Class
  *
  * @author     Carlos Morillo Merino
- * @category   Oara_Network_Publisher_Publicidees
+ * @category   Publicidees
  * @copyright  Fubra Limited
  * @version    Release: 01.00
  *
  */
-class Oara_Network_Publisher_Publicidees extends Oara_Network
+class Publicidees extends \Oara\Network
 {
     /**
      * Client
@@ -39,7 +40,7 @@ class Oara_Network_Publisher_Publicidees extends Oara_Network
     /**
      * Constructor and Login
      * @param $credentials
-     * @return Oara_Network_Publisher_Effiliation
+     * @return Effiliation
      */
     public function __construct($credentials)
     {
@@ -47,19 +48,19 @@ class Oara_Network_Publisher_Publicidees extends Oara_Network
         $user = $credentials['user'];
         $password = $credentials['password'];
         $loginUrl = 'http://es.publicideas.com/logmein.php';
-        $valuesLogin = array(new Oara_Curl_Parameter('loginAff', $user),
-            new Oara_Curl_Parameter('passAff', $password),
-            new Oara_Curl_Parameter('userType', 'aff')
+        $valuesLogin = array(new \Oara\Curl\Parameter('loginAff', $user),
+            new \Oara\Curl\Parameter('passAff', $password),
+            new \Oara\Curl\Parameter('userType', 'aff')
         );
-        $this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
+        $this->_client = new \Oara\Curl\Access($loginUrl, $valuesLogin, $credentials);
         $result = json_decode($this->_client->getConstructResult());
         $loginUrl = 'http://publisher.publicideas.com/entree_affilies.php';
-        $valuesLogin = array(new Oara_Curl_Parameter('login', $result->login),
-            new Oara_Curl_Parameter('pass', $result->pass),
-            new Oara_Curl_Parameter('submit', 'Ok'),
-            new Oara_Curl_Parameter('h', $result->h)
+        $valuesLogin = array(new \Oara\Curl\Parameter('login', $result->login),
+            new \Oara\Curl\Parameter('pass', $result->pass),
+            new \Oara\Curl\Parameter('submit', 'Ok'),
+            new \Oara\Curl\Parameter('h', $result->h)
         );
-        $this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
+        $this->_client = new \Oara\Curl\Access($loginUrl, $valuesLogin, $credentials);
 
     }
 
@@ -81,7 +82,7 @@ class Oara_Network_Publisher_Publicidees extends Oara_Network
 
     /**
      * (non-PHPdoc)
-     * @see library/Oara/Network/Oara_Network_Publisher_Interface#getMerchantList()
+     * @see library/Oara/Network/Interface#getMerchantList()
      */
     public function getMerchantList()
     {
@@ -96,28 +97,28 @@ class Oara_Network_Publisher_Publicidees extends Oara_Network
 
     /**
      * (non-PHPdoc)
-     * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate)
+     * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate)
      */
-    public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null)
+    public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
         $totalTransactions = array();
         $filter = new Zend_Filter_LocalizedToNormalized(array('precision' => 2, 'locale' => 'fr'));
-        $dateArray = Oara_Utilities::daysOfDifference($dStartDate, $dEndDate);
+        $dateArray = \Oara\Utilities::daysOfDifference($dStartDate, $dEndDate);
         $dateArraySize = sizeof($dateArray);
 
         for ($i = 0; $i < $dateArraySize; $i++) {
 
             $valuesFromExport = array();
-            $valuesFromExport[] = new Oara_Curl_Parameter('action', "myresume");
-            $valuesFromExport[] = new Oara_Curl_Parameter('monthDisplay', 0);
-            //$valuesFromExport[] = new Oara_Curl_Parameter('currency', 'EUR');
-            $valuesFromExport[] = new Oara_Curl_Parameter('tout', 1);
-            $valuesFromExport[] = new Oara_Curl_Parameter('dD', $dateArray[$i]->toString("dd/MM/yyyy"));
-            $valuesFromExport[] = new Oara_Curl_Parameter('dF', $dateArray[$i]->toString("dd/MM/yyyy"));
-            $valuesFromExport[] = new Oara_Curl_Parameter('periode', "0");
-            $valuesFromExport[] = new Oara_Curl_Parameter('expAct', "1");
-            $valuesFromExport[] = new Oara_Curl_Parameter('tabid', "0");
-            $valuesFromExport[] = new Oara_Curl_Parameter('Submit', "Voir");
+            $valuesFromExport[] = new \Oara\Curl\Parameter('action', "myresume");
+            $valuesFromExport[] = new \Oara\Curl\Parameter('monthDisplay', 0);
+            //$valuesFromExport[] = new \Oara\Curl\Parameter('currency', 'EUR');
+            $valuesFromExport[] = new \Oara\Curl\Parameter('tout', 1);
+            $valuesFromExport[] = new \Oara\Curl\Parameter('dD', $dateArray[$i]->toString("dd/MM/yyyy"));
+            $valuesFromExport[] = new \Oara\Curl\Parameter('dF', $dateArray[$i]->toString("dd/MM/yyyy"));
+            $valuesFromExport[] = new \Oara\Curl\Parameter('periode', "0");
+            $valuesFromExport[] = new \Oara\Curl\Parameter('expAct', "1");
+            $valuesFromExport[] = new \Oara\Curl\Parameter('tabid', "0");
+            $valuesFromExport[] = new \Oara\Curl\Parameter('Submit', "Voir");
             $urls = array();
             $urls[] = new \Oara\Curl\Request('http://publisher.publicideas.com/index.php?', $valuesFromExport);
             try{
@@ -157,7 +158,7 @@ class Oara_Network_Publisher_Publicidees extends Oara_Network
                         $transaction['date'] = $dateArray[$i]->toString("yyyy-MM-dd HH:mm:ss");
                         $transaction['amount'] = ((double)$filter->filter(substr($transactionExportArray[$headerMap["CA"]], 0, -2)) / $confirmedTransactions);
                         $transaction['commission'] = ((double)$filter->filter(substr($transactionExportArray[$headerMap["CA"]], 0, -2)) / $confirmedTransactions);
-                        $transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
+                        $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
                         $totalTransactions[] = $transaction;
                     }
 
@@ -167,7 +168,7 @@ class Oara_Network_Publisher_Publicidees extends Oara_Network
                         $transaction['date'] = $dateArray[$i]->toString("yyyy-MM-dd HH:mm:ss");
                         $transaction['amount'] = (double)$transactionExportArray[$headerMap["pendingCA"]] / $pendingTransactions;
                         $transaction['commission'] = (double)$transactionExportArray[$headerMap["pendingCA"]] / $pendingTransactions;
-                        $transaction['status'] = Oara_Utilities::STATUS_PENDING;
+                        $transaction['status'] = \Oara\Utilities::STATUS_PENDING;
                         $totalTransactions[] = $transaction;
                     }
 

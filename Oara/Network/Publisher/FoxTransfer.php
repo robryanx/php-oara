@@ -1,9 +1,10 @@
 <?php
+namespace Oara\Network\Publisher;
 /**
  The goal of the Open Affiliate Report Aggregator (OARA) is to develop a set
  of PHP classes that can download affiliate reports from a number of affiliate networks, and store the data in a common format.
 
- Copyright (C) 2014  Fubra Limited
+ Copyright (C) 2016  Fubra Limited
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU Affero General Public License as published by
  the Free Software Foundation, either version 3 of the License, or any later version.
@@ -22,12 +23,12 @@
  * Export Class
  *
  * @author     Carlos Morillo Merino
- * @category   Oara_Network_Publisher_FoxTransfer
+ * @category   FoxTransfer
  * @copyright  Fubra Limited
  * @version    Release: 01.00
  *
  */
-class Oara_Network_Publisher_FoxTransfer extends Oara_Network {
+class FoxTransfer extends \Oara\Network {
 
 	private $_credentials = null;
 	/**
@@ -39,7 +40,7 @@ class Oara_Network_Publisher_FoxTransfer extends Oara_Network {
 	/**
 	 * Constructor and Login
 	 * @param $credentials
-	 * @return Oara_Network_Publisher_SkyScanner
+	 * @return SkyScanner
 	 */
 	public function __construct($credentials) {
 		$this->_credentials = $credentials;
@@ -50,12 +51,12 @@ class Oara_Network_Publisher_FoxTransfer extends Oara_Network {
 	private function logIn() {
 
 		$valuesLogin = array(
-			new Oara_Curl_Parameter('action', "user_login"),
-			new Oara_Curl_Parameter('email', $this->_credentials['user']),
-			new Oara_Curl_Parameter('password', $this->_credentials['password']),
+			new \Oara\Curl\Parameter('action', "user_login"),
+			new \Oara\Curl\Parameter('email', $this->_credentials['user']),
+			new \Oara\Curl\Parameter('password', $this->_credentials['password']),
 		);
 		$loginUrl = 'https://foxtransfer.eu/index.php?page=login&out=1&language=1';
-		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $this->_credentials);
+		$this->_client = new \Oara\Curl\Access($loginUrl, $valuesLogin, $this->_credentials);
 
 	}
 
@@ -75,7 +76,7 @@ class Oara_Network_Publisher_FoxTransfer extends Oara_Network {
 	}
 	/**
 	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getMerchantList()
+	 * @see library/Oara/Network/Interface#getMerchantList()
 	 */
 	public function getMerchantList() {
 		$merchants = array();
@@ -91,9 +92,9 @@ class Oara_Network_Publisher_FoxTransfer extends Oara_Network {
 
 	/**
 	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
+	 * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
 	 */
-	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null) {
 
 		$totalTransactions = array();
 
@@ -119,15 +120,15 @@ class Oara_Network_Publisher_FoxTransfer extends Oara_Network {
 			$transaction['unique_id'] = $transactionExportArray[0];
 			$transaction['date'] = "{$dStartDate->toString("yyyy")}-{$dStartDate->toString("MM")}-01 00:00:00";
 			if ($transactionExportArray[7] == "Confirmed"){
-				$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
+				$transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
 			} else if ($transactionExportArray[7] == "Cancelled"){
-				$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
+				$transaction['status'] = \Oara\Utilities::STATUS_DECLINED;
 			} else {
 				throw new Exception("New status found {$transaction['status']}");
 			}
 			
-			$transaction['amount'] = Oara_Utilities::parseDouble(preg_replace('/[^0-9\.,]/', "", $transactionExportArray[10]));
-			$transaction['commission'] = Oara_Utilities::parseDouble(preg_replace('/[^0-9\.,]/', "", $transactionExportArray[13]));
+			$transaction['amount'] = \Oara\Utilities::parseDouble(preg_replace('/[^0-9\.,]/', "", $transactionExportArray[10]));
+			$transaction['commission'] = \Oara\Utilities::parseDouble(preg_replace('/[^0-9\.,]/', "", $transactionExportArray[13]));
 
 			$totalTransactions[] = $transaction;
 
@@ -138,7 +139,7 @@ class Oara_Network_Publisher_FoxTransfer extends Oara_Network {
 	
 	/**
 	 * (non-PHPdoc)
-	 * @see Oara/Network/Oara_Network_Publisher_Base#getPaymentHistory()
+	 * @see Oara/Network/Base#getPaymentHistory()
 	 */
 	public function getPaymentHistory() {
 		$paymentHistory = array();

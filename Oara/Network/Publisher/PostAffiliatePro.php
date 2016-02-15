@@ -1,9 +1,10 @@
 <?php
+namespace Oara\Network\Publisher;
 /**
  The goal of the Open Affiliate Report Aggregator (OARA) is to develop a set
  of PHP classes that can download affiliate reports from a number of affiliate networks, and store the data in a common format.
 
- Copyright (C) 2014  Fubra Limited
+ Copyright (C) 2016  Fubra Limited
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU Affero General Public License as published by
  the Free Software Foundation, either version 3 of the License, or any later version.
@@ -22,12 +23,12 @@
  * Export Class
  *
  * @author     Carlos Morillo Merino
- * @category   Oara_Network_Publisher_PureVPN
+ * @category   PureVPN
  * @copyright  Fubra Limited
  * @version    Release: 01.00
  *
  */
-class Oara_Network_Publisher_PostAffiliatePro extends Oara_Network {
+class PostAffiliatePro extends \Oara\Network {
 	public $_credentials = null;
 	/**
 	 * Client
@@ -41,7 +42,7 @@ class Oara_Network_Publisher_PostAffiliatePro extends Oara_Network {
 	 *
 	 * @param
 	 *        	$credentials
-	 * @return Oara_Network_Publisher_PureVPN
+	 * @return PureVPN
 	 */
 	public function __construct($credentials) {
 		include realpath ( dirname ( __FILE__ ) )."/PostAffiliatePro/PapApi.class.php";
@@ -65,7 +66,7 @@ class Oara_Network_Publisher_PostAffiliatePro extends Oara_Network {
 	/**
 	 * (non-PHPdoc)
 	 *
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getMerchantList()
+	 * @see library/Oara/Network/Interface#getMerchantList()
 	 */
 	public function getMerchantList() {
 		$merchants = array ();
@@ -81,9 +82,9 @@ class Oara_Network_Publisher_PostAffiliatePro extends Oara_Network {
 	/**
 	 * (non-PHPdoc)
 	 *
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
+	 * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
 	 */
-	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null) {
 		$totalTransactions = array ();
 
 			
@@ -106,10 +107,10 @@ class Oara_Network_Publisher_PostAffiliatePro extends Oara_Network {
 			$transactionDate = new \DateTime ( $rec->get('dateinserted'), 'yyyy-MM-dd HH:mm:ss', 'en' );
 			$transaction ['date'] = $transactionDate->toString ( "yyyy-MM-dd HH:mm:ss" );
 			unset ( $transactionDate );
-			$transaction ['status'] = Oara_Utilities::STATUS_CONFIRMED;
+			$transaction ['status'] = \Oara\Utilities::STATUS_CONFIRMED;
 
-			$transaction ['amount'] = Oara_Utilities::parseDouble (  $rec->get('totalcost') );
-			$transaction ['commission'] = Oara_Utilities::parseDouble (  $rec->get('commission') );
+			$transaction ['amount'] = \Oara\Utilities::parseDouble (  $rec->get('totalcost') );
+			$transaction ['commission'] = \Oara\Utilities::parseDouble (  $rec->get('commission') );
 			$totalTransactions [] = $transaction;
 		}
 		//----------------------------------------------
@@ -136,15 +137,15 @@ class Oara_Network_Publisher_PostAffiliatePro extends Oara_Network {
 					
 					
 					if ($rec->get('rstatus') == 'D'){
-						$transaction ['status'] = Oara_Utilities::STATUS_DECLINED;
+						$transaction ['status'] = \Oara\Utilities::STATUS_DECLINED;
 					} else if ($rec->get('rstatus') == 'P'){
-						$transaction ['status'] = Oara_Utilities::STATUS_PENDING;
+						$transaction ['status'] = \Oara\Utilities::STATUS_PENDING;
 					} else if ($rec->get('rstatus') == 'A'){
-						$transaction ['status'] = Oara_Utilities::STATUS_CONFIRMED;
+						$transaction ['status'] = \Oara\Utilities::STATUS_CONFIRMED;
 					}
 		
-					$transaction ['amount'] = Oara_Utilities::parseDouble (  $rec->get('totalcost') );
-					$transaction ['commission'] = Oara_Utilities::parseDouble (  $rec->get('commission') );
+					$transaction ['amount'] = \Oara\Utilities::parseDouble (  $rec->get('totalcost') );
+					$transaction ['commission'] = \Oara\Utilities::parseDouble (  $rec->get('commission') );
 					$totalTransactions [] = $transaction;
 				}
 			}
@@ -155,7 +156,7 @@ class Oara_Network_Publisher_PostAffiliatePro extends Oara_Network {
 	/**
 	 * (non-PHPdoc)
 	 *
-	 * @see Oara/Network/Oara_Network_Publisher_Base#getPaymentHistory()
+	 * @see Oara/Network/Base#getPaymentHistory()
 	 */
 	public function getPaymentHistory() {
 		$paymentHistory = array ();

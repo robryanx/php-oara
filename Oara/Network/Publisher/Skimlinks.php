@@ -1,9 +1,10 @@
 <?php
+namespace Oara\Network\Publisher;
 /**
  The goal of the Open Affiliate Report Aggregator (OARA) is to develop a set
  of PHP classes that can download affiliate reports from a number of affiliate networks, and store the data in a common format.
 
- Copyright (C) 2014  Fubra Limited
+ Copyright (C) 2016  Fubra Limited
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU Affero General Public License as published by
  the Free Software Foundation, either version 3 of the License, or any later version.
@@ -22,12 +23,12 @@
  * Export Class
  *
  * @author     Carlos Morillo Merino
- * @category   Oara_Network_Publisher_Skimlinks
+ * @category   Skimlinks
  * @copyright  Fubra Limited
  * @version    Release: 01.00
  *
  */
-class Oara_Network_Publisher_Skimlinks extends Oara_Network {
+class Skimlinks extends \Oara\Network {
 	/**
 	 * Public API Key
 	 * @var string
@@ -42,13 +43,13 @@ class Oara_Network_Publisher_Skimlinks extends Oara_Network {
 	/**
 	 * Constructor and Login
 	 * @param $credentials
-	 * @return Oara_Network_Publisher_Daisycon
+	 * @return Daisycon
 	 */
 	public function __construct($credentials) {
 
 		$dir = COOKIES_BASE_DIR . DIRECTORY_SEPARATOR . $credentials ['cookiesDir'] . DIRECTORY_SEPARATOR . $credentials ['cookiesSubDir'] . DIRECTORY_SEPARATOR;
 
-		if (! Oara_Utilities::mkdir_recursive ( $dir, 0777 )) {
+		if (! \Oara\Utilities::mkdir_recursive ( $dir, 0777 )) {
 			throw new Exception ( 'Problem creating folder in Access' );
 		}
 
@@ -92,7 +93,7 @@ class Oara_Network_Publisher_Skimlinks extends Oara_Network {
 	}
 	/**
 	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getMerchantList()
+	 * @see library/Oara/Network/Interface#getMerchantList()
 	 */
 	public function getMerchantList() {
 
@@ -107,13 +108,13 @@ class Oara_Network_Publisher_Skimlinks extends Oara_Network {
 		$merchants = Array ();
 
 		$valuesFromExport = array(
-				new Oara_Curl_Parameter('version', '0.5'),
-				new Oara_Curl_Parameter('timestamp', $timestamp),
-				new Oara_Curl_Parameter('apikey', $publicapikey),
-				new Oara_Curl_Parameter('authtoken', $authtoken),
-				new Oara_Curl_Parameter('startdate', '2009-01-01'), //minimum date
-				new Oara_Curl_Parameter('enddate', $date->toString("yyyy-MM-dd")),
-				new Oara_Curl_Parameter('format', 'json')
+				new \Oara\Curl\Parameter('version', '0.5'),
+				new \Oara\Curl\Parameter('timestamp', $timestamp),
+				new \Oara\Curl\Parameter('apikey', $publicapikey),
+				new \Oara\Curl\Parameter('authtoken', $authtoken),
+				new \Oara\Curl\Parameter('startdate', '2009-01-01'), //minimum date
+				new \Oara\Curl\Parameter('enddate', $date->toString("yyyy-MM-dd")),
+				new \Oara\Curl\Parameter('format', 'json')
 		);
 
 		$rch = curl_init ();
@@ -143,14 +144,14 @@ class Oara_Network_Publisher_Skimlinks extends Oara_Network {
 			$iteration++;
 
 			$valuesFromExport = array(
-					new Oara_Curl_Parameter('version', '0.5'),
-					new Oara_Curl_Parameter('timestamp', $timestamp),
-					new Oara_Curl_Parameter('apikey', $publicapikey),
-					new Oara_Curl_Parameter('authtoken', $authtoken),
-					new Oara_Curl_Parameter('startdate', '2009-01-01'), //minimum date
-					new Oara_Curl_Parameter('enddate', $date->toString("yyyy-MM-dd")),
-					new Oara_Curl_Parameter('format', 'json'),
-					new Oara_Curl_Parameter('responseFrom', $iteration*100),
+					new \Oara\Curl\Parameter('version', '0.5'),
+					new \Oara\Curl\Parameter('timestamp', $timestamp),
+					new \Oara\Curl\Parameter('apikey', $publicapikey),
+					new \Oara\Curl\Parameter('authtoken', $authtoken),
+					new \Oara\Curl\Parameter('startdate', '2009-01-01'), //minimum date
+					new \Oara\Curl\Parameter('enddate', $date->toString("yyyy-MM-dd")),
+					new \Oara\Curl\Parameter('format', 'json'),
+					new \Oara\Curl\Parameter('responseFrom', $iteration*100),
 
 			);
 
@@ -178,9 +179,9 @@ class Oara_Network_Publisher_Skimlinks extends Oara_Network {
 
 	/**
 	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
+	 * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
 	 */
-	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null) {
 
 		$totalTransactions = array();
 
@@ -193,13 +194,13 @@ class Oara_Network_Publisher_Skimlinks extends Oara_Network {
 		$date = \DateTime::now();
 
 		$valuesFromExport = array(
-				new Oara_Curl_Parameter('version', '0.5'),
-				new Oara_Curl_Parameter('timestamp', $timestamp),
-				new Oara_Curl_Parameter('apikey', $publicapikey),
-				new Oara_Curl_Parameter('authtoken', $authtoken),
-				new Oara_Curl_Parameter('startDate', $dStartDate->toString("yyyy-MM-dd")),
-				new Oara_Curl_Parameter('endDate', $dEndDate->toString("yyyy-MM-dd")),
-				new Oara_Curl_Parameter('format', 'json')
+				new \Oara\Curl\Parameter('version', '0.5'),
+				new \Oara\Curl\Parameter('timestamp', $timestamp),
+				new \Oara\Curl\Parameter('apikey', $publicapikey),
+				new \Oara\Curl\Parameter('authtoken', $authtoken),
+				new \Oara\Curl\Parameter('startDate', $dStartDate->toString("yyyy-MM-dd")),
+				new \Oara\Curl\Parameter('endDate', $dEndDate->toString("yyyy-MM-dd")),
+				new \Oara\Curl\Parameter('format', 'json')
 		);
 
 		$rch = curl_init ();
@@ -227,9 +228,9 @@ class Oara_Network_Publisher_Skimlinks extends Oara_Network {
 			$transaction['commission'] = (double)$i["commissionValue"]/100;
 			$transactionStatus = $i["status"];
 			if ($transactionStatus == "active") {
-				$transaction ['status'] = Oara_Utilities::STATUS_CONFIRMED;
+				$transaction ['status'] = \Oara\Utilities::STATUS_CONFIRMED;
 			} else if ($transactionStatus == "cancelled") {
-				$transaction ['status'] = Oara_Utilities::STATUS_DECLINED;
+				$transaction ['status'] = \Oara\Utilities::STATUS_DECLINED;
 			} else {
 				throw new Exception ( "New status found {$transactionStatus}" );
 			}
@@ -245,7 +246,7 @@ class Oara_Network_Publisher_Skimlinks extends Oara_Network {
 
 	/**
 	 * (non-PHPdoc)
-	 * @see Oara/Network/Oara_Network_Publisher_Base#getPaymentHistory()
+	 * @see Oara/Network/Base#getPaymentHistory()
 	 */
 	public function getPaymentHistory() {
 		$paymentHistory = array();

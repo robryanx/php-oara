@@ -1,9 +1,10 @@
 <?php
+namespace Oara\Network\Publisher;
 /**
  The goal of the Open Affiliate Report Aggregator (OARA) is to develop a set
  of PHP classes that can download affiliate reports from a number of affiliate networks, and store the data in a common format.
 
- Copyright (C) 2014  Fubra Limited
+ Copyright (C) 2016  Fubra Limited
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU Affero General Public License as published by
  the Free Software Foundation, either version 3 of the License, or any later version.
@@ -22,12 +23,12 @@
  * API Class
  *
  * @author     Carlos Morillo Merino
- * @category   Oara_Network_Publisher_ClickBank
+ * @category   ClickBank
  * @copyright  Fubra Limited
  * @version    Release: 01.00
  *
  */
-class Oara_Network_Publisher_ClickBank extends Oara_Network {
+class ClickBank extends \Oara\Network {
 	/**
 	 * Api Key
 	 * @var string
@@ -47,7 +48,7 @@ class Oara_Network_Publisher_ClickBank extends Oara_Network {
 	/**
 	 * Constructor and Login
 	 * @param $credentials
-	 * @return Oara_Network_Publisher_Effiliation
+	 * @return Effiliation
 	 */
 	public function __construct($credentials) {
 
@@ -55,16 +56,16 @@ class Oara_Network_Publisher_ClickBank extends Oara_Network {
 		$password = $credentials["password"];
 		$loginUrl = "https://".$user.".accounts.clickbank.com/account/login?";
 
-		$valuesLogin = array(new Oara_Curl_Parameter('destination', "/account/mainMenu.htm"),
-			new Oara_Curl_Parameter('nick', $user),
-			new Oara_Curl_Parameter('pass', $password),
-			new Oara_Curl_Parameter('login', "Log In"),
-			new Oara_Curl_Parameter('rememberMe', "true"),
-			new Oara_Curl_Parameter('j_username', $user),
-			new Oara_Curl_Parameter('j_password', $password)
+		$valuesLogin = array(new \Oara\Curl\Parameter('destination', "/account/mainMenu.htm"),
+			new \Oara\Curl\Parameter('nick', $user),
+			new \Oara\Curl\Parameter('pass', $password),
+			new \Oara\Curl\Parameter('login', "Log In"),
+			new \Oara\Curl\Parameter('rememberMe', "true"),
+			new \Oara\Curl\Parameter('j_username', $user),
+			new \Oara\Curl\Parameter('j_password', $password)
 		);
 
-		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
+		$this->_client = new \Oara\Curl\Access($loginUrl, $valuesLogin, $credentials);
 
 		$urls = array();
 		$urls[] = new \Oara\Curl\Request("https://".$user.".accounts.clickbank.com/account/profile.htm", array());
@@ -90,7 +91,7 @@ class Oara_Network_Publisher_ClickBank extends Oara_Network {
 
 	/**
 	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getMerchantList()
+	 * @see library/Oara/Network/Interface#getMerchantList()
 	 */
 	public function getMerchantList() {
 		$merchants = array();
@@ -104,9 +105,9 @@ class Oara_Network_Publisher_ClickBank extends Oara_Network {
 
 	/**
 	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate)
+	 * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate)
 	 */
-	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null) {
 		$totalTransactions = array();
 		$filter = new Zend_Filter_LocalizedToNormalized(array('precision' => 2));
 		$number = self::returnApiData("https://api.clickbank.com/rest/1.3/orders/count?startDate=".$dStartDate->toString("yyyy-MM-dd")."&endDate=".$dEndDate->toString("yyyy-MM-dd"));
@@ -134,9 +135,9 @@ class Oara_Network_Publisher_ClickBank extends Oara_Network {
 					$transaction['commission'] = (double) $filter->filter(self::findAttribute($singleTransaction, 'amount'));
 
 					//if (self::findAttribute($singleTransaction, 'txnType') == 'RFND'){
-					//	$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
+					//	$transaction['status'] = \Oara\Utilities::STATUS_DECLINED;
 					//} else {
-					$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
+					$transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
 					//}
 
 					$totalTransactions[] = $transaction;

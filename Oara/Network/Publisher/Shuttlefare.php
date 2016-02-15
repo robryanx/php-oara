@@ -1,9 +1,10 @@
 <?php
+namespace Oara\Network\Publisher;
 /**
  The goal of the Open Affiliate Report Aggregator (OARA) is to develop a set
  of PHP classes that can download affiliate reports from a number of affiliate networks, and store the data in a common format.
 
- Copyright (C) 2014  Fubra Limited
+ Copyright (C) 2016  Fubra Limited
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU Affero General Public License as published by
  the Free Software Foundation, either version 3 of the License, or any later version.
@@ -22,12 +23,12 @@
  * API Class
  *
  * @author Carlos Morillo Merino
- * @category Oara_Network_Publisher_Shuttlefare
+ * @category Shuttlefare
  * @copyright Fubra Limited
  * @version Release: 01.00
  *         
  */
-class Oara_Network_Publisher_Shuttlefare extends Oara_Network {
+class Shuttlefare extends \Oara\Network {
 
 	/**
 	 * @var null
@@ -47,17 +48,17 @@ class Oara_Network_Publisher_Shuttlefare extends Oara_Network {
 		
 		$dir = COOKIES_BASE_DIR . DIRECTORY_SEPARATOR . $credentials ['cookiesDir'] . DIRECTORY_SEPARATOR . $credentials ['cookiesSubDir'] . DIRECTORY_SEPARATOR;
 		
-		if (! Oara_Utilities::mkdir_recursive ( $dir, 0777 )) {
+		if (! \Oara\Utilities::mkdir_recursive ( $dir, 0777 )) {
 			throw new Exception ( 'Problem creating folder in Access' );
 		}
 		$cookies = $dir . $credentials["cookieName"] . '_cookies.txt';
 		unlink($cookies);
 			
 		$valuesLogin = array (
-				new Oara_Curl_Parameter ( 'user[email]', $user ),
-				new Oara_Curl_Parameter ( 'user[password]', $password ),
-				new Oara_Curl_Parameter ( 'user[remember_me]', '0' ),
-				new Oara_Curl_Parameter ( 'commit', 'Sign in' )
+				new \Oara\Curl\Parameter ( 'user[email]', $user ),
+				new \Oara\Curl\Parameter ( 'user[password]', $password ),
+				new \Oara\Curl\Parameter ( 'user[remember_me]', '0' ),
+				new \Oara\Curl\Parameter ( 'commit', 'Sign in' )
 		);
 		
 		$this->_options = array (
@@ -87,7 +88,7 @@ class Oara_Network_Publisher_Shuttlefare extends Oara_Network {
 		$hidden = $dom->query('input[type="hidden"]');
 		
 		foreach ($hidden as $values) {
-			$valuesLogin[] = new Oara_Curl_Parameter($values->getAttribute("name"), $values->getAttribute("value"));
+			$valuesLogin[] = new \Oara\Curl\Parameter($values->getAttribute("name"), $values->getAttribute("value"));
 		}
 		$rch = curl_init ();
 		$options = $this->_options;
@@ -143,15 +144,14 @@ class Oara_Network_Publisher_Shuttlefare extends Oara_Network {
 	 * @param null $merchantList
 	 * @param \DateTime|null $dStartDate
 	 * @param \DateTime|null $dEndDate
-	 * @param null $merchantMap
 	 * @return array
 	 */
-	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null) {
 		$totalTransactions = array();
 
 		$valuesFromExport = array(
-				new Oara_Curl_Parameter('payment[from]', $dStartDate->toString("MM/dd/yyyy")),
-				new Oara_Curl_Parameter('payment[to]', $dEndDate->toString("MM/dd/yyyy")),
+				new \Oara\Curl\Parameter('payment[from]', $dStartDate->toString("MM/dd/yyyy")),
+				new \Oara\Curl\Parameter('payment[to]', $dEndDate->toString("MM/dd/yyyy")),
 		);
 	
 		$rch = curl_init ();
@@ -177,9 +177,9 @@ class Oara_Network_Publisher_Shuttlefare extends Oara_Network {
                 $transaction ['unique_id'] = $transactionExportArray [0];
                 $transactionDate = new \DateTime ( $transactionExportArray [7], 'MM/dd/yyyy');
                 $transaction ['date'] = $transactionDate->toString ( "yyyy-MM-dd HH:mm:ss" );
-                $transaction ['status'] = Oara_Utilities::STATUS_CONFIRMED;
-                $transaction ['amount'] = Oara_Utilities::parseDouble ( preg_replace ( '/[^0-9\.,]/', "", $transactionExportArray [2] ) );
-                $transaction ['commission'] = Oara_Utilities::parseDouble ( preg_replace ( '/[^0-9\.,]/', "", $transactionExportArray [3] ) );
+                $transaction ['status'] = \Oara\Utilities::STATUS_CONFIRMED;
+                $transaction ['amount'] = \Oara\Utilities::parseDouble ( preg_replace ( '/[^0-9\.,]/', "", $transactionExportArray [2] ) );
+                $transaction ['commission'] = \Oara\Utilities::parseDouble ( preg_replace ( '/[^0-9\.,]/', "", $transactionExportArray [3] ) );
 
                 $totalTransactions [] = $transaction;
 

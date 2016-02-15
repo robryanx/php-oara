@@ -1,9 +1,10 @@
 <?php
+namespace Oara\Network\Publisher;
 /**
  * The goal of the Open Affiliate Report Aggregator (OARA) is to develop a set
  * of PHP classes that can download affiliate reports from a number of affiliate networks, and store the data in a common format.
  *
- * Copyright (C) 2014  Fubra Limited
+ * Copyright (C) 2016  Fubra Limited
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or any later version.
@@ -23,12 +24,12 @@
  * Export Class
  *
  * @author     Alejandro Muñoz Odero
- * @category   Oara_Network_Publisher_HideMyAss
+ * @category   HideMyAss
  * @copyright  Fubra Limited
  * @version    Release: 01.00
  *
  */
-class Oara_Network_Publisher_HideMyAss extends Oara_Network
+class HideMyAss extends \Oara\Network
 {
 
 
@@ -42,7 +43,7 @@ class Oara_Network_Publisher_HideMyAss extends Oara_Network
     /**
      * Constructor and Login
      * @param $credentials
-     * @return Oara_Network_Publisher_HideMyAss
+     * @return HideMyAss
      */
     public function __construct($credentials)
     {
@@ -54,20 +55,20 @@ class Oara_Network_Publisher_HideMyAss extends Oara_Network
     {
 
         $valuesLogin = array(
-            new Oara_Curl_Parameter('_method', 'POST'),
-            new Oara_Curl_Parameter('data[User][username]', $this->_credentials['user']),
-            new Oara_Curl_Parameter('data[User][password]', $this->_credentials['password']),
+            new \Oara\Curl\Parameter('_method', 'POST'),
+            new \Oara\Curl\Parameter('data[User][username]', $this->_credentials['user']),
+            new \Oara\Curl\Parameter('data[User][password]', $this->_credentials['password']),
         );
 
         $loginUrl = 'https://affiliate.hidemyass.com/users/login';
-        $this->_client = new Oara_Curl_Access($loginUrl, array(), $this->_credentials);
+        $this->_client = new \Oara\Curl\Access($loginUrl, array(), $this->_credentials);
 
 
         $dom = new Zend_Dom_Query($this->_client->getConstructResult());
         $hidden = $dom->query('#loginform input[name*="Token"][type="hidden"]');
 
         foreach ($hidden as $values) {
-            $valuesLogin[] = new Oara_Curl_Parameter($values->getAttribute("name"), $values->getAttribute("value"));
+            $valuesLogin[] = new \Oara\Curl\Parameter($values->getAttribute("name"), $values->getAttribute("value"));
         }
 
 
@@ -100,7 +101,7 @@ class Oara_Network_Publisher_HideMyAss extends Oara_Network
 
     /**
      * (non-PHPdoc)
-     * @see library/Oara/Network/Oara_Network_Publisher_Interface#getMerchantList()
+     * @see library/Oara/Network/Interface#getMerchantList()
      */
     public function getMerchantList()
     {
@@ -117,9 +118,9 @@ class Oara_Network_Publisher_HideMyAss extends Oara_Network
 
     /**
      * (non-PHPdoc)
-     * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
+     * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
      */
-    public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null)
+    public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
 
         $totalTransactions = array();
@@ -136,46 +137,46 @@ class Oara_Network_Publisher_HideMyAss extends Oara_Network
 
         $valuesFromExport = array();
         foreach ($hidden as $values) {
-            $valuesFromExport[] = new Oara_Curl_Parameter($values->getAttribute("name"), $values->getAttribute("value"));
+            $valuesFromExport[] = new \Oara\Curl\Parameter($values->getAttribute("name"), $values->getAttribute("value"));
         }
 
-        $valuesFromExport[] = new Oara_Curl_Parameter('_method', 'POST');
-        $valuesFromExport[] = new Oara_Curl_Parameter('data[Conditions][dateselect]', '4');
-        $valuesFromExport[] = new Oara_Curl_Parameter('data[Conditions][datetype]', '2');
-        $valuesFromExport[] = new Oara_Curl_Parameter('data[Conditions][daterangefrom][day]', $dStartDate->toString("dd"));
-        $valuesFromExport[] = new Oara_Curl_Parameter('data[Conditions][daterangefrom][month]', $dStartDate->toString("MM"));
-        $valuesFromExport[] = new Oara_Curl_Parameter('data[Conditions][daterangefrom][year]', $dStartDate->toString("yyyy"));
-        $valuesFromExport[] = new Oara_Curl_Parameter('data[Conditions][daterangefrom][day]', $dStartDate->toString("dd"));
-        $valuesFromExport[] = new Oara_Curl_Parameter('data[Conditions][daterangefrom][month]', $dStartDate->toString("MM"));
-        $valuesFromExport[] = new Oara_Curl_Parameter('data[Conditions][daterangefrom][year]', $dStartDate->toString("yyyy"));
-        $valuesFromExport[] = new Oara_Curl_Parameter('data[Conditions][daterangeto][day]', $dEndDate->toString("dd"));
-        $valuesFromExport[] = new Oara_Curl_Parameter('data[Conditions][daterangeto][month]', $dEndDate->toString("MM"));
-        $valuesFromExport[] = new Oara_Curl_Parameter('data[Conditions][daterangeto][year]', $dEndDate->toString("yyyy"));
-        $valuesFromExport[] = new Oara_Curl_Parameter('data[Conditions][daterangeto][day]', $dEndDate->toString("dd"));
-        $valuesFromExport[] = new Oara_Curl_Parameter('data[Conditions][daterangeto][month]', $dEndDate->toString("MM"));
-        $valuesFromExport[] = new Oara_Curl_Parameter('data[Conditions][daterangeto][year]', $dEndDate->toString("yyyy"));
-        $valuesFromExport[] = new Oara_Curl_Parameter('data[Conditions][themetype]', '1');
-        $valuesFromExport[] = new Oara_Curl_Parameter('data[Conditions][Theme][Theme]', '');
-        $valuesFromExport[] = new Oara_Curl_Parameter('data[Conditions][Query][query]', '');
-        $valuesFromExport[] = new Oara_Curl_Parameter('data[Conditions][country]', '');
-        $valuesFromExport[] = new Oara_Curl_Parameter('data[Conditions][order][new]', '0');
-        $valuesFromExport[] = new Oara_Curl_Parameter('data[Conditions][order][rec]', '0');
-        $valuesFromExport[] = new Oara_Curl_Parameter('data[Conditions][order][refund]', '0');
-        $valuesFromExport[] = new Oara_Curl_Parameter('data[Conditions][order][refund]', '1');
-        $valuesFromExport[] = new Oara_Curl_Parameter('data[Conditions][order][fraud]', '0');
-        $valuesFromExport[] = new Oara_Curl_Parameter('data[Conditions][order][fraud]', '1');
-        $valuesFromExport[] = new Oara_Curl_Parameter('data[Conditions][month1]', '0');
-        $valuesFromExport[] = new Oara_Curl_Parameter('data[Conditions][month1]', '1');
-        $valuesFromExport[] = new Oara_Curl_Parameter('data[Conditions][month6]', '0');
-        $valuesFromExport[] = new Oara_Curl_Parameter('data[Conditions][month6]', '1');
-        $valuesFromExport[] = new Oara_Curl_Parameter('data[Conditions][month12]', '0');
-        $valuesFromExport[] = new Oara_Curl_Parameter('data[Conditions][month12]', '1');
-        $valuesFromExport[] = new Oara_Curl_Parameter('data[Conditions][referaldate]', '0');
-        $valuesFromExport[] = new Oara_Curl_Parameter('data[Conditions][visits]', '0');
-        $valuesFromExport[] = new Oara_Curl_Parameter('data[Conditions][collapsed]', '0');
-        $valuesFromExport[] = new Oara_Curl_Parameter('data[Conditions][collapsed]', '1');
-        $valuesFromExport[] = new Oara_Curl_Parameter('data[Conditions][output]', 'raw_csv');
-        $valuesFromExport[] = new Oara_Curl_Parameter('data[Conditions][chart]', 'count');
+        $valuesFromExport[] = new \Oara\Curl\Parameter('_method', 'POST');
+        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][dateselect]', '4');
+        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][datetype]', '2');
+        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][daterangefrom][day]', $dStartDate->toString("dd"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][daterangefrom][month]', $dStartDate->toString("MM"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][daterangefrom][year]', $dStartDate->toString("yyyy"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][daterangefrom][day]', $dStartDate->toString("dd"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][daterangefrom][month]', $dStartDate->toString("MM"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][daterangefrom][year]', $dStartDate->toString("yyyy"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][daterangeto][day]', $dEndDate->toString("dd"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][daterangeto][month]', $dEndDate->toString("MM"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][daterangeto][year]', $dEndDate->toString("yyyy"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][daterangeto][day]', $dEndDate->toString("dd"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][daterangeto][month]', $dEndDate->toString("MM"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][daterangeto][year]', $dEndDate->toString("yyyy"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][themetype]', '1');
+        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][Theme][Theme]', '');
+        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][Query][query]', '');
+        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][country]', '');
+        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][order][new]', '0');
+        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][order][rec]', '0');
+        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][order][refund]', '0');
+        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][order][refund]', '1');
+        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][order][fraud]', '0');
+        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][order][fraud]', '1');
+        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][month1]', '0');
+        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][month1]', '1');
+        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][month6]', '0');
+        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][month6]', '1');
+        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][month12]', '0');
+        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][month12]', '1');
+        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][referaldate]', '0');
+        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][visits]', '0');
+        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][collapsed]', '0');
+        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][collapsed]', '1');
+        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][output]', 'raw_csv');
+        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][chart]', 'count');
 
         $urls = array();
         $urls[] = new \Oara\Curl\Request('https://affiliate.hidemyass.com/reports/index_date?', $valuesFromExport);
@@ -195,7 +196,7 @@ class Oara_Network_Publisher_HideMyAss extends Oara_Network
             $transactionDate = new \DateTime($transactionExportArray[1], 'yyyy-MM-dd HH:mm:ss', 'en');
             $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
             //unset($transactionDate);
-            $transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
+            $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
 
             if (preg_match('/[-+]?[0-9]*\.?[0-9]+/', $transactionExportArray[8], $match)) {
                 $transaction['amount'] = (double)$match[0];
@@ -216,7 +217,7 @@ class Oara_Network_Publisher_HideMyAss extends Oara_Network
 
     /**
      * (non-PHPdoc)
-     * @see Oara/Network/Oara_Network_Publisher_Base#getPaymentHistory()
+     * @see Oara/Network/Base#getPaymentHistory()
      */
     public function getPaymentHistory()
     {

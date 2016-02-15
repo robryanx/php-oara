@@ -1,9 +1,10 @@
 <?php
+namespace Oara\Network\Publisher;
 /**
  The goal of the Open Affiliate Report Aggregator (OARA) is to develop a set
  of PHP classes that can download affiliate reports from a number of affiliate networks, and store the data in a common format.
 
- Copyright (C) 2014  Fubra Limited
+ Copyright (C) 2016  Fubra Limited
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU Affero General Public License as published by
  the Free Software Foundation, either version 3 of the License, or any later version.
@@ -22,12 +23,12 @@
  * Export Class
  *
  * @author     Carlos Morillo Merino
- * @category   Oara_Network_Publisher_AvantLink
+ * @category   AvantLink
  * @copyright  Fubra Limited
  * @version    Release: 01.00
  *
  */
-class Oara_Network_Publisher_AvantLink extends Oara_Network {
+class AvantLink extends \Oara\Network {
 	
 	private $_domain = null;
 	private $_id = null;
@@ -36,7 +37,7 @@ class Oara_Network_Publisher_AvantLink extends Oara_Network {
 	/**
 	 * Constructor and Login
 	 * @param $credentials
-	 * @return Oara_Network_Publisher_ShareASale
+	 * @return ShareASale
 	 */
 	public function __construct($credentials) {
 
@@ -49,16 +50,16 @@ class Oara_Network_Publisher_AvantLink extends Oara_Network {
 		}
 		
 		$valuesLogin = array (
-				new Oara_Curl_Parameter ( 'strLoginType', 'affiliate' ),
-				new Oara_Curl_Parameter ( 'cmdLogin', 'Login' ),
-				new Oara_Curl_Parameter ( 'loginre', '' ),
-				new Oara_Curl_Parameter ( 'strEmailAddress', $user ),
-				new Oara_Curl_Parameter ( 'strPassword', $password ),
-				new Oara_Curl_Parameter ( 'intScreenResWidth', '1920' ),
-				new Oara_Curl_Parameter ( 'intScreenResHeight', '1080' ) 
+				new \Oara\Curl\Parameter ( 'strLoginType', 'affiliate' ),
+				new \Oara\Curl\Parameter ( 'cmdLogin', 'Login' ),
+				new \Oara\Curl\Parameter ( 'loginre', '' ),
+				new \Oara\Curl\Parameter ( 'strEmailAddress', $user ),
+				new \Oara\Curl\Parameter ( 'strPassword', $password ),
+				new \Oara\Curl\Parameter ( 'intScreenResWidth', '1920' ),
+				new \Oara\Curl\Parameter ( 'intScreenResHeight', '1080' )
 		);
 		// Login to the Linkshare Application
-		$this->_client = new Oara_Curl_Access ( $this->_domain."/login.php", $valuesLogin, $credentials );
+		$this->_client = new \Oara\Curl\Access ( $this->_domain."/login.php", $valuesLogin, $credentials );
 		
 	}
 	/**
@@ -83,14 +84,14 @@ class Oara_Network_Publisher_AvantLink extends Oara_Network {
 
 	/**
 	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getMerchantList()
+	 * @see library/Oara/Network/Interface#getMerchantList()
 	 */
 	public function getMerchantList() {
 		
 		$merchants = array();
 		$params = array (
-				new Oara_Curl_Parameter ( 'cmdDownload', 'Download All Active Merchants' ),
-				new Oara_Curl_Parameter ( 'strRelationStatus', 'active' )
+				new \Oara\Curl\Parameter ( 'cmdDownload', 'Download All Active Merchants' ),
+				new \Oara\Curl\Parameter ( 'strRelationStatus', 'active' )
 		);
 		
 		$urls = array ();
@@ -131,9 +132,9 @@ class Oara_Network_Publisher_AvantLink extends Oara_Network {
 
 	/**
 	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($idMerchant, $dStartDate, $dEndDate)
+	 * @see library/Oara/Network/Interface#getTransactionList($idMerchant, $dStartDate, $dEndDate)
 	 */
-	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null) {
 		$totalTransactions = array();
 		
 		
@@ -168,9 +169,9 @@ class Oara_Network_Publisher_AvantLink extends Oara_Network {
 					$transaction['custom_id'] = $transactionExportArray[4];
 				}
 
-				$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
-				$transaction['amount'] = Oara_Utilities::parseDouble(preg_replace('/[^0-9\.,]/', "", $transactionExportArray[6]));
-				$transaction['commission'] = Oara_Utilities::parseDouble(preg_replace('/[^0-9\.,]/', "", $transactionExportArray[7]));
+				$transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
+				$transaction['amount'] = \Oara\Utilities::parseDouble(preg_replace('/[^0-9\.,]/', "", $transactionExportArray[6]));
+				$transaction['commission'] = \Oara\Utilities::parseDouble(preg_replace('/[^0-9\.,]/', "", $transactionExportArray[7]));
 				$totalTransactions[] = $transaction;
 			}
 		}
@@ -179,7 +180,7 @@ class Oara_Network_Publisher_AvantLink extends Oara_Network {
 
 	/**
 	 * (non-PHPdoc)
-	 * @see Oara/Network/Oara_Network_Publisher_Base#getPaymentHistory()
+	 * @see Oara/Network/Base#getPaymentHistory()
 	 */
 	public function getPaymentHistory() {
 		$paymentHistory = array();

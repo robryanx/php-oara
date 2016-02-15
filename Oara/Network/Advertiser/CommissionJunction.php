@@ -1,9 +1,10 @@
 <?php
+namespace Oara\Network\Advertiser;
 /**
  The goal of the Open Affiliate Report Aggregator (OARA) is to develop a set
  of PHP classes that can download affiliate reports from a number of affiliate networks, and store the data in a common format.
   
- Copyright (C) 2014  Fubra Limited
+ Copyright (C) 2016  Fubra Limited
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU Affero General Public License as published by
  the Free Software Foundation, either version 3 of the License, or any later version.
@@ -22,12 +23,12 @@
  * Export Class
  *
  * @author     Carlos Morillo Merino
- * @category   Oara_Network_Advertiser_Cj
+ * @category   Cj
  * @copyright  Fubra Limited
  * @version    Release: 01.00
  *
  */
-class Oara_Network_Advertiser_CommissionJunction extends Oara_Network {
+class CommissionJunction extends \Oara\Network {
 	/**
 	 * Export Merchants Parameters
 	 * @var array
@@ -75,7 +76,7 @@ class Oara_Network_Advertiser_CommissionJunction extends Oara_Network {
 	/**
 	 * Constructor and Login
 	 * @param $cj
-	 * @return Oara_Network_Publisher_Cj_Export
+	 * @return Cj_Export
 	 */
 	public function __construct($credentials) {
 
@@ -84,52 +85,52 @@ class Oara_Network_Advertiser_CommissionJunction extends Oara_Network {
 		$this->_apiPassword = $credentials['apiPassword'];
 
 		$loginUrl = 'https://members.cj.com/member/foundation/memberlogin.do?';
-		$valuesLogin = array(new Oara_Curl_Parameter('uname', $user),
-			new Oara_Curl_Parameter('pw', $password),
-			new Oara_Curl_Parameter('submit.x', '6'),
-			new Oara_Curl_Parameter('submit.y', '8')
+		$valuesLogin = array(new \Oara\Curl\Parameter('uname', $user),
+			new \Oara\Curl\Parameter('pw', $password),
+			new \Oara\Curl\Parameter('submit.x', '6'),
+			new \Oara\Curl\Parameter('submit.y', '8')
 		);
 
-		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
+		$this->_client = new \Oara\Curl\Access($loginUrl, $valuesLogin, $credentials);
 
-		$this->_exportMerchantParameters = array(new Oara_Curl_Parameter('sortKey', 'active_start_date'),
-			new Oara_Curl_Parameter('sortOrder', 'DESC'),
-			new Oara_Curl_Parameter('contractView', 'ALL'),
-			new Oara_Curl_Parameter('contractView', 'ALL'),
-			new Oara_Curl_Parameter('format', '6'),
-			new Oara_Curl_Parameter('contractState', 'active'),
-			new Oara_Curl_Parameter('column', 'merchantid'),
-			new Oara_Curl_Parameter('column', 'websitename'),
-			new Oara_Curl_Parameter('column', 'merchantcategory')
+		$this->_exportMerchantParameters = array(new \Oara\Curl\Parameter('sortKey', 'active_start_date'),
+			new \Oara\Curl\Parameter('sortOrder', 'DESC'),
+			new \Oara\Curl\Parameter('contractView', 'ALL'),
+			new \Oara\Curl\Parameter('contractView', 'ALL'),
+			new \Oara\Curl\Parameter('format', '6'),
+			new \Oara\Curl\Parameter('contractState', 'active'),
+			new \Oara\Curl\Parameter('column', 'merchantid'),
+			new \Oara\Curl\Parameter('column', 'websitename'),
+			new \Oara\Curl\Parameter('column', 'merchantcategory')
 		);
 
-		$this->_exportTransactionParameters = array(new Oara_Curl_Parameter('actionname', '0'),
-			new Oara_Curl_Parameter('period', 'range'),
-			new Oara_Curl_Parameter('what', 'commDetail'),
-			new Oara_Curl_Parameter('corrected', ''),
-			new Oara_Curl_Parameter('dtType', 'event'),
-			new Oara_Curl_Parameter('filterby', '-1'),
-			new Oara_Curl_Parameter('actiontype', ''),
-			new Oara_Curl_Parameter('status', ''),
-			new Oara_Curl_Parameter('filter', ''),
-			new Oara_Curl_Parameter('website', ''),
-			new Oara_Curl_Parameter('preselectrange', 'today'),
-			new Oara_Curl_Parameter('download', 'csv')
+		$this->_exportTransactionParameters = array(new \Oara\Curl\Parameter('actionname', '0'),
+			new \Oara\Curl\Parameter('period', 'range'),
+			new \Oara\Curl\Parameter('what', 'commDetail'),
+			new \Oara\Curl\Parameter('corrected', ''),
+			new \Oara\Curl\Parameter('dtType', 'event'),
+			new \Oara\Curl\Parameter('filterby', '-1'),
+			new \Oara\Curl\Parameter('actiontype', ''),
+			new \Oara\Curl\Parameter('status', ''),
+			new \Oara\Curl\Parameter('filter', ''),
+			new \Oara\Curl\Parameter('website', ''),
+			new \Oara\Curl\Parameter('preselectrange', 'today'),
+			new \Oara\Curl\Parameter('download', 'csv')
 		);
 		$this->_exportOverviewParameters = array(
-			new Oara_Curl_Parameter('perfPubByWebsite', ''),
-			new Oara_Curl_Parameter('periodValue', ''),
-			new Oara_Curl_Parameter('what_name', 'All Web Sites'),
-			new Oara_Curl_Parameter('what', 'perfPubByAdvCompany'),
-			new Oara_Curl_Parameter('period', 'range'),
-			new Oara_Curl_Parameter('download', 'csv')
+			new \Oara\Curl\Parameter('perfPubByWebsite', ''),
+			new \Oara\Curl\Parameter('periodValue', ''),
+			new \Oara\Curl\Parameter('what_name', 'All Web Sites'),
+			new \Oara\Curl\Parameter('what', 'perfPubByAdvCompany'),
+			new \Oara\Curl\Parameter('period', 'range'),
+			new \Oara\Curl\Parameter('download', 'csv')
 		);
 
-		$this->_exportPaymentParameters = array(new Oara_Curl_Parameter('startRow', '0'),
-			new Oara_Curl_Parameter('sortKey', ''),
-			new Oara_Curl_Parameter('sortOrder', ''),
-			new Oara_Curl_Parameter('format', '6'),
-			new Oara_Curl_Parameter('button', 'Go')
+		$this->_exportPaymentParameters = array(new \Oara\Curl\Parameter('startRow', '0'),
+			new \Oara\Curl\Parameter('sortKey', ''),
+			new \Oara\Curl\Parameter('sortOrder', ''),
+			new \Oara\Curl\Parameter('format', '6'),
+			new \Oara\Curl\Parameter('button', 'Go')
 		);
 
 	}
@@ -160,7 +161,7 @@ class Oara_Network_Advertiser_CommissionJunction extends Oara_Network {
 
 	/**
 	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getMerchantList()
+	 * @see library/Oara/Network/Interface#getMerchantList()
 	 */
 	public function getMerchantList() {
 		$merchants = array();
@@ -176,9 +177,9 @@ class Oara_Network_Advertiser_CommissionJunction extends Oara_Network {
 
 	/**
 	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($idMerchant, $dStartDate, $dEndDate)
+	 * @see library/Oara/Network/Interface#getTransactionList($idMerchant, $dStartDate, $dEndDate)
 	 */
-	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null) {
 		$totalTransactions = Array();
 		//The end data for the API has to be one day more
 		$iteration = self::calculeIterationNumber(count($merchantList), '20');
@@ -196,7 +197,7 @@ class Oara_Network_Advertiser_CommissionJunction extends Oara_Network {
 
 			} catch (Exception $e) {
 
-				$dateArray = Oara_Utilities::daysOfDifference($dStartDate, $dEndDate);
+				$dateArray = \Oara\Utilities::daysOfDifference($dStartDate, $dEndDate);
 				$dateArraySize = sizeof($dateArray);
 				for ($j = 0; $j < $dateArraySize; $j++) {
 					$transactionDateEnd = clone $dateArray[$j];
@@ -254,13 +255,13 @@ class Oara_Network_Advertiser_CommissionJunction extends Oara_Network {
 					$transaction['unique_id'] = self::findAttribute($singleTransaction, 'commission-id');
 
 					if (self::findAttribute($singleTransaction, 'action-status') == 'locked' || self::findAttribute($singleTransaction, 'action-status') == 'closed') {
-						$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
+						$transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
 					} else
 						if (self::findAttribute($singleTransaction, 'action-status') == 'extended' || self::findAttribute($singleTransaction, 'action-status') == 'new') {
-							$transaction['status'] = Oara_Utilities::STATUS_PENDING;
+							$transaction['status'] = \Oara\Utilities::STATUS_PENDING;
 						} else
 							if (self::findAttribute($singleTransaction, 'action-status') == 'corrected') {
-								$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
+								$transaction['status'] = \Oara\Utilities::STATUS_DECLINED;
 							}
 
 					$transaction['amount'] = abs((double) $filter->filter(self::findAttribute($singleTransaction, 'sale-amount')));
@@ -311,7 +312,7 @@ class Oara_Network_Advertiser_CommissionJunction extends Oara_Network {
 	}
 	/**
 	 * (non-PHPdoc)
-	 * @see Oara/Network/Oara_Network_Publisher_Base#getPaymentHistory()
+	 * @see Oara/Network/Base#getPaymentHistory()
 	 */
 	public function getPaymentHistory() {
 		$paymentHistory = array();
@@ -331,7 +332,7 @@ class Oara_Network_Advertiser_CommissionJunction extends Oara_Network {
 				$obj = array();
 				$date = new \DateTime($paymentData[0], "dd-MMM-yyyy HH:mm", 'en_US');
 				$obj['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
-				$obj['value'] = Oara_Utilities::parseDouble($paymentData[1]);
+				$obj['value'] = \Oara\Utilities::parseDouble($paymentData[1]);
 				$obj['method'] = $paymentData[2];
 				$obj['pid'] = $paymentData[6];
 				$paymentHistory[] = $obj;

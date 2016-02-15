@@ -4,7 +4,7 @@ namespace Oara;
  * The goal of the Open Affiliate Report Aggregator (OARA) is to develop a set
  * of PHP classes that can download affiliate reports from a number of affiliate networks, and store the data in a common format.
  *
- * Copyright (C) 2014  Fubra Limited
+ * Copyright (C) 2016  Fubra Limited
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or any later version.

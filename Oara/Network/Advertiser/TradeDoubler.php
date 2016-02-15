@@ -1,9 +1,10 @@
 <?php
+namespace Oara\Network\Advertiser;
 /**
  The goal of the Open Affiliate Report Aggregator (OARA) is to develop a set
  of PHP classes that can download affiliate reports from a number of affiliate networks, and store the data in a common format.
   
- Copyright (C) 2014  Fubra Limited
+ Copyright (C) 2016  Fubra Limited
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU Affero General Public License as published by
  the Free Software Foundation, either version 3 of the License, or any later version.
@@ -22,12 +23,12 @@
  * API Class
  *
  * @author Carlos Morillo Merino
- * @category Oara_Network_Advertiser_Tradedoubler
+ * @category Tradedoubler
  * @copyright Fubra Limited
  * @version Release: 01.00
  *         
  */
-class Oara_Network_Advertiser_TradeDoubler extends Oara_Network {
+class TradeDoubler extends \Oara\Network {
 	
 	/**
 	 * Client
@@ -42,7 +43,7 @@ class Oara_Network_Advertiser_TradeDoubler extends Oara_Network {
 	 * Constructor and Login
 	 *
 	 * @param $buy
-	 * @return Oara_Network_Publisher_Buy_Api
+	 * @return Buy_Api
 	 */
 	public function __construct($credentials) {
 		$user = $credentials ['user'];
@@ -53,11 +54,11 @@ class Oara_Network_Advertiser_TradeDoubler extends Oara_Network {
 		$loginUrl = 'https://login.tradedoubler.com/pan/login';
 		
 		$valuesLogin = array (
-				new Oara_Curl_Parameter ( 'j_username', $user ),
-				new Oara_Curl_Parameter ( 'j_password', $password )
+				new \Oara\Curl\Parameter ( 'j_username', $user ),
+				new \Oara\Curl\Parameter ( 'j_password', $password )
 		);
 		
-		$this->_client = new Oara_Curl_Access ( $loginUrl, $valuesLogin, $credentials );
+		$this->_client = new \Oara\Curl\Access ( $loginUrl, $valuesLogin, $credentials );
 
 		
 	}
@@ -80,7 +81,7 @@ class Oara_Network_Advertiser_TradeDoubler extends Oara_Network {
 	/**
 	 * (non-PHPdoc)
 	 *
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getMerchantList()
+	 * @see library/Oara/Network/Interface#getMerchantList()
 	 */
 	public function getMerchantList() {
 		$merchants = Array ();
@@ -111,88 +112,88 @@ class Oara_Network_Advertiser_TradeDoubler extends Oara_Network {
 	/**
 	 * (non-PHPdoc)
 	 *
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate)
+	 * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate)
 	 */
-	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null) {
 		$totalTransactions = array ();
 		
 		$valuesFromExport = array ();
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'reportName', 'mMerchantSaleAndLeadBreakdownReport' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'columns', 'programCountry' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'columns', 'programName' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'columns', 'time_of_visit' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'columns', 'timeOfEvent' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'columns', 'in_session' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'columns', 'eventName' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'columns', 'siteName' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'columns', 'product_name' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'columns', 'productNrOf' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'columns', 'product_value' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'columns', 'open_product_feeds_id' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'columns', 'open_product_feeds_name' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'columns', 'voucher_code' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'columns', 'deviceType' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'columns', 'os' );		
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'columns', 'browser' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'columns', 'vendor' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'columns', 'device' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'columns', 'affiliateCommission' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'columns', 'totalCommission' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'columns', 'segmentName' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'columns', 'graphicalElementId' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'columns', 'pf_product' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'columns', 'orderValue' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'columns', 'order_number' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'columns', 'pending_status' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'columns', 'epi1' );
-/**/	//$valuesFromExport [] = new Oara_Curl_Parameter ( 'startDate', '21/08/2013' );
-/**/	//$valuesFromExport [] = new Oara_Curl_Parameter ( 'endDate', '21/08/2014' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'startDate', $dStartDate->toString ( "dd/MM/yyyy" ) );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'endDate', $dEndDate->toString ( "dd/MM/yyyy" ) );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'isPostBack', '' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'metric1.lastOperator', '/' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'interval', 'MONTHS' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'segmentId', '' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'favoriteDescription', '' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'currencyId', $this->_currency );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'run_as_organization_id', '' );
-/**/	$valuesFromExport [] = new Oara_Curl_Parameter ( 'eventId', '5' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'minRelativeIntervalStartTime', '0' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'metric1.summaryType', 'NONE' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'includeMobile', '1' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'metric1.operator1', '/' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'latestDayToExecute', '0' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'showAdvanced', 'true' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'metric1.midFactor', '' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'reportTitleTextKey', 'REPORT3_SERVICE_REPORTS_MMERCHANTSALESANDLEADBREAKDOWNREPORT_TITLE' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'setColumns', 'true' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'metric1.columnName1', 'organizationId' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'metric1.columnName2', 'organizationId' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'reportPrograms', '' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'metric1.midOperator', '/' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'viewType', '1' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'favoriteName', '' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'affiliateId', '' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'dateType', '1' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'period', 'custom_period' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'geId', '' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'tabMenuName', '' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'maxIntervalSize', '12' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'allPrograms', 'false' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'favoriteId', '' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'metric1.name', '' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'filterOnTimeHrsInterval', 'false' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'customKeyMetricCount', '0' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'metric1.factor', '' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'showFavorite', 'false' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'separator', '' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'format', 'CSV' );
-		$valuesFromExport [] = new Oara_Curl_Parameter ( 'programId', '' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'reportName', 'mMerchantSaleAndLeadBreakdownReport' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'columns', 'programCountry' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'columns', 'programName' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'columns', 'time_of_visit' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'columns', 'timeOfEvent' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'columns', 'in_session' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'columns', 'eventName' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'columns', 'siteName' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'columns', 'product_name' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'columns', 'productNrOf' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'columns', 'product_value' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'columns', 'open_product_feeds_id' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'columns', 'open_product_feeds_name' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'columns', 'voucher_code' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'columns', 'deviceType' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'columns', 'os' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'columns', 'browser' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'columns', 'vendor' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'columns', 'device' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'columns', 'affiliateCommission' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'columns', 'totalCommission' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'columns', 'segmentName' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'columns', 'graphicalElementId' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'columns', 'pf_product' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'columns', 'orderValue' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'columns', 'order_number' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'columns', 'pending_status' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'columns', 'epi1' );
+/**/	//$valuesFromExport [] = new \Oara\Curl\Parameter ( 'startDate', '21/08/2013' );
+/**/	//$valuesFromExport [] = new \Oara\Curl\Parameter ( 'endDate', '21/08/2014' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'startDate', $dStartDate->toString ( "dd/MM/yyyy" ) );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'endDate', $dEndDate->toString ( "dd/MM/yyyy" ) );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'isPostBack', '' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'metric1.lastOperator', '/' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'interval', 'MONTHS' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'segmentId', '' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'favoriteDescription', '' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'currencyId', $this->_currency );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'run_as_organization_id', '' );
+/**/	$valuesFromExport [] = new \Oara\Curl\Parameter ( 'eventId', '5' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'minRelativeIntervalStartTime', '0' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'metric1.summaryType', 'NONE' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'includeMobile', '1' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'metric1.operator1', '/' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'latestDayToExecute', '0' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'showAdvanced', 'true' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'metric1.midFactor', '' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'reportTitleTextKey', 'REPORT3_SERVICE_REPORTS_MMERCHANTSALESANDLEADBREAKDOWNREPORT_TITLE' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'setColumns', 'true' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'metric1.columnName1', 'organizationId' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'metric1.columnName2', 'organizationId' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'reportPrograms', '' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'metric1.midOperator', '/' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'viewType', '1' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'favoriteName', '' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'affiliateId', '' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'dateType', '1' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'period', 'custom_period' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'geId', '' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'tabMenuName', '' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'maxIntervalSize', '12' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'allPrograms', 'false' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'favoriteId', '' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'metric1.name', '' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'filterOnTimeHrsInterval', 'false' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'customKeyMetricCount', '0' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'metric1.factor', '' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'showFavorite', 'false' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'separator', '' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'format', 'CSV' );
+		$valuesFromExport [] = new \Oara\Curl\Parameter ( 'programId', '' );
 		
 		for ($i = 0; $i < count($merchantList); $i++){
 
 			$programId = array_pop($valuesFromExport);
-			$valuesFromExport [] = new Oara_Curl_Parameter ( 'programId', $merchantList[$i] );
+			$valuesFromExport [] = new \Oara\Curl\Parameter ( 'programId', $merchantList[$i] );
 			$urls = array ();
 			$urls [] = new \Oara\Curl\Request ( 'https://login.tradedoubler.com/pan/mReport3.action?', $valuesFromExport );
 			try{
@@ -218,13 +219,13 @@ class Oara_Network_Advertiser_TradeDoubler extends Oara_Network {
 					$transaction['commission'] = $transactionExportArray[24];
 					
 					if ($transactionExportArray[25] == 'Approved') {
-						$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
+						$transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
 					} else
 					if ($transactionExportArray[25] == 'Pending') {
-						$transaction['status'] = Oara_Utilities::STATUS_PENDING;
+						$transaction['status'] = \Oara\Utilities::STATUS_PENDING;
 					} else
 					if ($transactionExportArray[25] == 'Deleted') {
-						$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
+						$transaction['status'] = \Oara\Utilities::STATUS_DECLINED;
 					}
 					
 					$totalTransactions[] = $transaction;
@@ -238,7 +239,7 @@ class Oara_Network_Advertiser_TradeDoubler extends Oara_Network {
 	/**
 	 * (non-PHPdoc)
 	 *
-	 * @see Oara/Network/Oara_Network_Publisher_Base#getPaymentHistory()
+	 * @see Oara/Network/Base#getPaymentHistory()
 	 */
 	public function getPaymentHistory() {
 		$paymentHistory = array ();

@@ -1,9 +1,10 @@
 <?php
+namespace Oara\Network\Publisher;
 /**
  The goal of the Open Affiliate Report Aggregator (OARA) is to develop a set
  of PHP classes that can download affiliate reports from a number of affiliate networks, and store the data in a common format.
 
- Copyright (C) 2014  Fubra Limited
+ Copyright (C) 2016  Fubra Limited
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU Affero General Public License as published by
  the Free Software Foundation, either version 3 of the License, or any later version.
@@ -22,12 +23,12 @@
  * API Class
  *
  * @author     Carlos Morillo Merino
- * @category   Oara_Network_Publisher_Buy
+ * @category   Buy
  * @copyright  Fubra Limited
  * @version    Release: 01.00
  *
  */
-class Oara_Network_Publisher_BuyAt extends Oara_Network {
+class BuyAt extends \Oara\Network {
 	/**
 	 * Export Merchants Parameters
 	 * @var array
@@ -64,7 +65,7 @@ class Oara_Network_Publisher_BuyAt extends Oara_Network {
 	/**
 	 * Constructor and Login
 	 * @param $buy
-	 * @return Oara_Network_Publisher_Buy_Api
+	 * @return Buy_Api
 	 */
 	public function __construct($credentials) {
 
@@ -78,88 +79,88 @@ class Oara_Network_Publisher_BuyAt extends Oara_Network {
 
 		$exportPass = null;
 
-		$valuesLogin = array(new Oara_Curl_Parameter('email', $user),
-			new Oara_Curl_Parameter('password', $password)
+		$valuesLogin = array(new \Oara\Curl\Parameter('email', $user),
+			new \Oara\Curl\Parameter('password', $password)
 		);
 
-		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
+		$this->_client = new \Oara\Curl\Access($loginUrl, $valuesLogin, $credentials);
 
-		$this->_exportMerchantParameters = array(new Oara_Curl_Parameter('handle', '0'),
-			new Oara_Curl_Parameter('orderby', 'programme_name'),
-			new Oara_Curl_Parameter('dir', 'asc'),
-			new Oara_Curl_Parameter('filter_sector', '0'),
-			new Oara_Curl_Parameter('filter_status', 'y'),
-			new Oara_Curl_Parameter('filter_region', '0'),
-			new Oara_Curl_Parameter('query', ''),
-			new Oara_Curl_Parameter('has_feed', '0'),
-			new Oara_Curl_Parameter('format', 'xml'),
-			new Oara_Curl_Parameter('email', $user),
-			new Oara_Curl_Parameter('password', $passwordApi)
+		$this->_exportMerchantParameters = array(new \Oara\Curl\Parameter('handle', '0'),
+			new \Oara\Curl\Parameter('orderby', 'programme_name'),
+			new \Oara\Curl\Parameter('dir', 'asc'),
+			new \Oara\Curl\Parameter('filter_sector', '0'),
+			new \Oara\Curl\Parameter('filter_status', 'y'),
+			new \Oara\Curl\Parameter('filter_region', '0'),
+			new \Oara\Curl\Parameter('query', ''),
+			new \Oara\Curl\Parameter('has_feed', '0'),
+			new \Oara\Curl\Parameter('format', 'xml'),
+			new \Oara\Curl\Parameter('email', $user),
+			new \Oara\Curl\Parameter('password', $passwordApi)
 		);
 
-		$this->_exportTransactionParameters = array(new Oara_Curl_Parameter('daterange', 'CUSTOM'),
-			new Oara_Curl_Parameter('handle', '0'),
-			new Oara_Curl_Parameter('status', ''),
-			new Oara_Curl_Parameter('include_rejected', '0'),
-			new Oara_Curl_Parameter('include_consolidated', '0'),
-			new Oara_Curl_Parameter('include_profit_plus', '1'),
-			new Oara_Curl_Parameter('orderby', 'transaction_date_time'),
-			new Oara_Curl_Parameter('dir', 'asc'),
-			new Oara_Curl_Parameter('showfields%5Bprogramme_name%5D', 'programme_name'),
-			new Oara_Curl_Parameter('showfields%5Bstatus%5D', 'status'),
-			new Oara_Curl_Parameter('showfields%5Blink_id%5D', 'link_id'),
-			new Oara_Curl_Parameter('showfields%5Btransaction_date_time%5D', 'transaction_date_time'),
-			new Oara_Curl_Parameter('showfields%5Bquantity%5D', 'quantity'),
-			new Oara_Curl_Parameter('showfields%5Btransaction_value%5D', 'transaction_value'),
-			new Oara_Curl_Parameter('showfields%5Bcommission%5D', 'commission'),
-			new Oara_Curl_Parameter('showfields%5Bunique_id%5D', 'unique_id'),
-			new Oara_Curl_Parameter('customise', 'Go'),
-			new Oara_Curl_Parameter('format', 'csv'),
-			new Oara_Curl_Parameter('email', $user),
-			new Oara_Curl_Parameter('password', $passwordApi)
+		$this->_exportTransactionParameters = array(new \Oara\Curl\Parameter('daterange', 'CUSTOM'),
+			new \Oara\Curl\Parameter('handle', '0'),
+			new \Oara\Curl\Parameter('status', ''),
+			new \Oara\Curl\Parameter('include_rejected', '0'),
+			new \Oara\Curl\Parameter('include_consolidated', '0'),
+			new \Oara\Curl\Parameter('include_profit_plus', '1'),
+			new \Oara\Curl\Parameter('orderby', 'transaction_date_time'),
+			new \Oara\Curl\Parameter('dir', 'asc'),
+			new \Oara\Curl\Parameter('showfields%5Bprogramme_name%5D', 'programme_name'),
+			new \Oara\Curl\Parameter('showfields%5Bstatus%5D', 'status'),
+			new \Oara\Curl\Parameter('showfields%5Blink_id%5D', 'link_id'),
+			new \Oara\Curl\Parameter('showfields%5Btransaction_date_time%5D', 'transaction_date_time'),
+			new \Oara\Curl\Parameter('showfields%5Bquantity%5D', 'quantity'),
+			new \Oara\Curl\Parameter('showfields%5Btransaction_value%5D', 'transaction_value'),
+			new \Oara\Curl\Parameter('showfields%5Bcommission%5D', 'commission'),
+			new \Oara\Curl\Parameter('showfields%5Bunique_id%5D', 'unique_id'),
+			new \Oara\Curl\Parameter('customise', 'Go'),
+			new \Oara\Curl\Parameter('format', 'csv'),
+			new \Oara\Curl\Parameter('email', $user),
+			new \Oara\Curl\Parameter('password', $passwordApi)
 		);
 
-		$this->_exportOverviewParameters = array(new Oara_Curl_Parameter('daterange', 'CUSTOM'),
-			new Oara_Curl_Parameter('handle', '0'),
-			new Oara_Curl_Parameter('status', ''),
-			new Oara_Curl_Parameter('include_rejected', '0'),
-			new Oara_Curl_Parameter('include_consolidated', '0'),
-			new Oara_Curl_Parameter('orderby', 'date'),
-			new Oara_Curl_Parameter('dir', 'asc'),
-			new Oara_Curl_Parameter('showfields%5Bclicks%5D', 'clicks'),
-			new Oara_Curl_Parameter('showfields%5Bsales%5D', 'sales'),
-			new Oara_Curl_Parameter('showfields%5Btransaction_value%5D', 'transaction_value'),
-			new Oara_Curl_Parameter('showfields%5Bcommission%5D', 'commission'),
-			new Oara_Curl_Parameter('customise', 'Go'),
-			new Oara_Curl_Parameter('format', 'csv'),
-			new Oara_Curl_Parameter('email', $user),
-			new Oara_Curl_Parameter('password', $passwordApi)
+		$this->_exportOverviewParameters = array(new \Oara\Curl\Parameter('daterange', 'CUSTOM'),
+			new \Oara\Curl\Parameter('handle', '0'),
+			new \Oara\Curl\Parameter('status', ''),
+			new \Oara\Curl\Parameter('include_rejected', '0'),
+			new \Oara\Curl\Parameter('include_consolidated', '0'),
+			new \Oara\Curl\Parameter('orderby', 'date'),
+			new \Oara\Curl\Parameter('dir', 'asc'),
+			new \Oara\Curl\Parameter('showfields%5Bclicks%5D', 'clicks'),
+			new \Oara\Curl\Parameter('showfields%5Bsales%5D', 'sales'),
+			new \Oara\Curl\Parameter('showfields%5Btransaction_value%5D', 'transaction_value'),
+			new \Oara\Curl\Parameter('showfields%5Bcommission%5D', 'commission'),
+			new \Oara\Curl\Parameter('customise', 'Go'),
+			new \Oara\Curl\Parameter('format', 'csv'),
+			new \Oara\Curl\Parameter('email', $user),
+			new \Oara\Curl\Parameter('password', $passwordApi)
 		);
-		$this->_exportPaymentParameters = array(new Oara_Curl_Parameter('handle', '0'),
-			new Oara_Curl_Parameter('orderby', 'date'),
-			new Oara_Curl_Parameter('dir', 'asc'),
-			new Oara_Curl_Parameter('showfields%5Bpayment_method%5D', 'payment_method'),
-			new Oara_Curl_Parameter('customise', 'Go'),
-			new Oara_Curl_Parameter('format', 'csv'),
-			new Oara_Curl_Parameter('email', $user),
-			new Oara_Curl_Parameter('password', $passwordApi)
+		$this->_exportPaymentParameters = array(new \Oara\Curl\Parameter('handle', '0'),
+			new \Oara\Curl\Parameter('orderby', 'date'),
+			new \Oara\Curl\Parameter('dir', 'asc'),
+			new \Oara\Curl\Parameter('showfields%5Bpayment_method%5D', 'payment_method'),
+			new \Oara\Curl\Parameter('customise', 'Go'),
+			new \Oara\Curl\Parameter('format', 'csv'),
+			new \Oara\Curl\Parameter('email', $user),
+			new \Oara\Curl\Parameter('password', $passwordApi)
 		);
 
 		$this->_exportPaymentDetailsParameters = array(
-			new Oara_Curl_Parameter('prog_id', '0'),
-			new Oara_Curl_Parameter('handle', '0'),
-			new Oara_Curl_Parameter('orderby', 'date'),
-			new Oara_Curl_Parameter('dir', 'asc'),
-			new Oara_Curl_Parameter('showfields%5Bprogramme_name%5D', 'programme_name'),
-			new Oara_Curl_Parameter('showfields%5Blink_id%5D', 'link_id'),
-			new Oara_Curl_Parameter('showfields%5Btransaction_value%5D', 'transaction_value'),
-			new Oara_Curl_Parameter('showfields%5Bcommission%5D', 'commission'),
-			new Oara_Curl_Parameter('showfields%5Bunique_id%5D', 'unique_id'),
-			new Oara_Curl_Parameter('&showfields%5Bcommission%5D', 'commission'),
-			new Oara_Curl_Parameter('customise', 'Go'),
-			new Oara_Curl_Parameter('format', 'csv'),
-			new Oara_Curl_Parameter('email', $user),
-			new Oara_Curl_Parameter('password', $passwordApi)
+			new \Oara\Curl\Parameter('prog_id', '0'),
+			new \Oara\Curl\Parameter('handle', '0'),
+			new \Oara\Curl\Parameter('orderby', 'date'),
+			new \Oara\Curl\Parameter('dir', 'asc'),
+			new \Oara\Curl\Parameter('showfields%5Bprogramme_name%5D', 'programme_name'),
+			new \Oara\Curl\Parameter('showfields%5Blink_id%5D', 'link_id'),
+			new \Oara\Curl\Parameter('showfields%5Btransaction_value%5D', 'transaction_value'),
+			new \Oara\Curl\Parameter('showfields%5Bcommission%5D', 'commission'),
+			new \Oara\Curl\Parameter('showfields%5Bunique_id%5D', 'unique_id'),
+			new \Oara\Curl\Parameter('&showfields%5Bcommission%5D', 'commission'),
+			new \Oara\Curl\Parameter('customise', 'Go'),
+			new \Oara\Curl\Parameter('format', 'csv'),
+			new \Oara\Curl\Parameter('email', $user),
+			new \Oara\Curl\Parameter('password', $passwordApi)
 		);
 
 	}
@@ -180,7 +181,7 @@ class Oara_Network_Publisher_BuyAt extends Oara_Network {
 
 	/**
 	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getMerchantList()
+	 * @see library/Oara/Network/Interface#getMerchantList()
 	 */
 	public function getMerchantList() {
 		$valuesFromExport = $this->_exportMerchantParameters;
@@ -204,18 +205,18 @@ class Oara_Network_Publisher_BuyAt extends Oara_Network {
 
 	/**
 	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate)
+	 * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate)
 	 */
-	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null) {
 		$totalTransactions = array();
-		$valuesFromExport = Oara_Utilities::cloneArray($this->_exportTransactionParameters);
-		$valuesFromExport[] = new Oara_Curl_Parameter('from_year', $dStartDate->get(\DateTime::YEAR));
-		$valuesFromExport[] = new Oara_Curl_Parameter('from_month', $dStartDate->get(\DateTime::MONTH));
-		$valuesFromExport[] = new Oara_Curl_Parameter('from_day', $dStartDate->get(\DateTime::DAY));
-		$valuesFromExport[] = new Oara_Curl_Parameter('to_year', $dEndDate->get(\DateTime::YEAR));
-		$valuesFromExport[] = new Oara_Curl_Parameter('to_month', $dEndDate->get(\DateTime::MONTH));
-		$valuesFromExport[] = new Oara_Curl_Parameter('to_day', $dEndDate->get(\DateTime::DAY));
-		$valuesFromExport[] = new Oara_Curl_Parameter('prog_id', '0');
+		$valuesFromExport = \Oara\Utilities::cloneArray($this->_exportTransactionParameters);
+		$valuesFromExport[] = new \Oara\Curl\Parameter('from_year', $dStartDate->get(\DateTime::YEAR));
+		$valuesFromExport[] = new \Oara\Curl\Parameter('from_month', $dStartDate->get(\DateTime::MONTH));
+		$valuesFromExport[] = new \Oara\Curl\Parameter('from_day', $dStartDate->get(\DateTime::DAY));
+		$valuesFromExport[] = new \Oara\Curl\Parameter('to_year', $dEndDate->get(\DateTime::YEAR));
+		$valuesFromExport[] = new \Oara\Curl\Parameter('to_month', $dEndDate->get(\DateTime::MONTH));
+		$valuesFromExport[] = new \Oara\Curl\Parameter('to_day', $dEndDate->get(\DateTime::DAY));
+		$valuesFromExport[] = new \Oara\Curl\Parameter('prog_id', '0');
 
 		$urls = array();
 		$urls[] = new \Oara\Curl\Request('http://users.buy.at/ma/index.php/affiliateReport/commissionValue?', $valuesFromExport);
@@ -238,16 +239,16 @@ class Oara_Network_Publisher_BuyAt extends Oara_Network {
 				}
 
 				if ($transactionExportArray[2] == 'Approved') {
-					$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
+					$transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
 				} else
 					if ($transactionExportArray[2] == 'Pending') {
-						$transaction['status'] = Oara_Utilities::STATUS_PENDING;
+						$transaction['status'] = \Oara\Utilities::STATUS_PENDING;
 					} else
 						if ($transactionExportArray[2] == 'Held') {
-							$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
+							$transaction['status'] = \Oara\Utilities::STATUS_DECLINED;
 						}
-				$transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[9]);
-				$transaction['commission'] = Oara_Utilities::parseDouble($transactionExportArray[10]);
+				$transaction['amount'] = \Oara\Utilities::parseDouble($transactionExportArray[9]);
+				$transaction['commission'] = \Oara\Utilities::parseDouble($transactionExportArray[10]);
 				$totalTransactions[] = $transaction;
 			}
 		}
@@ -290,7 +291,7 @@ class Oara_Network_Publisher_BuyAt extends Oara_Network {
 	}
 	/**
 	 * (non-PHPdoc)
-	 * @see Oara/Network/Oara_Network_Publisher_Base#getPaymentHistory()
+	 * @see Oara/Network/Base#getPaymentHistory()
 	 */
 	public function getPaymentHistory() {
 		$paymentHistory = array();
@@ -307,7 +308,7 @@ class Oara_Network_Publisher_BuyAt extends Oara_Network {
 			$date = new \DateTime($paymentData[0], "dd-MM-yyyy");
 			$obj['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
 			$obj['method'] = $paymentData[1];
-			$obj['value'] = Oara_Utilities::parseDouble($paymentData[2]);
+			$obj['value'] = \Oara\Utilities::parseDouble($paymentData[2]);
 			$obj['pid'] = $paymentData[4];
 			$paymentHistory[] = $obj;
 		}
@@ -324,7 +325,7 @@ class Oara_Network_Publisher_BuyAt extends Oara_Network {
 
 		$urls = array();
 		$valuesFormExport = $this->_exportPaymentDetailsParameters;
-		$valuesFormExport[] = new Oara_Curl_Parameter('payment_id', $paymentId);
+		$valuesFormExport[] = new \Oara\Curl\Parameter('payment_id', $paymentId);
 		$urls[] = new \Oara\Curl\Request('https://users.buy.at/ma/index.php/affiliatePayments/paymentDetails?', $valuesFormExport);
 		$exportReportList = $this->_client->get($urls);
 		foreach ($exportReportList as $exportReport) {

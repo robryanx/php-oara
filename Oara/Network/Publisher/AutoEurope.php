@@ -1,9 +1,10 @@
 <?php
+namespace Oara\Network\Publisher;
 /**
  * The goal of the Open Affiliate Report Aggregator (OARA) is to develop a set
  * of PHP classes that can download affiliate reports from a number of affiliate networks, and store the data in a common format.
  *
- * Copyright (C) 2014  Fubra Limited
+ * Copyright (C) 2016  Fubra Limited
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or any later version.
@@ -23,17 +24,17 @@
  * Export Class
  *
  * @author     Carlos Morillo Merino
- * @category   Oara_Network_Publisher_AutoEurope
+ * @category   AutoEurope
  * @copyright  Fubra Limited
  * @version    Release: 01.00
  *
  */
-class Oara_Network_Publisher_AutoEurope extends Oara_Network
+class AutoEurope extends \Oara\Network
 {
     /**
      * Export client.
      *
-     * @var Oara_Curl_Access
+     * @var \Oara\Curl\Access
      */
     private $_client = null;
 
@@ -49,7 +50,7 @@ class Oara_Network_Publisher_AutoEurope extends Oara_Network
      *
      * @param
      *            $au
-     * @return Oara_Network_Publisher_AutoEurope_Export
+     * @return AutoEurope_Export
      */
     public function __construct($credentials)
     {
@@ -57,19 +58,19 @@ class Oara_Network_Publisher_AutoEurope extends Oara_Network
         $password = $credentials ['password'];
         $loginUrl = 'https://www.autoeurope.co.uk/afftools/index.cfm';
         $valuesLogin = array(
-            new Oara_Curl_Parameter ('action', 'runreport'),
-            new Oara_Curl_Parameter ('alldates', 'all'),
-            new Oara_Curl_Parameter ('membername', $user),
-            new Oara_Curl_Parameter ('affpass', $password),
-            new Oara_Curl_Parameter ('Post', 'Log-in')
+            new \Oara\Curl\Parameter ('action', 'runreport'),
+            new \Oara\Curl\Parameter ('alldates', 'all'),
+            new \Oara\Curl\Parameter ('membername', $user),
+            new \Oara\Curl\Parameter ('affpass', $password),
+            new \Oara\Curl\Parameter ('Post', 'Log-in')
         );
 
 
-        $this->_client = new Oara_Curl_Access ($loginUrl, $valuesLogin, $credentials);
+        $this->_client = new \Oara\Curl\Access ($loginUrl, $valuesLogin, $credentials);
 
         $this->_exportTransactionParameters = array(
-            new Oara_Curl_Parameter ('pDB', 'UK'),
-            new Oara_Curl_Parameter ('content', 'PDF')
+            new \Oara\Curl\Parameter ('pDB', 'UK'),
+            new \Oara\Curl\Parameter ('content', 'PDF')
         );
     }
 
@@ -91,7 +92,7 @@ class Oara_Network_Publisher_AutoEurope extends Oara_Network
     /**
      * (non-PHPdoc)
      *
-     * @see library/Oara/Network/Oara_Network_Publisher_Base#getMerchantList()
+     * @see library/Oara/Network/Base#getMerchantList()
      */
     public function getMerchantList()
     {
@@ -108,16 +109,16 @@ class Oara_Network_Publisher_AutoEurope extends Oara_Network
     /**
      * (non-PHPdoc)
      *
-     * @see library/Oara/Network/Oara_Network_Publisher_Base#getTransactionList($merchantId, $dStartDate, $dEndDate)
+     * @see library/Oara/Network/Base#getTransactionList($merchantId, $dStartDate, $dEndDate)
      */
-    public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null)
+    public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
         $totalTransactions = Array();
 
         $dEndDate->addDay(1);
-        $valuesFormExport = Oara_Utilities::cloneArray($this->_exportTransactionParameters);
-        $valuesFormExport [] = new Oara_Curl_Parameter ('pDate1', $dStartDate->toString("MM/d/yyyy"));
-        $valuesFormExport [] = new Oara_Curl_Parameter ('pDate2', $dEndDate->toString("MM/d/yyyy"));
+        $valuesFormExport = \Oara\Utilities::cloneArray($this->_exportTransactionParameters);
+        $valuesFormExport [] = new \Oara\Curl\Parameter ('pDate1', $dStartDate->toString("MM/d/yyyy"));
+        $valuesFormExport [] = new \Oara\Curl\Parameter ('pDate2', $dEndDate->toString("MM/d/yyyy"));
         $urls = array();
         $urls [] = new \Oara\Curl\Request ('https://www.autoeurope.co.uk/afftools/iatareport_popup.cfm?', $valuesFormExport);
         $exportReport = $this->_client->post($urls);
@@ -130,7 +131,7 @@ class Oara_Network_Publisher_AutoEurope extends Oara_Network
             $transaction ['date'] = $date->toString("yyyy-MM-dd 00:00:00");
             $transaction ['amount'] = ( double )$xmlTransaction ['commissionValue'];
             $transaction ['commission'] = ( double )$xmlTransaction ['commission'];
-            $transaction ['status'] = Oara_Utilities::STATUS_CONFIRMED;
+            $transaction ['status'] = \Oara\Utilities::STATUS_CONFIRMED;
             $transaction ['unique_id'] = $xmlTransaction ['Res #'];
             if (isset ($xmlTransaction ['Affiliate1']) && isset ($xmlTransaction ['Affiliate2'])) {
                 $customId = ( string )$xmlTransaction ['Affiliate1'] . ( string )$xmlTransaction ['Affiliate2'];

@@ -1,9 +1,10 @@
 <?php
+namespace Oara\Network\Advertiser;
 /**
  The goal of the Open Affiliate Report Aggregator (OARA) is to develop a set
  of PHP classes that can download affiliate reports from a number of affiliate networks, and store the data in a common format.
   
- Copyright (C) 2014  Fubra Limited
+ Copyright (C) 2016  Fubra Limited
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU Affero General Public License as published by
  the Free Software Foundation, either version 3 of the License, or any later version.
@@ -22,12 +23,12 @@
  * Export Class
  *
  * @author     Carlos Morillo Merino
- * @category   Oara_Network_Publisher_PerformanceHorizon
+ * @category   PerformanceHorizon
  * @copyright  Fubra Limited
  * @version    Release: 01.00
  *
  */
-class Oara_Network_Advertiser_PerformanceHorizon extends Oara_Network {
+class PerformanceHorizon extends \Oara\Network {
 	private $_pass = null;
 	private $_currency = null;
 	private $_advertiserList = null;
@@ -36,7 +37,7 @@ class Oara_Network_Advertiser_PerformanceHorizon extends Oara_Network {
 	 * 
 	 * @param
 	 *        	$af
-	 * @return Oara_Network_Publisher_Af_Export
+	 * @return Af_Export
 	 */
 	public function __construct($credentials) {
 		$this->_pass = $credentials ['apiPassword'];
@@ -57,7 +58,7 @@ class Oara_Network_Advertiser_PerformanceHorizon extends Oara_Network {
 	/**
 	 * (non-PHPdoc)
 	 * 
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getMerchantList()
+	 * @see library/Oara/Network/Interface#getMerchantList()
 	 */
 	public function getMerchantList() {
 		$merchants = Array ();
@@ -80,9 +81,9 @@ class Oara_Network_Advertiser_PerformanceHorizon extends Oara_Network {
 	/**
 	 * (non-PHPdoc)
 	 * 
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
+	 * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
 	 */
-	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null) {
 		$transactions = array ();
 		
 		foreach ( $this->_advertiserList as $campaignId => $campaignName ) {
@@ -114,11 +115,11 @@ class Oara_Network_Advertiser_PerformanceHorizon extends Oara_Network {
 						}
 						
 						if ($conversion [15] == 'approved') {
-							$transaction ['status'] = Oara_Utilities::STATUS_CONFIRMED;
+							$transaction ['status'] = \Oara\Utilities::STATUS_CONFIRMED;
 						} else if ($conversion [15] == 'pending' || $conversion [15] == 'mixed') {
-							$transaction ['status'] = Oara_Utilities::STATUS_PENDING;
+							$transaction ['status'] = \Oara\Utilities::STATUS_PENDING;
 						} else if ($conversion [15] == 'rejected') {
-							$transaction ['status'] = Oara_Utilities::STATUS_DECLINED;
+							$transaction ['status'] = \Oara\Utilities::STATUS_DECLINED;
 						}
 						
 						$transaction ['amount'] = $conversion [17];
@@ -136,7 +137,7 @@ class Oara_Network_Advertiser_PerformanceHorizon extends Oara_Network {
 	/**
 	 * (non-PHPdoc)
 	 * 
-	 * @see Oara/Network/Oara_Network_Publisher_Base#getPaymentHistory()
+	 * @see Oara/Network/Base#getPaymentHistory()
 	 */
 	public function getPaymentHistory() {
 		$paymentHistory = array ();

@@ -1,9 +1,10 @@
 <?php
+namespace Oara\Network\Publisher;
 /**
  The goal of the Open Affiliate Report Aggregator (OARA) is to develop a set
  of PHP classes that can download affiliate reports from a number of affiliate networks, and store the data in a common format.
 
- Copyright (C) 2014  Fubra Limited
+ Copyright (C) 2016  Fubra Limited
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU Affero General Public License as published by
  the Free Software Foundation, either version 3 of the License, or any later version.
@@ -22,12 +23,12 @@
  * Export Class
  *
  * @author     Carlos Morillo Merino
- * @category   Oara_Network_Publisher_AffiliateGateway
+ * @category   AffiliateGateway
  * @copyright  Fubra Limited
  * @version    Release: 01.00
  *
  */
-class Oara_Network_Publisher_AffiliateGateway extends Oara_Network {
+class AffiliateGateway extends \Oara\Network {
 	/**
 	 * Export Merchants Parameters
 	 * @var array
@@ -53,15 +54,15 @@ class Oara_Network_Publisher_AffiliateGateway extends Oara_Network {
 	/**
 	 * Constructor and Login
 	 * @param $credentials
-	 * @return Oara_Network_Publisher_Daisycon
+	 * @return Daisycon
 	 */
 	public function __construct($credentials) {
 		$user = $credentials['user'];
 		$password = $credentials['password'];
 
 		$valuesLogin = array(
-			new Oara_Curl_Parameter('username', $user),
-			new Oara_Curl_Parameter('password', $password)
+			new \Oara\Curl\Parameter('username', $user),
+			new \Oara\Curl\Parameter('password', $password)
 		);
 		
 		$extension = null;
@@ -73,25 +74,25 @@ class Oara_Network_Publisher_AffiliateGateway extends Oara_Network {
 		$this->_extension = $extension;
 		
 		$loginUrl = "{$this->_extension}/login.html";
-		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
+		$this->_client = new \Oara\Curl\Access($loginUrl, $valuesLogin, $credentials);
 
-		$this->_exportTransactionParameters = array(new Oara_Curl_Parameter('period', '8'),
-			new Oara_Curl_Parameter('websiteId', '-1'),
-			new Oara_Curl_Parameter('merchantId', '-1'),
-			new Oara_Curl_Parameter('subId', ''),
-			new Oara_Curl_Parameter('approvalStatus', '-1'),
-			new Oara_Curl_Parameter('records', '20'),
-			new Oara_Curl_Parameter('sortField', 'purchDate'),
-			new Oara_Curl_Parameter('time', '1'),
-			new Oara_Curl_Parameter('p', '1'),
-			new Oara_Curl_Parameter('changePage', '1'),
-			new Oara_Curl_Parameter('oldColumn', 'purchDate'),
-			new Oara_Curl_Parameter('order', 'down'),
-			new Oara_Curl_Parameter('mId', '-1'),
-			new Oara_Curl_Parameter('submittedPeriod', '8'),
-			new Oara_Curl_Parameter('submittedSubId', ''),
-			new Oara_Curl_Parameter('exportType', 'csv'),
-			new Oara_Curl_Parameter('reportTitle', 'report'),
+		$this->_exportTransactionParameters = array(new \Oara\Curl\Parameter('period', '8'),
+			new \Oara\Curl\Parameter('websiteId', '-1'),
+			new \Oara\Curl\Parameter('merchantId', '-1'),
+			new \Oara\Curl\Parameter('subId', ''),
+			new \Oara\Curl\Parameter('approvalStatus', '-1'),
+			new \Oara\Curl\Parameter('records', '20'),
+			new \Oara\Curl\Parameter('sortField', 'purchDate'),
+			new \Oara\Curl\Parameter('time', '1'),
+			new \Oara\Curl\Parameter('p', '1'),
+			new \Oara\Curl\Parameter('changePage', '1'),
+			new \Oara\Curl\Parameter('oldColumn', 'purchDate'),
+			new \Oara\Curl\Parameter('order', 'down'),
+			new \Oara\Curl\Parameter('mId', '-1'),
+			new \Oara\Curl\Parameter('submittedPeriod', '8'),
+			new \Oara\Curl\Parameter('submittedSubId', ''),
+			new \Oara\Curl\Parameter('exportType', 'csv'),
+			new \Oara\Curl\Parameter('reportTitle', 'report'),
 		);
 
 		$this->_exportPaymentParameters = array();
@@ -116,19 +117,19 @@ class Oara_Network_Publisher_AffiliateGateway extends Oara_Network {
 	}
 	/**
 	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getMerchantList()
+	 * @see library/Oara/Network/Interface#getMerchantList()
 	 */
 	public function getMerchantList() {
 		$merchants = array();
 
 		$valuesFromExport = array();
-		$valuesFromExport[] = new Oara_Curl_Parameter('p', "");
-		$valuesFromExport[] = new Oara_Curl_Parameter('time', "1");
-		$valuesFromExport[] = new Oara_Curl_Parameter('changePage', "");
-		$valuesFromExport[] = new Oara_Curl_Parameter('oldColumn', "programmeId");
-		$valuesFromExport[] = new Oara_Curl_Parameter('sortField', "programmeId");
-		$valuesFromExport[] = new Oara_Curl_Parameter('order', "up");
-		$valuesFromExport[] = new Oara_Curl_Parameter('records', "-1");
+		$valuesFromExport[] = new \Oara\Curl\Parameter('p', "");
+		$valuesFromExport[] = new \Oara\Curl\Parameter('time', "1");
+		$valuesFromExport[] = new \Oara\Curl\Parameter('changePage', "");
+		$valuesFromExport[] = new \Oara\Curl\Parameter('oldColumn', "programmeId");
+		$valuesFromExport[] = new \Oara\Curl\Parameter('sortField', "programmeId");
+		$valuesFromExport[] = new \Oara\Curl\Parameter('order', "up");
+		$valuesFromExport[] = new \Oara\Curl\Parameter('records', "-1");
 		$urls = array();
 		$urls[] = new \Oara\Curl\Request("{$this->_extension}/affiliate_program_active.html?", $valuesFromExport);
 		$exportReport = $this->_client->get($urls);
@@ -151,15 +152,15 @@ class Oara_Network_Publisher_AffiliateGateway extends Oara_Network {
 
 	/**
 	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
+	 * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
 	 */
-	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null) {
 
 		$totalTransactions = array();
 
-		$valuesFromExport = Oara_Utilities::cloneArray($this->_exportTransactionParameters);
-		$valuesFromExport[] = new Oara_Curl_Parameter('startDate', $dStartDate->toString("dd/MM/yyyy"));
-		$valuesFromExport[] = new Oara_Curl_Parameter('endDate', $dEndDate->toString("dd/MM/yyyy"));
+		$valuesFromExport = \Oara\Utilities::cloneArray($this->_exportTransactionParameters);
+		$valuesFromExport[] = new \Oara\Curl\Parameter('startDate', $dStartDate->toString("dd/MM/yyyy"));
+		$valuesFromExport[] = new \Oara\Curl\Parameter('endDate', $dEndDate->toString("dd/MM/yyyy"));
 
 		$urls = array();
 		$urls[] = new \Oara\Curl\Request("{$this->_extension}/affiliate_statistic_transaction.html?", $valuesFromExport);
@@ -185,18 +186,18 @@ class Oara_Network_Publisher_AffiliateGateway extends Oara_Network {
 						}
 
 						if ($transactionExportArray[12] == "Approved" || $transactionExportArray[12] == "Approve") {
-							$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
+							$transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
 						} else
 							if ($transactionExportArray[12] == "Pending") {
-								$transaction['status'] = Oara_Utilities::STATUS_PENDING;
+								$transaction['status'] = \Oara\Utilities::STATUS_PENDING;
 							} else
 								if ($transactionExportArray[12] == "Declined" || $transactionExportArray[12] == "Rejected") {
-									$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
+									$transaction['status'] = \Oara\Utilities::STATUS_DECLINED;
 								} else {
 									throw new Exception ("No Status found ".$transactionExportArray[12]);
 								}
-						$transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[7]);
-						$transaction['commission'] = Oara_Utilities::parseDouble($transactionExportArray[9]);
+						$transaction['amount'] = \Oara\Utilities::parseDouble($transactionExportArray[7]);
+						$transaction['commission'] = \Oara\Utilities::parseDouble($transactionExportArray[9]);
 						$totalTransactions[] = $transaction;
 					}
 				}
@@ -211,7 +212,7 @@ class Oara_Network_Publisher_AffiliateGateway extends Oara_Network {
 
 	/**
 	 * (non-PHPdoc)
-	 * @see Oara/Network/Oara_Network_Publisher_Base#getPaymentHistory()
+	 * @see Oara/Network/Base#getPaymentHistory()
 	 */
 	public function getPaymentHistory() {
 		$paymentHistory = array();
@@ -232,7 +233,7 @@ class Oara_Network_Publisher_AffiliateGateway extends Oara_Network {
 				$obj['pid'] = preg_replace('/[^0-9\.,]/', "", $paymentExportArray[0]);
 				$obj['method'] = 'BACS';
 				$value = preg_replace('/[^0-9\.,]/', "", $paymentExportArray[8]);
-				$obj['value'] = Oara_Utilities::parseDouble($value);
+				$obj['value'] = \Oara\Utilities::parseDouble($value);
 				$paymentHistory[] = $obj;
 			}
 			

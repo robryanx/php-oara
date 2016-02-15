@@ -1,9 +1,10 @@
 <?php
+namespace Oara\Network\Publisher;
 /**
  The goal of the Open Affiliate Report Aggregator (OARA) is to develop a set
  of PHP classes that can download affiliate reports from a number of affiliate networks, and store the data in a common format.
 
- Copyright (C) 2014  Fubra Limited
+ Copyright (C) 2016  Fubra Limited
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU Affero General Public License as published by
  the Free Software Foundation, either version 3 of the License, or any later version.
@@ -22,12 +23,12 @@
  * API Class
  *
  * @author     Carlos Morillo Merino
- * @category   Oara_Network_Publisher_As
+ * @category   As
  * @copyright  Fubra Limited
  * @version    Release: 01.00
  *
  */
-class Oara_Network_Publisher_GoogleAndroidPublisher extends Oara_Network {
+class GoogleAndroidPublisher extends \Oara\Network {
 
 	/**
 	 * Adsense Client
@@ -37,7 +38,7 @@ class Oara_Network_Publisher_GoogleAndroidPublisher extends Oara_Network {
 	/**
 	 * Constructor and Login
 	 * @param $buy
-	 * @return Oara_Network_Publisher_Buy_Api
+	 * @return Buy_Api
 	 */
 	public function __construct($credentials) {
 		$this->_bucket = $credentials["user"];
@@ -66,7 +67,7 @@ class Oara_Network_Publisher_GoogleAndroidPublisher extends Oara_Network {
 
 	/**
 	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getMerchantList()
+	 * @see library/Oara/Network/Interface#getMerchantList()
 	 */
 	public function getMerchantList() {
 		$merchants = Array();
@@ -82,9 +83,9 @@ class Oara_Network_Publisher_GoogleAndroidPublisher extends Oara_Network {
 
 	/**
 	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate)
+	 * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate)
 	 */
-	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null) {
 		$totalTransactions = array();
 
 		$dirDestination = realpath ( dirname ( COOKIES_BASE_DIR ) ) . '/pdf';
@@ -125,17 +126,17 @@ class Oara_Network_Publisher_GoogleAndroidPublisher extends Oara_Network {
 			$comission = 0.3;
 			if ($row[6] == "com.petrolprices.app"){
 				$value = 2.99;
-				$obj['amount'] = Oara_Utilities::parseDouble($value);
-				$obj['commission'] = Oara_Utilities::parseDouble($value - ($value*$comission));
+				$obj['amount'] = \Oara\Utilities::parseDouble($value);
+				$obj['commission'] = \Oara\Utilities::parseDouble($value - ($value*$comission));
 			} else if ($row[6] == "com.fubra.wac"){
 				if ($obj['date'] < "2013-04-23 00:00:00"){
 					$value = 0.69;
-					$obj['amount'] = Oara_Utilities::parseDouble($value);
-					$obj['commission'] = Oara_Utilities::parseDouble($value - ($value*$comission));
+					$obj['amount'] = \Oara\Utilities::parseDouble($value);
+					$obj['commission'] = \Oara\Utilities::parseDouble($value - ($value*$comission));
 				} else {
 					$value = 1.49;
-					$obj['amount'] = Oara_Utilities::parseDouble($value);
-					$obj['commission'] = Oara_Utilities::parseDouble($value - ($value*$comission));
+					$obj['amount'] = \Oara\Utilities::parseDouble($value);
+					$obj['commission'] = \Oara\Utilities::parseDouble($value - ($value*$comission));
 				}
 			}
 
@@ -144,7 +145,7 @@ class Oara_Network_Publisher_GoogleAndroidPublisher extends Oara_Network {
 				$obj['commission'] = -$obj['commission'];
 			}
 
-			$obj['status'] = Oara_Utilities::STATUS_CONFIRMED;
+			$obj['status'] = \Oara\Utilities::STATUS_CONFIRMED;
 
 			$totalTransactions[] = $obj;
 		}
@@ -156,7 +157,7 @@ class Oara_Network_Publisher_GoogleAndroidPublisher extends Oara_Network {
 
 	/**
 	 * (non-PHPdoc)
-	 * @see Oara/Network/Oara_Network_Publisher_Base#getPaymentHistory()
+	 * @see Oara/Network/Base#getPaymentHistory()
 	 */
 	public function getPaymentHistory() {
 		$paymentHistory = array();

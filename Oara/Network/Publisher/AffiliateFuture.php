@@ -1,9 +1,10 @@
 <?php
+namespace Oara\Network\Publisher;
 /**
  The goal of the Open Affiliate Report Aggregator (OARA) is to develop a set
  of PHP classes that can download affiliate reports from a number of affiliate networks, and store the data in a common format.
 
- Copyright (C) 2014  Fubra Limited
+ Copyright (C) 2016  Fubra Limited
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU Affero General Public License as published by
  the Free Software Foundation, either version 3 of the License, or any later version.
@@ -22,82 +23,80 @@
  * Export Class
  *
  * @author     Carlos Morillo Merino
- * @category   Oara_Network_Publisher_Af
+ * @category   Af
  * @copyright  Fubra Limited
  * @version    Release: 01.00
  *
  */
-class Oara_Network_Publisher_AffiliateFuture extends Oara_Network {
-	/**
-	 * Export Transaction Parameters
-	 * @var array
-	 */
-	private $_exportTransactionParameters = null;
-	/**
-	 * Export Overview Parameters
-	 * @var array
-	 */
-	private $_exportOverviewParameters = null;
+class AffiliateFuture extends \Oara\Network {
+
+	private $_client = null;
 
 	/**
-	 * Client
-	 * @var unknown_type
+	 * @param $credentials
 	 */
-	private $_client = null;
-	
-	private $_credentials = null;
-	/**
-	 * Constructor and Login
-	 * @param $af
-	 * @return Oara_Network_Publisher_Af_Export
-	 */
-	public function __construct($credentials) {
+	public function login($credentials) {
 		$user = $credentials['user'];
 		$password = $credentials['password'];
-
-		$loginUrl = 'http://affiliates.affiliatefuture.com/login.aspx?';
+		$this->_client = new \Oara\Curl\Access($credentials);
 
 		$valuesLogin = array(
-			new Oara_Curl_Parameter('username', $user),
-			new Oara_Curl_Parameter('password', $password),
-			new Oara_Curl_Parameter('Submit', 'Login Now')
+			new \Oara\Curl\Parameter('username', $user),
+			new \Oara\Curl\Parameter('password', $password),
+			new \Oara\Curl\Parameter('Submit', 'Login Now')
 		);
-
-		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
 
 		$urls = array();
 		$urls[] = new \Oara\Curl\Request('http://affiliates.affiliatefuture.com/login.aspx?', $valuesLogin);
 		$this->_client->get($urls);
 
-		$this->_exportTransactionParameters = array(new Oara_Curl_Parameter('username', $user),
-			new Oara_Curl_Parameter('password', $password));
 
-		$this->_exportOverviewParameters = array();
+		$this->_exportTransactionParameters = array(new \Oara\Curl\Parameter('username', $user),
+			new \Oara\Curl\Parameter('password', $password));
+
 		$this->_credentials = $credentials;
 
 	}
 	/**
-	 * Check the connection
+	 * @return array
+	 */
+	public function getNeededCredentials()
+	{
+		$credentials = array();
+
+		$parameter = array();
+		$parameter["user"]["description"] = "User Log in";
+		$parameter["user"]["required"] = true;
+		$credentials[] = $parameter;
+
+		$parameter = array();
+		$parameter["password"]["description"] = "Password to Log in";
+		$parameter["password"]["required"] = true;
+		$credentials[] = $parameter;
+
+		return $credentials;
+	}
+
+	/**
+	 * @return bool
 	 */
 	public function checkConnection() {
 		//If not login properly the construct launch an exception
 		$connection = true;
 		$urls = array();
 		$urls[] = new \Oara\Curl\Request('http://affiliates.affiliatefuture.com/myaccount/invoices.aspx', array());
-
 		$result = $this->_client->get($urls);
-		if (!preg_match("/Logout/", $result[0], $matches)) {
+		if (!\preg_match("/Logout/", $result[0], $matches)) {
 			$connection = false;
 		}
 		return $connection;
 	}
+
 	/**
-	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getMerchantList()
+	 * @return array
 	 */
 	public function getMerchantList() {
 		$merchants = Array();
-
 		$merchantExportList = self::readMerchants();
 		foreach ($merchantExportList as $merchant) {
 			$obj = Array();
@@ -109,10 +108,13 @@ class Oara_Network_Publisher_AffiliateFuture extends Oara_Network {
 	}
 
 	/**
-	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
+	 * @param null $merchantList
+	 * @param \DateTime|null $dStartDate
+	 * @param \DateTime|null $dEndDate
+	 * @return array
+	 * @throws Exception
 	 */
-	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null) {
 
 		$nowDate = new \DateTime();
 
@@ -126,9 +128,9 @@ class Oara_Network_Publisher_AffiliateFuture extends Oara_Network {
 		$dEndDate->setHour("23");
 		$dEndDate->setMinute("59");
 		$dEndDate->setSecond("59");
-		$valuesFromExport = Oara_Utilities::cloneArray($this->_exportTransactionParameters);
-		$valuesFromExport[] = new Oara_Curl_Parameter('startDate', $dStartDate->toString("dd-MMM-yyyy"));
-		$valuesFromExport[] = new Oara_Curl_Parameter('endDate', $dEndDate->toString("dd-MMM-yyyy"));
+		$valuesFromExport = \Oara\Utilities::cloneArray($this->_exportTransactionParameters);
+		$valuesFromExport[] = new \Oara\Curl\Parameter('startDate', $dStartDate->toString("dd-MMM-yyyy"));
+		$valuesFromExport[] = new \Oara\Curl\Parameter('endDate', $dEndDate->toString("dd-MMM-yyyy"));
 		$transactions = Array();
 		$urls = array();
 		$urls[] = new \Oara\Curl\Request('http://ws-external.afnt.co.uk/apiv1/AFFILIATES/affiliatefuture.asmx/GetTransactionListbyDate?', $valuesFromExport);
@@ -155,15 +157,15 @@ class Oara_Network_Publisher_AffiliateFuture extends Oara_Network {
 						$obj['unique_id'] = self::findAttribute($transaction, 'TransactionID');
 
 						if ($i == 0) {
-							if (Oara_Utilities::
+							if (\Oara\Utilities::
 									($date, $nowDate) > 5) {
-								$obj['status'] = Oara_Utilities::STATUS_CONFIRMED;
+								$obj['status'] = \Oara\Utilities::STATUS_CONFIRMED;
 							} else {
-								$obj['status'] = Oara_Utilities::STATUS_PENDING;
+								$obj['status'] = \Oara\Utilities::STATUS_PENDING;
 							}
 						} else
 							if ($i == 1) {
-								$obj['status'] = Oara_Utilities::STATUS_DECLINED;
+								$obj['status'] = \Oara\Utilities::STATUS_DECLINED;
 							}
 
 						$obj['amount'] = self::findAttribute($transaction, 'SaleValue');
@@ -183,7 +185,6 @@ class Oara_Network_Publisher_AffiliateFuture extends Oara_Network {
 	}
 
 	/**
-	 * Read the merchants in the table
 	 * @return array
 	 */
 	public function readMerchants() {
@@ -218,20 +219,19 @@ class Oara_Network_Publisher_AffiliateFuture extends Oara_Network {
 	}
 
 	/**
-	 * Cast the XMLSIMPLE object into string
-	 * @param $object
-	 * @param $attribute
-	 * @return unknown_type
+	 * @param null $object
+	 * @param null $attribute
+	 * @return null|string
 	 */
 	private function findAttribute($object = null, $attribute = null) {
 		$return = null;
 		$return = trim($object->$attribute);
 		return $return;
 	}
+
 	/**
-	 * Convert the string in xml object.
-	 * @param $exportReport
-	 * @return xml
+	 * @param null $exportReport
+	 * @return \SimpleXMLElement
 	 */
 	private function loadXml($exportReport = null) {
 		$xml = simplexml_load_string($exportReport, null, LIBXML_NOERROR | LIBXML_NOWARNING);
@@ -242,9 +242,10 @@ class Oara_Network_Publisher_AffiliateFuture extends Oara_Network {
 		 */
 		return $xml;
 	}
+
 	/**
-	 * (non-PHPdoc)
-	 * @see Oara/Network/Oara_Network_Publisher_Base#getPaymentHistory()
+	 * @return array
+	 * @throws Exception
 	 */
 	public function getPaymentHistory() {
 		self::__construct($this->_credentials);
@@ -280,13 +281,10 @@ class Oara_Network_Publisher_AffiliateFuture extends Oara_Network {
 
 		return $paymentHistory;
 	}
-	
+
 	/**
-	 *
-	 *
-	 * Function that Convert from a table to Csv
-	 *
-	 * @param unknown_type $html
+	 * @param $html
+	 * @return array
 	 */
 	private function htmlToCsv($html) {
 		$html = str_replace ( array (
@@ -325,12 +323,10 @@ class Oara_Network_Publisher_AffiliateFuture extends Oara_Network {
 		$exportData = str_getcsv ( $csv, "\n" );
 		return $exportData;
 	}
+
 	/**
-	 *
-	 *
-	 * Function that returns the innet HTML code
-	 *
-	 * @param unknown_type $element
+	 * @param $element
+	 * @return string
 	 */
 	private function DOMinnerHTML($element) {
 		$innerHTML = "";

@@ -1,9 +1,10 @@
 <?php
+namespace Oara\Network\Publisher;
 /**
  The goal of the Open Affiliate Report Aggregator (OARA) is to develop a set
  of PHP classes that can download affiliate reports from a number of affiliate networks, and store the data in a common format.
 
- Copyright (C) 2014  Fubra Limited
+ Copyright (C) 2016  Fubra Limited
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU Affero General Public License as published by
  the Free Software Foundation, either version 3 of the License, or any later version.
@@ -22,12 +23,12 @@
  * Export Class
  *
  * @author     Carlos Morillo Merino
- * @category   Oara_Network_Publisher_Bol
+ * @category   Bol
  * @copyright  Fubra Limited
  * @version    Release: 01.00
  *
  */
-class Oara_Network_Publisher_Bol extends Oara_Network {
+class Bol extends \Oara\Network {
 	/**
 	 * Client
 	 * @var unknown_type
@@ -36,7 +37,7 @@ class Oara_Network_Publisher_Bol extends Oara_Network {
 	/**
 	 * Constructor and Login
 	 * @param $credentials
-	 * @return Oara_Network_Publisher_Daisycon
+	 * @return Daisycon
 	 */
 	public function __construct($credentials) {
 		$user = $credentials['user'];
@@ -44,12 +45,12 @@ class Oara_Network_Publisher_Bol extends Oara_Network {
 
 
 		$valuesLogin = array(
-			new Oara_Curl_Parameter('j_username', $user),
-			new Oara_Curl_Parameter('j_password', $password)
+			new \Oara\Curl\Parameter('j_username', $user),
+			new \Oara\Curl\Parameter('j_password', $password)
 		);
 
 		$loginUrl = 'https://partnerprogramma.bol.com/partner/j_security_check';
-		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
+		$this->_client = new \Oara\Curl\Access($loginUrl, $valuesLogin, $credentials);
 
 	}
 	/**
@@ -69,7 +70,7 @@ class Oara_Network_Publisher_Bol extends Oara_Network {
 	}
 	/**
 	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getMerchantList()
+	 * @see library/Oara/Network/Interface#getMerchantList()
 	 */
 	public function getMerchantList() {
 		$merchants = array();
@@ -84,19 +85,19 @@ class Oara_Network_Publisher_Bol extends Oara_Network {
 
 	/**
 	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
+	 * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
 	 */
-	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null) {
 		$folder = realpath ( dirname ( COOKIES_BASE_DIR ) ) . '/pdf/';
 		$totalTransactions = array();
 		$valuesFromExport = array();
-		$valuesFromExport[] = new Oara_Curl_Parameter('id', "-1");			
-		$valuesFromExport[] = new Oara_Curl_Parameter('yearStart', $dStartDate->toString("yyyy"));
-		$valuesFromExport[] = new Oara_Curl_Parameter('monthStart', $dStartDate->toString("MM"));
-		$valuesFromExport[] = new Oara_Curl_Parameter('dayStart', $dStartDate->toString("dd"));
-		$valuesFromExport[] = new Oara_Curl_Parameter('yearEnd', $dEndDate->toString("yyyy"));
-		$valuesFromExport[] = new Oara_Curl_Parameter('monthEnd', $dEndDate->toString("MM"));
-		$valuesFromExport[] = new Oara_Curl_Parameter('dayEnd', $dEndDate->toString("dd"));
+		$valuesFromExport[] = new \Oara\Curl\Parameter('id', "-1");
+		$valuesFromExport[] = new \Oara\Curl\Parameter('yearStart', $dStartDate->toString("yyyy"));
+		$valuesFromExport[] = new \Oara\Curl\Parameter('monthStart', $dStartDate->toString("MM"));
+		$valuesFromExport[] = new \Oara\Curl\Parameter('dayStart', $dStartDate->toString("dd"));
+		$valuesFromExport[] = new \Oara\Curl\Parameter('yearEnd', $dEndDate->toString("yyyy"));
+		$valuesFromExport[] = new \Oara\Curl\Parameter('monthEnd', $dEndDate->toString("MM"));
+		$valuesFromExport[] = new \Oara\Curl\Parameter('dayEnd', $dEndDate->toString("dd"));
 		
 		$urls = array();
 		$urls[] = new \Oara\Curl\Request('https://partnerprogramma.bol.com/partner/s/excelReport/orders?', $valuesFromExport);
@@ -133,13 +134,13 @@ class Oara_Network_Publisher_Bol extends Oara_Network {
 		
 		   	
 		   	if ($objWorksheet->getCellByColumnAndRow(14, $row)->getValue() == 'geaccepteerd') {
-		   		$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
+		   		$transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
 		   	} else
 		   	if ($objWorksheet->getCellByColumnAndRow(14, $row)->getValue() == 'in behandeling') {
-		   		$transaction['status'] = Oara_Utilities::STATUS_PENDING;
+		   		$transaction['status'] = \Oara\Utilities::STATUS_PENDING;
 		   	} else
 		   	if ($objWorksheet->getCellByColumnAndRow(14, $row)->getValue() == 'geweigerd: klik te oud' || $objWorksheet->getCellByColumnAndRow(14, $row)->getValue() == 'geweigerd') {
-		   		$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
+		   		$transaction['status'] = \Oara\Utilities::STATUS_DECLINED;
 		   	} else {
 		   		echo "new status ".$objWorksheet->getCellByColumnAndRow(14, $row)->getValue();
 		   	}
@@ -157,7 +158,7 @@ class Oara_Network_Publisher_Bol extends Oara_Network {
 	
 	/**
 	 * (non-PHPdoc)
-	 * @see Oara/Network/Oara_Network_Publisher_Base#getPaymentHistory()
+	 * @see Oara/Network/Base#getPaymentHistory()
 	 */
 	public function getPaymentHistory() {
 		$paymentHistory = array();

@@ -1,9 +1,10 @@
 <?php
+namespace Oara\Network\Publisher;
 /**
  The goal of the Open Affiliate Report Aggregator (OARA) is to develop a set
  of PHP classes that can download affiliate reports from a number of affiliate networks, and store the data in a common format.
 
- Copyright (C) 2014  Fubra Limited
+ Copyright (C) 2016  Fubra Limited
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU Affero General Public License as published by
  the Free Software Foundation, either version 3 of the License, or any later version.
@@ -22,12 +23,12 @@
  * Export Class
  *
  * @author     Carlos Morillo Merino
- * @category   Oara_Network_Publisher_Chegg
+ * @category   Chegg
  * @copyright  Fubra Limited
  * @version    Release: 01.00
  *
  */
-class Oara_Network_Publisher_Chegg extends Oara_Network {
+class Chegg extends \Oara\Network {
 
 
 	/**
@@ -38,48 +39,48 @@ class Oara_Network_Publisher_Chegg extends Oara_Network {
 	/**
 	 * Constructor and Login
 	 * @param $credentials
-	 * @return Oara_Network_Publisher_Daisycon
+	 * @return Daisycon
 	 */
 	public function __construct($credentials) {
 		$user = $credentials['user'];
 		$password = $credentials['password'];
 		
 		$valuesLogin = array(
-				new Oara_Curl_Parameter('__EVENTTARGET', ""),
-				new Oara_Curl_Parameter('__EVENTARGUMENT', ""),
-				new Oara_Curl_Parameter('ctl00%24ContentPlaceHolder1%24lcLogin%24txtUserName', $user),
-				new Oara_Curl_Parameter('ctl00%24ContentPlaceHolder1%24lcLogin%24txtPassword', $password),
-				new Oara_Curl_Parameter('ctl00%24ContentPlaceHolder1%24lcLogin%24btnSubmit', 'Login'),
-				new Oara_Curl_Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24txtFirstName', ''),
-				new Oara_Curl_Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24txtLastName', ''),
-				new Oara_Curl_Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24txtEmail', ''),
-				new Oara_Curl_Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24txtNewPassword', ''),
-				new Oara_Curl_Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24txtIM', ''),
-				new Oara_Curl_Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24ddIMNetwork', '0'),
-				new Oara_Curl_Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24txtPhone', ''),
-				new Oara_Curl_Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24txtFax', ''),
-				new Oara_Curl_Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24txtBusinessName', ''),
-				new Oara_Curl_Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24txtWebsiteURL', 'http://'),
-				new Oara_Curl_Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24ddlBusinessType', '0'),
-				new Oara_Curl_Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24txtBusinessDescription', ''),
-				new Oara_Curl_Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24txtAddress1', ''),
-				new Oara_Curl_Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24txtAddress2', ''),
-				new Oara_Curl_Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24txtCity', ''),
-				new Oara_Curl_Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24ddlState', ''),
-				new Oara_Curl_Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24txtOtherState', ''),
-				new Oara_Curl_Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24txtPostalCode', ''),
-				new Oara_Curl_Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24ddlCountry', 'US'),
-				new Oara_Curl_Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24txtTaxID', ''),
-				new Oara_Curl_Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24ddPaymentTo', 'Company'),
-				new Oara_Curl_Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24txtSwift', ''),
-				new Oara_Curl_Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24txtAccountName', ''),
-				new Oara_Curl_Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24txtAccountNumber', ''),
-				new Oara_Curl_Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24txtBankRouting', ''),
-				new Oara_Curl_Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24txtBankName', ''),
-				new Oara_Curl_Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24txtBankAddress', ''),
-				new Oara_Curl_Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24txtPayPal', ''),
-				new Oara_Curl_Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24txtPayQuickerEmail', ''),
-				new Oara_Curl_Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24ddlReferral', 'Select'),
+				new \Oara\Curl\Parameter('__EVENTTARGET', ""),
+				new \Oara\Curl\Parameter('__EVENTARGUMENT', ""),
+				new \Oara\Curl\Parameter('ctl00%24ContentPlaceHolder1%24lcLogin%24txtUserName', $user),
+				new \Oara\Curl\Parameter('ctl00%24ContentPlaceHolder1%24lcLogin%24txtPassword', $password),
+				new \Oara\Curl\Parameter('ctl00%24ContentPlaceHolder1%24lcLogin%24btnSubmit', 'Login'),
+				new \Oara\Curl\Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24txtFirstName', ''),
+				new \Oara\Curl\Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24txtLastName', ''),
+				new \Oara\Curl\Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24txtEmail', ''),
+				new \Oara\Curl\Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24txtNewPassword', ''),
+				new \Oara\Curl\Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24txtIM', ''),
+				new \Oara\Curl\Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24ddIMNetwork', '0'),
+				new \Oara\Curl\Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24txtPhone', ''),
+				new \Oara\Curl\Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24txtFax', ''),
+				new \Oara\Curl\Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24txtBusinessName', ''),
+				new \Oara\Curl\Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24txtWebsiteURL', 'http://'),
+				new \Oara\Curl\Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24ddlBusinessType', '0'),
+				new \Oara\Curl\Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24txtBusinessDescription', ''),
+				new \Oara\Curl\Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24txtAddress1', ''),
+				new \Oara\Curl\Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24txtAddress2', ''),
+				new \Oara\Curl\Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24txtCity', ''),
+				new \Oara\Curl\Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24ddlState', ''),
+				new \Oara\Curl\Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24txtOtherState', ''),
+				new \Oara\Curl\Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24txtPostalCode', ''),
+				new \Oara\Curl\Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24ddlCountry', 'US'),
+				new \Oara\Curl\Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24txtTaxID', ''),
+				new \Oara\Curl\Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24ddPaymentTo', 'Company'),
+				new \Oara\Curl\Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24txtSwift', ''),
+				new \Oara\Curl\Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24txtAccountName', ''),
+				new \Oara\Curl\Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24txtAccountNumber', ''),
+				new \Oara\Curl\Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24txtBankRouting', ''),
+				new \Oara\Curl\Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24txtBankName', ''),
+				new \Oara\Curl\Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24txtBankAddress', ''),
+				new \Oara\Curl\Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24txtPayPal', ''),
+				new \Oara\Curl\Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24txtPayQuickerEmail', ''),
+				new \Oara\Curl\Parameter('ctl00%24ContentPlaceHolder1%24scSignup%24ddlReferral', 'Select'),
 		
 		);
 		$html = file_get_contents("http://cheggaffiliateprogram.com/Welcome/LogInAndSignUp.aspx?FP=C&FR=1&S=4");
@@ -87,12 +88,12 @@ class Oara_Network_Publisher_Chegg extends Oara_Network {
 		$hidden = $dom->query('input[type="hidden"]');
 		
 		foreach ($hidden as $values) {
-			$valuesLogin[] = new Oara_Curl_Parameter($values->getAttribute("name"), $values->getAttribute("value"));
+			$valuesLogin[] = new \Oara\Curl\Parameter($values->getAttribute("name"), $values->getAttribute("value"));
 		}
 		
 		
 		$loginUrl = 'http://cheggaffiliateprogram.com/Welcome/LogInAndSignUp.aspx?FP=C&FR=1&S=2';
-		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
+		$this->_client = new \Oara\Curl\Access($loginUrl, $valuesLogin, $credentials);
 
 	}
 	/**
@@ -113,7 +114,7 @@ class Oara_Network_Publisher_Chegg extends Oara_Network {
 	}
 	/**
 	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getMerchantList()
+	 * @see library/Oara/Network/Interface#getMerchantList()
 	 */
 	public function getMerchantList() {
 		$merchants = array();
@@ -128,17 +129,17 @@ class Oara_Network_Publisher_Chegg extends Oara_Network {
 
 	/**
 	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
+	 * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
 	 */
-	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null) {
 
 		$totalTransactions = array();
 
 		$valuesFromExport = array();
-		$valuesFromExport[] = new Oara_Curl_Parameter('FromDate', $dStartDate->toString("dd/MM/yyyy"));
-		$valuesFromExport[] = new Oara_Curl_Parameter('ToDate', $dEndDate->toString("dd/MM/yyyy"));
-		$valuesFromExport[] = new Oara_Curl_Parameter('ReportType', 'dailyReport');
-		$valuesFromExport[] = new Oara_Curl_Parameter('Link', '-1');
+		$valuesFromExport[] = new \Oara\Curl\Parameter('FromDate', $dStartDate->toString("dd/MM/yyyy"));
+		$valuesFromExport[] = new \Oara\Curl\Parameter('ToDate', $dEndDate->toString("dd/MM/yyyy"));
+		$valuesFromExport[] = new \Oara\Curl\Parameter('ReportType', 'dailyReport');
+		$valuesFromExport[] = new \Oara\Curl\Parameter('Link', '-1');
 
 		$urls = array();
 		$urls[] = new \Oara\Curl\Request('https://www.bet365affiliates.com/Members/Members/Statistics/Print.aspx?', $valuesFromExport);
@@ -160,9 +161,9 @@ class Oara_Network_Publisher_Chegg extends Oara_Network {
 				$transactionDate = new \DateTime($transactionExportArray[1], 'dd-MM-yyyy', 'en');
 				$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 
-				$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
-				$transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[27]);
-				$transaction['commission'] = Oara_Utilities::parseDouble($transactionExportArray[32]);
+				$transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
+				$transaction['amount'] = \Oara\Utilities::parseDouble($transactionExportArray[27]);
+				$transaction['commission'] = \Oara\Utilities::parseDouble($transactionExportArray[32]);
 				if ($transaction['amount'] != 0 && $transaction['commission'] != 0) {
 					$totalTransactions[] = $transaction;
 				}
@@ -174,7 +175,7 @@ class Oara_Network_Publisher_Chegg extends Oara_Network {
 
 	/**
 	 * (non-PHPdoc)
-	 * @see Oara/Network/Oara_Network_Publisher_Base#getPaymentHistory()
+	 * @see Oara/Network/Base#getPaymentHistory()
 	 */
 	public function getPaymentHistory() {
 		$paymentHistory = array();

@@ -1,9 +1,10 @@
 <?php
+namespace Oara\Network\Publisher;
 /**
  The goal of the Open Affiliate Report Aggregator (OARA) is to develop a set
  of PHP classes that can download affiliate reports from a number of affiliate networks, and store the data in a common format.
 
- Copyright (C) 2014  Fubra Limited
+ Copyright (C) 2016  Fubra Limited
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU Affero General Public License as published by
  the Free Software Foundation, either version 3 of the License, or any later version.
@@ -22,38 +23,38 @@
  * Export Class
  *
  * @author     Carlos Morillo Merino
- * @category   Oara_Network_Publisher_Dianomi
+ * @category   Dianomi
  * @copyright  Fubra Limited
  * @version    Release: 01.00
  *
  */
-class Oara_Network_Publisher_Dianomi extends Oara_Network {
+class Dianomi extends \Oara\Network {
 	/**
 	 * Export client.
-	 * @var Oara_Curl_Access
+	 * @var \Oara\Curl\Access
 	 */
 	private $_client = null;
 
 	/**
 	 * Constructor and Login
 	 * @param $cartrawler
-	 * @return Oara_Network_Publisher_Tv_Export
+	 * @return Tv_Export
 	 */
 	public function __construct($credentials) {
 
 		$user = $credentials['user'];
 		$password = $credentials['password'];
 
-		$valuesLogin = array(new Oara_Curl_Parameter('username', $user),
-			new Oara_Curl_Parameter('password', $password),
-			new Oara_Curl_Parameter('app', 'loginbox'),
-			new Oara_Curl_Parameter('page', '378'),
-			new Oara_Curl_Parameter('partner', '1'),
-			new Oara_Curl_Parameter('redir', '')
+		$valuesLogin = array(new \Oara\Curl\Parameter('username', $user),
+			new \Oara\Curl\Parameter('password', $password),
+			new \Oara\Curl\Parameter('app', 'loginbox'),
+			new \Oara\Curl\Parameter('page', '378'),
+			new \Oara\Curl\Parameter('partner', '1'),
+			new \Oara\Curl\Parameter('redir', '')
 		);
 
 		$loginUrl = 'https://my.dianomi.com/index.epl?';
-		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
+		$this->_client = new \Oara\Curl\Access($loginUrl, $valuesLogin, $credentials);
 
 	}
 	/**
@@ -72,7 +73,7 @@ class Oara_Network_Publisher_Dianomi extends Oara_Network {
 	}
 	/**
 	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Oara_Network_Publisher_Base#getMerchantList()
+	 * @see library/Oara/Network/Base#getMerchantList()
 	 */
 	public function getMerchantList() {
 		$merchants = Array();
@@ -85,26 +86,26 @@ class Oara_Network_Publisher_Dianomi extends Oara_Network {
 	}
 	/**
 	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Oara_Network_Publisher_Base#getTransactionList($merchantId, $dStartDate, $dEndDate)
+	 * @see library/Oara/Network/Base#getTransactionList($merchantId, $dStartDate, $dEndDate)
 	 */
-	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null) {
 		$totalTransactions = Array();
 		
 		$valuesFormExport = array();
-		$valuesFormExport[] = new Oara_Curl_Parameter('periodtype', "fromtolong");
-		$valuesFormExport[] = new Oara_Curl_Parameter('fromday', $dStartDate->toString("dd"));
-		$valuesFormExport[] = new Oara_Curl_Parameter('frommonth', $dStartDate->toString("MM"));
-		$valuesFormExport[] = new Oara_Curl_Parameter('fromyear', $dStartDate->toString("yyyy"));
+		$valuesFormExport[] = new \Oara\Curl\Parameter('periodtype', "fromtolong");
+		$valuesFormExport[] = new \Oara\Curl\Parameter('fromday', $dStartDate->toString("dd"));
+		$valuesFormExport[] = new \Oara\Curl\Parameter('frommonth', $dStartDate->toString("MM"));
+		$valuesFormExport[] = new \Oara\Curl\Parameter('fromyear', $dStartDate->toString("yyyy"));
 		
-		$valuesFormExport[] = new Oara_Curl_Parameter('today', $dEndDate->toString("dd"));
-		$valuesFormExport[] = new Oara_Curl_Parameter('tomonth', $dEndDate->toString("MM"));
-		$valuesFormExport[] = new Oara_Curl_Parameter('toyear', $dEndDate->toString("yyyy"));
+		$valuesFormExport[] = new \Oara\Curl\Parameter('today', $dEndDate->toString("dd"));
+		$valuesFormExport[] = new \Oara\Curl\Parameter('tomonth', $dEndDate->toString("MM"));
+		$valuesFormExport[] = new \Oara\Curl\Parameter('toyear', $dEndDate->toString("yyyy"));
 		
-		$valuesFormExport[] = new Oara_Curl_Parameter('Go', 'Go');
+		$valuesFormExport[] = new \Oara\Curl\Parameter('Go', 'Go');
 		
-		$valuesFormExport[] = new Oara_Curl_Parameter('partnerId', '326');
-		$valuesFormExport[] = new Oara_Curl_Parameter('action', 'partnerLeads');
-		$valuesFormExport[] = new Oara_Curl_Parameter('subaction', 'RevenueOverTime');
+		$valuesFormExport[] = new \Oara\Curl\Parameter('partnerId', '326');
+		$valuesFormExport[] = new \Oara\Curl\Parameter('action', 'partnerLeads');
+		$valuesFormExport[] = new \Oara\Curl\Parameter('subaction', 'RevenueOverTime');
 		$urls = array();
 		$urls[] = new \Oara\Curl\Request('https://my.dianomi.com/Campaign-Analysis-378_1.html?', $valuesFormExport);
 		$exportReport = $this->_client->get($urls);
@@ -123,7 +124,7 @@ class Oara_Network_Publisher_Dianomi extends Oara_Network {
 				$transaction['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
 				$transaction['amount'] = $overviewExportArray[1];
 				$transaction['commission'] = $overviewExportArray[1];
-				$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
+				$transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
 				$totalTransactions[] = $transaction;
 			}
 		}

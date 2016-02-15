@@ -1,9 +1,10 @@
 <?php
+namespace Oara\Network\Publisher;
 /**
  The goal of the Open Affiliate Report Aggregator (OARA) is to develop a set
  of PHP classes that can download affiliate reports from a number of affiliate networks, and store the data in a common format.
 
- Copyright (C) 2014  Fubra Limited
+ Copyright (C) 2016  Fubra Limited
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU Affero General Public License as published by
  the Free Software Foundation, either version 3 of the License, or any later version.
@@ -22,12 +23,12 @@
  * API Class
  *
  * @author Carlos Morillo Merino
- * @category Oara_Network_Publisher_Afiliant
+ * @category Afiliant
  * @copyright Fubra Limited
  * @version Release: 01.00
  *         
  */
-class Oara_Network_Publisher_Invia extends Oara_Network {
+class Invia extends \Oara\Network {
 	
 	/**
 	 * Client
@@ -40,7 +41,7 @@ class Oara_Network_Publisher_Invia extends Oara_Network {
 	 * Constructor and Login
 	 *
 	 * @param $buy
-	 * @return Oara_Network_Publisher_Buy_Api
+	 * @return Buy_Api
 	 */
 	public function __construct($credentials) {	
 		
@@ -51,18 +52,18 @@ class Oara_Network_Publisher_Invia extends Oara_Network {
 		
 		$dir = COOKIES_BASE_DIR . DIRECTORY_SEPARATOR . $credentials ['cookiesDir'] . DIRECTORY_SEPARATOR . $credentials ['cookiesSubDir'] . DIRECTORY_SEPARATOR;
 		
-		if (! Oara_Utilities::mkdir_recursive ( $dir, 0777 )) {
+		if (! \Oara\Utilities::mkdir_recursive ( $dir, 0777 )) {
 			throw new Exception ( 'Problem creating folder in Access' );
 		}
 		$cookies = $dir . $credentials["cookieName"] . '_cookies.txt';
 		unlink($cookies);
 			
 		$valuesLogin = array (
-				new Oara_Curl_Parameter ( 'ac-email', $user ),
-				new Oara_Curl_Parameter ( 'ac-password', $password ),
-				new Oara_Curl_Parameter ( 'redir_url', 'http://partner2.invia.cz/' ),
-				new Oara_Curl_Parameter ( 'ac-submit', '1' ),
-				new Oara_Curl_Parameter ( 'k2form_login', '1' )
+				new \Oara\Curl\Parameter ( 'ac-email', $user ),
+				new \Oara\Curl\Parameter ( 'ac-password', $password ),
+				new \Oara\Curl\Parameter ( 'redir_url', 'http://partner2.invia.cz/' ),
+				new \Oara\Curl\Parameter ( 'ac-submit', '1' ),
+				new \Oara\Curl\Parameter ( 'k2form_login', '1' )
 		);
 		
 		$this->_options = array (
@@ -92,7 +93,7 @@ class Oara_Network_Publisher_Invia extends Oara_Network {
 		$hidden = $dom->query('input[type="hidden"]');
 		
 		foreach ($hidden as $values) {
-			$valuesLogin[] = new Oara_Curl_Parameter($values->getAttribute("name"), $values->getAttribute("value"));
+			$valuesLogin[] = new \Oara\Curl\Parameter($values->getAttribute("name"), $values->getAttribute("value"));
 		}
 		$rch = curl_init ();
 		$options = $this->_options;
@@ -132,7 +133,7 @@ class Oara_Network_Publisher_Invia extends Oara_Network {
 	/**
 	 * (non-PHPdoc)
 	 *
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getMerchantList()
+	 * @see library/Oara/Network/Interface#getMerchantList()
 	 */
 	public function getMerchantList() {
 		$merchants = Array();
@@ -148,9 +149,9 @@ class Oara_Network_Publisher_Invia extends Oara_Network {
 	/**
 	 * (non-PHPdoc)
 	 *
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate)
+	 * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate)
 	 */
-	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null) {
 		$totalTransactions = array();
 		
 		/*
@@ -219,22 +220,22 @@ class Oara_Network_Publisher_Invia extends Oara_Network {
 		$params .= "-----------------------------30593287953754--";		
 	
 		$valuesFromExport = array(
-				new Oara_Curl_Parameter('POSTDATA', $params)
+				new \Oara\Curl\Parameter('POSTDATA', $params)
 		);
 */		
 		$valuesFromExport = array(
-				new Oara_Curl_Parameter('AffilUI_Filter', ''),
-				new Oara_Curl_Parameter('AffilUI_FilterStr', ''),
-				new Oara_Curl_Parameter('AffilUI_FilterTag', ''),
-				new Oara_Curl_Parameter('AdvancedFilter_State', '0'),
-				new Oara_Curl_Parameter('AdvancedFilter_nl_stav_id', '0'),
-				new Oara_Curl_Parameter('AdvancedFilter_nl_invia_id', '1'),
-				new Oara_Curl_Parameter('AdvancedFilter_departure', '0'),
-				new Oara_Curl_Parameter('AdvancedFilter_b_show_invoiced', 'on'),
-				new Oara_Curl_Parameter('AdvancedFilter_date_from', '01.01.2014'),
-				new Oara_Curl_Parameter('AdvancedFilter_date_to', '31.10.2014'),
-				new Oara_Curl_Parameter('AdvancedFilter_nl_rows', ''),
-				new Oara_Curl_Parameter('AdvancedFilter_sent', '1')
+				new \Oara\Curl\Parameter('AffilUI_Filter', ''),
+				new \Oara\Curl\Parameter('AffilUI_FilterStr', ''),
+				new \Oara\Curl\Parameter('AffilUI_FilterTag', ''),
+				new \Oara\Curl\Parameter('AdvancedFilter_State', '0'),
+				new \Oara\Curl\Parameter('AdvancedFilter_nl_stav_id', '0'),
+				new \Oara\Curl\Parameter('AdvancedFilter_nl_invia_id', '1'),
+				new \Oara\Curl\Parameter('AdvancedFilter_departure', '0'),
+				new \Oara\Curl\Parameter('AdvancedFilter_b_show_invoiced', 'on'),
+				new \Oara\Curl\Parameter('AdvancedFilter_date_from', '01.01.2014'),
+				new \Oara\Curl\Parameter('AdvancedFilter_date_to', '31.10.2014'),
+				new \Oara\Curl\Parameter('AdvancedFilter_nl_rows', ''),
+				new \Oara\Curl\Parameter('AdvancedFilter_sent', '1')
 		);
 
 		$rch = curl_init ();
@@ -269,18 +270,18 @@ echo $html;
 				$transaction ['date'] = $transactionDate->toString ( "yyyy-MM-dd HH:mm:ss" );				
 				$status = $transactionExportArray [4];
 				if ($status == "Zaplaceno") {
-					$transaction ['status'] = Oara_Utilities::STATUS_CONFIRMED;
+					$transaction ['status'] = \Oara\Utilities::STATUS_CONFIRMED;
 				} else if ($status == "Neprod�no") {
-					$transaction ['status'] = Oara_Utilities::STATUS_PENDING;
+					$transaction ['status'] = \Oara\Utilities::STATUS_PENDING;
 				} else if ($status == "Storno") {
-					$transaction ['status'] = Oara_Utilities::STATUS_DECLINED;
+					$transaction ['status'] = \Oara\Utilities::STATUS_DECLINED;
 				} else {
 					throw new Exception ( "New status found {$status}" );
 				}
 				
 				
-				$transaction ['amount'] = Oara_Utilities::parseDouble ( preg_replace ( '/[^0-9\.,]/', "", $transactionExportArray [6] ) );
-				$transaction ['commission'] = Oara_Utilities::parseDouble ( preg_replace ( '/[^0-9\.,]/', "", $transactionExportArray [6] ) );
+				$transaction ['amount'] = \Oara\Utilities::parseDouble ( preg_replace ( '/[^0-9\.,]/', "", $transactionExportArray [6] ) );
+				$transaction ['commission'] = \Oara\Utilities::parseDouble ( preg_replace ( '/[^0-9\.,]/', "", $transactionExportArray [6] ) );
 				
 				
 				$transaction ['merchantId'] = 1;
@@ -296,7 +297,7 @@ echo $html;
 	/**
 	 * (non-PHPdoc)
 	 *
-	 * @see Oara/Network/Oara_Network_Publisher_Base#getPaymentHistory()
+	 * @see Oara/Network/Base#getPaymentHistory()
 	 */
 	public function getPaymentHistory() {
 		$paymentHistory = array ();

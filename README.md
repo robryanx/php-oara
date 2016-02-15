@@ -167,7 +167,7 @@ When you think that your code is finished, send us a pull request and we will do
 We would like you to follow the structure provided.  If you want to add a network,
 please pay attention to the next rules:
 
-* Create a class in the Oara/Network folder with the name of the network. This class must implement the Oara_Network Interface
+* Create a class in the Oara/Network folder with the name of the network. This class must implement the \Oara\Network Interface
 
 * Implement the methods needed:
 	* checkConnection
@@ -184,7 +184,7 @@ please pay attention to the next rules:
 Network
 ------------
 
-The network classes must implement the Oara_Network interface, which includes these methods.
+The network classes must implement the \Oara\Network interface, which includes these methods.
 
 ### checkConnection()
 It checks if we are succesfully connected to the network
@@ -253,10 +253,10 @@ It's an array with the following keys:
 * commission (not null) - Transaction commission (double)
 
 * status (not null) - Four different statuses:
-	* Oara_Utilities::STATUS_CONFIRMED
-	* Oara_Utilities::STATUS_PENDING
-	* Oara_Utilities::STATUS_DECLINED
-	* Oara_Utilities::STATUS_PAID
+	* \Oara\Utilities::STATUS_CONFIRMED
+	* \Oara\Utilities::STATUS_PENDING
+	* \Oara\Utilities::STATUS_DECLINED
+	* \Oara\Utilities::STATUS_PAID
 
 * unique_id - Unique id for the transaction (string)
 * custom_id - Custom id (or sub id) for the transaction (string), custom param you put on your links to see the performance or who made the sale.

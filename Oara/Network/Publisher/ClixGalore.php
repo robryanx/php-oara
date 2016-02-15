@@ -1,9 +1,10 @@
 <?php
+namespace Oara\Network\Publisher;
 /**
  The goal of the Open Affiliate Report Aggregator (OARA) is to develop a set
  of PHP classes that can download affiliate reports from a number of affiliate networks, and store the data in a common format.
 
- Copyright (C) 2014  Fubra Limited
+ Copyright (C) 2016  Fubra Limited
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU Affero General Public License as published by
  the Free Software Foundation, either version 3 of the License, or any later version.
@@ -22,12 +23,12 @@
  * Export Class
  *
  * @author     Carlos Morillo Merino
- * @category   Oara_Network_Publisher_ClixGalore
+ * @category   ClixGalore
  * @copyright  Fubra Limited
  * @version    Release: 01.00
  *
  */
-class Oara_Network_Publisher_ClixGalore extends Oara_Network {
+class ClixGalore extends \Oara\Network {
 	/**
 	 * Export Merchants Parameters
 	 * @var array
@@ -61,17 +62,17 @@ class Oara_Network_Publisher_ClixGalore extends Oara_Network {
 	/**
 	 * Constructor and Login
 	 * @param $credentials
-	 * @return Oara_Network_Publisher_Daisycon
+	 * @return Daisycon
 	 */
 	public function __construct($credentials) {
 		$user = $credentials['user'];
 		$password = $credentials['password'];
 
 		$loginUrl = 'https://www.clixgalore.co.uk/MemberLogin.aspx';
-		$valuesLogin = array(new Oara_Curl_Parameter('txt_UserName', $user),
-		new Oara_Curl_Parameter('txt_Password', $password),
-		new Oara_Curl_Parameter('cmd_login.x', '29'),
-		new Oara_Curl_Parameter('cmd_login.y', '8')
+		$valuesLogin = array(new \Oara\Curl\Parameter('txt_UserName', $user),
+		new \Oara\Curl\Parameter('txt_Password', $password),
+		new \Oara\Curl\Parameter('cmd_login.x', '29'),
+		new \Oara\Curl\Parameter('cmd_login.y', '8')
 		);
 		$dom = new Zend_Dom_Query(file_get_contents("https://www.clixgalore.co.uk/Memberlogin.aspx"));
 		$results = $dom->query('input[type="hidden"]');
@@ -79,10 +80,10 @@ class Oara_Network_Publisher_ClixGalore extends Oara_Network {
 		foreach ($results as $result){
 			$name = $result->attributes->getNamedItem("name")->nodeValue;
 			$hiddenValue = $result->attributes->getNamedItem("value")->nodeValue;
-			$valuesLogin[] = new Oara_Curl_Parameter($name, $hiddenValue);
+			$valuesLogin[] = new \Oara\Curl\Parameter($name, $hiddenValue);
 		}
 
-		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
+		$this->_client = new \Oara\Curl\Access($loginUrl, $valuesLogin, $credentials);
 
 		$urls = array();
 		$urls[] = new \Oara\Curl\Request('https://www.clixgalore.co.uk/CreateAffiliateProgram.aspx', array());
@@ -107,19 +108,19 @@ class Oara_Network_Publisher_ClixGalore extends Oara_Network {
 
 		$this->_exportMerchantParameters = array();
 
-		$this->_exportTransactionParameters = array(new Oara_Curl_Parameter('AfID', '0'),
-		new Oara_Curl_Parameter('S', ''),
-		new Oara_Curl_Parameter('ST', '2'),
-		new Oara_Curl_Parameter('Period', '6'),
-		new Oara_Curl_Parameter('AdID', '0'),
-		new Oara_Curl_Parameter('B', '2')
+		$this->_exportTransactionParameters = array(new \Oara\Curl\Parameter('AfID', '0'),
+		new \Oara\Curl\Parameter('S', ''),
+		new \Oara\Curl\Parameter('ST', '2'),
+		new \Oara\Curl\Parameter('Period', '6'),
+		new \Oara\Curl\Parameter('AdID', '0'),
+		new \Oara\Curl\Parameter('B', '2')
 		);
 
-		$this->_exportOverviewParameters = array(new Oara_Curl_Parameter('WNO', '0')
+		$this->_exportOverviewParameters = array(new \Oara\Curl\Parameter('WNO', '0')
 		);
 
-		$this->_exportPaymentParameters = array(new Oara_Curl_Parameter('dd_Period', '0'),
-		new Oara_Curl_Parameter('cmd_retrieve', 'Retrieve Payments')
+		$this->_exportPaymentParameters = array(new \Oara\Curl\Parameter('dd_Period', '0'),
+		new \Oara\Curl\Parameter('cmd_retrieve', 'Retrieve Payments')
 		);
 
 	}
@@ -133,7 +134,7 @@ class Oara_Network_Publisher_ClixGalore extends Oara_Network {
 	}
 	/**
 	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getMerchantList()
+	 * @see library/Oara/Network/Interface#getMerchantList()
 	 */
 	public function getMerchantList() {
 		$merchants = array();
@@ -168,9 +169,9 @@ class Oara_Network_Publisher_ClixGalore extends Oara_Network {
 
 	/**
 	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate)
+	 * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate)
 	 */
-	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null) {
 
 		$totalTransactions = array();
 
@@ -178,10 +179,10 @@ class Oara_Network_Publisher_ClixGalore extends Oara_Network {
 
 		foreach ($statusArray as $status) {
 
-			$valuesFromExport = Oara_Utilities::cloneArray($this->_exportTransactionParameters);
-			$valuesFromExport[] = new Oara_Curl_Parameter('SD', $dStartDate->toString("yyyy-MM-dd"));
-			$valuesFromExport[] = new Oara_Curl_Parameter('ED', $dEndDate->toString("yyyy-MM-dd"));
-			$valuesFromExport[] = new Oara_Curl_Parameter('Status', $status);
+			$valuesFromExport = \Oara\Utilities::cloneArray($this->_exportTransactionParameters);
+			$valuesFromExport[] = new \Oara\Curl\Parameter('SD', $dStartDate->toString("yyyy-MM-dd"));
+			$valuesFromExport[] = new \Oara\Curl\Parameter('ED', $dEndDate->toString("yyyy-MM-dd"));
+			$valuesFromExport[] = new \Oara\Curl\Parameter('Status', $status);
 
 			$urls = array();
 			$urls[] = new \Oara\Curl\Request('http://www.clixgalore.co.uk/AffiliateTransactionSentReport_Excel.aspx?', $valuesFromExport);
@@ -202,20 +203,20 @@ class Oara_Network_Publisher_ClixGalore extends Oara_Network {
 					}
 
 					if ($status == 1) {
-						$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
+						$transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
 					} else
 					if ($status == 2) {
-						$transaction['status'] = Oara_Utilities::STATUS_PENDING;
+						$transaction['status'] = \Oara\Utilities::STATUS_PENDING;
 					} else
 					if ($status == 0) {
-						$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
+						$transaction['status'] = \Oara\Utilities::STATUS_DECLINED;
 					}
 
 					if (preg_match('/[0-9]*,?[0-9]*\.?[0-9]+/', $transactionExportArray[4], $matches)) {
-						$transaction['amount'] = Oara_Utilities::parseDouble($matches[0]);
+						$transaction['amount'] = \Oara\Utilities::parseDouble($matches[0]);
 					}
 					if (preg_match('/[0-9]*,?[0-9]*\.?[0-9]+/', $transactionExportArray[5], $matches)) {
-						$transaction['commission'] = Oara_Utilities::parseDouble($matches[0]);
+						$transaction['commission'] = \Oara\Utilities::parseDouble($matches[0]);
 					}
 
 					$totalTransactions[] = $transaction;
@@ -227,13 +228,13 @@ class Oara_Network_Publisher_ClixGalore extends Oara_Network {
 
 	/**
 	 * (non-PHPdoc)
-	 * @see Oara/Network/Oara_Network_Publisher_Base#getPaymentHistory()
+	 * @see Oara/Network/Base#getPaymentHistory()
 	 */
 	public function getPaymentHistory() {
 		$paymentHistory = array();
 
 		foreach (array_keys($this->_websiteList) as $websiteId) {
-			$paymentExport = Oara_Utilities::cloneArray($this->_exportPaymentParameters);
+			$paymentExport = \Oara\Utilities::cloneArray($this->_exportPaymentParameters);
 
 			$urls = array();
 			$urls[] = new \Oara\Curl\Request('http://www.clixgalore.co.uk/AffiliatePaymentDetail.aspx?', array());
@@ -245,10 +246,10 @@ class Oara_Network_Publisher_ClixGalore extends Oara_Network {
 			foreach ($results as $result) {
 				$hiddenName = $result->attributes->getNamedItem("name")->nodeValue;
 				$hiddenValue = $result->attributes->getNamedItem("value")->nodeValue;
-				$paymentExport[] = new Oara_Curl_Parameter($hiddenName, $hiddenValue);
+				$paymentExport[] = new \Oara\Curl\Parameter($hiddenName, $hiddenValue);
 			}
 
-			$paymentExport[] = new Oara_Curl_Parameter('AffProgramDropDown1$aff_program_list', $websiteId);
+			$paymentExport[] = new \Oara\Curl\Parameter('AffProgramDropDown1$aff_program_list', $websiteId);
 
 			$urls = array();
 			$urls[] = new \Oara\Curl\Request('http://www.clixgalore.co.uk/AffiliatePaymentDetail.aspx', $paymentExport);
@@ -268,7 +269,7 @@ class Oara_Network_Publisher_ClixGalore extends Oara_Network {
 					$obj['pid'] = $paymentDate->toString("yyyyMMdd");
 					$obj['method'] = 'BACS';
 					if (preg_match('/[-+]?[0-9]*,?[0-9]*\.?[0-9]+/', $paymentExportArray[2], $matches)) {
-						$obj['value'] = Oara_Utilities::parseDouble($matches[0]);
+						$obj['value'] = \Oara\Utilities::parseDouble($matches[0]);
 					} else {
 						throw new Exception("Problem reading payments");
 					}

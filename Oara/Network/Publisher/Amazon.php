@@ -1,9 +1,10 @@
 <?php
+namespace Oara\Network\Publisher;
 /**
  The goal of the Open Affiliate Report Aggregator (OARA) is to develop a set
  of PHP classes that can download affiliate reports from a number of affiliate networks, and store the data in a common format.
 
- Copyright (C) 2014  Fubra Limited
+ Copyright (C) 2016  Fubra Limited
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU Affero General Public License as published by
  the Free Software Foundation, either version 3 of the License, or any later version.
@@ -22,12 +23,12 @@
  * Export Class
  *
  * @author     Carlos Morillo Merino
- * @category   Oara_Network_Publisher_Amazon
+ * @category   Amazon
  * @copyright  Fubra Limited
  * @version    Release: 01.00
  *
  */
-class Oara_Network_Publisher_Amazon extends Oara_Network {
+class Amazon extends \Oara\Network {
 	/**
 	 * Export Merchants Parameters
 	 * @var array
@@ -67,31 +68,31 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 	/**
 	 * Constructor and Login
 	 * @param $credentials
-	 * @return Oara_Network_Publisher_Amazon
+	 * @return Amazon
 	 */
 	public function __construct($credentials) {
 		$this->_credentials = $credentials;
 
 		self::logIn();
 		$this->_exportTransactionParameters = array(
-		new Oara_Curl_Parameter('tag', ''),
-		new Oara_Curl_Parameter('reportType', 'earningsReport'),
-		new Oara_Curl_Parameter('program', 'all'),
-		new Oara_Curl_Parameter('preSelectedPeriod', 'monthToDate'),
-		new Oara_Curl_Parameter('periodType', 'exact'),
-		new Oara_Curl_Parameter('submit.download_CSV.x', '106'),
-		new Oara_Curl_Parameter('submit.download_CSV.y', '11'),
-		new Oara_Curl_Parameter('submit.download_CSV', 'Download report (CSV)')
+		new \Oara\Curl\Parameter('tag', ''),
+		new \Oara\Curl\Parameter('reportType', 'earningsReport'),
+		new \Oara\Curl\Parameter('program', 'all'),
+		new \Oara\Curl\Parameter('preSelectedPeriod', 'monthToDate'),
+		new \Oara\Curl\Parameter('periodType', 'exact'),
+		new \Oara\Curl\Parameter('submit.download_CSV.x', '106'),
+		new \Oara\Curl\Parameter('submit.download_CSV.y', '11'),
+		new \Oara\Curl\Parameter('submit.download_CSV', 'Download report (CSV)')
 		);
 
 		$this->_exportOverviewParameters = array(
-		new Oara_Curl_Parameter('tag', ''),
-		new Oara_Curl_Parameter('reportType', 'trendsReport'),
-		new Oara_Curl_Parameter('preSelectedPeriod', 'monthToDate'),
-		new Oara_Curl_Parameter('periodType', 'exact'),
-		new Oara_Curl_Parameter('submit.download_CSV.x', '106'),
-		new Oara_Curl_Parameter('submit.download_CSV.y', '11'),
-		new Oara_Curl_Parameter('submit.download_CSV', 'Download report (CSV)')
+		new \Oara\Curl\Parameter('tag', ''),
+		new \Oara\Curl\Parameter('reportType', 'trendsReport'),
+		new \Oara\Curl\Parameter('preSelectedPeriod', 'monthToDate'),
+		new \Oara\Curl\Parameter('periodType', 'exact'),
+		new \Oara\Curl\Parameter('submit.download_CSV.x', '106'),
+		new \Oara\Curl\Parameter('submit.download_CSV.y', '11'),
+		new \Oara\Curl\Parameter('submit.download_CSV', 'Download report (CSV)')
 		);
 
 		$this->_exportPaymentParameters = array();
@@ -157,7 +158,7 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 				break;
 		}
 		$this->_extension = $extension;
-		$this->_client = new Oara_Curl_Access($this->_networkServer."/gp/associates/network/main.html", array(), $this->_credentials);
+		$this->_client = new \Oara\Curl\Access($this->_networkServer."/gp/associates/network/main.html", array(), $this->_credentials);
 
 	        if (!isset($this->_credentials["cookiesDir"])) {
 	            $this->_credentials["cookiesDir"] = "Oara";
@@ -268,7 +269,7 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 
 	/**
 	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getMerchantList()
+	 * @see library/Oara/Network/Interface#getMerchantList()
 	 */
 	public function getMerchantList() {
 		$merchants = array();
@@ -284,14 +285,14 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 
 	/**
 	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
+	 * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
 	 */
-	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null) {
 
 		$totalTransactions = array();
 		foreach ($this->_idBox as $id) {
 
-			//$dateArray = Oara_Utilities::daysOfDifference($dStartDate, $dEndDate);
+			//$dateArray = \Oara\Utilities::daysOfDifference($dStartDate, $dEndDate);
 			//$dateArraySize = sizeof($dateArray);
 
 
@@ -322,14 +323,14 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 
 	private function getTransactionReportRecursive($id, $startDate, $endDate) {
 		$totalTransactions = array();
-		$valuesFromExport = Oara_Utilities::cloneArray($this->_exportTransactionParameters);
-		$valuesFromExport[] = new Oara_Curl_Parameter('startDay', $startDate->toString("d"));
-		$valuesFromExport[] = new Oara_Curl_Parameter('startMonth', (int) $startDate->toString("M") - 1);
-		$valuesFromExport[] = new Oara_Curl_Parameter('startYear', $startDate->toString("yyyy"));
-		$valuesFromExport[] = new Oara_Curl_Parameter('endDay', $endDate->toString("d"));
-		$valuesFromExport[] = new Oara_Curl_Parameter('endMonth', (int) $endDate->toString("M") - 1);
-		$valuesFromExport[] = new Oara_Curl_Parameter('endYear', $endDate->toString("yyyy"));
-		$valuesFromExport[] = new Oara_Curl_Parameter('idbox_tracking_id', $id);
+		$valuesFromExport = \Oara\Utilities::cloneArray($this->_exportTransactionParameters);
+		$valuesFromExport[] = new \Oara\Curl\Parameter('startDay', $startDate->toString("d"));
+		$valuesFromExport[] = new \Oara\Curl\Parameter('startMonth', (int) $startDate->toString("M") - 1);
+		$valuesFromExport[] = new \Oara\Curl\Parameter('startYear', $startDate->toString("yyyy"));
+		$valuesFromExport[] = new \Oara\Curl\Parameter('endDay', $endDate->toString("d"));
+		$valuesFromExport[] = new \Oara\Curl\Parameter('endMonth', (int) $endDate->toString("M") - 1);
+		$valuesFromExport[] = new \Oara\Curl\Parameter('endYear', $endDate->toString("yyyy"));
+		$valuesFromExport[] = new \Oara\Curl\Parameter('idbox_tracking_id', $id);
 
 		$urls = array();
 		$urls[] = new \Oara\Curl\Request($this->_networkServer."/gp/associates/network/reports/report.html?", $valuesFromExport);
@@ -369,9 +370,9 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 				$transaction['custom_id'] = $transactionExportArray[4];
 			}
 
-			$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
-			$transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[9]);
-			$transaction['commission'] = Oara_Utilities::parseDouble($transactionExportArray[10]);
+			$transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
+			$transaction['amount'] = \Oara\Utilities::parseDouble($transactionExportArray[9]);
+			$transaction['commission'] = \Oara\Utilities::parseDouble($transactionExportArray[10]);
 			$transaction['device_type'] = $transactionExportArray[11];
 			$transaction['skew'] = $transactionExportArray[2];
 			$transaction['title'] = $transactionExportArray[1];
@@ -383,14 +384,14 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 
 	/**
 	 * (non-PHPdoc)
-	 * @see Oara/Network/Oara_Network_Publisher_Base#getPaymentHistory()
+	 * @see Oara/Network/Base#getPaymentHistory()
 	 */
 	public function getPaymentHistory() {
 		$paymentHistory = array();
 		foreach ($this->_idBox as $id) {
 			$urls = array();
 			$paymentExport = array();
-			$paymentExport[] = new Oara_Curl_Parameter('idbox_tracking_id', $id);
+			$paymentExport[] = new \Oara\Curl\Parameter('idbox_tracking_id', $id);
 			$urls[] = new \Oara\Curl\Request($this->_networkServer."/gp/associates/network/your-account/payment-history.html?", $paymentExport);
 			$exportReport = $this->_client->get($urls);
 			$dom = new Zend_Dom_Query($exportReport[0]);
@@ -409,7 +410,7 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 					$obj['pid'] = ($paymentDate->toString("yyyyMMdd").substr((string) base_convert(md5($id), 16, 10), 0, 5));
 					$obj['method'] = 'BACS';
 					if (preg_match('/[0-9]*,?[0-9]*\.?[0-9]+/', $paymentExportArray[4], $matches)) {
-						$obj['value'] = Oara_Utilities::parseDouble($matches[0]);
+						$obj['value'] = \Oara\Utilities::parseDouble($matches[0]);
 						$paymentHistory[] = $obj;
 					}
 

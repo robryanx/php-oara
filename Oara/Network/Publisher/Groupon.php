@@ -1,4 +1,5 @@
 <?php
+namespace Oara\Network\Publisher;
 /**
  The goal of the Open Affiliate Report Aggregator (OARA) is to develop a set
  of PHP classes that can download affiliate reports from a number of affiliate networks, and store the data in a common format.
@@ -22,12 +23,12 @@
  * Export Class
  *
  * @author     Carlos Morillo Merino
- * @category   Oara_Network_Publisher_Groupon
+ * @category   Groupon
  * @copyright  Fubra Limited
  * @version    Release: 01.00
  *
  */
-class Oara_Network_Publisher_Groupon extends Oara_Network {
+class Groupon extends \Oara\Network {
 	/**
 	 * Private API Key
 	 * @var string
@@ -37,14 +38,14 @@ class Oara_Network_Publisher_Groupon extends Oara_Network {
 	/**
 	 * Constructor and Login
 	 * @param $credentials
-	 * @return Oara_Network_Publisher_Daisycon
+	 * @return Daisycon
 	 */
 	public function __construct($credentials) {
 		$this->_credentials = $credentials;
 		
 		$dir = COOKIES_BASE_DIR . DIRECTORY_SEPARATOR . $credentials ['cookiesDir'] . DIRECTORY_SEPARATOR . $credentials ['cookiesSubDir'] . DIRECTORY_SEPARATOR;
 
-		if (! Oara_Utilities::mkdir_recursive ( $dir, 0777 )) {
+		if (! \Oara\Utilities::mkdir_recursive ( $dir, 0777 )) {
 			throw new Exception ( 'Problem creating folder in Access' );
 		}
 
@@ -87,7 +88,7 @@ class Oara_Network_Publisher_Groupon extends Oara_Network {
 	}
 	/**
 	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getMerchantList()
+	 * @see library/Oara/Network/Interface#getMerchantList()
 	 */
 	public function getMerchantList() {
 
@@ -114,12 +115,12 @@ class Oara_Network_Publisher_Groupon extends Oara_Network {
 
 	/**
 	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
+	 * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
 	 */
-	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null) {
 
 		$totalTransactions = array();		
-		$dateArray = Oara_Utilities::daysOfDifference($dStartDate, $dEndDate);
+		$dateArray = \Oara\Utilities::daysOfDifference($dStartDate, $dEndDate);
 		$dateArraySize = sizeof($dateArray);
 		for ($j = 0; $j < $dateArraySize; $j++) {
 		    $date = $dateArray[$j];
@@ -147,9 +148,9 @@ class Oara_Network_Publisher_Groupon extends Oara_Network {
     			}
     
     			if ($transactionExportArray[5] == 'VALID' || $transactionExportArray[5] == 'REFUNDED') {
-    				$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
+    				$transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
     			} else if ($transactionExportArray[5] == 'INVALID'){
-    				$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
+    				$transaction['status'] = \Oara\Utilities::STATUS_DECLINED;
     			} else {
     				throw new Exception("Status {$transactionExportArray[5]} unknown");
     			}
@@ -169,7 +170,7 @@ class Oara_Network_Publisher_Groupon extends Oara_Network {
 
 	/**
 	 * (non-PHPdoc)
-	 * @see Oara/Network/Oara_Network_Publisher_Base#getPaymentHistory()
+	 * @see Oara/Network/Base#getPaymentHistory()
 	 */
 	public function getPaymentHistory() {
 		$paymentHistory = array();

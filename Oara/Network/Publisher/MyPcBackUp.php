@@ -1,9 +1,10 @@
 <?php
+namespace Oara\Network\Publisher;
 /**
  The goal of the Open Affiliate Report Aggregator (OARA) is to develop a set
  of PHP classes that can download affiliate reports from a number of affiliate networks, and store the data in a common format.
 
- Copyright (C) 2014  Fubra Limited
+ Copyright (C) 2016  Fubra Limited
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU Affero General Public License as published by
  the Free Software Foundation, either version 3 of the License, or any later version.
@@ -22,12 +23,12 @@
  * Export Class
  *
  * @author     Carlos Morillo Merino
- * @category   Oara_Network_Publisher_MyPcBackUP
+ * @category   MyPcBackUP
  * @copyright  Fubra Limited
  * @version    Release: 01.00
  *
  */
-class Oara_Network_Publisher_MyPcBackUP extends Oara_Network {
+class MyPcBackUP extends \Oara\Network {
 
 	private $_credentials = null;
 	/**
@@ -39,7 +40,7 @@ class Oara_Network_Publisher_MyPcBackUP extends Oara_Network {
 	/**
 	 * Constructor and Login
 	 * @param $credentials
-	 * @return Oara_Network_Publisher_PureVPN
+	 * @return PureVPN
 	 */
 	public function __construct($credentials) {
 		$this->_credentials = $credentials;
@@ -50,13 +51,13 @@ class Oara_Network_Publisher_MyPcBackUP extends Oara_Network {
 	private function logIn() {
 
 		$valuesLogin = array(
-		new Oara_Curl_Parameter('username', $this->_credentials['user']),
-		new Oara_Curl_Parameter('password', $this->_credentials['password']),
-		new Oara_Curl_Parameter('login', 'Login'),
+		new \Oara\Curl\Parameter('username', $this->_credentials['user']),
+		new \Oara\Curl\Parameter('password', $this->_credentials['password']),
+		new \Oara\Curl\Parameter('login', 'Login'),
 		);
 
 		$loginUrl = 'http://affiliates.mypcbackup.com/login';
-		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $this->_credentials);
+		$this->_client = new \Oara\Curl\Access($loginUrl, $valuesLogin, $this->_credentials);
 
 	}
 	/**
@@ -76,7 +77,7 @@ class Oara_Network_Publisher_MyPcBackUP extends Oara_Network {
 	}
 	/**
 	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getMerchantList()
+	 * @see library/Oara/Network/Interface#getMerchantList()
 	 */
 	public function getMerchantList() {
 		$merchants = array();
@@ -91,20 +92,20 @@ class Oara_Network_Publisher_MyPcBackUP extends Oara_Network {
 
 	/**
 	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
+	 * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
 	 */
-	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null) {
 		$totalTransactions = array();
 
 		$urls = array();
 		$valuesFromExport = array();
-		$valuesFromExport[] = new Oara_Curl_Parameter('hop_id', "0");
-		$valuesFromExport[] = new Oara_Curl_Parameter('transaction_id', "");
-		$valuesFromExport[] = new Oara_Curl_Parameter('sales', "1");
-		$valuesFromExport[] = new Oara_Curl_Parameter('refunds', "1");
-		$valuesFromExport[] = new Oara_Curl_Parameter('csv', "Download CSV");
-		$valuesFromExport[] = new Oara_Curl_Parameter('start', $dStartDate->toString("MM/dd/yyyy"));
-		$valuesFromExport[] = new Oara_Curl_Parameter('end', $dEndDate->toString("MM/dd/yyyy"));
+		$valuesFromExport[] = new \Oara\Curl\Parameter('hop_id', "0");
+		$valuesFromExport[] = new \Oara\Curl\Parameter('transaction_id', "");
+		$valuesFromExport[] = new \Oara\Curl\Parameter('sales', "1");
+		$valuesFromExport[] = new \Oara\Curl\Parameter('refunds', "1");
+		$valuesFromExport[] = new \Oara\Curl\Parameter('csv', "Download CSV");
+		$valuesFromExport[] = new \Oara\Curl\Parameter('start', $dStartDate->toString("MM/dd/yyyy"));
+		$valuesFromExport[] = new \Oara\Curl\Parameter('end', $dEndDate->toString("MM/dd/yyyy"));
 			
 		$urls[] = new \Oara\Curl\Request('http://affiliates.mypcbackup.com/transactions?', $valuesFromExport);
 		$exportReport = $this->_client->get($urls);
@@ -126,9 +127,9 @@ class Oara_Network_Publisher_MyPcBackUP extends Oara_Network {
 				$transaction['commission'] = (double)$match[0];
 			}
 			if ($transactionExportArray[4] == "Sale"){
-				$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
+				$transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
 			} else if ($transactionExportArray[4] == "Refund"){
-				$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
+				$transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
 				$transaction['amount'] = -$transaction['amount'];
 				$transaction['commission'] = -$transaction['commission'];
 			}
@@ -145,7 +146,7 @@ class Oara_Network_Publisher_MyPcBackUP extends Oara_Network {
 	
 	/**
 	 * (non-PHPdoc)
-	 * @see Oara/Network/Oara_Network_Publisher_Base#getPaymentHistory()
+	 * @see Oara/Network/Base#getPaymentHistory()
 	 */
 	public function getPaymentHistory() {
 		$paymentHistory = array();
@@ -168,7 +169,7 @@ class Oara_Network_Publisher_MyPcBackUP extends Oara_Network {
 					$obj['method'] = $paymentExportArray[16];
 					$value = preg_replace('/[^0-9\.,]/', "", $paymentExportArray[12]);
 					
-					$obj['value'] = Oara_Utilities::parseDouble($value);
+					$obj['value'] = \Oara\Utilities::parseDouble($value);
 					$paymentHistory[] = $obj;
 				} catch (Exception $e){
 					echo "Payment failed\n";

@@ -1,9 +1,10 @@
 <?php
+namespace Oara\Network\Publisher;
 /**
  The goal of the Open Affiliate Report Aggregator (OARA) is to develop a set
  of PHP classes that can download affiliate reports from a number of affiliate networks, and store the data in a common format.
 
- Copyright (C) 2014  Fubra Limited
+ Copyright (C) 2016  Fubra Limited
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU Affero General Public License as published by
  the Free Software Foundation, either version 3 of the License, or any later version.
@@ -22,12 +23,12 @@
  * Export Class
  *
  * @author     Carlos Morillo Merino
- * @category   Oara_Network_Publisher_AffiliatesUnited
+ * @category   AffiliatesUnited
  * @copyright  Fubra Limited
  * @version    Release: 01.00
  *
  */
-class Oara_Network_Publisher_AffiliatesUnited extends Oara_Network {
+class AffiliatesUnited extends \Oara\Network {
 	
 	/**
 	 * Merchants by name
@@ -41,19 +42,19 @@ class Oara_Network_Publisher_AffiliatesUnited extends Oara_Network {
 	/**
 	 * Constructor and Login
 	 * @param $credentials
-	 * @return Oara_Network_Publisher_Daisycon
+	 * @return Daisycon
 	 */
 	public function __construct($credentials) {
 		$user = $credentials['user'];
 		$password = $credentials['password'];
 
 		$valuesLogin = array(
-		new Oara_Curl_Parameter('us', $user),
-		new Oara_Curl_Parameter('pa', $password)
+		new \Oara\Curl\Parameter('us', $user),
+		new \Oara\Curl\Parameter('pa', $password)
 		);
 
 		$loginUrl = 'https://affiliates.affutd.com/affiliates/Login.aspx';
-		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
+		$this->_client = new \Oara\Curl\Access($loginUrl, $valuesLogin, $credentials);
 	}
 	/**
 	 * Check the connection
@@ -74,9 +75,9 @@ class Oara_Network_Publisher_AffiliatesUnited extends Oara_Network {
 	}
 	/**
 	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getMerchantList()
+	 * @see library/Oara/Network/Interface#getMerchantList()
 	 */
-	public function getMerchantList($merchantMap = array()) {
+	public function getMerchantList() {
 		$merchants = array();
 
 		
@@ -91,13 +92,13 @@ class Oara_Network_Publisher_AffiliatesUnited extends Oara_Network {
 
 	/**
 	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
+	 * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
 	 */
-	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null) {
 		$totalTransactions = array();
 		$valuesFromExport = array();
-		$valuesFromExport[] = new Oara_Curl_Parameter('ctl00$cphPage$reportFrom', $dStartDate->toString("yyyy-MM-dd"));
-		$valuesFromExport[] = new Oara_Curl_Parameter('ctl00$cphPage$reportTo', $dEndDate->toString("yyyy-MM-dd"));
+		$valuesFromExport[] = new \Oara\Curl\Parameter('ctl00$cphPage$reportFrom', $dStartDate->toString("yyyy-MM-dd"));
+		$valuesFromExport[] = new \Oara\Curl\Parameter('ctl00$cphPage$reportTo', $dEndDate->toString("yyyy-MM-dd"));
 	
 		$urls = array();
 		$urls[] = new \Oara\Curl\Request('https://affiliates.affutd.com/affiliates/DataServiceWrapper/DataService.svc/Export/CSV/Affiliates_Reports_GeneralStats_DailyFigures', $valuesFromExport);
@@ -112,7 +113,7 @@ class Oara_Network_Publisher_AffiliatesUnited extends Oara_Network {
 			$transactionDate = new \DateTime($transactionExportArray[0], 'dd-MM-yyyy', 'en');
 			$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 
-			$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
+			$transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
 				
 			$transaction['amount'] = $transactionExportArray[12];
 			$transaction['commission'] = $transactionExportArray[13];

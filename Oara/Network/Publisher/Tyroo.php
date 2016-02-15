@@ -1,9 +1,10 @@
 <?php
+namespace Oara\Network\Publisher;
 /**
  The goal of the Open Affiliate Report Aggregator (OARA) is to develop a set
  of PHP classes that can download affiliate reports from a number of affiliate networks, and store the data in a common format.
 
- Copyright (C) 2014  Fubra Limited
+ Copyright (C) 2016  Fubra Limited
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU Affero General Public License as published by
  the Free Software Foundation, either version 3 of the License, or any later version.
@@ -22,12 +23,12 @@
  * Export Class
  *
  * @author     Carlos Morillo Merino
- * @category   Oara_Network_Publisher_ShareASale
+ * @category   ShareASale
  * @copyright  Fubra Limited
  * @version    Release: 01.00
  *
  */
-class Oara_Network_Publisher_Tyroo extends Oara_Network {
+class Tyroo extends \Oara\Network {
 
 	/**
 	 * username
@@ -68,7 +69,7 @@ class Oara_Network_Publisher_Tyroo extends Oara_Network {
 	/**
 	 * Constructor and Login
 	 * @param $credentials
-	 * @return Oara_Network_Publisher_ShareASale
+	 * @return ShareASale
 	 */
 	public function __construct($credentials) {
 
@@ -97,15 +98,15 @@ class Oara_Network_Publisher_Tyroo extends Oara_Network {
 
 		//webpage uses javascript hex_md5 to encode the password
 		$valuesLogin = array(
-				new Oara_Curl_Parameter('username', $user),
-				new Oara_Curl_Parameter('password', $password),
-				new Oara_Curl_Parameter('loginByInterface', 1),
-				new Oara_Curl_Parameter('login', 'Login')
+				new \Oara\Curl\Parameter('username', $user),
+				new \Oara\Curl\Parameter('password', $password),
+				new \Oara\Curl\Parameter('loginByInterface', 1),
+				new \Oara\Curl\Parameter('login', 'Login')
 		);
 
 		$dir = COOKIES_BASE_DIR . DIRECTORY_SEPARATOR . $credentials ['cookiesDir'] . DIRECTORY_SEPARATOR . $credentials ['cookiesSubDir'] . DIRECTORY_SEPARATOR;
 
-		if (! Oara_Utilities::mkdir_recursive ( $dir, 0777 )) {
+		if (! \Oara\Utilities::mkdir_recursive ( $dir, 0777 )) {
 			throw new Exception ( 'Problem creating folder in Access' );
 		}
 
@@ -138,7 +139,7 @@ class Oara_Network_Publisher_Tyroo extends Oara_Network {
 		$hidden = $dom->query('input[type="hidden"]');
 
 		foreach ($hidden as $values) {
-			$valuesLogin[] = new Oara_Curl_Parameter($values->getAttribute("name"), $values->getAttribute("value"));
+			$valuesLogin[] = new \Oara\Curl\Parameter($values->getAttribute("name"), $values->getAttribute("value"));
 		}
 
 		$rch = curl_init ();
@@ -206,7 +207,7 @@ class Oara_Network_Publisher_Tyroo extends Oara_Network {
 
 	/**
 	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getMerchantList()
+	 * @see library/Oara/Network/Interface#getMerchantList()
 	 */
 	public function getMerchantList() {
 
@@ -250,9 +251,9 @@ class Oara_Network_Publisher_Tyroo extends Oara_Network {
 
 	/**
 	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($idMerchant, $dStartDate, $dEndDate)
+	 * @see library/Oara/Network/Interface#getTransactionList($idMerchant, $dStartDate, $dEndDate)
 	 */
-	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null) {
 		$totalTransactions = array();
 
 		$postdata = http_build_query(
@@ -276,9 +277,9 @@ class Oara_Network_Publisher_Tyroo extends Oara_Network {
 				$transaction = Array();
 				$transaction['merchantId'] = "1";
 				$transaction['date'] = $transactionJson["day"];
-				$transaction['amount'] = Oara_Utilities::parseDouble($transactionJson["revenue"]);
-				$transaction['commission'] = Oara_Utilities::parseDouble($transactionJson["revenue"]);
-				$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
+				$transaction['amount'] = \Oara\Utilities::parseDouble($transactionJson["revenue"]);
+				$transaction['commission'] = \Oara\Utilities::parseDouble($transactionJson["revenue"]);
+				$transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
 				$totalTransactions[] = $transaction;
 			}
 		}
@@ -290,7 +291,7 @@ class Oara_Network_Publisher_Tyroo extends Oara_Network {
 
 	/**
 	 * (non-PHPdoc)
-	 * @see Oara/Network/Oara_Network_Publisher_Base#getPaymentHistory()
+	 * @see Oara/Network/Base#getPaymentHistory()
 	 */
 	public function getPaymentHistory() {
 		$paymentHistory = array();

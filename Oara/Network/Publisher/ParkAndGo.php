@@ -1,9 +1,10 @@
 <?php
+namespace Oara\Network\Publisher;
 /**
  The goal of the Open Affiliate Report Aggregator (OARA) is to develop a set
  of PHP classes that can download affiliate reports from a number of affiliate networks, and store the data in a common format.
 
- Copyright (C) 2014  Fubra Limited
+ Copyright (C) 2016  Fubra Limited
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU Affero General Public License as published by
  the Free Software Foundation, either version 3 of the License, or any later version.
@@ -22,12 +23,12 @@
  * Export Class
  *
  * @author     Carlos Morillo Merino
- * @category   Oara_Network_Publisher_ParkAndGo
+ * @category   ParkAndGo
  * @copyright  Fubra Limited
  * @version    Release: 01.00
  *
  */
-class Oara_Network_Publisher_ParkAndGo extends Oara_Network {
+class ParkAndGo extends \Oara\Network {
 
 	private $_credentials = null;
 	/**
@@ -42,7 +43,7 @@ class Oara_Network_Publisher_ParkAndGo extends Oara_Network {
 	/**
 	 * Constructor and Login
 	 * @param $credentials
-	 * @return Oara_Network_Publisher_SkyScanner
+	 * @return SkyScanner
 	 */
 	public function __construct($credentials) {
 		$this->_credentials = $credentials;
@@ -53,12 +54,12 @@ class Oara_Network_Publisher_ParkAndGo extends Oara_Network {
 	private function logIn() {
 		
 		$valuesLogin = array(
-			new Oara_Curl_Parameter('agentcode', $this->_credentials['user']),
-			new Oara_Curl_Parameter('pword', $this->_credentials['password']),
+			new \Oara\Curl\Parameter('agentcode', $this->_credentials['user']),
+			new \Oara\Curl\Parameter('pword', $this->_credentials['password']),
 		);
 		
 		$loginUrl = 'https://www.parkandgo.co.uk/agents/';
-		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $this->_credentials);
+		$this->_client = new \Oara\Curl\Access($loginUrl, $valuesLogin, $this->_credentials);
 
 		
 	}
@@ -72,8 +73,8 @@ class Oara_Network_Publisher_ParkAndGo extends Oara_Network {
 		
 		
 		$valuesLogin = array(
-				new Oara_Curl_Parameter('agentcode', $this->_credentials['user']),
-				new Oara_Curl_Parameter('pword', $this->_credentials['password']),
+				new \Oara\Curl\Parameter('agentcode', $this->_credentials['user']),
+				new \Oara\Curl\Parameter('pword', $this->_credentials['password']),
 		);
 		
 		$urls[] = new \Oara\Curl\Request('https://www.parkandgo.co.uk/agents/', $valuesLogin);
@@ -86,7 +87,7 @@ class Oara_Network_Publisher_ParkAndGo extends Oara_Network {
 	}
 	/**
 	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getMerchantList()
+	 * @see library/Oara/Network/Interface#getMerchantList()
 	 */
 	public function getMerchantList() {
 		$merchants = array();
@@ -102,19 +103,19 @@ class Oara_Network_Publisher_ParkAndGo extends Oara_Network {
 
 	/**
 	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
+	 * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
 	 */
-	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null) {
 
 		$totalTransactions = array();
 		
 		$urls = array();
 		$exportParams = array(
-				new Oara_Curl_Parameter('agentcode', $this->_credentials['user']),
-				new Oara_Curl_Parameter('pword', $this->_credentials['password']),
-				new Oara_Curl_Parameter('fromdate', $dStartDate->toString("dd-MM-yyyy")),
-				new Oara_Curl_Parameter('todate', $dEndDate->toString("dd-MM-yyyy")),
-				new Oara_Curl_Parameter('rqtype', "report")
+				new \Oara\Curl\Parameter('agentcode', $this->_credentials['user']),
+				new \Oara\Curl\Parameter('pword', $this->_credentials['password']),
+				new \Oara\Curl\Parameter('fromdate', $dStartDate->toString("dd-MM-yyyy")),
+				new \Oara\Curl\Parameter('todate', $dEndDate->toString("dd-MM-yyyy")),
+				new \Oara\Curl\Parameter('rqtype', "report")
 		);
 		$urls[] = new \Oara\Curl\Request('https://www.parkandgo.co.uk/agents/', $exportParams);
 		$exportReport = $this->_client->post($urls);
@@ -137,13 +138,13 @@ class Oara_Network_Publisher_ParkAndGo extends Oara_Network {
 			$transactionDate = new \DateTime ( $transactionExportArray [2], 'yyyy-MM-dd 00:00:00', 'en' );
 			$transaction ['date'] = $transactionDate->toString ( "yyyy-MM-dd HH:mm:ss" );
 			unset ( $transactionDate );
-			$transaction ['status'] = Oara_Utilities::STATUS_PENDING;
+			$transaction ['status'] = \Oara\Utilities::STATUS_PENDING;
 			if ($today > $arrivalDate){
-				$transaction ['status'] = Oara_Utilities::STATUS_CONFIRMED;
+				$transaction ['status'] = \Oara\Utilities::STATUS_CONFIRMED;
 			}
 				
-			$transaction ['amount'] = Oara_Utilities::parseDouble ( $transactionExportArray [6])/1.2;
-			$transaction ['commission'] = Oara_Utilities::parseDouble ( $transactionExportArray [7] )/1.2;
+			$transaction ['amount'] = \Oara\Utilities::parseDouble ( $transactionExportArray [6])/1.2;
+			$transaction ['commission'] = \Oara\Utilities::parseDouble ( $transactionExportArray [7] )/1.2;
 	
 			$totalTransactions [] = $transaction;
 		}
@@ -154,7 +155,7 @@ class Oara_Network_Publisher_ParkAndGo extends Oara_Network {
 
 	/**
 	 * (non-PHPdoc)
-	 * @see Oara/Network/Oara_Network_Publisher_Base#getPaymentHistory()
+	 * @see Oara/Network/Base#getPaymentHistory()
 	 */
 	public function getPaymentHistory() {
 		$paymentHistory = array();

@@ -4,7 +4,7 @@ namespace Oara;
  * The goal of the Open Affiliate Report Aggregator (OARA) is to develop a set
  * of PHP classes that can download affiliate reports from a number of affiliate networks, and store the data in a common format.
  *
- * Copyright (C) 2014  Fubra Limited
+ * Copyright (C) 2016  Fubra Limited
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or any later version.
@@ -25,7 +25,7 @@ namespace Oara;
  * All the Network classes extend this class.
  *
  * @author     Carlos Morillo Merino
- * @category   Oara_Network
+ * @category   \Oara\Network
  * @copyright  Fubra Limited
  */
 class Network
@@ -66,10 +66,9 @@ class Network
      * @param $merchantList
      * @param \DateTime $dStartDate
      * @param \DateTime $dEndDate
-     * @param null $merchantMap
      * @return array
      */
-    public function getTransactionList($merchantList, \DateTime $dStartDate, \DateTime $dEndDate, $merchantMap = null)
+    public function getTransactionList($merchantList, \DateTime $dStartDate, \DateTime $dEndDate)
     {
         $result = array();
         return $result;
@@ -89,10 +88,9 @@ class Network
      * Returns the transactions for a payment
      * @param $paymentId
      * @param $merchantList
-     * @param $startDate
      * @return array
      */
-    public function paymentTransactions($paymentId, $merchantList, $startDate)
+    public function paymentTransactions($paymentId)
     {
         $result = array();
         return $result;

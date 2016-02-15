@@ -4,7 +4,7 @@ namespace Oara;
  * The goal of the Open Affiliate Report Aggregator (OARA) is to develop a set
  * of PHP classes that can download affiliate reports from a number of affiliate networks, and store the data in a common format.
  *
- * Copyright (C) 2014  Fubra Limited
+ * Copyright (C) 2016  Fubra Limited
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or any later version.
@@ -35,19 +35,18 @@ class Factory
      * Factory create instance function, It returns the specific Affiliate Network
      *
      * @param $credentials
-     * @return Oara_Network
+     * @return \Oara\Network
      * @throws Exception
      */
     public static function createInstance($credentials)
     {
 
         $affiliate = null;
-        $networkName = $credentials['networkName'];
         try {
-            $networkClassName = "\\Oara\\Network\\" . $credentials["type"] . "\\" . $networkName;
+            $networkClassName = "\\Oara\\Network\\" . $credentials["type"] . "\\" . $credentials["networkName"];
             $affiliate = new $networkClassName($credentials);
         } catch (\Exception $e) {
-            throw new \Exception('Error creating instance ' . $networkName . ' - ' . $e->getMessage());
+            throw new \Exception('Error creating instance ' . $credentials["networkName"] . ' - ' . $e->getMessage());
         }
         return $affiliate;
 

@@ -1,9 +1,10 @@
 <?php
+namespace Oara\Network\Publisher;
 /**
  The goal of the Open Affiliate Report Aggregator (OARA) is to develop a set
  of PHP classes that can download affiliate reports from a number of affiliate networks, and store the data in a common format.
 
- Copyright (C) 2014  Fubra Limited
+ Copyright (C) 2016  Fubra Limited
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU Affero General Public License as published by
  the Free Software Foundation, either version 3 of the License, or any later version.
@@ -22,15 +23,15 @@
  * Export Class
  *
  * @author     Carlos Morillo Merino
- * @category   Oara_Network_Publisher_PepperJam
+ * @category   PepperJam
  * @copyright  Fubra Limited
  * @version    Release: 01.00
  *
  */
-class Oara_Network_Publisher_PepperJam extends Oara_Network {
+class PepperJam extends \Oara\Network {
 	/**
 	 * Export client.
-	 * @var Oara_Curl_Access
+	 * @var \Oara\Curl\Access
 	 */
 	private $_client = null;
 
@@ -43,7 +44,7 @@ class Oara_Network_Publisher_PepperJam extends Oara_Network {
 	/**
 	 * Constructor and Login
 	 * @param $traveljigsaw
-	 * @return Oara_Network_Publisher_Tj_Export
+	 * @return Tj_Export
 	 */
 	public function __construct($credentials) {
 		$user = $credentials['user'];
@@ -51,12 +52,12 @@ class Oara_Network_Publisher_PepperJam extends Oara_Network {
 
 		$loginUrl = 'https://www.pepperjamnetwork.com/login.php';
 
-		$valuesLogin = array(new Oara_Curl_Parameter('email', $user),
-		new Oara_Curl_Parameter('passwd', $password),
-		new Oara_Curl_Parameter('hideid', '')
+		$valuesLogin = array(new \Oara\Curl\Parameter('email', $user),
+		new \Oara\Curl\Parameter('passwd', $password),
+		new \Oara\Curl\Parameter('hideid', '')
 		);
 
-		$this->_client = new Oara_Curl_Access($loginUrl, $valuesLogin, $credentials);
+		$this->_client = new \Oara\Curl\Access($loginUrl, $valuesLogin, $credentials);
 	}
 	/**
 	 * Check the connection
@@ -74,7 +75,7 @@ class Oara_Network_Publisher_PepperJam extends Oara_Network {
 	}
 	/**
 	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Oara_Network_Publisher_Base#getMerchantList()
+	 * @see library/Oara/Network/Base#getMerchantList()
 	 */
 	public function getMerchantList() {
 		$merchants = Array();
@@ -96,25 +97,25 @@ class Oara_Network_Publisher_PepperJam extends Oara_Network {
 	}
 	/**
 	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Oara_Network_Publisher_Base#getTransactionList($merchantId, $dStartDate, $dEndDate)
+	 * @see library/Oara/Network/Base#getTransactionList($merchantId, $dStartDate, $dEndDate)
 	 */
-	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null) {
 		$totalTransactions = Array();
 
 		$valuesFormExport = array();
-		$valuesFormExport[] = new Oara_Curl_Parameter('csv', 'csv');
-		$valuesFormExport[] = new Oara_Curl_Parameter('ajax', 'ajax');
-		$valuesFormExport[] = new Oara_Curl_Parameter('type', 'csv');
-		$valuesFormExport[] = new Oara_Curl_Parameter('sortColumn', 'transid');
-		$valuesFormExport[] = new Oara_Curl_Parameter('sortType', 'ASC');
-		$valuesFormExport[] = new Oara_Curl_Parameter('startdate', $dStartDate->toString("yyyy-MM-dd"));
-		$valuesFormExport[] = new Oara_Curl_Parameter('enddate', $dEndDate->toString("yyyy-MM-dd"));
-		$valuesFormExport[] = new Oara_Curl_Parameter('programName', 'all');
-		$valuesFormExport[] = new Oara_Curl_Parameter('website', '');
-		$valuesFormExport[] = new Oara_Curl_Parameter('transactionType', '0');
-		$valuesFormExport[] = new Oara_Curl_Parameter('creativeType', 'all');
-		$valuesFormExport[] = new Oara_Curl_Parameter('advancedSubType', '');
-		$valuesFormExport[] = new Oara_Curl_Parameter('saleIdSearch', '');
+		$valuesFormExport[] = new \Oara\Curl\Parameter('csv', 'csv');
+		$valuesFormExport[] = new \Oara\Curl\Parameter('ajax', 'ajax');
+		$valuesFormExport[] = new \Oara\Curl\Parameter('type', 'csv');
+		$valuesFormExport[] = new \Oara\Curl\Parameter('sortColumn', 'transid');
+		$valuesFormExport[] = new \Oara\Curl\Parameter('sortType', 'ASC');
+		$valuesFormExport[] = new \Oara\Curl\Parameter('startdate', $dStartDate->toString("yyyy-MM-dd"));
+		$valuesFormExport[] = new \Oara\Curl\Parameter('enddate', $dEndDate->toString("yyyy-MM-dd"));
+		$valuesFormExport[] = new \Oara\Curl\Parameter('programName', 'all');
+		$valuesFormExport[] = new \Oara\Curl\Parameter('website', '');
+		$valuesFormExport[] = new \Oara\Curl\Parameter('transactionType', '0');
+		$valuesFormExport[] = new \Oara\Curl\Parameter('creativeType', 'all');
+		$valuesFormExport[] = new \Oara\Curl\Parameter('advancedSubType', '');
+		$valuesFormExport[] = new \Oara\Curl\Parameter('saleIdSearch', '');
 
 		$urls = array();
 		$urls[] = new \Oara\Curl\Request('http://www.pepperjamnetwork.com/affiliate/report_transaction_detail.php?', $valuesFormExport);
@@ -138,11 +139,11 @@ class Oara_Network_Publisher_PepperJam extends Oara_Network {
 
 				$status = $transactionExportArray[11];
 				if ($status == 'Pending' || $status == 'Delayed' || $status == 'Updated Pending Commission') {
-					$transaction['status'] = Oara_Utilities::STATUS_PENDING;
+					$transaction['status'] = \Oara\Utilities::STATUS_PENDING;
 				} elseif ($status == 'Locked') {
-					$transaction['status'] = Oara_Utilities::STATUS_DECLINED;
+					$transaction['status'] = \Oara\Utilities::STATUS_DECLINED;
 				} elseif ($status == 'Paid') {
-					$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
+					$transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
 				} else {
 					throw new Exception("Status {$status} unknown");
 				}
@@ -163,7 +164,7 @@ class Oara_Network_Publisher_PepperJam extends Oara_Network {
 
 	/**
 	 * (non-PHPdoc)
-	 * @see Oara/Network/Oara_Network_Publisher_Base#getPaymentHistory()
+	 * @see Oara/Network/Base#getPaymentHistory()
 	 */
 	public function getPaymentHistory() {
 		$paymentHistory = array();
@@ -173,14 +174,14 @@ class Oara_Network_Publisher_PepperJam extends Oara_Network {
 		$now = new \DateTime();
 		while ($now->getYear() >= $pointer->getYear()){
 			$valuesFormExport = array();
-			$valuesFormExport[] = new Oara_Curl_Parameter('csv', 'csv');
-			$valuesFormExport[] = new Oara_Curl_Parameter('ajax', 'ajax');
-			$valuesFormExport[] = new Oara_Curl_Parameter('type', 'csv');
-			$valuesFormExport[] = new Oara_Curl_Parameter('sortColumn', 'paymentid');
-			$valuesFormExport[] = new Oara_Curl_Parameter('sortType', 'ASC');
-			$valuesFormExport[] = new Oara_Curl_Parameter('startdate', $pointer->toString("yyyy")."-01-01");
-			$valuesFormExport[] = new Oara_Curl_Parameter('enddate',  $pointer->toString("yyyy")."-12-31");
-			$valuesFormExport[] = new Oara_Curl_Parameter('payid_search', '');
+			$valuesFormExport[] = new \Oara\Curl\Parameter('csv', 'csv');
+			$valuesFormExport[] = new \Oara\Curl\Parameter('ajax', 'ajax');
+			$valuesFormExport[] = new \Oara\Curl\Parameter('type', 'csv');
+			$valuesFormExport[] = new \Oara\Curl\Parameter('sortColumn', 'paymentid');
+			$valuesFormExport[] = new \Oara\Curl\Parameter('sortType', 'ASC');
+			$valuesFormExport[] = new \Oara\Curl\Parameter('startdate', $pointer->toString("yyyy")."-01-01");
+			$valuesFormExport[] = new \Oara\Curl\Parameter('enddate',  $pointer->toString("yyyy")."-12-31");
+			$valuesFormExport[] = new \Oara\Curl\Parameter('payid_search', '');
 
 			$urls = array();
 			$urls[] = new \Oara\Curl\Request('http://www.pepperjamnetwork.com/affiliate/report_payment_history.php?', $valuesFormExport);
@@ -213,14 +214,14 @@ class Oara_Network_Publisher_PepperJam extends Oara_Network {
 		$transactionList = array();
 		
 		$valuesFormExport = array();
-		$valuesFormExport[] = new Oara_Curl_Parameter('csv', 'csv');
-		$valuesFormExport[] = new Oara_Curl_Parameter('ajax', 'ajax');
-		$valuesFormExport[] = new Oara_Curl_Parameter('type', 'csv');
-		$valuesFormExport[] = new Oara_Curl_Parameter('sortColumn', '');
-		$valuesFormExport[] = new Oara_Curl_Parameter('sortType', '');
-		$valuesFormExport[] = new Oara_Curl_Parameter('startdate', '');
-		$valuesFormExport[] = new Oara_Curl_Parameter('enddate', '');
-		$valuesFormExport[] = new Oara_Curl_Parameter('paymentid', $paymentId);
+		$valuesFormExport[] = new \Oara\Curl\Parameter('csv', 'csv');
+		$valuesFormExport[] = new \Oara\Curl\Parameter('ajax', 'ajax');
+		$valuesFormExport[] = new \Oara\Curl\Parameter('type', 'csv');
+		$valuesFormExport[] = new \Oara\Curl\Parameter('sortColumn', '');
+		$valuesFormExport[] = new \Oara\Curl\Parameter('sortType', '');
+		$valuesFormExport[] = new \Oara\Curl\Parameter('startdate', '');
+		$valuesFormExport[] = new \Oara\Curl\Parameter('enddate', '');
+		$valuesFormExport[] = new \Oara\Curl\Parameter('paymentid', $paymentId);
 
 		$urls = array();
 		$urls[] = new \Oara\Curl\Request('http://www.pepperjamnetwork.com/affiliate/report_payment_history_detail.php?', $valuesFormExport);

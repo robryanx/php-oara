@@ -1,9 +1,10 @@
 <?php
+namespace Oara\Network\Publisher;
 /**
  The goal of the Open Affiliate Report Aggregator (OARA) is to develop a set
  of PHP classes that can download affiliate reports from a number of affiliate networks, and store the data in a common format.
 
- Copyright (C) 2014  Fubra Limited
+ Copyright (C) 2016  Fubra Limited
  This program is free software: you can redistribute it and/or modify
  it under the terms of the GNU Affero General Public License as published by
  the Free Software Foundation, either version 3 of the License, or any later version.
@@ -22,12 +23,12 @@
  * API Class
  *
  * @author Carlos Morillo Merino
- * @category Oara_Network_Publisher_Afiliant
+ * @category Afiliant
  * @copyright Fubra Limited
  * @version Release: 01.00
  *
  */
-class Oara_Network_Publisher_Viagogo extends Oara_Network {
+class Viagogo extends \Oara\Network {
 
 	/**
 	 * Client
@@ -39,7 +40,7 @@ class Oara_Network_Publisher_Viagogo extends Oara_Network {
 	/**
 	 * Constructor and Login
 	 * @param $credentials
-	 * @return Oara_Network_Publisher_Viagogo
+	 * @return Viagogo
 	 */
 	public function __construct($credentials) {
 		$user = $credentials ['user'];
@@ -48,16 +49,16 @@ class Oara_Network_Publisher_Viagogo extends Oara_Network {
 		
 		$dir = COOKIES_BASE_DIR . DIRECTORY_SEPARATOR . $credentials ['cookiesDir'] . DIRECTORY_SEPARATOR . $credentials ['cookiesSubDir'] . DIRECTORY_SEPARATOR;
 		
-		if (! Oara_Utilities::mkdir_recursive ( $dir, 0777 )) {
+		if (! \Oara\Utilities::mkdir_recursive ( $dir, 0777 )) {
 			throw new Exception ( 'Problem creating folder in Access' );
 		}
 		
 		$cookies = $dir . $credentials["cookieName"] . '_cookies.txt';
 		unlink($cookies);
 		$valuesLogin = array (
-		new Oara_Curl_Parameter ( 'Login.UserName', $user ),
-		new Oara_Curl_Parameter ( 'Login.Password', $password ),
-		new Oara_Curl_Parameter ( 'ReturnUrl', $loginUrl )
+		new \Oara\Curl\Parameter ( 'Login.UserName', $user ),
+		new \Oara\Curl\Parameter ( 'Login.Password', $password ),
+		new \Oara\Curl\Parameter ( 'ReturnUrl', $loginUrl )
 		);
 		$this->_options = array (
 		CURLOPT_USERAGENT => "Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:26.0) Gecko/20100101 Firefox/26.0",
@@ -84,7 +85,7 @@ class Oara_Network_Publisher_Viagogo extends Oara_Network {
 		$dom = new Zend_Dom_Query($html);
 		$hidden = $dom->query('input[type="hidden"]');
 		foreach ($hidden as $values) {
-			$valuesLogin[] = new Oara_Curl_Parameter($values->getAttribute("name"), $values->getAttribute("value"));
+			$valuesLogin[] = new \Oara\Curl\Parameter($values->getAttribute("name"), $values->getAttribute("value"));
 		}
 		$rch = curl_init ();
 		$options = $this->_options;
@@ -123,7 +124,7 @@ class Oara_Network_Publisher_Viagogo extends Oara_Network {
 	/**
 	 * (non-PHPdoc)
 	 *
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getMerchantList()
+	 * @see library/Oara/Network/Interface#getMerchantList()
 	 */
 	public function getMerchantList() {
 		$merchants = Array();
@@ -139,22 +140,22 @@ class Oara_Network_Publisher_Viagogo extends Oara_Network {
 	/**
 	 * (non-PHPdoc)
 	 *
-	 * @see library/Oara/Network/Oara_Network_Publisher_Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate)
+	 * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate)
 	 */
-	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null, $merchantMap = null) {
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null) {
 		$totalTransactions = array();
 
 		$valuesFromExport = array(
-		new Oara_Curl_Parameter('ReportId', '2'),
-		new Oara_Curl_Parameter('Parameters[0].Name', 'ReportPeriod'),
-		new Oara_Curl_Parameter('Parameters[0].Values', 'True'),
-		new Oara_Curl_Parameter('Parameters[1].Name', 'DateFrom'),
-		new Oara_Curl_Parameter('Parameters[1].Values', $dStartDate->toString("dd/MM/yyyy")),
-		new Oara_Curl_Parameter('Parameters[2].Name', 'DateTo'),
-		new Oara_Curl_Parameter('Parameters[2].Values', $dEndDate->toString("dd/MM/yyyy")),
-		new Oara_Curl_Parameter('Parameters[3].Name', 'CurrencyCode'),
-		new Oara_Curl_Parameter('Parameters[3].Values', 'GBP'),
-		new Oara_Curl_Parameter('RenderType', 'CSV')
+		new \Oara\Curl\Parameter('ReportId', '2'),
+		new \Oara\Curl\Parameter('Parameters[0].Name', 'ReportPeriod'),
+		new \Oara\Curl\Parameter('Parameters[0].Values', 'True'),
+		new \Oara\Curl\Parameter('Parameters[1].Name', 'DateFrom'),
+		new \Oara\Curl\Parameter('Parameters[1].Values', $dStartDate->toString("dd/MM/yyyy")),
+		new \Oara\Curl\Parameter('Parameters[2].Name', 'DateTo'),
+		new \Oara\Curl\Parameter('Parameters[2].Values', $dEndDate->toString("dd/MM/yyyy")),
+		new \Oara\Curl\Parameter('Parameters[3].Name', 'CurrencyCode'),
+		new \Oara\Curl\Parameter('Parameters[3].Values', 'GBP'),
+		new \Oara\Curl\Parameter('RenderType', 'CSV')
 		);
 
 		$rch = curl_init ();
@@ -189,9 +190,9 @@ class Oara_Network_Publisher_Viagogo extends Oara_Network {
 				$transaction['merchantId'] = "1";
 				$transactionDate = new \DateTime($transactionExportArray[1], "dd/MM/yyyy");
 				$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
-				$transaction['status'] = Oara_Utilities::STATUS_CONFIRMED;
-				$transaction['amount'] = Oara_Utilities::parseDouble($transactionExportArray[4]);
-				$transaction['commission'] = Oara_Utilities::parseDouble($transactionExportArray[6]);
+				$transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
+				$transaction['amount'] = \Oara\Utilities::parseDouble($transactionExportArray[4]);
+				$transaction['commission'] = \Oara\Utilities::parseDouble($transactionExportArray[6]);
 				$totalTransactions[] = $transaction;
 				
 			}
@@ -203,7 +204,7 @@ class Oara_Network_Publisher_Viagogo extends Oara_Network {
 	/**
 	 * (non-PHPdoc)
 	 *
-	 * @see Oara/Network/Oara_Network_Publisher_Base#getPaymentHistory()
+	 * @see Oara/Network/Base#getPaymentHistory()
 	 */
 	public function getPaymentHistory() {
 		$paymentHistory = array ();
