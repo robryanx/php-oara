@@ -134,8 +134,8 @@ class Etrader extends \Oara\Network
         $continue = true;
         while ($continue) {
             $valuesFormExport = array();
-            $valuesFormExport [] = new \Oara\Curl\Parameter ('dateFrom', $dStartDate->toString("dd/MM/yyyy"));
-            $valuesFormExport [] = new \Oara\Curl\Parameter ('dateTo', $dEndDate->toString("dd/MM/yyyy"));
+            $valuesFormExport [] = new \Oara\Curl\Parameter ('dateFrom', $dStartDate->format!("dd/MM/yyyy"));
+            $valuesFormExport [] = new \Oara\Curl\Parameter ('dateTo', $dEndDate->format!("dd/MM/yyyy"));
             $valuesFormExport [] = new \Oara\Curl\Parameter ('startIndex', $page);
             $valuesFormExport [] = new \Oara\Curl\Parameter ('numberOfPages', '1');
 
@@ -165,7 +165,7 @@ class Etrader extends \Oara\Network
                 }
 
                 $date = new \DateTime($transactionDetail[0], "dd MMM yyyy", "en_GB");
-                $transaction ['date'] = $date->toString("yyyy-MM-dd 00:00:00");
+                $transaction ['date'] = $date->format!("yyyy-MM-dd 00:00:00");
                 $transaction ['status'] = \Oara\Utilities::STATUS_CONFIRMED;
 
                 if ($transactionDetail[3] != null) {

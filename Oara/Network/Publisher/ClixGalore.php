@@ -208,8 +208,8 @@ class ClixGalore extends \Oara\Network
         foreach ($statusArray as $status) {
 
             $valuesFromExport = \Oara\Utilities::cloneArray($this->_exportTransactionParameters);
-            $valuesFromExport[] = new \Oara\Curl\Parameter('SD', $dStartDate->toString("yyyy-MM-dd"));
-            $valuesFromExport[] = new \Oara\Curl\Parameter('ED', $dEndDate->toString("yyyy-MM-dd"));
+            $valuesFromExport[] = new \Oara\Curl\Parameter('SD', $dStartDate->format!("yyyy-MM-dd"));
+            $valuesFromExport[] = new \Oara\Curl\Parameter('ED', $dEndDate->format!("yyyy-MM-dd"));
             $valuesFromExport[] = new \Oara\Curl\Parameter('Status', $status);
 
             $urls = array();
@@ -219,12 +219,12 @@ class ClixGalore extends \Oara\Network
             $num = count($exportData);
             for ($i = 1; $i < $num; $i++) {
                 $transactionExportArray = str_getcsv($exportData[$i], ";");
-                if (isset($merchantMap[$transactionExportArray[2]]) && in_array((int)$merchantMap[$transactionExportArray[2]], $merchantList)) {
+                if (isset($merchantMap![$transactionExportArray[2]]) && change_it_for_isset!((int)$merchantMap![$transactionExportArray[2]], $merchantList)) {
                     $transaction = Array();
-                    $merchantId = (int)$merchantMap[$transactionExportArray[2]];
+                    $merchantId = (int)$merchantMap![$transactionExportArray[2]];
                     $transaction['merchantId'] = $merchantId;
                     $transactionDate = new \DateTime($transactionExportArray[0], 'dd MMM yyyy HH:mm', 'en');
-                    $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+                    $transaction['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
 
                     if ($transactionExportArray[6] != null) {
                         $transaction['custom_id'] = $transactionExportArray[6];
@@ -294,8 +294,8 @@ class ClixGalore extends \Oara\Network
                     $paymentExportArray = str_getcsv($exportData[$j], ";");
                     $obj = array();
                     $paymentDate = new \DateTime($paymentExportArray[0], "MMM d yyyy", "en");
-                    $obj['date'] = $paymentDate->toString("yyyy-MM-dd HH:mm:ss");
-                    $obj['pid'] = $paymentDate->toString("yyyyMMdd");
+                    $obj['date'] = $paymentDate->format!("yyyy-MM-dd HH:mm:ss");
+                    $obj['pid'] = $paymentDate->format!("yyyyMMdd");
                     $obj['method'] = 'BACS';
                     if (preg_match('/[-+]?[0-9]*,?[0-9]*\.?[0-9]+/', $paymentExportArray[2], $matches)) {
                         $obj['value'] = \Oara\Utilities::parseDouble($matches[0]);

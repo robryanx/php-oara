@@ -60,7 +60,7 @@ class VigLink extends \Oara\Network
 
         $now = new \DateTime();
 
-        $apiURL = "https://www.viglink.com/service/v1/cuidRevenue?lastDate={$now->toString("yyyy/MM/dd")}&period=month&secret={$this->_apiPassword}";
+        $apiURL = "https://www.viglink.com/service/v1/cuidRevenue?lastDate={$now->format!("yyyy/MM/dd")}&period=month&secret={$this->_apiPassword}";
         $response = self::call($apiURL);
         if (is_array($response)) {
             $connection = true;
@@ -112,7 +112,7 @@ class VigLink extends \Oara\Network
     {
         $totalTransactions = array();
 
-        $apiURL = "https://www.viglink.com/service/v1/cuidRevenue?lastDate={$dEndDate->toString("yyyy/MM/dd")}&period=month&secret={$this->_apiPassword}";
+        $apiURL = "https://www.viglink.com/service/v1/cuidRevenue?lastDate={$dEndDate->format!("yyyy/MM/dd")}&period=month&secret={$this->_apiPassword}";
         $response = self::call($apiURL);
 
         foreach ($response as $date => $transactionApi) {
@@ -123,7 +123,7 @@ class VigLink extends \Oara\Network
                     $transaction['merchantId'] = "1";
 
                     $transactionDate = new \DateTime($date, 'yyyy/MM/dd 00:00:00', 'en');
-                    $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+                    $transaction['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
 
                     $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
 

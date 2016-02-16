@@ -120,12 +120,12 @@ class Bol extends \Oara\Network
         $totalTransactions = array();
         $valuesFromExport = array();
         $valuesFromExport[] = new \Oara\Curl\Parameter('id', "-1");
-        $valuesFromExport[] = new \Oara\Curl\Parameter('yearStart', $dStartDate->toString("yyyy"));
-        $valuesFromExport[] = new \Oara\Curl\Parameter('monthStart', $dStartDate->toString("MM"));
-        $valuesFromExport[] = new \Oara\Curl\Parameter('dayStart', $dStartDate->toString("dd"));
-        $valuesFromExport[] = new \Oara\Curl\Parameter('yearEnd', $dEndDate->toString("yyyy"));
-        $valuesFromExport[] = new \Oara\Curl\Parameter('monthEnd', $dEndDate->toString("MM"));
-        $valuesFromExport[] = new \Oara\Curl\Parameter('dayEnd', $dEndDate->toString("dd"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('yearStart', $dStartDate->format!("yyyy"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('monthStart', $dStartDate->format!("MM"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('dayStart', $dStartDate->format!("dd"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('yearEnd', $dEndDate->format!("yyyy"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('monthEnd', $dEndDate->format!("MM"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('dayEnd', $dEndDate->format!("dd"));
 
         $urls = array();
         $urls[] = new \Oara\Curl\Request('https://partnerprogramma.bol.com/partner/s/excelReport/orders?', $valuesFromExport);
@@ -156,7 +156,7 @@ class Bol extends \Oara\Network
             $transaction['merchantId'] = "1";
 
             $transactionDate = new \DateTime($objWorksheet->getCellByColumnAndRow(2, $row)->getValue(), 'dd-MM-yyyy');
-            $transaction['date'] = $transactionDate->toString("yyyy-MM-dd 00:00:00");
+            $transaction['date'] = $transactionDate->format!("yyyy-MM-dd 00:00:00");
 
             $transaction['custom_id'] = $objWorksheet->getCellByColumnAndRow(8, $row)->getValue();
 

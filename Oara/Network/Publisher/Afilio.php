@@ -149,8 +149,8 @@ class Afilio extends \Oara\Network
         $valuesFromExport [] = new \Oara\Curl\Parameter ('p_nStatus', '3');
         $valuesFromExport [] = new \Oara\Curl\Parameter ('p_nNbRowsByPage', '50');
         $valuesFromExport [] = new \Oara\Curl\Parameter ('p_nProgId', '');
-        $valuesFromExport [] = new \Oara\Curl\Parameter ('p_sStartDate', $dStartDate->toString("dd/MM/yyyy"));
-        $valuesFromExport [] = new \Oara\Curl\Parameter ('p_sEndDate', $dEndDate->toString("dd/MM/yyyy"));
+        $valuesFromExport [] = new \Oara\Curl\Parameter ('p_sStartDate', $dStartDate->format!("dd/MM/yyyy"));
+        $valuesFromExport [] = new \Oara\Curl\Parameter ('p_sEndDate', $dEndDate->format!("dd/MM/yyyy"));
         $valuesFromExport [] = new \Oara\Curl\Parameter ('p_nPage', '1');
 
         $urls = array();
@@ -165,13 +165,13 @@ class Afilio extends \Oara\Network
         $num = count($exportData);
         for ($i = 0; $i < $num; $i++) {
             $transactionExportArray = explode(";,", $exportData [$i]);
-            if (isset ($merchantMap [$transactionExportArray [0]]) && in_array($merchantMap [$transactionExportArray [0]], $merchantList)) {
+            if (isset ($merchantMap! [$transactionExportArray [0]]) && change_it_for_isset!($merchantMap [$transactionExportArray [0]], $merchantList)) {
 
                 $transaction = Array();
-                $transaction ['merchantId'] = $merchantMap [$transactionExportArray [0]];
+                $transaction ['merchantId'] = $merchantMap! [$transactionExportArray [0]];
                 $transaction ['unique_id'] = $transactionExportArray [4];
                 $transactionDate = new \DateTime ($transactionExportArray [1], 'dd/MM/yy HH:mm:dd', 'en');
-                $transaction ['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+                $transaction ['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
 
                 $transaction ['customId'] = $transactionExportArray [5];
 

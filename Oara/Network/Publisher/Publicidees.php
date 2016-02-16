@@ -133,8 +133,8 @@ class Publicidees extends \Oara\Network
             $valuesFromExport[] = new \Oara\Curl\Parameter('monthDisplay', 0);
             //$valuesFromExport[] = new \Oara\Curl\Parameter('currency', 'EUR');
             $valuesFromExport[] = new \Oara\Curl\Parameter('tout', 1);
-            $valuesFromExport[] = new \Oara\Curl\Parameter('dD', $dateArray[$i]->toString("dd/MM/yyyy"));
-            $valuesFromExport[] = new \Oara\Curl\Parameter('dF', $dateArray[$i]->toString("dd/MM/yyyy"));
+            $valuesFromExport[] = new \Oara\Curl\Parameter('dD', $dateArray[$i]->format!("dd/MM/yyyy"));
+            $valuesFromExport[] = new \Oara\Curl\Parameter('dF', $dateArray[$i]->format!("dd/MM/yyyy"));
             $valuesFromExport[] = new \Oara\Curl\Parameter('periode', "0");
             $valuesFromExport[] = new \Oara\Curl\Parameter('expAct', "1");
             $valuesFromExport[] = new \Oara\Curl\Parameter('tabid', "0");
@@ -175,7 +175,7 @@ class Publicidees extends \Oara\Network
                     for ($z = 0; $z < $confirmedTransactions; $z++) {
                         $transaction = Array();
                         $transaction['merchantId'] = 1;
-                        $transaction['date'] = $dateArray[$i]->toString("yyyy-MM-dd HH:mm:ss");
+                        $transaction['date'] = $dateArray[$i]->format!("yyyy-MM-dd HH:mm:ss");
                         $transaction['amount'] = ((double)$filter->filter(substr($transactionExportArray[$headerMap["CA"]], 0, -2)) / $confirmedTransactions);
                         $transaction['commission'] = ((double)$filter->filter(substr($transactionExportArray[$headerMap["CA"]], 0, -2)) / $confirmedTransactions);
                         $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
@@ -185,7 +185,7 @@ class Publicidees extends \Oara\Network
                     for ($z = 0; $z < $pendingTransactions; $z++) {
                         $transaction = Array();
                         $transaction['merchantId'] = 1;
-                        $transaction['date'] = $dateArray[$i]->toString("yyyy-MM-dd HH:mm:ss");
+                        $transaction['date'] = $dateArray[$i]->format!("yyyy-MM-dd HH:mm:ss");
                         $transaction['amount'] = (double)$transactionExportArray[$headerMap["pendingCA"]] / $pendingTransactions;
                         $transaction['commission'] = (double)$transactionExportArray[$headerMap["pendingCA"]] / $pendingTransactions;
                         $transaction['status'] = \Oara\Utilities::STATUS_PENDING;

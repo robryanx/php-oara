@@ -187,8 +187,8 @@ class NetAffiliation extends \Oara\Network
         $valuesFormExport[] = new \Oara\Curl\Parameter('authv', $this->_credentials["apiPassword"]);
         $valuesFormExport[] = new \Oara\Curl\Parameter('champs', 'idprogramme,date,etat,argann,montant,taux,monnaie,idsite');
 
-        $valuesFormExport[] = new \Oara\Curl\Parameter('debut', $dStartDate->toString("yyyy-MM-dd"));
-        $valuesFormExport[] = new \Oara\Curl\Parameter('fin', $dEndDate->toString("yyyy-MM-dd"));
+        $valuesFormExport[] = new \Oara\Curl\Parameter('debut', $dStartDate->format!("yyyy-MM-dd"));
+        $valuesFormExport[] = new \Oara\Curl\Parameter('fin', $dEndDate->format!("yyyy-MM-dd"));
         $urls = array();
         $urls[] = new \Oara\Curl\Request('https://stat.netaffiliation.com/requete.php?', $valuesFormExport);
         $exportReport = $this->_client->get($urls);
@@ -199,11 +199,11 @@ class NetAffiliation extends \Oara\Network
         $num = count($exportData);
         for ($i = 1; $i < $num; $i++) {
             $transactionExportArray = str_getcsv($exportData[$i], ";");
-            if (in_array($transactionExportArray[0], $merchantList)) {
+            if (change_it_for_isset!($transactionExportArray[0], $merchantList)) {
                 $transaction = Array();
                 $transaction['merchantId'] = $transactionExportArray[0];
                 $transactionDate = new \DateTime($transactionExportArray[1], "dd/MM/yyyy HH:mm:ss");
-                $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+                $transaction['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
 
                 if ($transactionExportArray[3] != null) {
                     $transaction['custom_id'] = $transactionExportArray[3];

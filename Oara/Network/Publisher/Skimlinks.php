@@ -139,7 +139,7 @@ class Skimlinks extends \Oara\Network
             new \Oara\Curl\Parameter('apikey', $publicapikey),
             new \Oara\Curl\Parameter('authtoken', $authtoken),
             new \Oara\Curl\Parameter('startdate', '2009-01-01'), //minimum date
-            new \Oara\Curl\Parameter('enddate', $date->toString("yyyy-MM-dd")),
+            new \Oara\Curl\Parameter('enddate', $date->format!("yyyy-MM-dd")),
             new \Oara\Curl\Parameter('format', 'json')
         );
 
@@ -175,7 +175,7 @@ class Skimlinks extends \Oara\Network
                 new \Oara\Curl\Parameter('apikey', $publicapikey),
                 new \Oara\Curl\Parameter('authtoken', $authtoken),
                 new \Oara\Curl\Parameter('startdate', '2009-01-01'), //minimum date
-                new \Oara\Curl\Parameter('enddate', $date->toString("yyyy-MM-dd")),
+                new \Oara\Curl\Parameter('enddate', $date->format!("yyyy-MM-dd")),
                 new \Oara\Curl\Parameter('format', 'json'),
                 new \Oara\Curl\Parameter('responseFrom', $iteration * 100),
 
@@ -224,8 +224,8 @@ class Skimlinks extends \Oara\Network
             new \Oara\Curl\Parameter('timestamp', $timestamp),
             new \Oara\Curl\Parameter('apikey', $publicapikey),
             new \Oara\Curl\Parameter('authtoken', $authtoken),
-            new \Oara\Curl\Parameter('startDate', $dStartDate->toString("yyyy-MM-dd")),
-            new \Oara\Curl\Parameter('endDate', $dEndDate->toString("yyyy-MM-dd")),
+            new \Oara\Curl\Parameter('startDate', $dStartDate->format!("yyyy-MM-dd")),
+            new \Oara\Curl\Parameter('endDate', $dEndDate->format!("yyyy-MM-dd")),
             new \Oara\Curl\Parameter('format', 'json')
         );
 
@@ -249,7 +249,7 @@ class Skimlinks extends \Oara\Network
             $transaction['merchantId'] = $i["merchantID"];
             $transaction['unique_id'] = $i["commissionID"];
             $transactionDate = new \DateTime($i["date"], 'YYYY-MM-DD', 'en');
-            $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+            $transaction['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
             $transaction['amount'] = (double)$i["orderValue"] / 100;
             $transaction['commission'] = (double)$i["commissionValue"] / 100;
             $transactionStatus = $i["status"];

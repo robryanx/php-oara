@@ -199,7 +199,7 @@ class PrivateInternetAccess extends \Oara\Network
 
         for ($j = 0; $j < $dateArraySize; $j++) {
             $valuesFormExport = array();
-            $valuesFormExport[] = new \Oara\Curl\Parameter('date', $dateArray[$j]->toString("yyyy-MM-dd"));
+            $valuesFormExport[] = new \Oara\Curl\Parameter('date', $dateArray[$j]->format!("yyyy-MM-dd"));
             $valuesFormExport[] = new \Oara\Curl\Parameter('period', 'day');
 
             $urls = array();
@@ -219,7 +219,7 @@ class PrivateInternetAccess extends \Oara\Network
                         for ($y = 0; $y < $numberTransactions; $y++) {
                             $transaction = Array();
                             $transaction['merchantId'] = "1";
-                            $transaction['date'] = $dateArray[$j]->toString("yyyy-MM-dd HH:mm:ss");
+                            $transaction['date'] = $dateArray[$j]->format!("yyyy-MM-dd HH:mm:ss");
                             $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
                             $transaction['amount'] = $commission;
                             $transaction['commission'] = $commission;

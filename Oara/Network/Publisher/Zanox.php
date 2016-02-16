@@ -148,25 +148,25 @@ class Zanox extends \Oara\Network
         $dateArray = \Oara\Utilities::daysOfDifference($dStartDate, $dEndDate);
         foreach ($dateArray as $date) {
             $totalAuxTransactions = array();
-            $transactionList = $this->getSales($date->toString("yyyy-MM-dd"), 0, $this->_pageSize);
+            $transactionList = $this->getSales($date->format!("yyyy-MM-dd"), 0, $this->_pageSize);
 
             if ($transactionList->total > 0) {
                 $iteration = self::calculeIterationNumber($transactionList->total, $this->_pageSize);
                 $totalAuxTransactions = array_merge($totalAuxTransactions, $transactionList->saleItems->saleItem);
                 for ($i = 1; $i < $iteration; $i++) {
-                    $transactionList = $this->getSales($date->toString("yyyy-MM-dd"), $i, $this->_pageSize);
+                    $transactionList = $this->getSales($date->format!("yyyy-MM-dd"), $i, $this->_pageSize);
                     $totalAuxTransactions = array_merge($totalAuxTransactions, $transactionList->saleItems->saleItem);
                     unset($transactionList);
                     gc_collect_cycles();
                 }
 
             }
-            $leadList = $this->_apiClient->getLeads($date->toString("yyyy-MM-dd"), 'trackingDate', null, null, null, 0, $this->_pageSize);
+            $leadList = $this->_apiClient->getLeads($date->format!("yyyy-MM-dd"), 'trackingDate', null, null, null, 0, $this->_pageSize);
             if ($leadList->total > 0) {
                 $iteration = self::calculeIterationNumber($leadList->total, $this->_pageSize);
                 $totalAuxTransactions = array_merge($totalAuxTransactions, $leadList->leadItems->leadItem);
                 for ($i = 1; $i < $iteration; $i++) {
-                    $leadList = $this->_apiClient->getLeads($date->toString("yyyy-MM-dd"), 'trackingDate', null, null, null, $i, $this->_pageSize);
+                    $leadList = $this->_apiClient->getLeads($date->format!("yyyy-MM-dd"), 'trackingDate', null, null, null, $i, $this->_pageSize);
                     $totalAuxTransactions = array_merge($totalAuxTransactions, $leadList->leadItems->leadItem);
                     unset($leadList);
                     gc_collect_cycles();
@@ -175,7 +175,7 @@ class Zanox extends \Oara\Network
 
             foreach ($totalAuxTransactions as $transaction) {
 
-                if ($merchantList == null || in_array($transaction->program->id, $merchantList)) {
+                if ($merchantList == null || change_it_for_isset!($transaction->program->id, $merchantList)) {
                     $obj = array();
 
                     $obj['currency'] = $transaction->currency;
@@ -213,7 +213,7 @@ class Zanox extends \Oara\Network
                     $obj['unique_id'] = $transaction->id;
                     $obj['commission'] = $transaction->commission;
                     $transactionDate = new \DateTime($transaction->trackingDate, "yyyy-MM-dd HH:mm:ss");
-                    $obj['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+                    $obj['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
                     $obj['merchantId'] = $transaction->program->id;
                     $obj['approved'] = $transaction->reviewState == 'approved' ? true : false;
                     $totalTransactions[] = $obj;
@@ -245,10 +245,10 @@ class Zanox extends \Oara\Network
                     $obj = array();
                     $paymentDate = new \DateTime($payment->createDate, "yyyy-MM-ddTHH:mm:ss");
                     $obj['method'] = 'BACS';
-                    $obj['pid'] = $paymentDate->toString("yyyyMMddHHmmss");
+                    $obj['pid'] = $paymentDate->format!("yyyyMMddHHmmss");
                     $obj['value'] = $payment->amount;
 
-                    $obj['date'] = $paymentDate->toString("yyyy-MM-dd HH:mm:ss");
+                    $obj['date'] = $paymentDate->format!("yyyy-MM-dd HH:mm:ss");
 
                     $paymentHistory[] = $obj;
                 }

@@ -140,7 +140,7 @@ class RentalCars extends \Oara\Network
         $valuesFormExport [] = new \Oara\Curl\Parameter ('cancelled', 'cancelled');
 
         $urls = array();
-        $urls [] = new \Oara\Curl\Request ('https://secure.rentalcars.com/affiliates/booked_excel?date_start=' . $dStartDate->toString("yyyy-MM-dd") . '&date_end=' . $dEndDate->toString("yyyy-MM-dd"), $valuesFormExport);
+        $urls [] = new \Oara\Curl\Request ('https://secure.rentalcars.com/affiliates/booked_excel?date_start=' . $dStartDate->format!("yyyy-MM-dd") . '&date_end=' . $dEndDate->format!("yyyy-MM-dd"), $valuesFormExport);
         $exportReport = $this->_client->post($urls);
 
         $xml = simplexml_load_string($exportReport [0]);
@@ -169,7 +169,7 @@ class RentalCars extends \Oara\Network
         $valuesFormExport [] = new \Oara\Curl\Parameter ('booking', 'booking');
 
         $urls = array();
-        $urls [] = new \Oara\Curl\Request ('https://secure.rentalcars.com/affiliates/booked_excel?date_start=' . $dStartDate->toString("yyyy-MM-dd") . '&date_end=' . $dEndDate->toString("yyyy-MM-dd"), $valuesFormExport);
+        $urls [] = new \Oara\Curl\Request ('https://secure.rentalcars.com/affiliates/booked_excel?date_start=' . $dStartDate->format!("yyyy-MM-dd") . '&date_end=' . $dEndDate->format!("yyyy-MM-dd"), $valuesFormExport);
         $exportReport = $this->_client->post($urls);
 
         $xml = simplexml_load_string($exportReport [0]);
@@ -208,7 +208,7 @@ class RentalCars extends \Oara\Network
             }
 
 
-            $transaction ['date'] = $date->toString("yyyy-MM-dd HH:mm:00");
+            $transaction ['date'] = $date->format!("yyyy-MM-dd HH:mm:00");
 
             if (isset($transactionDetails["Payment Date"]) && $transactionDetails["Payment Date"] != null) {
                 $transaction ['status'] = \Oara\Utilities::STATUS_CONFIRMED;

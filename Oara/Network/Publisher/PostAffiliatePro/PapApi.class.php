@@ -2215,12 +2215,12 @@ if (!class_exists('Gpf_Net_Http_ClientBase', false)) {
             @curl_setopt($session, CURLOPT_RETURNTRANSFER, true);
             if ($request->getHttpPassword() != '' && $request->getHttpUser() != '') {
                 @curl_setopt($session, CURLOPT_USERPWD, $request->getHttpUser() . ":" . $request->getHttpPassword());
-                @curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+                @curl_setopt($session, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
             }
             @curl_setopt($session, CURLOPT_SSL_VERIFYHOST, 0);
             @curl_setopt($session, CURLOPT_SSL_VERIFYPEER, 0);
             if ($request->getMaxTimeout() != '') {
-                @curl_setopt($ch, CURLOPT_TIMEOUT, $request->getMaxTimeout());
+                @curl_setopt($session, CURLOPT_TIMEOUT, $request->getMaxTimeout());
             }
 
             $this->setupCurlProxyServer($session, $request);
@@ -3804,7 +3804,7 @@ if (!class_exists('Gpf_Api_Session', false)) {
         private $message = '';
         private $roleType = '';
 
-        public function login($url)
+        public function __construct($url)
         {
             $this->url = $url;
         }
@@ -4112,7 +4112,7 @@ if (!class_exists('Gpf_Rpc_Json', false)) {
          * @param    mixed $var any number, boolean, string, array, or object to be encoded.
          *                           see argument 1 to Services_JSON() above for array-parsing behavior.
          *                           if var is a strng, note that encode() always expects it
-         *                           to be in ASCII or UTF-8 format!
+         *                           to be in ASCII or UTF-8 toString
          *
          * @return   mixed   JSON string representation of input var or an error if a problem occurs
          * @access   public
@@ -4363,7 +4363,7 @@ if (!class_exists('Gpf_Rpc_Json', false)) {
          *                   corresponding to given JSON input string.
          *                   See argument 1 to Services_JSON() above for object-output behavior.
          *                   Note that decode() always returns strings
-         *                   in ASCII or UTF-8 format!
+         *                   in ASCII or UTF-8 toString
          * @access   public
          */
         function decode($str)
@@ -4734,7 +4734,7 @@ if (!class_exists('Gpf_Rpc_JsonObject', false)) {
 
         public function __toString()
         {
-            return $this->encode();
+            return (string)$this->encode();
         }
     }
 

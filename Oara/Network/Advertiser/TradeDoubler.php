@@ -154,8 +154,8 @@ class TradeDoubler extends \Oara\Network
         $valuesFromExport [] = new \Oara\Curl\Parameter ('columns', 'epi1');
         /**/    //$valuesFromExport [] = new \Oara\Curl\Parameter ( 'startDate', '21/08/2013' );
         /**/    //$valuesFromExport [] = new \Oara\Curl\Parameter ( 'endDate', '21/08/2014' );
-        $valuesFromExport [] = new \Oara\Curl\Parameter ('startDate', $dStartDate->toString("dd/MM/yyyy"));
-        $valuesFromExport [] = new \Oara\Curl\Parameter ('endDate', $dEndDate->toString("dd/MM/yyyy"));
+        $valuesFromExport [] = new \Oara\Curl\Parameter ('startDate', $dStartDate->format!("dd/MM/yyyy"));
+        $valuesFromExport [] = new \Oara\Curl\Parameter ('endDate', $dEndDate->format!("dd/MM/yyyy"));
         $valuesFromExport [] = new \Oara\Curl\Parameter ('isPostBack', '');
         $valuesFromExport [] = new \Oara\Curl\Parameter ('metric1.lastOperator', '/');
         $valuesFromExport [] = new \Oara\Curl\Parameter ('interval', 'MONTHS');
@@ -221,7 +221,7 @@ class TradeDoubler extends \Oara\Network
                     }
                     $transaction['merchantId'] = $merchantList[$i];
                     $transactionDate = new \DateTime($transactionExportArray[4], 'dd/MM/yy HH:mm:ss CEST');
-                    $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+                    $transaction['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
                     $transaction['amount'] = $transactionExportArray[17];
                     $transaction['commission'] = $transactionExportArray[24];
 

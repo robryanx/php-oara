@@ -126,7 +126,7 @@ class FoxTransfer extends \Oara\Network
         $totalTransactions = array();
 
         $urls = array();
-        $url = "https://foxtransfer.eu/index.php?q=prices.en.html&page=affiliate_orders&language=1&basedir=theme2&what=record_time&what=record_time&fy={$dStartDate->toString("yyyy")}&fm={$dStartDate->toString("M")}&fd={$dStartDate->toString("d")}&ty={$dEndDate->toString("yyyy")}&tm={$dEndDate->toString("M")}&td={$dEndDate->toString("d")}";
+        $url = "https://foxtransfer.eu/index.php?q=prices.en.html&page=affiliate_orders&language=1&basedir=theme2&what=record_time&what=record_time&fy={$dStartDate->format!("yyyy")}&fm={$dStartDate->format!("M")}&fd={$dStartDate->format!("d")}&ty={$dEndDate->format!("yyyy")}&tm={$dEndDate->format!("M")}&td={$dEndDate->format!("d")}";
         $urls[] = new \Oara\Curl\Request($url, array());
 
         $exportReport = array();
@@ -145,7 +145,7 @@ class FoxTransfer extends \Oara\Network
             $transaction = Array();
             $transaction['merchantId'] = 1;
             $transaction['unique_id'] = $transactionExportArray[0];
-            $transaction['date'] = "{$dStartDate->toString("yyyy")}-{$dStartDate->toString("MM")}-01 00:00:00";
+            $transaction['date'] = "{$dStartDate->format!("yyyy")}-{$dStartDate->format!("MM")}-01 00:00:00";
             if ($transactionExportArray[7] == "Confirmed") {
                 $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
             } else if ($transactionExportArray[7] == "Cancelled") {

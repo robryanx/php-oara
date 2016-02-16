@@ -240,7 +240,7 @@ class CommissionJunction extends \Oara\Network
 
                 $transactionDateEnd = clone $dEndDate;
                 $transactionDateEnd->addDay(1);
-                $restUrl = 'https://commission-detail.api.cj.com/v3/commissions?cids=' . implode(',', $merchantSlice) . '&date-type=posting&start-date=' . $dStartDate->toString("yyyy-MM-dd") . '&end-date=' . $transactionDateEnd->toString("yyyy-MM-dd");
+                $restUrl = 'https://commission-detail.api.cj.com/v3/commissions?cids=' . implode(',', $merchantSlice) . '&date-type=posting&start-date=' . $dStartDate->format!("yyyy-MM-dd") . '&end-date=' . $transactionDateEnd->format!("yyyy-MM-dd");
                 unset($transactionDateEnd);
                 $totalTransactions = array_merge($totalTransactions, self::getTransactionsXml($restUrl, $merchantList));
 
@@ -251,8 +251,8 @@ class CommissionJunction extends \Oara\Network
                 for ($j = 0; $j < $dateArraySize; $j++) {
                     $transactionDateEnd = clone $dateArray[$j];
                     $transactionDateEnd->addDay(1);
-                    echo $dateArray[$j]->toString("yyyy-MM-dd") . "\n\n";
-                    $restUrl = 'https://commission-detail.api.cj.com/v3/commissions?cids=' . implode(',', $merchantSlice) . '&date-type=posting&start-date=' . $dateArray[$j]->toString("yyyy-MM-dd") . '&end-date=' . $transactionDateEnd->toString("yyyy-MM-dd");
+                    echo $dateArray[$j]->format!("yyyy-MM-dd") . "\n\n";
+                    $restUrl = 'https://commission-detail.api.cj.com/v3/commissions?cids=' . implode(',', $merchantSlice) . '&date-type=posting&start-date=' . $dateArray[$j]->format!("yyyy-MM-dd") . '&end-date=' . $transactionDateEnd->format!("yyyy-MM-dd");
                     try {
                         $totalTransactions = array_merge($totalTransactions, self::getTransactionsXml($restUrl, $merchantList));
                     } catch (Exception $e) {
@@ -290,12 +290,12 @@ class CommissionJunction extends \Oara\Network
         if (isset($xml->commissions->commission)) {
             foreach ($xml->commissions->commission as $singleTransaction) {
 
-                if (in_array((int)self::findAttribute($singleTransaction, 'cid'), $merchantList)) {
+                if (change_it_for_isset!((int)self::findAttribute($singleTransaction, 'cid'), $merchantList)) {
 
                     $transaction = Array();
                     $transaction['merchantId'] = self::findAttribute($singleTransaction, 'cid');
                     $transactionDate = new \DateTime(self::findAttribute($singleTransaction, 'event-date'), 'yyyy-MM-ddTHH:mm:ss');
-                    $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+                    $transaction['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
                     unset($transactionDate);
 
                     if (self::findAttribute($singleTransaction, 'sid') != null) {
@@ -336,7 +336,7 @@ class CommissionJunction extends \Oara\Network
         $typeTransactions = array("bonus", "click", "impression", "sale", "lead", "advanced%20sale", "advanced%20lead", "performance%20incentive");
         foreach ($typeTransactions as $type) {
             //echo $type."\n\n";
-            $restUrl = 'https://commission-detail.api.cj.com/v3/commissions?action-types=' . $type . '&cids=' . $cid . '&date-type=posting&start-date=' . $startDate->toString("yyyy-MM-dd") . '&end-date=' . $endDate->toString("yyyy-MM-dd");
+            $restUrl = 'https://commission-detail.api.cj.com/v3/commissions?action-types=' . $type . '&cids=' . $cid . '&date-type=posting&start-date=' . $startDate->format!("yyyy-MM-dd") . '&end-date=' . $endDate->format!("yyyy-MM-dd");
             $totalTransactions = array_merge($totalTransactions, self::getTransactionsXml($restUrl, $merchantList));
         }
         return $totalTransactions;
@@ -392,7 +392,7 @@ class CommissionJunction extends \Oara\Network
                 $paymentData = str_getcsv($exportData[$j], ",");
                 $obj = array();
                 $date = new \DateTime($paymentData[0], "dd-MMM-yyyy HH:mm", 'en_US');
-                $obj['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
+                $obj['date'] = $date->format!("yyyy-MM-dd HH:mm:ss");
                 $obj['value'] = \Oara\Utilities::parseDouble($paymentData[1]);
                 $obj['method'] = $paymentData[2];
                 $obj['pid'] = $paymentData[6];
@@ -427,7 +427,7 @@ class CommissionJunction extends \Oara\Network
         $exportReport = $this->_client->get(array(new \Oara\Curl\Request('https://members.cj.com/member/publisher/' . $this->_accountId . '/transactionReport.json?startDate=' . $startDate . '&endDate=' . $endDate . '&allowAllDateRanges=true&columnSort=amount%09DESC&startRow=1&endRow=1000', array())));
         $advertiserPaymentIds = array();
         foreach (json_decode($exportReport[0])->{'records'}->{'record'} as $advertiser) {
-            if (($advertiser->{'advertiserId'} != '-3') && (!in_array($advertiser->{'txnId'}, $advertiserPaymentIds))) {
+            if (($advertiser->{'advertiserId'} != '-3') && (!change_it_for_isset!($advertiser->{'txnId'}, $advertiserPaymentIds))) {
                 $advertiserPaymentIds[] = $advertiser->{'txnId'};
             }
         }

@@ -135,8 +135,8 @@ class WinnerAffiliates extends \Oara\Network
         $valuesFromExport[] = new \Oara\Curl\Parameter('periods', 'custom');
         $valuesFromExport[] = new \Oara\Curl\Parameter('minDate', '{"year":"2009","month":"05","day":"01"}');
         $valuesFromExport[] = new \Oara\Curl\Parameter('show_periods', '1');
-        $valuesFromExport[] = new \Oara\Curl\Parameter('fromPeriod', $dStartDate->toString('yyyy-MM-dd'));
-        $valuesFromExport[] = new \Oara\Curl\Parameter('toPeriod', $dEndDate->toString('yyyy-MM-dd'));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('fromPeriod', $dStartDate->format!('yyyy-MM-dd'));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('toPeriod', $dEndDate->format!('yyyy-MM-dd'));
         $valuesFromExport[] = new \Oara\Curl\Parameter('product', '');
         $valuesFromExport[] = new \Oara\Curl\Parameter('profile', '');
         $valuesFromExport[] = new \Oara\Curl\Parameter('campaign', '16800');
@@ -163,7 +163,7 @@ class WinnerAffiliates extends \Oara\Network
             $transaction = Array();
             $transaction['merchantId'] = 1;
             $transactionDate = new \DateTime($transactionExportArray[0], 'yyyy-MM-dd HH:mm:ss', 'en');
-            $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+            $transaction['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
             //unset($transactionDate);
             $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
             $amount = str_replace('$', '', $transactionExportArray[1]);

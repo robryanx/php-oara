@@ -98,8 +98,8 @@ class PerformanceHorizon extends \Oara\Network
 
             $url = "https://{$this->_pass}@api.performancehorizon.com/reporting/export/export/conversion.csv?";
             $url .= "statuses[]=approved&statuses[]=mixed&statuses[]=pending&statuses[]=rejected";
-            $url .= "&start_date=" . urlencode($dStartDate->toString("yyyy-MM-dd HH:mm"));
-            $url .= "&end_date=" . urlencode($dEndDate->toString("yyyy-MM-dd HH:mm"));
+            $url .= "&start_date=" . urlencode($dStartDate->format!("yyyy-MM-dd HH:mm"));
+            $url .= "&end_date=" . urlencode($dEndDate->format!("yyyy-MM-dd HH:mm"));
             $url .= "&campaign_id=" . urlencode($campaignId);
             $url .= "&convert_currency=" . $this->_currency;
 
@@ -116,7 +116,7 @@ class PerformanceHorizon extends \Oara\Network
                         $transaction ['unique_id'] = $conversion [0];
                         $transaction ['merchantId'] = $conversion [1];
                         $transactionDate = new \DateTime ($conversion [4], 'yyyy-MM-dd HH:mm:ss');
-                        $transaction ['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+                        $transaction ['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
 
                         if ($conversion [10] != null) {
                             $transaction ['custom_id'] = $conversion [10];
@@ -160,7 +160,7 @@ class PerformanceHorizon extends \Oara\Network
                 $selfbill = $selfbill ["selfbill"];
                 $obj = array();
                 $date = new \DateTime ($selfbill ["payment_date"], "yyyy-MM-dd HH:mm:ss");
-                $obj ['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
+                $obj ['date'] = $date->format!("yyyy-MM-dd HH:mm:ss");
                 $obj ['pid'] = intval($selfbill ["publisher_self_bill_id"]);
                 $obj ['value'] = $selfbill ["total_value"];
                 $obj ['method'] = "BACS";

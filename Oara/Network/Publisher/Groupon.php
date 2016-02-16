@@ -153,7 +153,7 @@ class Groupon extends \Oara\Network
         for ($j = 0; $j < $dateArraySize; $j++) {
             $date = $dateArray[$j];
 
-            $url = "https://partner-int-api.groupon.com/reporting/v2/order.csv?clientId={$this->_credentials['apiPassword']}&group=order&date={$date->toString("yyyy-MM-dd")}";
+            $url = "https://partner-int-api.groupon.com/reporting/v2/order.csv?clientId={$this->_credentials['apiPassword']}&group=order&date={$date->format!("yyyy-MM-dd")}";
             $rch = curl_init();
             $options = $this->_options;
             curl_setopt($rch, CURLOPT_URL, $url);
@@ -167,7 +167,7 @@ class Groupon extends \Oara\Network
                 $transactionExportArray = str_getcsv($exportData[$i], ",");
                 $transaction = Array();
                 $transaction['merchantId'] = "1";
-                $transaction['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
+                $transaction['date'] = $date->format!("yyyy-MM-dd HH:mm:ss");
                 $transaction['unique_id'] = $transactionExportArray[0];
                 $transaction['currency'] = $transactionExportArray[4];
 

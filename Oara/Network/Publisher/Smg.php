@@ -218,7 +218,7 @@ class Smg extends \Oara\Network
         $filter = new Zend_Filter_LocalizedToNormalized(array('precision' => 2));
 
         //New Interface
-        $uri = "https://" . $this->_accountSid . ":" . $this->_authToken . "@api.impactradius.com/2010-09-01/Mediapartners/" . $this->_accountSid . "/Actions?ActionDateStart=" . $dStartDate->toString('yyyy-MM-ddTHH:mm:ss') . "-00:00&ActionDateEnd=" . $dEndDate->toString('yyyy-MM-ddTHH:mm:ss') . "-00:00";
+        $uri = "https://" . $this->_accountSid . ":" . $this->_authToken . "@api.impactradius.com/2010-09-01/Mediapartners/" . $this->_accountSid . "/Actions?ActionDateStart=" . $dStartDate->format!('yyyy-MM-ddTHH:mm:ss') . "-00:00&ActionDateEnd=" . $dEndDate->format!('yyyy-MM-ddTHH:mm:ss') . "-00:00";
         $res = simplexml_load_file($uri);
         if ($res) {
 
@@ -232,7 +232,7 @@ class Smg extends \Oara\Network
                     $transaction['merchantId'] = (int)$action->CampaignId;
 
                     $transactionDate = new \DateTime((string)$action->EventDate, "yyyy-MM-dd HH:mm:ss");
-                    $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+                    $transaction['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
 
                     $transaction['unique_id'] = (string)$action->Id;
                     if ((string)$action->SharedId != '') {
@@ -292,7 +292,7 @@ class Smg extends \Oara\Network
 
             $date = new \DateTime($paymentExportArray[1], "dd MMM, yyyy");
 
-            $obj['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
+            $obj['date'] = $date->format!("yyyy-MM-dd HH:mm:ss");
             $obj['pid'] = $paymentExportArray[0];
             $obj['method'] = 'BACS';
             if (preg_match('/[-+]?[0-9]*,?[0-9]*\.?[0-9]+/', $paymentExportArray[6], $matches)) {

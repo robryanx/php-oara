@@ -141,8 +141,8 @@ class ParkAndGo extends \Oara\Network
         $exportParams = array(
             new \Oara\Curl\Parameter('agentcode', $this->_credentials['user']),
             new \Oara\Curl\Parameter('pword', $this->_credentials['password']),
-            new \Oara\Curl\Parameter('fromdate', $dStartDate->toString("dd-MM-yyyy")),
-            new \Oara\Curl\Parameter('todate', $dEndDate->toString("dd-MM-yyyy")),
+            new \Oara\Curl\Parameter('fromdate', $dStartDate->format!("dd-MM-yyyy")),
+            new \Oara\Curl\Parameter('todate', $dEndDate->format!("dd-MM-yyyy")),
             new \Oara\Curl\Parameter('rqtype', "report")
         );
         $urls[] = new \Oara\Curl\Request('https://www.parkandgo.co.uk/agents/', $exportParams);
@@ -164,7 +164,7 @@ class ParkAndGo extends \Oara\Network
             $transaction ['merchantId'] = 1;
             $transaction ['unique_id'] = $transactionExportArray [0];
             $transactionDate = new \DateTime ($transactionExportArray [2], 'yyyy-MM-dd 00:00:00', 'en');
-            $transaction ['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+            $transaction ['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
             unset ($transactionDate);
             $transaction ['status'] = \Oara\Utilities::STATUS_PENDING;
             if ($today > $arrivalDate) {

@@ -110,13 +110,13 @@ class Effiliation extends \Oara\Network
     {
         $totalTransactions = array();
 
-        $url = 'http://api.effiliation.com/apiv2/transaction.csv?key=' . $this->_credentials["apiPassword"] . '&start=' . $dStartDate->toString("dd/MM/yyyy") . '&end=' . $dEndDate->toString("dd/MM/yyyy") . '&type=date';
+        $url = 'http://api.effiliation.com/apiv2/transaction.csv?key=' . $this->_credentials["apiPassword"] . '&start=' . $dStartDate->format!("dd/MM/yyyy") . '&end=' . $dEndDate->format!("dd/MM/yyyy") . '&type=date';
         $content = utf8_encode(file_get_contents($url));
         $exportData = str_getcsv($content, "\n");
         $num = count($exportData);
         for ($i = 1; $i < $num; $i++) {
             $transactionExportArray = str_getcsv($exportData[$i], "|");
-            if (in_array((int)$transactionExportArray[2], $merchantList)) {
+            if (change_it_for_isset!((int)$transactionExportArray[2], $merchantList)) {
                 /*
                 $numFields = 0;
                 foreach ($transactionExportArray as $fieldValue){

@@ -175,8 +175,8 @@ class Shuttlefare extends \Oara\Network
         $totalTransactions = array();
 
         $valuesFromExport = array(
-            new \Oara\Curl\Parameter('payment[from]', $dStartDate->toString("MM/dd/yyyy")),
-            new \Oara\Curl\Parameter('payment[to]', $dEndDate->toString("MM/dd/yyyy")),
+            new \Oara\Curl\Parameter('payment[from]', $dStartDate->format!("MM/dd/yyyy")),
+            new \Oara\Curl\Parameter('payment[to]', $dEndDate->format!("MM/dd/yyyy")),
         );
 
         $rch = curl_init();
@@ -201,7 +201,7 @@ class Shuttlefare extends \Oara\Network
                 $transaction ['merchantId'] = 1;
                 $transaction ['unique_id'] = $transactionExportArray [0];
                 $transactionDate = new \DateTime ($transactionExportArray [7], 'MM/dd/yyyy');
-                $transaction ['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+                $transaction ['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
                 $transaction ['status'] = \Oara\Utilities::STATUS_CONFIRMED;
                 $transaction ['amount'] = \Oara\Utilities::parseDouble(preg_replace('/[^0-9\.,]/', "", $transactionExportArray [2]));
                 $transaction ['commission'] = \Oara\Utilities::parseDouble(preg_replace('/[^0-9\.,]/', "", $transactionExportArray [3]));

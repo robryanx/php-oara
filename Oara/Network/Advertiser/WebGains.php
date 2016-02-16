@@ -211,12 +211,12 @@ class WebGains extends \Oara\Network
         $valuesFromExport[] = new \Oara\Curl\Parameter('mode', 'generate');
         $valuesFromExport[] = new \Oara\Curl\Parameter('columnsSelected', 'affiliate,merchant,program,commission,value,date,orderReference,clickthroughTime,productId,transactionId,status');
         $valuesFromExport[] = new \Oara\Curl\Parameter('period', 'custom');
-        $valuesFromExport[] = new \Oara\Curl\Parameter('startday', $dStartDate->toString("d"));
-        $valuesFromExport[] = new \Oara\Curl\Parameter('startmonth', $dStartDate->toString("M"));
-        $valuesFromExport[] = new \Oara\Curl\Parameter('startyear', $dStartDate->toString("yyyy"));
-        $valuesFromExport[] = new \Oara\Curl\Parameter('endday', $dEndDate->toString("d"));
-        $valuesFromExport[] = new \Oara\Curl\Parameter('endmonth', $dEndDate->toString("M"));
-        $valuesFromExport[] = new \Oara\Curl\Parameter('endyear', $dEndDate->toString("yyyy"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('startday', $dStartDate->format!("d"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('startmonth', $dStartDate->format!("M"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('startyear', $dStartDate->format!("yyyy"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('endday', $dEndDate->format!("d"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('endmonth', $dEndDate->format!("M"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('endyear', $dEndDate->format!("yyyy"));
         foreach ($merchantList as $merchantId) {
             $valuesFromExport[] = new \Oara\Curl\Parameter('program[]', $merchantId);
         }
@@ -246,7 +246,7 @@ class WebGains extends \Oara\Network
                 $transaction = array();
                 $transaction['merchantId'] = $transactionExportArray[4];
                 $transactionDate = new \DateTime($transactionExportArray[9], "dd/MM/yy HH:mm:ss");
-                $transaction["date"] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+                $transaction["date"] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
                 $transaction['unique_id'] = $transactionExportArray[13];
 
                 $transaction['status'] = null;

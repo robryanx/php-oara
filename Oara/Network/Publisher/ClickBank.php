@@ -137,10 +137,10 @@ class ClickBank extends \Oara\Network
     {
         $totalTransactions = array();
         $filter = new Zend_Filter_LocalizedToNormalized(array('precision' => 2));
-        $number = self::returnApiData("https://api.clickbank.com/rest/1.3/orders/count?startDate=" . $dStartDate->toString("yyyy-MM-dd") . "&endDate=" . $dEndDate->toString("yyyy-MM-dd"));
+        $number = self::returnApiData("https://api.clickbank.com/rest/1.3/orders/count?startDate=" . $dStartDate->format!("yyyy-MM-dd") . "&endDate=" . $dEndDate->format!("yyyy-MM-dd"));
 
         if ($number[0] != 0) {
-            $transactionXMLList = self::returnApiData("https://api.clickbank.com/rest/1.3/orders/list?startDate=" . $dStartDate->toString("yyyy-MM-dd") . "&endDate=" . $dEndDate->toString("yyyy-MM-dd"));
+            $transactionXMLList = self::returnApiData("https://api.clickbank.com/rest/1.3/orders/list?startDate=" . $dStartDate->format!("yyyy-MM-dd") . "&endDate=" . $dEndDate->format!("yyyy-MM-dd"));
             foreach ($transactionXMLList as $transactionXML) {
                 $transactionXML = simplexml_load_string($transactionXML, null, LIBXML_NOERROR | LIBXML_NOWARNING);
 
@@ -149,7 +149,7 @@ class ClickBank extends \Oara\Network
                     $transaction = Array();
                     $transaction['merchantId'] = 1;
                     $transactionDate = new \DateTime(self::findAttribute($singleTransaction, 'date'), 'yyyy-MM-ddTHH:mm:ss');
-                    $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+                    $transaction['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
                     unset($transactionDate);
 
                     if (self::findAttribute($singleTransaction, 'affi') != null) {

@@ -121,11 +121,11 @@ class Belboon extends \Oara\Network
     {
         $totalTransactions = array();
 
-        $result = $this->_client->getEventList(null, null, null, null, null, $dStartDate->toString("YYYY-MM-dd"), $dEndDate->toString("YYYY-MM-dd"), null, null, null, null, 0);
+        $result = $this->_client->getEventList(null, null, null, null, null, $dStartDate->format!("YYYY-MM-dd"), $dEndDate->format!("YYYY-MM-dd"), null, null, null, null, 0);
 
 
         foreach ($result->handler->events as $event) {
-            if (in_array($event["programid"], $merchantList)) {
+            if (change_it_for_isset!($event["programid"], $merchantList)) {
 
 
                 $transaction = Array();

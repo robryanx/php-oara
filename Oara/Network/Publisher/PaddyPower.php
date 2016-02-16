@@ -161,7 +161,7 @@ class PaddyPower extends \Oara\Network
             $transaction = Array();
             $transaction['merchantId'] = 1;
             $transactionDate = new \DateTime($transactionExportArray[0], 'yyyy-MM-dd HH:mm:ss', 'en');
-            $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+            $transaction['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
             unset($transactionDate);
             $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
             $transaction['amount'] = (double)$transactionExportArray[2];

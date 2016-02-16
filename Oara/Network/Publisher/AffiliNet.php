@@ -30,73 +30,24 @@ namespace Oara\Network\Publisher;
  */
 class AffiliNet extends \Oara\Network
 {
-    /**
-     * Soap client.
-     */
     private $_client = null;
-    /**
-     * Soap token.
-     */
     private $_token = null;
-    /*
-     * User
-     */
-    private $_user = null;
-    /*
-     * User
-     */
-    private $_password = null;
-
-    /*
-     * PaymentHistory
-     */
     private $_paymentHistory = null;
-
     /**
-     * Converter configuration for the merchants.
-     * @var array
-     */
-    private $_merchantConverterConfiguration = Array('ProgramId' => 'cid',
-        'ProgramTitle' => 'name',
-        'Url' => 'url',
-        'Description' => 'description'
-    );
-    /**
-     * Converter configuration for the transactions.
-     * @var array
-     */
-    private $_transactionConverterConfiguration = Array('TransactionStatus' => 'status',
-        'TransactionId' => 'unique_id',
-        'PublisherCommission' => 'commission',
-        'NetPrice' => 'amount',
-        'RegistrationDate' => 'date',
-        'ProgramId' => 'merchantId',
-        'SubId' => 'custom_id'
-    );
-
-    /**
-     * Converter configuration for the transactions for Payments.
-     * @var array
-     */
-    private $_transactionPaymentsConverterConfiguration = Array('TransactionStatus' => 'status',
-        'TransactionId' => 'unique_id',
-        'PublisherCommission' => 'commission',
-        'NetPrice' => 'amount',
-        'CheckDate' => 'date',
-        'ProgramId' => 'merchantId',
-        'SubId' => 'custom_id'
-    );
-
-    /**
-     * Constructor.
-     * @param $affilinet
-     * @return An_Api
+     * @param $credentials
      */
     public function login($credentials)
     {
-        $this->_user = $credentials['user'];
-        $this->_password = $credentials['password'];
+        $user = $credentials['user'];
+        $password = $credentials['password'];
 
+        //Setting the client.
+        $this->_client = new \SoapClient('https://api.affili.net/V2.0/Logon.svc?wsdl', array('compression' => SOAP_COMPRESSION_ACCEPT | SOAP_COMPRESSION_GZIP | SOAP_COMPRESSION_DEFLATE, 'soap_version' => SOAP_1_1));
+        $this->_token = $this->_client->Logon(array(
+            'Username' => $user,
+            'Password' => $password,
+            'WebServiceType' => 'Publisher'
+        ));
     }
 
     /**
@@ -120,25 +71,25 @@ class AffiliNet extends \Oara\Network
     }
 
     /**
-     * Check the connection
+     * @return bool
      */
     public function checkConnection()
     {
         $connection = true;
-        self::Login();
+        self::login();
         return $connection;
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Base#getMerchantList()
+     * @return array
+     * @throws Exception
      */
     public function getMerchantList()
     {
+        $merchantListResult = array();
         //Set the webservice
         $publisherProgramServiceUrl = 'https://api.affili.net/V2.0/PublisherProgram.svc?wsdl';
-        $publisherProgramService = new Oara_Import_Soap_Client($publisherProgramServiceUrl, array('compression' => SOAP_COMPRESSION_ACCEPT | SOAP_COMPRESSION_GZIP | SOAP_COMPRESSION_DEFLATE,
-            'soap_version' => SOAP_1_1));
+        $publisherProgramService = new \SoapClient($publisherProgramServiceUrl, array('compression' => SOAP_COMPRESSION_ACCEPT | SOAP_COMPRESSION_GZIP | SOAP_COMPRESSION_DEFLATE, 'soap_version' => SOAP_1_1));
         //Call the function
         $params = Array('Query' => '');
         $merchantList = self::affilinetCall('merchant', $publisherProgramService, $params);
@@ -148,71 +99,73 @@ class AffiliNet extends \Oara\Network
                 $merchant = $merchantList->Programs->ProgramSummary;
                 $merchantList = array();
                 $merchantList[] = $merchant;
-                $merchantList = \Oara\Utilities::soapConverter($merchantList, $this->_merchantConverterConfiguration);
             } else {
                 $merchantList = $merchantList->Programs->ProgramSummary;
-                $merchantList = \Oara\Utilities::soapConverter($merchantList, $this->_merchantConverterConfiguration);
             }
+
+            foreach ($merchantList as $merchant){
+                $obj = array();
+                $obj['cid'] = $merchant->ProgramId;
+                $obj['name'] = $merchant->ProgramTitle;
+                $obj['url'] = $merchant->Url;
+                $merchantListResult[] = $obj;
+            }
+
         } else {
-            $merchantList = array();
+            $merchantListResult = array();
         }
 
-        return $merchantList;
+        return $merchantListResult;
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Base#getTransactionList($merchantId,$dStartDate,$dEndDate)
+     * @param null $merchantList
+     * @param \DateTime|null $dStartDate
+     * @param \DateTime|null $dEndDate
+     * @return array
+     * @throws Exception
      */
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
         $totalTransactions = array();
 
-
-        //Set the webservice
         $publisherStatisticsServiceUrl = 'https://api.affili.net/V2.0/PublisherStatistics.svc?wsdl';
-        $publisherStatisticsService = new Oara_Import_Soap_Client($publisherStatisticsServiceUrl, array('compression' => SOAP_COMPRESSION_ACCEPT | SOAP_COMPRESSION_GZIP | SOAP_COMPRESSION_DEFLATE,
-            'soap_version' => SOAP_1_1));
-        $iterationNumber = self::calculeIterationNumber(count($merchantList), 100);
+        $publisherStatisticsService = new \SoapClient($publisherStatisticsServiceUrl, array('compression' => SOAP_COMPRESSION_ACCEPT | SOAP_COMPRESSION_GZIP | SOAP_COMPRESSION_DEFLATE, 'soap_version' => SOAP_1_1));
+        $iterationNumber = self::calculeIterationNumber(\count($merchantList), 100);
 
         for ($currentIteration = 0; $currentIteration < $iterationNumber; $currentIteration++) {
-            $merchantListSlice = array_slice($merchantList, 100 * $currentIteration, 100);
+            $merchantListSlice = \array_slice($merchantList, 100 * $currentIteration, 100);
             $merchantListAux = array();
             foreach ($merchantListSlice as $merchant) {
                 $merchantListAux[] = (string)$merchant;
             }
-
-
-            //Call the function
             $params = array(
-                'StartDate' => strtotime($dStartDate->toString("yyyy-MM-dd")),
-                'EndDate' => strtotime($dEndDate->toString("yyyy-MM-dd")),
+                'StartDate' => \strtotime($dStartDate->format("Y-m-d")),
+                'EndDate' => \strtotime($dEndDate->format("Y-m-d")),
                 'TransactionStatus' => 'All',
-                'ProgramIds' => $merchantListAux,
-                /*
-                 'SubId' => '',
-                 'ProgramTypes' => 'All',
-                 'MaximumRecords' => '0',
-                 'ValuationType' => 'DateOfRegistration'
-                 */
+                'ProgramIds' => $merchantListAux
             );
             $currentPage = 1;
             $transactionList = self::affilinetCall('transaction', $publisherStatisticsService, $params, 0, $currentPage);
 
             while (isset($transactionList->TotalRecords) && $transactionList->TotalRecords > 0 && isset($transactionList->TransactionCollection->Transaction)) {
                 $transactionCollection = array();
-                if (!is_array($transactionList->TransactionCollection->Transaction)) {
+                if (!\is_array($transactionList->TransactionCollection->Transaction)) {
                     $transactionCollection[] = $transactionList->TransactionCollection->Transaction;
                 } else {
                     $transactionCollection = $transactionList->TransactionCollection->Transaction;
                 }
 
-                $transactionListObject = \Oara\Utilities::soapConverter($transactionCollection, $this->_transactionConverterConfiguration);
+                foreach ($transactionCollection as $transactionObject){
 
-                foreach ($transactionListObject as $transaction) {
-                    //$transaction['merchantId'] = 3901;
-                    $tDate = new \DateTime($transaction["date"], "yyyy-MM-ddTHH:mm:ss");
-                    $transaction["date"] = $tDate->toString("yyyy-MM-dd HH:mm:ss");
+                    $transaction = array();
+                    $transaction["status"] = $transactionObject->TransactionStatus;
+                    $transaction["unique_id"] = $transactionObject->TransactionId;
+                    $transaction["commission"] = $transactionObject->PublisherCommission;
+                    $transaction["amount"] = $transactionObject->NetPrice;
+                    $transaction["date"] = $transactionObject->RegistrationDate;
+                    $transaction["merchantId"] = $transactionObject->ProgramId;
+                    $transaction["custom_id"] = $transactionObject->SubId;
                     if ($transaction['status'] == 'Confirmed') {
                         $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
                     } else
@@ -233,55 +186,28 @@ class AffiliNet extends \Oara\Network
     }
 
     /**
-     * Log in the API and get the data.
+     * @return array
+     * @throws Exception
      */
-    public function Login()
-    {
-        $wsdlUrl = 'https://api.affili.net/V2.0/Logon.svc?wsdl';
-
-        //Setting the client.
-        $this->_client = new Oara_Import_Soap_Client($wsdlUrl, array('compression' => SOAP_COMPRESSION_ACCEPT | SOAP_COMPRESSION_GZIP | SOAP_COMPRESSION_DEFLATE,
-            'soap_version' => SOAP_1_1));
-        $demoPublisherId = 403233; // one of the publisher IDs of our demo database
-        $developerSettings = array('SandboxPublisherID' => $demoPublisherId);
-        $this->_token = $this->_client->Logon(array(
-            'Username' => $this->_user,
-            'Password' => $this->_password,
-            'WebServiceType' => 'Publisher',
-            //'DeveloperSettings' => $developerSettings
-        ));
-        //echo "The token ". $this->_token ." expires:".$this->_client->GetIdentifierExpiration($this->_token)."\n\n";
-    }
-
-    /**
-     * (non-PHPdoc)
-     * @see Oara/Network/Base#getPaymentHistory()
-     */
-
     public function getPaymentHistory()
     {
-        $paymentHistory = array();
-        //Set the webservice
 
-        //At first, we need to be sure that there are some data.
-        $auxStartDate = new \DateTime("01-01-1990", "dd-MM-yyyy");
-        $auxStartDate->setHour("00");
-        $auxStartDate->setMinute("00");
-        $auxStartDate->setSecond("00");
+        $paymentHistory = array();
+        $auxStartDate = new \DateTime("2000-01-01");
+        $auxStartDate->setTime(0,0);
         $auxEndDate = new \DateTime();
         $params = array(
             'CredentialToken' => $this->_token,
             'PublisherId' => $this->_user,
-            'StartDate' => strtotime($auxStartDate->toString("yyyy-MM-dd")),
-            'EndDate' => strtotime($auxEndDate->toString("yyyy-MM-dd")),
+            'StartDate' => \strtotime($auxStartDate->format("Y-m-d")),
+            'EndDate' => \strtotime($auxEndDate->format("Y-m-d")),
         );
         $accountServiceUrl = 'https://api.affili.net/V2.0/AccountService.svc?wsdl';
-        $accountService = new Oara_Import_Soap_Client($accountServiceUrl, array('compression' => SOAP_COMPRESSION_ACCEPT | SOAP_COMPRESSION_GZIP | SOAP_COMPRESSION_DEFLATE,
-            'soap_version' => SOAP_1_1));
+        $accountService = new \SoapClient($accountServiceUrl, array('compression' => SOAP_COMPRESSION_ACCEPT | SOAP_COMPRESSION_GZIP | SOAP_COMPRESSION_DEFLATE, 'soap_version' => SOAP_1_1));
 
         $paymentList = self::affilinetCall('payment', $accountService, $params);
 
-        if (isset($paymentList->PaymentInformationCollection) && !is_array($paymentList->PaymentInformationCollection)) {
+        if (isset($paymentList->PaymentInformationCollection) && !\is_array($paymentList->PaymentInformationCollection)) {
             $paymentList->PaymentInformationCollection = array($paymentList->PaymentInformationCollection);
         }
         if (isset($paymentList->PaymentInformationCollection)) {
@@ -325,17 +251,17 @@ class AffiliNet extends \Oara\Network
                     $result = $ws->GetPayments($params);
                     break;
                 default:
-                    throw new Exception('No Affilinet Call available');
+                    throw new \Exception('No Affilinet Call available');
                     break;
             }
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             //checking if the token is valid
-            if (preg_match("/Login failed/", $e->getMessage()) && $try < 5) {
-                self::Login();
+            if (\preg_match("/Login failed/", $e->getMessage()) && $try < 5) {
+                self::login();
                 $try++;
                 $result = self::affilinetCall($call, $ws, $params, $try, $currentPage);
             } else {
-                throw new Exception("problem with Affilinet API, no login fault");
+                throw new \Exception("problem with Affilinet API, no login fault");
             }
         }
 
@@ -344,9 +270,9 @@ class AffiliNet extends \Oara\Network
     }
 
     /**
-     * Calculate the number of iterations needed
      * @param $rowAvailable
      * @param $rowsReturned
+     * @return int
      */
     private function calculeIterationNumber($rowAvailable, $rowsReturned)
     {

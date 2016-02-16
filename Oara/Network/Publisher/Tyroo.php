@@ -252,7 +252,7 @@ class Tyroo extends \Oara\Network
                             'val1' => $this->_sessionID,
                             'val2' => $this->_publisherID,
                             'val3' => "1900-01-01",
-                            'val4' => $date->toString("yyyy-MM-dd"),
+                            'val4' => $date->format!("yyyy-MM-dd"),
                             'val5' => '',
                             'val6' => ''));
             $opts = array('http' =>array('method'  => 'POST',
@@ -286,8 +286,8 @@ class Tyroo extends \Oara\Network
                 'method' => 'getPublisherDailyStatistics',
                 'val1' => $this->_sessionIDCurl,
                 'val2' => $this->_publisherID,
-                'val3' => $dStartDate->toString("yyyy-MM-dd", 'en_US'),
-                'val4' => $dEndDate->toString("yyyy-MM-dd", 'en_US'),
+                'val3' => $dStartDate->format!("yyyy-MM-dd", 'en_US'),
+                'val4' => $dEndDate->format!("yyyy-MM-dd", 'en_US'),
                 'val5' => 'Asia/Calcutta',
                 'val6' => ''));
         $opts = array('http' => array('method' => 'POST',

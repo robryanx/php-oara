@@ -33,15 +33,12 @@ class Afiliant extends \Oara\Network
 
 
     /**
-     * Client
-     * @var unknown_type
+     * @var null
      */
     private $_client = null;
 
     /**
-     * Constructor and Login
-     * @param $buy
-     * @return Buy_Api
+     * @param $credentials
      */
     public function login($credentials)
     {
@@ -49,15 +46,17 @@ class Afiliant extends \Oara\Network
         $user = $credentials['user'];
         $password = $credentials['password'];
 
+        $this->_client = new \Oara\Curl\Access($credentials);
+
         $loginUrl = 'https://ssl.afiliant.com/publisher/index.php?a=auth';
-
-
         $valuesLogin = array(new \Oara\Curl\Parameter('login', $user),
             new \Oara\Curl\Parameter('password', $password),
             new \Oara\Curl\Parameter('submit', "")
         );
 
-        $this->_client = new \Oara\Curl\Access($credentials);
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request($loginUrl, $valuesLogin);
+        $this->_client->post($urls);
 
     }
 
@@ -82,7 +81,7 @@ class Afiliant extends \Oara\Network
     }
 
     /**
-     * Check the connection
+     * @return bool
      */
     public function checkConnection()
     {
@@ -90,15 +89,14 @@ class Afiliant extends \Oara\Network
         $urls = array();
         $urls[] = new \Oara\Curl\Request('http://www.afiliant.com/publisher/index.php', array());
         $exportReport = $this->_client->get($urls);
-        if (!preg_match("/index.php?a=logout/", $exportReport[0], $matches)) {
+        if (!\preg_match("/index.php?a=logout/", $exportReport[0], $matches)) {
             $connection = true;
         }
         return $connection;
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getMerchantList()
+     * @return array
      */
     public function getMerchantList()
     {
@@ -112,13 +110,15 @@ class Afiliant extends \Oara\Network
         $urls[] = new \Oara\Curl\Request('http://www.afiliant.com/publisher/index.php?', $valuesFromExport);
         $exportReport = $this->_client->get($urls);
 
-        $dom = new Zend_Dom_Query($exportReport[0]);
-        $results = $dom->query('#id_shop');
-        $merchantLines = $results->current()->childNodes;
+        $doc = new \DOMDocument();
+        @$doc->loadHTML($exportReport[0]);
+        $xpath = new \DOMXPath($doc);
+        $results = $xpath->query('//*[contains(concat(" ", normalize-space(@id), " "), " id_shop ")]');
+
+        $merchantLines = $results->item(0)->childNodes;
         for ($i = 0; $i < $merchantLines->length; $i++) {
             $cid = $merchantLines->item($i)->attributes->getNamedItem("value")->nodeValue;
-            if (is_numeric($cid)) {
-                $obj = array();
+            if (\is_numeric($cid)) {
                 $name = $merchantLines->item($i)->nodeValue;
                 $obj = array();
                 $obj['cid'] = $cid;
@@ -131,18 +131,21 @@ class Afiliant extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate)
+     * @param null $merchantList
+     * @param \DateTime|null $dStartDate
+     * @param \DateTime|null $dEndDate
+     * @return array
      */
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
         $totalTransactions = array();
+        $merchantMap = \Oara\Utilities::getMerchantNameMapFromMerchantList($merchantList);
 
         $valuesFromExport = array();
         $valuesFromExport[] = new \Oara\Curl\Parameter('c', 'stats');
         $valuesFromExport[] = new \Oara\Curl\Parameter('id_shop', '');
         $valuesFromExport[] = new \Oara\Curl\Parameter('a', 'listMonthDayOrder');
-        $valuesFromExport[] = new \Oara\Curl\Parameter('month', $dEndDate->get(\DateTime::YEAR) . "-" . $dEndDate->get(\DateTime::MONTH));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('month', $dEndDate->fromat("Y-m"));
         $valuesFromExport[] = new \Oara\Curl\Parameter('export', 'csv');
 
         $urls = array();
@@ -151,21 +154,20 @@ class Afiliant extends \Oara\Network
         $exportData = null;
         try {
             $exportReport = $this->_client->get($urls);
-            $exportData = str_getcsv($exportReport[0], "\r\n");
-        } catch (Exception $e) {
-            echo "No data";
+            $exportData = \str_getcsv($exportReport[0], "\r\n");
+        } catch (\Exception $e) {
+            echo "No data \n";
         }
         if ($exportData != null) {
-            $num = count($exportData);
+            $num = \count($exportData);
             for ($i = 0; $i < $num; $i++) {
-                $transactionExportArray = str_getcsv($exportData[$i], ";");
+                $transactionExportArray = \str_getcsv($exportData[$i], ";");
 
                 if (isset($merchantMap[$transactionExportArray[1]])) {
                     $transaction = Array();
                     $merchantId = (int)$merchantMap[$transactionExportArray[1]];
                     $transaction['merchantId'] = $merchantId;
-                    $transactionDate = new \DateTime($transactionExportArray[0], 'yyyy-MM-dd');
-                    $transaction['date'] = $transactionDate->toString("yyyy-MM-dd 00:00:00");
+                    $transaction['date'] = $transactionExportArray[0]." 00:00:00";
                     $transaction['unique_id'] = $transactionExportArray[3];
 
                     if (isset($transactionExportArray[8]) && $transactionExportArray[8] != null) {
@@ -189,31 +191,5 @@ class Afiliant extends \Oara\Network
         }
 
         return $totalTransactions;
-    }
-
-    /**
-     *
-     * /**
-     * (non-PHPdoc)
-     * @see Oara/Network/Base#getPaymentHistory()
-     */
-    public function getPaymentHistory()
-    {
-        $paymentHistory = array();
-
-        return $paymentHistory;
-    }
-
-    /**
-     *
-     * It returns the transactions for a payment
-     * @param int $paymentId
-     */
-    public function paymentTransactions($paymentId, $merchantList, $startDate)
-    {
-        $transactionList = array();
-
-
-        return $transactionList;
     }
 }

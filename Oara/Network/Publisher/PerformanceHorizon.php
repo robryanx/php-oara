@@ -131,8 +131,8 @@ class PerformanceHorizon extends \Oara\Network
 
                 $url = "https://{$this->_pass}@api.performancehorizon.com/reporting/report_publisher/publisher/$publisherId/conversion.json?";
                 $url .= "status=approved|mixed|pending|rejected";
-                $url .= "&start_date=" . urlencode($dStartDate->toString("yyyy-MM-dd HH:mm"));
-                $url .= "&end_date=" . urlencode($dEndDate->toString("yyyy-MM-dd HH:mm"));
+                $url .= "&start_date=" . urlencode($dStartDate->format!("yyyy-MM-dd HH:mm"));
+                $url .= "&end_date=" . urlencode($dEndDate->format!("yyyy-MM-dd HH:mm"));
                 $url .= "&offset=" . $offset;
 
                 $result = file_get_contents($url);
@@ -141,12 +141,12 @@ class PerformanceHorizon extends \Oara\Network
                 foreach ($conversionList["conversions"] as $conversion) {
                     $conversion = $conversion["conversion_data"];
                     $conversion["campaign_id"] = str_replace("l", "", $conversion["campaign_id"]);
-                    if (in_array($conversion["campaign_id"], $merchantList)) {
+                    if (change_it_for_isset!($conversion["campaign_id"], $merchantList)) {
                         $transaction = Array();
                         $transaction['unique_id'] = $conversion["conversion_id"];
                         $transaction['merchantId'] = $conversion["campaign_id"];
                         $transactionDate = new \DateTime($conversion["conversion_time"], 'yyyy-MM-dd HH:mm:ss');
-                        $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+                        $transaction['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
 
                         if ($conversion["publisher_reference"] != null) {
                             $transaction['custom_id'] = $conversion["publisher_reference"];
@@ -199,7 +199,7 @@ class PerformanceHorizon extends \Oara\Network
                 $selfbill = $selfbill["selfbill"];
                 $obj = array();
                 $date = new \DateTime($selfbill["payment_date"], "yyyy-MM-dd HH:mm:ss");
-                $obj['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
+                $obj['date'] = $date->format!("yyyy-MM-dd HH:mm:ss");
                 $obj['pid'] = intval($selfbill["publisher_self_bill_id"]);
                 $obj['value'] = $selfbill["total_value"];
                 $obj['method'] = "BACS";

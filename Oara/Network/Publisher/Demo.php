@@ -118,10 +118,10 @@ class Demo extends \Oara\Network
             $dateIndex = rand(0, count($dateArray) - 1);
             $merchantIndex = rand(0, count($merchantList) - 1);
             $transaction = array();
-            $transaction['unique_id'] = md5(mt_rand() . $dateArray[$dateIndex]->toString("yyyy-MM-dd HH:mm:ss"));
+            $transaction['unique_id'] = md5(mt_rand() . $dateArray[$dateIndex]->format!("yyyy-MM-dd HH:mm:ss"));
             $transaction['custom_id'] = "my_custom_id";
             $transaction['merchantId'] = $merchantList[$merchantIndex];
-            $transaction['date'] = $dateArray[$dateIndex]->toString("yyyy-MM-dd HH:mm:ss");
+            $transaction['date'] = $dateArray[$dateIndex]->format!("yyyy-MM-dd HH:mm:ss");
             $transactionAmount = rand(1, 1000);
             $transaction['amount'] = $transactionAmount;
             $transaction['commission'] = $transactionAmount / 10;
@@ -164,11 +164,11 @@ class Demo extends \Oara\Network
         for ($i = 0; $i < count($dateArray); $i++) {
             $dateMonth = $dateArray[$i];
             $obj = array();
-            $obj['date'] = $dateMonth->toString("yyyy-MM-dd HH:mm:ss");
+            $obj['date'] = $dateMonth->format!("yyyy-MM-dd HH:mm:ss");
             $value = rand(1, 1300);
             $obj['value'] = $value;
             $obj['method'] = 'BACS';
-            $obj['pid'] = $dateMonth->toString('yyyyMMdd');
+            $obj['pid'] = $dateMonth->format!('yyyyMMdd');
             $paymentHistory[] = $obj;
         }
         return $paymentHistory;

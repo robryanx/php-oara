@@ -111,18 +111,18 @@ class CommissionFactory extends \Oara\Network
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
         $transactions = array();
-        $transactionsExportList = self::request("https://api.commissionfactory.com.au/V1/Affiliate/Transactions?apiKey={$this->_apiKey}&fromDate={$dStartDate->toString("yyyy-MM-dd")}&toDate={$dEndDate->toString("yyyy-MM-dd")}");
+        $transactionsExportList = self::request("https://api.commissionfactory.com.au/V1/Affiliate/Transactions?apiKey={$this->_apiKey}&fromDate={$dStartDate->format!("yyyy-MM-dd")}&toDate={$dEndDate->format!("yyyy-MM-dd")}");
 
         foreach ($transactionsExportList as $transaction) {
 
-            if (in_array(( int )$transaction ["MerchantId"], $merchantList)) {
+            if (change_it_for_isset!(( int )$transaction ["MerchantId"], $merchantList)) {
 
                 $obj = Array();
 
                 $obj ['merchantId'] = $transaction ["MerchantId"];
 
                 $date = new \DateTime ($transaction ["DateCreated"], "yyyy-MM-ddTHH:mm:ss");
-                $obj ['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
+                $obj ['date'] = $date->format!("yyyy-MM-dd HH:mm:ss");
 
                 if ($transaction ["UniqueId"] != null) {
                     $obj ['custom_id'] = $transaction ["UniqueId"];
@@ -157,12 +157,12 @@ class CommissionFactory extends \Oara\Network
         $paymentHistory = array();
 
         $today = new \DateTime();
-        $paymentExportList = self::request("https://api.commissionfactory.com.au/V1/Affiliate/Payments?apiKey={$this->_apiKey}&fromDate=2000-01-01&toDate={$today->toString("yyyy-MM-dd")}");
+        $paymentExportList = self::request("https://api.commissionfactory.com.au/V1/Affiliate/Payments?apiKey={$this->_apiKey}&fromDate=2000-01-01&toDate={$today->format!("yyyy-MM-dd")}");
 
         foreach ($paymentExportList as $payment) {
             $obj = array();
             $date = new \DateTime ($payment["DateCreated"], "yyyy-MM-ddTHH:mm:ss");
-            $obj ['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
+            $obj ['date'] = $date->format!("yyyy-MM-dd HH:mm:ss");
             $obj ['pid'] = $payment["Id"];
             $obj ['value'] = $payment["Amount"];
             $obj ['method'] = 'BACS';

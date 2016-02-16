@@ -237,12 +237,12 @@ class WebGains extends \Oara\Network
                 }
             }
             foreach ($transactionList as $transactionObject) {
-                if (in_array($transactionObject->programID, $merchantList)) {
+                if (change_it_for_isset!($transactionObject->programID, $merchantList)) {
 
                     $transaction = array();
                     $transaction['merchantId'] = $transactionObject->programID;
                     $transactionDate = new \DateTime($transactionObject->date, "yyyy-MM-ddTHH:mm:ss");
-                    $transaction["date"] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+                    $transaction["date"] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
                     $transaction['unique_id'] = $transactionObject->transactionID;
                     if ($transactionObject->clickRef != null) {
                         $transaction['custom_id'] = $transactionObject->clickRef;
@@ -345,7 +345,7 @@ class WebGains extends \Oara\Network
 
             $registerLine = $registerLines->item($i)->childNodes;
             $date = new \DateTime($registerLine->item(0)->nodeValue, "dd/MM/yy");
-            $obj['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
+            $obj['date'] = $date->format!("yyyy-MM-dd HH:mm:ss");
             $value = $registerLine->item(2)->nodeValue;
             preg_match('/[0-9]+(,[0-9]{3})*(\.[0-9]{2})?$/', $value, $matches);
             $obj['value'] = \Oara\Utilities::parseDouble($matches[0]);

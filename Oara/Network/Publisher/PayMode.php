@@ -235,7 +235,7 @@ class PayMode extends \Oara\Network
         $dateList = \Oara\Utilities::daysOfDifference($dStartDate, $dEndDate);
         foreach ($dateList as $date) {
             $valuesFromExportTemp = \Oara\Utilities::cloneArray($valuesFromExport);
-            $valuesFromExportTemp[] = new \Oara\Curl\Parameter('date', $date->toString("MM/dd/yyyy"));
+            $valuesFromExportTemp[] = new \Oara\Curl\Parameter('date', $date->format!("MM/dd/yyyy"));
 
             $urls[] = new \Oara\Curl\Request('https://secure.paymode.com/paymode/reports-do_csv.jsp?closeJQS=true?', $valuesFromExportTemp);
         }
@@ -272,7 +272,7 @@ class PayMode extends \Oara\Network
                 $transaction['merchantId'] = 1;
                 $transaction['status'] = \Oara\Utilities::STATUS_PAID;
 
-                $transaction['date'] = $dateList[$i]->toString("yyyy-MM-dd HH:mm:ss");
+                $transaction['date'] = $dateList[$i]->format!("yyyy-MM-dd HH:mm:ss");
 
                 $transaction['amount'] = $valueCounter / count($dateList);
                 $transaction['commission'] = $commissionCounter / count($dateList);
@@ -312,8 +312,8 @@ class PayMode extends \Oara\Network
             $monthEndDate->setSecond(59);
 
             $valuesFromExport = array();
-            $valuesFromExport[] = new \Oara\Curl\Parameter('Begin_Date', $monthStartDate->toString("MM/dd/yyyy"));
-            $valuesFromExport[] = new \Oara\Curl\Parameter('End_Date', $monthEndDate->toString("MM/dd/yyyy"));
+            $valuesFromExport[] = new \Oara\Curl\Parameter('Begin_Date', $monthStartDate->format!("MM/dd/yyyy"));
+            $valuesFromExport[] = new \Oara\Curl\Parameter('End_Date', $monthEndDate->format!("MM/dd/yyyy"));
 
             $valuesFromExport[] = new \Oara\Curl\Parameter('cd', "c");
             $valuesFromExport[] = new \Oara\Curl\Parameter('disb', "false");
@@ -363,7 +363,7 @@ class PayMode extends \Oara\Network
                         $dateArray = str_getcsv($dateCsv[2], ";");
 
                         $paymentDate = new \DateTime($dateArray[1], 'dd-MMM-yyyy', 'en');
-                        $payment['date'] = $paymentDate->toString("yyyy-MM-dd HH:mm:ss");
+                        $payment['date'] = $paymentDate->format!("yyyy-MM-dd HH:mm:ss");
 
                         $paymentArray = str_getcsv($tableCsv[3], ";");
                         $payment['value'] = \Oara\Utilities::parseDouble(preg_replace('/[^0-9\.,]/', "", $paymentArray[3]));
@@ -382,7 +382,7 @@ class PayMode extends \Oara\Network
                             $paymentArray = str_getcsv($tableCsv[$i], ";");
                             $payment['pid'] = $paymentArray[0];
                             $paymentDate = new \DateTime($paymentArray[3], 'MM/dd/yyyy', 'en');
-                            $payment['date'] = $paymentDate->toString("yyyy-MM-dd HH:mm:ss");
+                            $payment['date'] = $paymentDate->format!("yyyy-MM-dd HH:mm:ss");
                             $payment['value'] = \Oara\Utilities::parseDouble($paymentArray[9]);
                             $payment['method'] = "BACS";
                             $paymentHistory[] = $payment;

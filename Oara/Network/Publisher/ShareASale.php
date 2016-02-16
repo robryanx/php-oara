@@ -145,17 +145,17 @@ class ShareASale extends \Oara\Network
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
         $totalTransactions = array();
-        $returnResult = self::makeCall("activity", "&dateStart=" . $dStartDate->toString("MM/dd/yyyy") . "&dateEnd=" . $dEndDate->toString("MM/dd/yyyy"));
+        $returnResult = self::makeCall("activity", "&dateStart=" . $dStartDate->format!("MM/dd/yyyy") . "&dateEnd=" . $dEndDate->format!("MM/dd/yyyy"));
         $exportData = str_getcsv($returnResult, "\r\n");
         $num = count($exportData);
         for ($i = 1; $i < $num; $i++) {
             $transactionExportArray = str_getcsv($exportData[$i], "|");
-            if (count($transactionExportArray) > 1 && in_array((int)$transactionExportArray[2], $merchantList)) {
+            if (count($transactionExportArray) > 1 && change_it_for_isset!((int)$transactionExportArray[2], $merchantList)) {
                 $transaction = Array();
                 $merchantId = (int)$transactionExportArray[2];
                 $transaction['merchantId'] = $merchantId;
                 $transactionDate = new \DateTime($transactionExportArray[3], 'MM-dd-yyyy HH:mm:ss');
-                $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+                $transaction['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
                 $transaction['unique_id'] = (int)$transactionExportArray[0];
 
                 if ($transactionExportArray[1] != null) {

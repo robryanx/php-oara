@@ -269,7 +269,7 @@ class Amazon extends \Oara\Network
                     $optionNumber = $optionList->length;
                     for ($i = 0; $i < $optionNumber; $i++) {
                         $idBoxName = $optionList->item($i)->attributes->getNamedItem("value")->nodeValue;
-                        if (!in_array($idBoxName, $idBox)) {
+                        if (!change_it_for_isset!($idBoxName, $idBox)) {
                             $idBox[] = $idBoxName;
                         }
                     }
@@ -325,7 +325,7 @@ class Amazon extends \Oara\Network
 
 
             //for ($j = 0; $j < $dateArraySize; $j++) {
-            //echo "day ".$dateArray[$j]->toString("d")."\n";
+            //echo "day ".$dateArray[$j]->format!("d")."\n";
             //echo round(memory_get_usage(true) / 1048576, 2)." megabytes \n";
             $try = 0;
             $done = false;
@@ -353,12 +353,12 @@ class Amazon extends \Oara\Network
     {
         $totalTransactions = array();
         $valuesFromExport = \Oara\Utilities::cloneArray($this->_exportTransactionParameters);
-        $valuesFromExport[] = new \Oara\Curl\Parameter('startDay', $startDate->toString("d"));
-        $valuesFromExport[] = new \Oara\Curl\Parameter('startMonth', (int)$startDate->toString("M") - 1);
-        $valuesFromExport[] = new \Oara\Curl\Parameter('startYear', $startDate->toString("yyyy"));
-        $valuesFromExport[] = new \Oara\Curl\Parameter('endDay', $endDate->toString("d"));
-        $valuesFromExport[] = new \Oara\Curl\Parameter('endMonth', (int)$endDate->toString("M") - 1);
-        $valuesFromExport[] = new \Oara\Curl\Parameter('endYear', $endDate->toString("yyyy"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('startDay', $startDate->format!("d"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('startMonth', (int)$startDate->format!("M") - 1);
+        $valuesFromExport[] = new \Oara\Curl\Parameter('startYear', $startDate->format!("yyyy"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('endDay', $endDate->format!("d"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('endMonth', (int)$endDate->format!("M") - 1);
+        $valuesFromExport[] = new \Oara\Curl\Parameter('endYear', $endDate->format!("yyyy"));
         $valuesFromExport[] = new \Oara\Curl\Parameter('idbox_tracking_id', $id);
 
         $urls = array();
@@ -393,7 +393,7 @@ class Amazon extends \Oara\Network
                 throw new Exception("Request failed");
             }
 
-            $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+            $transaction['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
             unset($transactionDate);
             if ($transactionExportArray[4] != null) {
                 $transaction['custom_id'] = $transactionExportArray[4];
@@ -436,8 +436,8 @@ class Amazon extends \Oara\Network
 
                     $obj = array();
                     $paymentDate = new \DateTime($paymentExportArray[0], "M d yyyy", "en");
-                    $obj['date'] = $paymentDate->toString("yyyy-MM-dd HH:mm:ss");
-                    $obj['pid'] = ($paymentDate->toString("yyyyMMdd") . substr((string)base_convert(md5($id), 16, 10), 0, 5));
+                    $obj['date'] = $paymentDate->format!("yyyy-MM-dd HH:mm:ss");
+                    $obj['pid'] = ($paymentDate->format!("yyyyMMdd") . substr((string)base_convert(md5($id), 16, 10), 0, 5));
                     $obj['method'] = 'BACS';
                     if (preg_match('/[0-9]*,?[0-9]*\.?[0-9]+/', $paymentExportArray[4], $matches)) {
                         $obj['value'] = \Oara\Utilities::parseDouble($matches[0]);

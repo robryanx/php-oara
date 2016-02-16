@@ -126,8 +126,8 @@ class Zanox extends \Oara\Network
         $urls [] = new \Oara\Curl\Request ("https://advertiser.zanox.com/advertisertransactionconfirmation/main/app?dest=sales&program=7641", array());
         $exportReport = $this->_client->get($urls);
 
-        $timestampStartDate = strtotime($dStartDate->toString("dd-MM-yyyy"));  //'05-08-2014'
-        $timestampEndDate = strtotime($dEndDate->toString("dd-MM-yyyy"));
+        $timestampStartDate = strtotime($dStartDate->format!("dd-MM-yyyy"));  //'05-08-2014'
+        $timestampEndDate = strtotime($dEndDate->format!("dd-MM-yyyy"));
 
         $timestampStartDate = $timestampStartDate - 3600;
         $timestampStartDate = $timestampStartDate . '000';
@@ -178,7 +178,7 @@ class Zanox extends \Oara\Network
                 $transaction['unique_id'] = $exportData[$j][2];
                 $transaction['merchantId'] = $this->_idProgram;
                 $transactionDate = new \DateTime($exportData[$j][12], 'dd/MM/yy HH:mm CEST');
-                $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+                $transaction['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
                 $transaction['amount'] = $exportData[$j][7];
                 $transaction['commission'] = $exportData[$j][8];
 

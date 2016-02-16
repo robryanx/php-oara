@@ -159,8 +159,8 @@ class SkyParkSecure extends \Oara\Network
         $urls = array();
         $exportParams = array(
             new \Oara\Curl\Parameter('data[query][agent]', $this->_agent),
-            new \Oara\Curl\Parameter('data[query][date1]', $dStartDate->toString("yyyy-MM-dd")),
-            new \Oara\Curl\Parameter('data[query][date2]', $dEndDate->toString("yyyy-MM-dd")),
+            new \Oara\Curl\Parameter('data[query][date1]', $dStartDate->format!("yyyy-MM-dd")),
+            new \Oara\Curl\Parameter('data[query][date2]', $dEndDate->format!("yyyy-MM-dd")),
             new \Oara\Curl\Parameter('data[query][api_key]', $this->_apiKey)
         );
         $urls[] = new \Oara\Curl\Request('http://www.skyparksecure.com/api/v4/jsonp/getSales?', $exportParams);
@@ -177,7 +177,7 @@ class SkyParkSecure extends \Oara\Network
             $transaction['custom_id'] = $booking->custom_id;
             $transactionDate = new \DateTime($booking->booking_date, 'yyyy.MMM.dd HH:mm:00', 'en');
             $pickupDate = new \DateTime($booking->dateA, 'yyyy.MMM.dd HH:mm:00', 'en');
-            $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+            $transaction['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
             $transaction['metadata'] = $booking->product_id;
             if ($booking->booking_mode == "Booked" || $booking->booking_mode == "Amended") {
                 $transaction['status'] = \Oara\Utilities::STATUS_PENDING;

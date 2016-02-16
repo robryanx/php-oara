@@ -40,8 +40,9 @@ class AffiliateWindow extends \Oara\Network
     private $_userId = null;
 
     /**
-     * AffiliateWindow constructor.
      * @param $credentials
+     * @throws \Exception
+     * @throws \Oara\Curl\Exception
      */
     public function login($credentials)
     {
@@ -155,7 +156,7 @@ class AffiliateWindow extends \Oara\Network
     }
 
     /**
-     * Check the connection
+     * @return bool
      */
     public function checkConnection()
     {
@@ -174,8 +175,7 @@ class AffiliateWindow extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Base#getMerchantList()
+     * @return array
      */
     public function getMerchantList()
     {
@@ -194,8 +194,10 @@ class AffiliateWindow extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Base#getTransactionList($merchantId,$dStartDate,$dEndDate)
+     * @param null $merchantList
+     * @param \DateTime|null $dStartDate
+     * @param \DateTime|null $dEndDate
+     * @return array
      */
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {

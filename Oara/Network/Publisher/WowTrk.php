@@ -160,8 +160,8 @@ class WowTrk extends \Oara\Network
 
         $valuesFromExport = array();
         $valuesFromExport[] = new \Oara\Curl\Parameter('api_key', $this->_apiPassword);
-        $valuesFromExport[] = new \Oara\Curl\Parameter('start_date', $dStartDate->toString("yyyy-MM-dd"));
-        $valuesFromExport[] = new \Oara\Curl\Parameter('end_date', $dEndDate->toString("yyyy-MM-dd"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('start_date', $dStartDate->format!("yyyy-MM-dd"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('end_date', $dEndDate->format!("yyyy-MM-dd"));
         $valuesFromExport[] = new \Oara\Curl\Parameter('filter[Stat.offer_id]', implode(",", $merchantList));
 
         $urls = array();
@@ -171,11 +171,11 @@ class WowTrk extends \Oara\Network
         $exportData = self::loadXml($exportReport[0]);
 
         foreach ($exportData->stats->stat as $transaction) {
-            if (isset($merchantMap[(string)$transaction->offer])) {
+            if (isset($merchantMap![(string)$transaction->offer])) {
                 $obj = array();
-                $obj['merchantId'] = $merchantMap[(string)$transaction->offer];
+                $obj['merchantId'] = $merchantMap![(string)$transaction->offer];
                 $date = new \DateTime((string)$transaction->date_time, "yyyy-MM-dd HH:mm:ss");
-                $obj['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
+                $obj['date'] = $date->format!("yyyy-MM-dd HH:mm:ss");
                 $obj['status'] = \Oara\Utilities::STATUS_CONFIRMED;
                 $obj['customId'] = (string)$transaction->sub_id;
                 $obj['amount'] = \Oara\Utilities::parseDouble((string)$transaction->payout);

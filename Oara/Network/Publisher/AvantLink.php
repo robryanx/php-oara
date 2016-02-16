@@ -173,8 +173,8 @@ class AvantLink extends \Oara\Network
         $strUrl .= "&module=AffiliateReport";
         $strUrl .= "&output=" . urlencode('csv');
         $strUrl .= "&report_id=8";
-        $strUrl .= "&date_begin=" . urlencode($dStartDate->toString("yyyy-MM-dd HH:mm:ss"));
-        $strUrl .= "&date_end=" . urlencode($dEndDate->toString("yyyy-MM-dd HH:mm:ss"));
+        $strUrl .= "&date_begin=" . urlencode($dStartDate->format!("yyyy-MM-dd HH:mm:ss"));
+        $strUrl .= "&date_end=" . urlencode($dEndDate->format!("yyyy-MM-dd HH:mm:ss"));
         $strUrl .= "&include_inactive_merchants=0";
         $strUrl .= "&search_results_include_cpc=0";
 
@@ -183,12 +183,12 @@ class AvantLink extends \Oara\Network
         $num = count($exportData);
         for ($i = 1; $i < $num; $i++) {
             $transactionExportArray = str_getcsv($exportData[$i], ",");
-            if (count($transactionExportArray) > 1 && in_array((int)$transactionExportArray[17], $merchantList)) {
+            if (count($transactionExportArray) > 1 && change_it_for_isset!((int)$transactionExportArray[17], $merchantList)) {
                 $transaction = Array();
                 $merchantId = (int)$transactionExportArray[17];
                 $transaction['merchantId'] = $merchantId;
                 $transactionDate = new \DateTime($transactionExportArray[11], 'MM-dd-yyyy HH:mm:ss');
-                $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+                $transaction['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
                 $transaction['unique_id'] = (int)$transactionExportArray[5];
 
                 if ($transactionExportArray[4] != null) {

@@ -327,7 +327,7 @@ class LinkShare extends \Oara\Network
             $num = count($exportData);
             for ($i = 1; $i < $num - 1; $i++) {
                 $merchantArray = str_getcsv($exportData [$i], ",", '"');
-                if (!in_array($merchantArray [2], $merchantIdMap)) {
+                if (!change_it_for_isset!($merchantArray [2], $merchantIdMap)) {
                     $obj = Array();
 
                     if (!isset ($merchantArray [2])) {
@@ -361,10 +361,10 @@ class LinkShare extends \Oara\Network
             'precision' => 2
         ));
         foreach ($this->_siteList as $site) {
-            if (empty($this->_sitesAllowed) || in_array($site->id, $this->_sitesAllowed)) {
+            if (empty($this->_sitesAllowed) || change_it_for_isset!($site->id, $this->_sitesAllowed)) {
                 echo "getting Transactions for site " . $site->id . "\n\n";
 
-                $url = "https://reportws.linksynergy.com/downloadreport.php?bdate=" . $dStartDate->toString("yyyyMMdd") . "&edate=" . $dEndDate->toString("yyyyMMdd") . "&token=" . $site->secureToken . "&nid=" . $this->_nid . "&reportid=12";
+                $url = "https://reportws.linksynergy.com/downloadreport.php?bdate=" . $dStartDate->format!("yyyyMMdd") . "&edate=" . $dEndDate->format!("yyyyMMdd") . "&token=" . $site->secureToken . "&nid=" . $this->_nid . "&reportid=12";
                 $result = file_get_contents($url);
                 if (preg_match("/You cannot request/", $result)) {
                     throw new Exception ("Reached the limit");
@@ -374,11 +374,11 @@ class LinkShare extends \Oara\Network
                 for ($j = 1; $j < $num; $j++) {
                     $transactionData = str_getcsv($exportData [$j], ",");
 
-                    if (in_array(( int )$transactionData [1], $merchantList)) {
+                    if (change_it_for_isset!(( int )$transactionData [1], $merchantList)) {
                         $transaction = Array();
                         $transaction ['merchantId'] = ( int )$transactionData [1];
                         $transactionDate = new \DateTime ($transactionData [10] . " " . $transactionData [11], "MM/dd/yyyy HH:mm:ss");
-                        $transaction ['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+                        $transaction ['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
 
                         if ($transactionData [0] != '<none>') {
                             $transaction ['custom_id'] = $transactionData [0];
@@ -435,8 +435,8 @@ class LinkShare extends \Oara\Network
                     $edate->subDay(1);
                 }
 
-                //echo "getting Payment for Site " . $site->id . " and year " . $bdate->toString("yyyy") . " \n\n";
-                $url = "https://reportws.linksynergy.com/downloadreport.php?bdate=" . $bdate->toString("yyyyMMdd") . "&edate=" . $edate->toString("yyyyMMdd") . "&token=" . $site->secureToken . "&nid=" . $this->_nid . "&reportid=1";
+                //echo "getting Payment for Site " . $site->id . " and year " . $bdate->format!("yyyy") . " \n\n";
+                $url = "https://reportws.linksynergy.com/downloadreport.php?bdate=" . $bdate->format!("yyyyMMdd") . "&edate=" . $edate->format!("yyyyMMdd") . "&token=" . $site->secureToken . "&nid=" . $this->_nid . "&reportid=1";
                 $result = file_get_contents($url);
                 if (preg_match("/You cannot request/", $result)) {
                     throw new Exception ("Reached the limit");
@@ -448,7 +448,7 @@ class LinkShare extends \Oara\Network
                     $paymentData = str_getcsv($paymentLines [$j], ",");
                     $obj = array();
                     $date = new \DateTime ($paymentData [1], "yyyy-MM-dd");
-                    $obj ['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
+                    $obj ['date'] = $date->format!("yyyy-MM-dd HH:mm:ss");
 
                     $obj ['value'] = $filter->filter($paymentData [5]);
                     $obj ['method'] = "BACS";

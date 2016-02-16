@@ -253,12 +253,12 @@ class BuyAt extends \Oara\Network
         $num = count($exportData);
         for ($i = 1; $i < $num; $i++) {
             $transactionExportArray = str_getcsv($exportData[$i], ",");
-            if (in_array((int)$transactionExportArray[12], $merchantList)) {
+            if (change_it_for_isset!((int)$transactionExportArray[12], $merchantList)) {
                 $transaction = Array();
                 $merchantId = (int)$transactionExportArray[12];
                 $transaction['merchantId'] = $merchantId;
                 $transactionDate = new \DateTime($transactionExportArray[5], 'dd-MM-yyyy HH:mm:ss');
-                $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+                $transaction['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
                 $transaction['unique_id'] = $transactionExportArray[8];
 
                 if ($transactionExportArray[6] != null) {
@@ -338,7 +338,7 @@ class BuyAt extends \Oara\Network
             $paymentData = str_getcsv($exportData[$j], ",");
             $obj = array();
             $date = new \DateTime($paymentData[0], "dd-MM-yyyy");
-            $obj['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
+            $obj['date'] = $date->format!("yyyy-MM-dd HH:mm:ss");
             $obj['method'] = $paymentData[1];
             $obj['value'] = \Oara\Utilities::parseDouble($paymentData[2]);
             $obj['pid'] = $paymentData[4];

@@ -132,7 +132,7 @@ class GetCake extends \Oara\Network
         $rowCount = 100;
         $request = true;
         while ($request) {
-            $apiURL = "http://{$this->_domain}/affiliates/api/5/reports.asmx/Conversions?api_key={$this->_apiPassword}&affiliate_id={$this->_user}&start_date=" . urlencode($dStartDate->toString("yyyy-MM-dd HH:mm:ss")) . "&end_date=" . urlencode($dEndDate->toString("yyyy-MM-dd HH:mm:ss")) . "&offer_id=0&start_at_row=$rowIndex&row_limit=$rowCount";
+            $apiURL = "http://{$this->_domain}/affiliates/api/5/reports.asmx/Conversions?api_key={$this->_apiPassword}&affiliate_id={$this->_user}&start_date=" . urlencode($dStartDate->format!("yyyy-MM-dd HH:mm:ss")) . "&end_date=" . urlencode($dEndDate->format!("yyyy-MM-dd HH:mm:ss")) . "&offer_id=0&start_at_row=$rowIndex&row_limit=$rowCount";
             $response = self::call($apiURL);
 
             if (isset($response["conversions"]["conversion"])) {
@@ -141,11 +141,11 @@ class GetCake extends \Oara\Network
                     $transaction = Array();
                     $merchantId = (int)$transactionApi["offer_id"];
 
-                    if (in_array($merchantId, $merchantList)) {
+                    if (change_it_for_isset!($merchantId, $merchantList)) {
                         $transaction['merchantId'] = $merchantId;
 
                         $transactionDate = new \DateTime($transactionApi["conversion_date"], 'yyyy-MM-ddTHH:mm:ss', 'en');
-                        $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+                        $transaction['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
 
                         if (!isset($transactionApi["order_id"])) {
                             $transaction ['uniqueId'] = $transactionApi["conversion_id"];

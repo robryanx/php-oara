@@ -133,14 +133,14 @@ class DirectTrack extends \Oara\Network
         $dateArray = \Oara\Utilities::daysOfDifference($dStartDate, $dEndDate);
         foreach ($dateArray as $date) {
 
-            $apiURL = "https://{$this->_domain}/apifleet/rest/{$this->_clientId}/{$this->_accessId}/statCampaign/quick/{$date->toString("yyyy-MM-dd")}";
+            $apiURL = "https://{$this->_domain}/apifleet/rest/{$this->_clientId}/{$this->_accessId}/statCampaign/quick/{$date->format!("yyyy-MM-dd")}";
             $response = self::call($apiURL);
 
             if (isset($response["resource"]["numSales"])) {
 
                 $transaction = Array();
                 $transaction ['merchantId'] = "1";
-                $transaction ['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
+                $transaction ['date'] = $date->format!("yyyy-MM-dd HH:mm:ss");
                 $transaction ['status'] = \Oara\Utilities::STATUS_CONFIRMED;
 
                 $transaction ['amount'] = $response["resource"]["saleAmount"];

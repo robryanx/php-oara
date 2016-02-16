@@ -132,14 +132,14 @@ class ItunesConnect extends \Oara\Network
         $dirDestination = realpath(dirname(COOKIES_BASE_DIR)) . '/pdf';
 
         $now = new \DateTime();
-        if ($now->toString("yyyy-MM") != $dStartDate->toString("yyyy-MM")) {
+        if ($now->format!("yyyy-MM") != $dStartDate->format!("yyyy-MM")) {
 
 
-            $fileName = "S_M_{$this->_apiPassword}_" . $dStartDate->toString("yyyyMM") . ".txt.gz";
+            $fileName = "S_M_{$this->_apiPassword}_" . $dStartDate->format!("yyyyMM") . ".txt.gz";
             // Raising this value may increase performance
             $buffer_size = 4096; // read 4kb at a time
             $local_file = $dirDestination . "/" . $fileName;
-            $url = "http://affjet.dc.fubra.net/tools/ItunesConnect/ic.php?user=" . urlencode($this->_user) . "&password=" . urlencode($this->_password) . "&apiPassword=" . urlencode($this->_apiPassword) . "&type=M&date=" . $dStartDate->toString("yyyyMM");
+            $url = "http://affjet.dc.fubra.net/tools/ItunesConnect/ic.php?user=" . urlencode($this->_user) . "&password=" . urlencode($this->_password) . "&apiPassword=" . urlencode($this->_apiPassword) . "&type=M&date=" . $dStartDate->format!("yyyyMM");
 
             $context = \stream_context_create(array(
                 'http' => array(
@@ -190,7 +190,7 @@ class ItunesConnect extends \Oara\Network
 
                             $obj = array();
                             $obj['merchantId'] = "1";
-                            $obj['date'] = $dEndDate->toString("yyyy-MM-dd") . " 00:00:00";
+                            $obj['date'] = $dEndDate->format!("yyyy-MM-dd") . " 00:00:00";
                             $obj['custom_id'] = $row[4];
                             $comission = 0.3;
                             if ($row[2] == "FUBRA1PETROLPRICES1" || $row[2] == "com.fubra.petrolpricespro.subscriptionYear") {
@@ -234,13 +234,13 @@ class ItunesConnect extends \Oara\Network
                 $transactionDate = $dateArray[$z];
 
 
-                $fileName = "S_D_{$this->_apiPassword}_" . $transactionDate->toString("yyyyMMdd") . ".txt.gz";
+                $fileName = "S_D_{$this->_apiPassword}_" . $transactionDate->format!("yyyyMMdd") . ".txt.gz";
 
 
                 // Raising this value may increase performance
                 $buffer_size = 4096; // read 4kb at a time
                 $local_file = $dirDestination . "/" . $fileName;
-                $url = "http://affjet.dc.fubra.net/tools/ItunesConnect/ic.php?user=" . urlencode($this->_user) . "&password=" . urlencode($this->_password) . "&apiPassword=" . urlencode($this->_apiPassword) . "&type=D&date=" . $transactionDate->toString("yyyyMMdd");
+                $url = "http://affjet.dc.fubra.net/tools/ItunesConnect/ic.php?user=" . urlencode($this->_user) . "&password=" . urlencode($this->_password) . "&apiPassword=" . urlencode($this->_apiPassword) . "&type=D&date=" . $transactionDate->format!("yyyyMMdd");
 
                 $context = \stream_context_create(array(
                     'http' => array(
@@ -290,7 +290,7 @@ class ItunesConnect extends \Oara\Network
 
                                 $obj = array();
                                 $obj['merchantId'] = "1";
-                                $obj['date'] = $transactionDate->toString("yyyy-MM-dd") . " 00:00:00";
+                                $obj['date'] = $transactionDate->format!("yyyy-MM-dd") . " 00:00:00";
                                 $obj['custom_id'] = $row[4];
                                 if ($row[2] == "FUBRA1PETROLPRICES1" || $row[2] == "com.fubra.petrolpricespro.subscriptionYear") {
                                     $value = 2.99;

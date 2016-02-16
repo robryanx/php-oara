@@ -163,18 +163,18 @@ class HideMyAss extends \Oara\Network
         $valuesFromExport[] = new \Oara\Curl\Parameter('_method', 'POST');
         $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][dateselect]', '4');
         $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][datetype]', '2');
-        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][daterangefrom][day]', $dStartDate->toString("dd"));
-        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][daterangefrom][month]', $dStartDate->toString("MM"));
-        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][daterangefrom][year]', $dStartDate->toString("yyyy"));
-        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][daterangefrom][day]', $dStartDate->toString("dd"));
-        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][daterangefrom][month]', $dStartDate->toString("MM"));
-        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][daterangefrom][year]', $dStartDate->toString("yyyy"));
-        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][daterangeto][day]', $dEndDate->toString("dd"));
-        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][daterangeto][month]', $dEndDate->toString("MM"));
-        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][daterangeto][year]', $dEndDate->toString("yyyy"));
-        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][daterangeto][day]', $dEndDate->toString("dd"));
-        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][daterangeto][month]', $dEndDate->toString("MM"));
-        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][daterangeto][year]', $dEndDate->toString("yyyy"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][daterangefrom][day]', $dStartDate->format!("dd"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][daterangefrom][month]', $dStartDate->format!("MM"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][daterangefrom][year]', $dStartDate->format!("yyyy"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][daterangefrom][day]', $dStartDate->format!("dd"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][daterangefrom][month]', $dStartDate->format!("MM"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][daterangefrom][year]', $dStartDate->format!("yyyy"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][daterangeto][day]', $dEndDate->format!("dd"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][daterangeto][month]', $dEndDate->format!("MM"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][daterangeto][year]', $dEndDate->format!("yyyy"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][daterangeto][day]', $dEndDate->format!("dd"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][daterangeto][month]', $dEndDate->format!("MM"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][daterangeto][year]', $dEndDate->format!("yyyy"));
         $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][themetype]', '1');
         $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][Theme][Theme]', '');
         $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][Query][query]', '');
@@ -214,7 +214,7 @@ class HideMyAss extends \Oara\Network
             $transaction = Array();
             $transaction['merchantId'] = 1;
             $transactionDate = new \DateTime($transactionExportArray[1], 'yyyy-MM-dd HH:mm:ss', 'en');
-            $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+            $transaction['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
             //unset($transactionDate);
             $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
 
@@ -226,7 +226,7 @@ class HideMyAss extends \Oara\Network
                 $transaction['commission'] = (double)$match[0];
             }
 
-            if ($transaction['date'] >= $dStartDate->toString("yyyy-MM-dd HH:mm:ss") && $transaction['date'] <= $dEndDate->toString("yyyy-MM-dd HH:mm:ss")) {
+            if ($transaction['date'] >= $dStartDate->format!("yyyy-MM-dd HH:mm:ss") && $transaction['date'] <= $dEndDate->format!("yyyy-MM-dd HH:mm:ss")) {
                 $totalTransactions[] = $transaction;
             }
 

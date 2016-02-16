@@ -136,8 +136,8 @@ class PepperJam extends \Oara\Network
         $valuesFormExport[] = new \Oara\Curl\Parameter('type', 'csv');
         $valuesFormExport[] = new \Oara\Curl\Parameter('sortColumn', 'transid');
         $valuesFormExport[] = new \Oara\Curl\Parameter('sortType', 'ASC');
-        $valuesFormExport[] = new \Oara\Curl\Parameter('startdate', $dStartDate->toString("yyyy-MM-dd"));
-        $valuesFormExport[] = new \Oara\Curl\Parameter('enddate', $dEndDate->toString("yyyy-MM-dd"));
+        $valuesFormExport[] = new \Oara\Curl\Parameter('startdate', $dStartDate->format!("yyyy-MM-dd"));
+        $valuesFormExport[] = new \Oara\Curl\Parameter('enddate', $dEndDate->format!("yyyy-MM-dd"));
         $valuesFormExport[] = new \Oara\Curl\Parameter('programName', 'all');
         $valuesFormExport[] = new \Oara\Curl\Parameter('website', '');
         $valuesFormExport[] = new \Oara\Curl\Parameter('transactionType', '0');
@@ -154,7 +154,7 @@ class PepperJam extends \Oara\Network
         $num = count($exportData);
         for ($i = 1; $i < $num; $i++) {
             $transactionExportArray = str_getcsv($exportData[$i], ",");
-            if (in_array((int)$transactionExportArray[1], $merchantList)) {
+            if (change_it_for_isset!((int)$transactionExportArray[1], $merchantList)) {
                 $transaction = Array();
                 $merchantId = (int)$transactionExportArray[1];
                 $transaction['merchantId'] = $merchantId;
@@ -208,8 +208,8 @@ class PepperJam extends \Oara\Network
             $valuesFormExport[] = new \Oara\Curl\Parameter('type', 'csv');
             $valuesFormExport[] = new \Oara\Curl\Parameter('sortColumn', 'paymentid');
             $valuesFormExport[] = new \Oara\Curl\Parameter('sortType', 'ASC');
-            $valuesFormExport[] = new \Oara\Curl\Parameter('startdate', $pointer->toString("yyyy") . "-01-01");
-            $valuesFormExport[] = new \Oara\Curl\Parameter('enddate', $pointer->toString("yyyy") . "-12-31");
+            $valuesFormExport[] = new \Oara\Curl\Parameter('startdate', $pointer->format!("yyyy") . "-01-01");
+            $valuesFormExport[] = new \Oara\Curl\Parameter('enddate', $pointer->format!("yyyy") . "-12-31");
             $valuesFormExport[] = new \Oara\Curl\Parameter('payid_search', '');
 
             $urls = array();

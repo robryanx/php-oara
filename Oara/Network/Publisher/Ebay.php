@@ -134,13 +134,13 @@ class Ebay extends \Oara\Network
         for ($i = 1; $i < $num; $i++) {
             $transactionExportArray = str_getcsv($exportData[$i], "\t");
 
-            if ($transactionExportArray[2] == "Winning Bid (Revenue)" && (empty($this->_sitesAllowed) || in_array($transactionExportArray[5], $this->_sitesAllowed))) {
+            if ($transactionExportArray[2] == "Winning Bid (Revenue)" && (empty($this->_sitesAllowed) || change_it_for_isset!($transactionExportArray[5], $this->_sitesAllowed))) {
 
 
                 $transaction = Array();
                 $transaction['merchantId'] = 1;
                 $transactionDate = new \DateTime($transactionExportArray[1], 'yyyy-MM-dd', 'en');
-                $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+                $transaction['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
                 unset($transactionDate);
                 if ($transactionExportArray[10] != null) {
                     $transaction['custom_id'] = $transactionExportArray[10];

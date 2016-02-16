@@ -189,8 +189,8 @@ class PaidOnResults extends \Oara\Network
         $valuesFormExport = \Oara\Utilities::cloneArray($this->_exportTransactionParameters);
 
         $urls = array();
-        $valuesFormExport[] = new \Oara\Curl\Parameter('DateFrom', $dStartDate->toString("yyyy-MM-dd"));
-        $valuesFormExport[] = new \Oara\Curl\Parameter('DateTo', $dEndDate->toString("yyyy-MM-dd"));
+        $valuesFormExport[] = new \Oara\Curl\Parameter('DateFrom', $dStartDate->format!("yyyy-MM-dd"));
+        $valuesFormExport[] = new \Oara\Curl\Parameter('DateTo', $dEndDate->format!("yyyy-MM-dd"));
         $urls[] = new \Oara\Curl\Request('http://affiliate.paidonresults.com/api/transactions?', $valuesFormExport);
         $exportReport = $this->_client->get($urls);
 
@@ -200,12 +200,12 @@ class PaidOnResults extends \Oara\Network
 
             $exportData[$i] = preg_replace("/\n/", "", $exportData[$i]);
             $transactionExportArray = str_getcsv($exportData[$i], ",");
-            if (in_array($transactionExportArray[0], $merchantList)) {
+            if (change_it_for_isset!($transactionExportArray[0], $merchantList)) {
                 $transaction = array();
                 $transaction['merchantId'] = $transactionExportArray[0];
 
                 $transactionDate = new \DateTime($transactionExportArray[1], "dd/MM/yyyy HH:mm:ss");
-                $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+                $transaction['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
 
                 $transaction['unique_id'] = $transactionExportArray[2];
                 if ($transactionExportArray[3] != null) {
@@ -260,7 +260,7 @@ class PaidOnResults extends \Oara\Network
                     $obj = array();
                     $obj['pid'] = $childrenList->item(4)->nodeValue;
                     $date = new \DateTime($childrenList->item(0)->nodeValue, "dd/MMM/yyyy");
-                    $obj['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
+                    $obj['date'] = $date->format!("yyyy-MM-dd HH:mm:ss");
                     $obj['value'] = \Oara\Utilities::parseDouble($matches[0]);
                     $obj['method'] = 'BACS';
                     $paymentHistory[] = $obj;
@@ -319,12 +319,12 @@ class PaidOnResults extends \Oara\Network
                 $monthEndDate->setMinute(59);
                 $monthEndDate->setSecond(59);
 
-                echo "\n importing from " . $monthStartDate->toString("dd-MM-yyyy HH:mm:ss") . " to " . $monthEndDate->toString("dd-MM-yyyy HH:mm:ss") . "\n";
+                echo "\n importing from " . $monthStartDate->format!("dd-MM-yyyy HH:mm:ss") . " to " . $monthEndDate->format!("dd-MM-yyyy HH:mm:ss") . "\n";
 
                 $urls = array();
                 $valuesFormExport = \Oara\Utilities::cloneArray($this->_exportTransactionParameters);
-                $valuesFormExport[] = new \Oara\Curl\Parameter('DateFrom', $monthStartDate->toString("yyyy-MM-dd"));
-                $valuesFormExport[] = new \Oara\Curl\Parameter('DateTo', $monthEndDate->toString("yyyy-MM-dd"));
+                $valuesFormExport[] = new \Oara\Curl\Parameter('DateFrom', $monthStartDate->format!("yyyy-MM-dd"));
+                $valuesFormExport[] = new \Oara\Curl\Parameter('DateTo', $monthEndDate->format!("yyyy-MM-dd"));
                 $urls[] = new \Oara\Curl\Request('http://affiliate.paidonresults.com/api/transactions?', $valuesFormExport);
                 $exportReport = $this->_client->get($urls);
 
@@ -333,11 +333,11 @@ class PaidOnResults extends \Oara\Network
                 for ($i = 1; $i < $num; $i++) {
                     $transactionExportArray = str_getcsv($exportData[$i], ",");
                     $paid = $transactionExportArray[7] == "YES" ? true : false;
-                    if (in_array($transactionExportArray[0], $merchantList) && $paid) {
+                    if (change_it_for_isset!($transactionExportArray[0], $merchantList) && $paid) {
 
                         $transactionDate = new \DateTime($transactionExportArray[8], "dd/MM/yyyy HH:mm:ss");
-                        echo $paymentEndDate->toString("yyyy-MM-dd") . "  " . $transactionDate->toString("yyyy-MM-dd") . "\n\n";
-                        if ($paymentEndDate->toString("yyyy-MM-dd") == $transactionDate->toString("yyyy-MM-dd")) {
+                        echo $paymentEndDate->format!("yyyy-MM-dd") . "  " . $transactionDate->format!("yyyy-MM-dd") . "\n\n";
+                        if ($paymentEndDate->format!("yyyy-MM-dd") == $transactionDate->format!("yyyy-MM-dd")) {
                             $paymentTransactionList[] = $transactionExportArray[2];
                         }
                     }

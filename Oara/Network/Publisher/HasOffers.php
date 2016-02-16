@@ -130,7 +130,7 @@ class HasOffers extends \Oara\Network
         $loop = true;
         while ($loop) {
 
-            $apiURL = "http://api.hasoffers.com/v3/Affiliate_Report.json?limit=$limit&page=$page&Method=getConversions&api_key={$this->_apiPassword}&NetworkId={$this->_domain}&fields[]=Stat.offer_id&fields[]=Stat.datetime&fields[]=Offer.name&fields[]=Stat.conversion_status&fields[]=Stat.payout&fields[]=Stat.conversion_sale_amount&fields[]=Stat.ip&fields[]=Stat.ad_id&fields[]=Stat.affiliate_info1&sort[Stat.datetime]=desc&filters[Stat.date][conditional]=BETWEEN&filters[Stat.date][values][]={$dStartDate->toString("yyyy-MM-dd")}&filters[Stat.date][values][]={$dEndDate->toString("yyyy-MM-dd")}&data_start={$dStartDate->toString("yyyy-MM-dd")}&data_end={$dEndDate->toString("yyyy-MM-dd")}";
+            $apiURL = "http://api.hasoffers.com/v3/Affiliate_Report.json?limit=$limit&page=$page&Method=getConversions&api_key={$this->_apiPassword}&NetworkId={$this->_domain}&fields[]=Stat.offer_id&fields[]=Stat.datetime&fields[]=Offer.name&fields[]=Stat.conversion_status&fields[]=Stat.payout&fields[]=Stat.conversion_sale_amount&fields[]=Stat.ip&fields[]=Stat.ad_id&fields[]=Stat.affiliate_info1&sort[Stat.datetime]=desc&filters[Stat.date][conditional]=BETWEEN&filters[Stat.date][values][]={$dStartDate->format!("yyyy-MM-dd")}&filters[Stat.date][values][]={$dEndDate->format!("yyyy-MM-dd")}&data_start={$dStartDate->format!("yyyy-MM-dd")}&data_end={$dEndDate->format!("yyyy-MM-dd")}";
 
             $response = self::call($apiURL);
             foreach ($response["response"]["data"]["data"] as $transactionApi) {
@@ -138,11 +138,11 @@ class HasOffers extends \Oara\Network
                 $transaction = Array();
                 $merchantId = (int)$transactionApi["Stat"]["offer_id"];
 
-                if ($merchantList == null || in_array($merchantId, $merchantList)) {
+                if ($merchantList == null || change_it_for_isset!($merchantId, $merchantList)) {
                     $transaction['merchantId'] = $merchantId;
 
                     $transactionDate = new \DateTime($transactionApi["Stat"]["datetime"], 'yyyy-MM-dd HH:mm:ss', 'en');
-                    $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+                    $transaction['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
 
                     if ($transactionApi["Stat"]["ad_id"] != null) {
                         $transaction['unique_id'] = $transactionApi["Stat"]["ad_id"];

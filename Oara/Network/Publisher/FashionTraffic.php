@@ -174,8 +174,8 @@ class FashionTraffic extends \Oara\Network
 
         $valuesFormExport[] = new \Oara\Curl\Parameter("data[DateRange][timezone]", 'America/New_York');
         $valuesFormExport[] = new \Oara\Curl\Parameter("data[DateRange][preset_date_range]", 'other');
-        $valuesFormExport[] = new \Oara\Curl\Parameter("data[DateRange][start_date]", $dStartDate->toString("yyyy-MM-dd"));
-        $valuesFormExport[] = new \Oara\Curl\Parameter("data[DateRange][end_date]", $dEndDate->toString("yyyy-MM-dd"));
+        $valuesFormExport[] = new \Oara\Curl\Parameter("data[DateRange][start_date]", $dStartDate->format!("yyyy-MM-dd"));
+        $valuesFormExport[] = new \Oara\Curl\Parameter("data[DateRange][end_date]", $dEndDate->format!("yyyy-MM-dd"));
 
         $urls = array();
         $urls[] = new \Oara\Curl\Request('http://system.fashiontraffic.com/stats/lead_report', $valuesFormExport);
@@ -196,7 +196,7 @@ class FashionTraffic extends \Oara\Network
         $num = count($exportData);
         for ($i = 1; $i < $num; $i++) {
             $transactionExportArray = str_getcsv($exportData[$i], ",");
-            if (in_array((int)$transactionExportArray[0], $merchantList)) {
+            if (change_it_for_isset!((int)$transactionExportArray[0], $merchantList)) {
                 $transaction = Array();
                 $merchantId = (int)$transactionExportArray[0];
                 $transaction['merchantId'] = $merchantId;

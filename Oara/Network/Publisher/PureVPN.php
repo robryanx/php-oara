@@ -239,14 +239,14 @@ class PureVPN extends \Oara\Network
             $transaction['merchantId'] = 1;
             $transaction['uniqueId'] = $transactionExportArray[36];
             $transactionDate = new \DateTime($transactionExportArray[5], 'yyyy-MM-dd HH:mm:ss', 'en');
-            $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+            $transaction['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
             unset($transactionDate);
             $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
             $transaction['amount'] = \Oara\Utilities::parseDouble($transactionExportArray[1]);
             $transaction['commission'] = \Oara\Utilities::parseDouble($transactionExportArray[0]);
             //print_r($transaction);
 
-            if ($transaction['date'] >= $dStartDate->toString("yyyy-MM-dd HH:mm:ss") && $transaction['date'] <= $dEndDate->toString("yyyy-MM-dd HH:mm:ss")) {
+            if ($transaction['date'] >= $dStartDate->format!("yyyy-MM-dd HH:mm:ss") && $transaction['date'] <= $dEndDate->format!("yyyy-MM-dd HH:mm:ss")) {
                 $totalTransactions[] = $transaction;
             }
 

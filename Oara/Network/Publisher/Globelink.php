@@ -181,7 +181,7 @@ class Globelink extends \Oara\Network
                 $transaction = Array();
                 $transaction['merchantId'] = 1;
 
-                $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+                $transaction['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
                 $transaction['unique_id'] = $auxTransaction[1];
 
 

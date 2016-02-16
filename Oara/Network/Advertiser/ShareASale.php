@@ -125,7 +125,7 @@ class ShareASale extends \Oara\Network
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
         $totalTransactions = array();
-        $returnResult = self::makeCall("transactiondetail", "&dateStart=" . $dStartDate->toString("MM/dd/yyyy") . "&dateEnd=" . $dEndDate->toString("MM/dd/yyyy"));
+        $returnResult = self::makeCall("transactiondetail", "&dateStart=" . $dStartDate->format!("MM/dd/yyyy") . "&dateEnd=" . $dEndDate->format!("MM/dd/yyyy"));
         $exportData = str_getcsv($returnResult, "\r\n");
         $num = count($exportData);
         for ($i = 1; $i < $num; $i++) {
@@ -135,7 +135,7 @@ class ShareASale extends \Oara\Network
                 $merchantId = (int)$transactionExportArray[1];
                 $transaction['merchantId'] = $merchantId;
                 $transactionDate = new \DateTime($transactionExportArray[2], 'MM-dd-yyyy HH:mm:ss');
-                $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+                $transaction['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
                 $transaction['unique_id'] = (int)$transactionExportArray[0];
 
                 if ($transactionExportArray[27] != null) {

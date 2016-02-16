@@ -132,8 +132,8 @@ class MyPcBackUP extends \Oara\Network
         $valuesFromExport[] = new \Oara\Curl\Parameter('sales', "1");
         $valuesFromExport[] = new \Oara\Curl\Parameter('refunds', "1");
         $valuesFromExport[] = new \Oara\Curl\Parameter('csv', "Download CSV");
-        $valuesFromExport[] = new \Oara\Curl\Parameter('start', $dStartDate->toString("MM/dd/yyyy"));
-        $valuesFromExport[] = new \Oara\Curl\Parameter('end', $dEndDate->toString("MM/dd/yyyy"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('start', $dStartDate->format!("MM/dd/yyyy"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('end', $dEndDate->format!("MM/dd/yyyy"));
 
         $urls[] = new \Oara\Curl\Request('http://affiliates.mypcbackup.com/transactions?', $valuesFromExport);
         $exportReport = $this->_client->get($urls);
@@ -145,7 +145,7 @@ class MyPcBackUP extends \Oara\Network
             $transaction['merchantId'] = 1;
             $transaction['uniqueId'] = $transactionExportArray[2];
             $transactionDate = new \DateTime($transactionExportArray[0] . " " . $transactionExportArray[1], 'yyyy-MM-dd HH:mm:ss', 'en');
-            $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+            $transaction['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
             unset($transactionDate);
 
             if (preg_match('/[-+]?[0-9]*\.?[0-9]+/', $transactionExportArray[5], $match)) {
@@ -193,7 +193,7 @@ class MyPcBackUP extends \Oara\Network
                 try {
                     $obj = array();
                     $date = new \DateTime($paymentExportArray[14], "MM/dd/yyyy");
-                    $obj['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
+                    $obj['date'] = $date->format!("yyyy-MM-dd HH:mm:ss");
                     $obj['pid'] = preg_replace('/[^0-9\.,]/', "", $paymentExportArray[14]);
                     $obj['method'] = $paymentExportArray[16];
                     $value = preg_replace('/[^0-9\.,]/', "", $paymentExportArray[12]);

@@ -186,7 +186,7 @@ class SportCoverDirect extends \Oara\Network
                 $transaction['merchantId'] = 1;
 
                 $date = new \DateTime($overviewExportArray[0], "dd/MM/yyyy");
-                $transaction['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
+                $transaction['date'] = $date->format!("yyyy-MM-dd HH:mm:ss");
                 $transaction ['amount'] = \Oara\Utilities::parseDouble(preg_replace('/[^0-9\.,]/', "", $overviewExportArray[1]));
                 $transaction['commission'] = \Oara\Utilities::parseDouble(preg_replace('/[^0-9\.,]/', "", $overviewExportArray[1]));
                 $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;

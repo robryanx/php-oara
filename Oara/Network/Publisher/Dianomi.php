@@ -121,13 +121,13 @@ class Dianomi extends \Oara\Network
 
         $valuesFormExport = array();
         $valuesFormExport[] = new \Oara\Curl\Parameter('periodtype', "fromtolong");
-        $valuesFormExport[] = new \Oara\Curl\Parameter('fromday', $dStartDate->toString("dd"));
-        $valuesFormExport[] = new \Oara\Curl\Parameter('frommonth', $dStartDate->toString("MM"));
-        $valuesFormExport[] = new \Oara\Curl\Parameter('fromyear', $dStartDate->toString("yyyy"));
+        $valuesFormExport[] = new \Oara\Curl\Parameter('fromday', $dStartDate->format!("dd"));
+        $valuesFormExport[] = new \Oara\Curl\Parameter('frommonth', $dStartDate->format!("MM"));
+        $valuesFormExport[] = new \Oara\Curl\Parameter('fromyear', $dStartDate->format!("yyyy"));
 
-        $valuesFormExport[] = new \Oara\Curl\Parameter('today', $dEndDate->toString("dd"));
-        $valuesFormExport[] = new \Oara\Curl\Parameter('tomonth', $dEndDate->toString("MM"));
-        $valuesFormExport[] = new \Oara\Curl\Parameter('toyear', $dEndDate->toString("yyyy"));
+        $valuesFormExport[] = new \Oara\Curl\Parameter('today', $dEndDate->format!("dd"));
+        $valuesFormExport[] = new \Oara\Curl\Parameter('tomonth', $dEndDate->format!("MM"));
+        $valuesFormExport[] = new \Oara\Curl\Parameter('toyear', $dEndDate->format!("yyyy"));
 
         $valuesFormExport[] = new \Oara\Curl\Parameter('Go', 'Go');
 
@@ -149,7 +149,7 @@ class Dianomi extends \Oara\Network
 
                 $transaction['merchantId'] = 1;
                 $date = new \DateTime($overviewExportArray[0], "yyyy-MM-dd");
-                $transaction['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
+                $transaction['date'] = $date->format!("yyyy-MM-dd HH:mm:ss");
                 $transaction['amount'] = $overviewExportArray[1];
                 $transaction['commission'] = $overviewExportArray[1];
                 $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;

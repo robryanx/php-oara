@@ -32,7 +32,7 @@ class AffiliateGroove extends PostAffiliatePro
 {
 
     /**
-     * Check the connection
+     * @return bool
      */
     public function checkConnection()
     {
@@ -48,9 +48,7 @@ class AffiliateGroove extends PostAffiliatePro
     }
 
     /**
-     * (non-PHPdoc)
-     *
-     * @see library/Oara/Network/Interface#getMerchantList()
+     * @return array
      */
     public function getMerchantList()
     {

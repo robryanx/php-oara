@@ -150,8 +150,8 @@ class Simpl extends \Oara\Network
 
         $valuesFromExport = array(
             new \Oara\Curl\Parameter('filter[zeitraumAuswahl]', "absolute"),
-            new \Oara\Curl\Parameter('filter[zeitraumvon]', $dStartDate->toString("dd.MM.yyyy")),
-            new \Oara\Curl\Parameter('filter[zeitraumbis]', $dEndDate->toString("dd.MM.yyyy")),
+            new \Oara\Curl\Parameter('filter[zeitraumvon]', $dStartDate->format!("dd.MM.yyyy")),
+            new \Oara\Curl\Parameter('filter[zeitraumbis]', $dEndDate->format!("dd.MM.yyyy")),
             new \Oara\Curl\Parameter('filter[currencycode]', 'EUR')
         );
 

@@ -176,9 +176,9 @@ class Viagogo extends \Oara\Network
             new \Oara\Curl\Parameter('Parameters[0].Name', 'ReportPeriod'),
             new \Oara\Curl\Parameter('Parameters[0].Values', 'True'),
             new \Oara\Curl\Parameter('Parameters[1].Name', 'DateFrom'),
-            new \Oara\Curl\Parameter('Parameters[1].Values', $dStartDate->toString("dd/MM/yyyy")),
+            new \Oara\Curl\Parameter('Parameters[1].Values', $dStartDate->format!("dd/MM/yyyy")),
             new \Oara\Curl\Parameter('Parameters[2].Name', 'DateTo'),
-            new \Oara\Curl\Parameter('Parameters[2].Values', $dEndDate->toString("dd/MM/yyyy")),
+            new \Oara\Curl\Parameter('Parameters[2].Values', $dEndDate->format!("dd/MM/yyyy")),
             new \Oara\Curl\Parameter('Parameters[3].Name', 'CurrencyCode'),
             new \Oara\Curl\Parameter('Parameters[3].Values', 'GBP'),
             new \Oara\Curl\Parameter('RenderType', 'CSV')
@@ -215,7 +215,7 @@ class Viagogo extends \Oara\Network
             if ($transaction['unique_id'] != null) {
                 $transaction['merchantId'] = "1";
                 $transactionDate = new \DateTime($transactionExportArray[1], "dd/MM/yyyy");
-                $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+                $transaction['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
                 $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
                 $transaction['amount'] = \Oara\Utilities::parseDouble($transactionExportArray[4]);
                 $transaction['commission'] = \Oara\Utilities::parseDouble($transactionExportArray[6]);

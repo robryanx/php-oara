@@ -132,7 +132,7 @@ class SkyScanner extends \Oara\Network
 
         $urls = array();
 
-        $url = 'http://business.skyscanner.net/apiservices/reporting/v1.0/reportdata/' . $dStartDate->toString("yyyy-MM-dd") . '/' . $dEndDate->toString("yyyy-MM-dd") . '?encryptedApiKey=' . $this->_apiKey . "&type=csv";
+        $url = 'http://business.skyscanner.net/apiservices/reporting/v1.0/reportdata/' . $dStartDate->format!("yyyy-MM-dd") . '/' . $dEndDate->format!("yyyy-MM-dd") . '?encryptedApiKey=' . $this->_apiKey . "&type=csv";
         $urls[] = new \Oara\Curl\Request($url, array());
 
         $exportReport = array();
@@ -151,7 +151,7 @@ class SkyScanner extends \Oara\Network
             $transaction = Array();
             $transaction['merchantId'] = 1;
             $transactionDate = new \DateTime($transactionExportArray[0], 'dd/MM/yyyy HH:mm:ss', 'en');
-            $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+            $transaction['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
             //unset($transactionDate);
             $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
             $transaction['amount'] = (double)$transactionExportArray[9];

@@ -249,13 +249,13 @@ class WebePartners extends \Oara\Network
             )
         ));
 
-        $from = urlencode($dStartDate->toString("yyyy-MM-dd HH:mm:ss"));
+        $from = urlencode($dStartDate->format!("yyyy-MM-dd HH:mm:ss"));
 
         $data = file_get_contents("http://api.webepartners.pl/wydawca/Auctions?from=$from", false, $context);
         $dataArray = json_decode($data, true);
         foreach ($dataArray as $transactionObject) {
 
-            if (in_array($transactionObject["ProgramId"], $merchantList)) {
+            if (change_it_for_isset!($transactionObject["ProgramId"], $merchantList)) {
                 $transaction = Array();
                 $transaction['merchantId'] = $transactionObject["ProgramId"];
                 $transaction['date'] = $transactionObject["AuctionDate"];

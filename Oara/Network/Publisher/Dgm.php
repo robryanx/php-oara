@@ -147,7 +147,7 @@ class Dgm extends \Oara\Network
     {
         $totalTransactions = Array();
 
-        $transactionXml = $this->_apiClient->GetSales($this->_user, $this->_pass, 0, 'all', 'validated', $dStartDate->toString("yyyy-MM-dd"), $dEndDate->toString("yyyy-MM-dd"));
+        $transactionXml = $this->_apiClient->GetSales($this->_user, $this->_pass, 0, 'all', 'validated', $dStartDate->format!("yyyy-MM-dd"), $dEndDate->format!("yyyy-MM-dd"));
         $xmlObject = new SimpleXMLElement ($transactionXml);
         if ($xmlObject->attributes()->status != 'error') {
 
@@ -169,7 +169,7 @@ class Dgm extends \Oara\Network
                     $transaction ['unique_id'] = ( string )$sale->OrderID;
                     $transaction ['merchantId'] = $campaignIdList [( string )$sale->CampaignID];
                     $transactionDate = new \DateTime (( string )$sale->SaleDate, 'yyyy-MM-dd HH:mm:ss');
-                    $transaction ['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+                    $transaction ['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
 
                     if (( string )$sale->CompanyID != null) {
                         $transaction ['custom_id'] = ( string )$sale->CompanyID;

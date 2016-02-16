@@ -137,8 +137,8 @@ class AutoEurope extends \Oara\Network
 
         $dEndDate->addDay(1);
         $valuesFormExport = \Oara\Utilities::cloneArray($this->_exportTransactionParameters);
-        $valuesFormExport [] = new \Oara\Curl\Parameter ('pDate1', $dStartDate->toString("MM/d/yyyy"));
-        $valuesFormExport [] = new \Oara\Curl\Parameter ('pDate2', $dEndDate->toString("MM/d/yyyy"));
+        $valuesFormExport [] = new \Oara\Curl\Parameter ('pDate1', $dStartDate->format!("MM/d/yyyy"));
+        $valuesFormExport [] = new \Oara\Curl\Parameter ('pDate2', $dEndDate->format!("MM/d/yyyy"));
         $urls = array();
         $urls [] = new \Oara\Curl\Request ('https://www.autoeurope.co.uk/afftools/iatareport_popup.cfm?', $valuesFormExport);
         $exportReport = $this->_client->post($urls);
@@ -148,7 +148,7 @@ class AutoEurope extends \Oara\Network
             $transaction = array();
             $transaction ['merchantId'] = 1;
             $date = new Zend_date ($xmlTransaction ['Booked'], "MM/dd/yyyy");
-            $transaction ['date'] = $date->toString("yyyy-MM-dd 00:00:00");
+            $transaction ['date'] = $date->format!("yyyy-MM-dd 00:00:00");
             $transaction ['amount'] = ( double )$xmlTransaction ['commissionValue'];
             $transaction ['commission'] = ( double )$xmlTransaction ['commission'];
             $transaction ['status'] = \Oara\Utilities::STATUS_CONFIRMED;
@@ -300,7 +300,7 @@ class AutoEurope extends \Oara\Network
             foreach ($list as $row) {
                 $attributes = $row->attributes();
                 $top = ( int )$attributes ['top'];
-                if (!in_array($top, $rowList)) {
+                if (!change_it_for_isset!($top, $rowList)) {
                     $rowList [] = $top;
                 }
             }

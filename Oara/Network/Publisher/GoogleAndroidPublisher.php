@@ -117,7 +117,7 @@ class GoogleAndroidPublisher extends \Oara\Network
 
         $dirDestination = realpath(dirname(COOKIES_BASE_DIR)) . '/pdf';
 
-        $file = "{$this->_bucket}/sales/salesreport_" . $dStartDate->toString("yyyyMM") . ".zip";
+        $file = "{$this->_bucket}/sales/salesreport_" . $dStartDate->format!("yyyyMM") . ".zip";
         $url = "http://affjet.dc.fubra.net/tools/gsutil/gs.php?bucket=" . urlencode($file) . "&type=cp";
 
         $context = \stream_context_create(array(
@@ -136,7 +136,7 @@ class GoogleAndroidPublisher extends \Oara\Network
             return $totalTransactions;
         }
         unlink($dirDestination . "/report.zip");
-        $salesReport = file_get_contents($dirDestination . "/salesreport_" . $dStartDate->toString("yyyyMM") . ".csv");
+        $salesReport = file_get_contents($dirDestination . "/salesreport_" . $dStartDate->format!("yyyyMM") . ".csv");
         $salesReport = explode("\n", $salesReport);
         for ($i = 1; $i < count($salesReport) - 1; $i++) {
 
@@ -176,7 +176,7 @@ class GoogleAndroidPublisher extends \Oara\Network
 
             $totalTransactions[] = $obj;
         }
-        unlink($dirDestination . "/salesreport_" . $dStartDate->toString("yyyyMM") . ".csv");
+        unlink($dirDestination . "/salesreport_" . $dStartDate->format!("yyyyMM") . ".csv");
 
 
         return $totalTransactions;

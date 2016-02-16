@@ -164,8 +164,8 @@ class Chegg extends \Oara\Network
         $totalTransactions = array();
 
         $valuesFromExport = array();
-        $valuesFromExport[] = new \Oara\Curl\Parameter('FromDate', $dStartDate->toString("dd/MM/yyyy"));
-        $valuesFromExport[] = new \Oara\Curl\Parameter('ToDate', $dEndDate->toString("dd/MM/yyyy"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('FromDate', $dStartDate->format!("dd/MM/yyyy"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('ToDate', $dEndDate->format!("dd/MM/yyyy"));
         $valuesFromExport[] = new \Oara\Curl\Parameter('ReportType', 'dailyReport');
         $valuesFromExport[] = new \Oara\Curl\Parameter('Link', '-1');
 
@@ -187,7 +187,7 @@ class Chegg extends \Oara\Network
                 $transaction = Array();
                 $transaction['merchantId'] = 1;
                 $transactionDate = new \DateTime($transactionExportArray[1], 'dd-MM-yyyy', 'en');
-                $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+                $transaction['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
 
                 $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
                 $transaction['amount'] = \Oara\Utilities::parseDouble($transactionExportArray[27]);

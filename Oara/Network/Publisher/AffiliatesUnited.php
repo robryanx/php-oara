@@ -87,60 +87,60 @@ class AffiliatesUnited extends \Oara\Network
         $urls[] = new \Oara\Curl\Request('https://affiliates.affutd.com/affiliates/Dashboard.aspx', array());
         $exportReport = $this->_client->get($urls);
 
-        $dom = new Zend_Dom_Query($exportReport[0]);
-        $results = $dom->query('.lnkLogOut');
-        if (count($results) > 0) {
+        $doc = new \DOMDocument();
+        @$doc->loadHTML($exportReport[0]);
+        $xpath = new \DOMXPath($doc);
+        $results = $xpath->query('//*[contains(concat(" ", normalize-space(@class), " "), " lnkLogOut ")]');
+
+        if ($results->length > 0) {
             $connection = true;
         }
         return $connection;
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getMerchantList()
+     * @return array
      */
     public function getMerchantList()
     {
         $merchants = array();
-
-
         $obj = array();
         $obj['cid'] = 1;
         $obj['name'] = "Affiliates United";
         $merchants[] = $obj;
-
-
         return $merchants;
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
+     * @param null $merchantList
+     * @param \DateTime|null $dStartDate
+     * @param \DateTime|null $dEndDate
+     * @return array
      */
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
         $totalTransactions = array();
+
         $valuesFromExport = array();
-        $valuesFromExport[] = new \Oara\Curl\Parameter('ctl00$cphPage$reportFrom', $dStartDate->toString("yyyy-MM-dd"));
-        $valuesFromExport[] = new \Oara\Curl\Parameter('ctl00$cphPage$reportTo', $dEndDate->toString("yyyy-MM-dd"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('ctl00$cphPage$reportFrom', $dStartDate->format("Y-m-d"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('ctl00$cphPage$reportTo', $dEndDate->format("Y-m-d"));
 
         $urls = array();
         $urls[] = new \Oara\Curl\Request('https://affiliates.affutd.com/affiliates/DataServiceWrapper/DataService.svc/Export/CSV/Affiliates_Reports_GeneralStats_DailyFigures', $valuesFromExport);
         $exportReport = $this->_client->post($urls);
-        $exportData = str_getcsv($exportReport[0], "\n");
-        $num = count($exportData);
+        $exportData = \str_getcsv($exportReport[0], "\n");
+        $num = \count($exportData);
         for ($i = 2; $i < $num; $i++) {
-            $transactionExportArray = str_getcsv($exportData[$i], ",");
+            $transactionExportArray = \str_getcsv($exportData[$i], ",");
 
             $transaction = Array();
             $transaction['merchantId'] = 1;
-            $transactionDate = new \DateTime($transactionExportArray[0], 'dd-MM-yyyy', 'en');
-            $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
-
+            $date = \DateTime::createFromFormat("d-m-Y", trim($transactionExportArray[0]));
+            $date->setTime(0, 0);
+            $transaction['date'] = $date->format("Y-m-d H:i:s");
             $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
-
-            $transaction['amount'] = $transactionExportArray[12];
-            $transaction['commission'] = $transactionExportArray[13];
+            $transaction['amount'] = \Oara\Utilities::parseDouble($transactionExportArray[12]);
+            $transaction['commission'] = \Oara\Utilities::parseDouble($transactionExportArray[13]);
             $totalTransactions[] = $transaction;
         }
 

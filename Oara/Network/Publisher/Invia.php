@@ -293,7 +293,7 @@ class Invia extends \Oara\Network
                 $transaction = Array();
 
                 $transactionDate = new \DateTime ($transactionExportArray [2], 'dd.MM.yyyy');
-                $transaction ['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+                $transaction ['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
                 $status = $transactionExportArray [4];
                 if ($status == "Zaplaceno") {
                     $transaction ['status'] = \Oara\Utilities::STATUS_CONFIRMED;

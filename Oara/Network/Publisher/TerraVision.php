@@ -136,7 +136,7 @@ class TerraVision extends \Oara\Network
     {
         $totalTransactions = Array();
 
-        $stringToFind = $dStartDate->toString("MMMM yyyy");
+        $stringToFind = $dStartDate->format!("MMMM yyyy");
 
         $urls = array();
         $urls[] = new \Oara\Curl\Request('https://book.terravision.eu/partner/my/payments', array());
@@ -156,7 +156,7 @@ class TerraVision extends \Oara\Network
                 $transaction['merchantId'] = 1;
                 $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
 
-                $transaction['date'] = $dEndDate->toString("yyyy-MM-dd HH:mm:ss");
+                $transaction['date'] = $dEndDate->format!("yyyy-MM-dd HH:mm:ss");
 
                 $transaction['amount'] = \Oara\Utilities::parseDouble(preg_replace('/[^0-9\.,]/', "", $transactionArray [2]));
                 $transaction['commission'] = \Oara\Utilities::parseDouble(preg_replace('/[^0-9\.,]/', "", $transactionArray [2]));

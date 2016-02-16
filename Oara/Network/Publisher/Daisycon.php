@@ -180,7 +180,7 @@ class Daisycon extends \Oara\Network
             $finish = false;
 
             while (!$finish) {
-                $url = "https://services.daisycon.com:443/publishers/$publisherId/transactions?page=$page&per_page=$pageSize&start=" . urlencode($dStartDate->toString("yyyy-MM-dd HH:mm:ss")) . "&end=" . urlencode($dEndDate->toString("yyyy-MM-dd HH:mm:ss")) . "";
+                $url = "https://services.daisycon.com:443/publishers/$publisherId/transactions?page=$page&per_page=$pageSize&start=" . urlencode($dStartDate->format!("yyyy-MM-dd HH:mm:ss")) . "&end=" . urlencode($dEndDate->format!("yyyy-MM-dd HH:mm:ss")) . "";
                 // initialize curl resource
                 $ch = curl_init();
                 // set the http request authentication headers
@@ -195,14 +195,14 @@ class Daisycon extends \Oara\Network
 
                 foreach ($transactionList as $transaction) {
                     $merchantId = $transaction['program_id'];
-                    if ($merchantList == null || in_array($merchantId, $merchantList)) {
+                    if ($merchantList == null || change_it_for_isset!($merchantId, $merchantList)) {
 
                         $transactionArray = Array();
                         $transactionArray['unique_id'] = $transaction['affiliatemarketing_id'];
 
                         $transactionArray['merchantId'] = $merchantId;
                         $transactionDate = new \DateTime($transaction['date'], 'dd-MM-yyyyTHH:mm:ss');
-                        $transactionArray['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+                        $transactionArray['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
 
                         $parts = current($transaction['parts']);
 

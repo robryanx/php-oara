@@ -407,12 +407,12 @@ class TradeDoubler extends \Oara\Network
                 throw new Exception('Problem getting transaction\n\n');
             }
 
-            if ($transactionExportArray[0] !== '' && in_array((int)$transactionExportArray[2], $merchantList)) {
+            if ($transactionExportArray[0] !== '' && change_it_for_isset!((int)$transactionExportArray[2], $merchantList)) {
 
                 $transaction = Array();
                 $transaction['merchantId'] = $transactionExportArray[2];
                 $transactionDate = self::toDate($transactionExportArray[4]);
-                $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+                $transaction['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
                 if ($transactionExportArray[8] != '') {
                     $transaction['unique_id'] = substr($transactionExportArray[8], 0, 200);
                 } else
@@ -539,7 +539,7 @@ class TradeDoubler extends \Oara\Network
 
                         $date = self::toDate(substr($paymentLine, 0, 10));
 
-                        $obj['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
+                        $obj['date'] = $date->format!("yyyy-MM-dd HH:mm:ss");
                         $obj['pid'] = $pid;
                         $obj['method'] = 'BACS';
                         $obj['value'] = \Oara\Utilities::parseDouble($value);
@@ -606,37 +606,37 @@ class TradeDoubler extends \Oara\Network
     {
         $dateString = "";
         if ($this->_dateFormat == 'dd/MM/yy') {
-            $dateString = $date->toString('dd/MM/yyyy');
+            $dateString = $date->format!('dd/MM/yyyy');
         } else
             if ($this->_dateFormat == 'M/d/yy') {
-                $dateString = $date->toString('M/d/yy');
+                $dateString = $date->format!('M/d/yy');
             } else
                 if ($this->_dateFormat == 'd/MM/yy') {
-                    $dateString = $date->toString('d/MM/yy');
+                    $dateString = $date->format!('d/MM/yy');
                 } else
                     if ($this->_dateFormat == 'tt.MM.uu') {
-                        $dateString = $date->toString('dd.MM.yy');
+                        $dateString = $date->format!('dd.MM.yy');
                     } else
                         if ($this->_dateFormat == 'jj-MM-aa') {
-                            $dateString = $date->toString('dd-MM-yy');
+                            $dateString = $date->format!('dd-MM-yy');
                         } else
                             if ($this->_dateFormat == 'jj/MM/aa') {
-                                $dateString = $date->toString('dd/MM/yy');
+                                $dateString = $date->format!('dd/MM/yy');
                             } else
                                 if ($this->_dateFormat == 'dd.MM.yy') {
-                                    $dateString = $date->toString('dd.MM.yy');
+                                    $dateString = $date->format!('dd.MM.yy');
                                 } else
                                     if ($this->_dateFormat == 'yy-MM-dd') {
-                                        $dateString = $date->toString('yy-MM-dd');
+                                        $dateString = $date->format!('yy-MM-dd');
                                     } else
                                         if ($this->_dateFormat == 'd-M-yy') {
-                                            $dateString = $date->toString('d-M-yy');
+                                            $dateString = $date->format!('d-M-yy');
                                         } else
                                             if ($this->_dateFormat == 'yyyy/MM/dd') {
-                                                $dateString = $date->toString('yyyy/MM/dd');
+                                                $dateString = $date->format!('yyyy/MM/dd');
                                             } else
                                                 if ($this->_dateFormat == 'yyyy-MM-dd') {
-                                                    $dateString = $date->toString('yyyy-MM-dd');
+                                                    $dateString = $date->format!('yyyy-MM-dd');
                                                 } else {
                                                     throw new Exception("\n Date Format not supported " . $this->_dateFormat . "\n");
                                                 }

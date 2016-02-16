@@ -140,8 +140,8 @@ class BTGuard extends \Oara\Network
 
         for ($j = 0; $j < $dateArraySize; $j++) {
             $valuesFormExport = array();
-            $valuesFormExport[] = new \Oara\Curl\Parameter('date1', $dateArray[$j]->toString("yyyy-MM-dd"));
-            $valuesFormExport[] = new \Oara\Curl\Parameter('date2', $dateArray[$j]->toString("yyyy-MM-dd"));
+            $valuesFormExport[] = new \Oara\Curl\Parameter('date1', $dateArray[$j]->format!("yyyy-MM-dd"));
+            $valuesFormExport[] = new \Oara\Curl\Parameter('date2', $dateArray[$j]->format!("yyyy-MM-dd"));
             $valuesFormExport[] = new \Oara\Curl\Parameter('prerange', '0');
 
             $urls = array();
@@ -161,7 +161,7 @@ class BTGuard extends \Oara\Network
                         for ($y = 0; $y < $numberTransactions; $y++) {
                             $transaction = Array();
                             $transaction['merchantId'] = "1";
-                            $transaction['date'] = $dateArray[$j]->toString("yyyy-MM-dd HH:mm:ss");
+                            $transaction['date'] = $dateArray[$j]->format!("yyyy-MM-dd HH:mm:ss");
                             $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
                             $transaction['amount'] = $commission;
                             $transaction['commission'] = $commission;
@@ -198,8 +198,8 @@ class BTGuard extends \Oara\Network
                 $paymentExportArray = str_getcsv($exportData[$j], ";");
                 $obj = array();
                 $paymentDate = new \DateTime($paymentExportArray[0], "dd/MM/yy", "en");
-                $obj['date'] = $paymentDate->toString("yyyy-MM-dd HH:mm:ss");
-                $obj['pid'] = $paymentDate->toString("yyyyMMdd");
+                $obj['date'] = $paymentDate->format!("yyyy-MM-dd HH:mm:ss");
+                $obj['pid'] = $paymentDate->format!("yyyyMMdd");
                 $obj['method'] = 'BACS';
                 if (preg_match('/[-+]?[0-9]*,?[0-9]*\.?[0-9]+/', $paymentExportArray[2], $matches)) {
                     $obj['value'] = \Oara\Utilities::parseDouble($matches[0]);

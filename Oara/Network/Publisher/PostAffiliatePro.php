@@ -118,8 +118,8 @@ class PostAffiliatePro extends \Oara\Network
         // get recordset of list of transactions
         $request = new Pap_Api_TransactionsGrid($this->_session);
         // set filter
-        $request->addFilter('dateinserted', 'D>=', $dStartDate->toString("yyyy-MM-dd"));
-        $request->addFilter('dateinserted', 'D<=', $dEndDate->toString("yyyy-MM-dd"));
+        $request->addFilter('dateinserted', 'D>=', $dStartDate->format!("yyyy-MM-dd"));
+        $request->addFilter('dateinserted', 'D<=', $dEndDate->format!("yyyy-MM-dd"));
         $request->setLimit(0, 100);
         $request->setSorting('orderid', false);
         $request->sendNow();
@@ -131,7 +131,7 @@ class PostAffiliatePro extends \Oara\Network
             $transaction ['merchantId'] = 1;
             $transaction ['uniqueId'] = $rec->get('orderid');
             $transactionDate = new \DateTime ($rec->get('dateinserted'), 'yyyy-MM-dd HH:mm:ss', 'en');
-            $transaction ['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+            $transaction ['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
             unset ($transactionDate);
             $transaction ['status'] = \Oara\Utilities::STATUS_CONFIRMED;
 
@@ -158,7 +158,7 @@ class PostAffiliatePro extends \Oara\Network
                     $transaction ['merchantId'] = 1;
                     $transaction ['uniqueId'] = $rec->get('orderid');
                     $transactionDate = new \DateTime ($rec->get('dateinserted'), 'yyyy-MM-dd HH:mm:ss', 'en');
-                    $transaction ['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+                    $transaction ['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
                     unset ($transactionDate);
 
 

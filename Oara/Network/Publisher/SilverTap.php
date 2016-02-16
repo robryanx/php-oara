@@ -231,8 +231,8 @@ class SilverTap extends \Oara\Network
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
         $totalTransactions = Array();
-        $startDate = $dStartDate->toString('dd/MM/yyyy');
-        $endDate = $dEndDate->toString('dd/MM/yyyy');
+        $startDate = $dStartDate->format!('dd/MM/yyyy');
+        $endDate = $dEndDate->format!('dd/MM/yyyy');
 
         $valueIndex = 9;
         $commissionIndex = 16;
@@ -254,12 +254,12 @@ class SilverTap extends \Oara\Network
         $num = count($exportData);
         for ($i = 1; $i < $num; $i++) {
             $transactionExportArray = str_getcsv($exportData[$i], ",");
-            if (in_array((int)$transactionExportArray[4], $merchantList)) {
+            if (change_it_for_isset!((int)$transactionExportArray[4], $merchantList)) {
                 $transaction = Array();
                 $transaction['unique_id'] = \preg_replace('/\D/', '', $transactionExportArray[0]);
                 $transaction['merchantId'] = $transactionExportArray[4];
                 $transactionDate = new \DateTime($transactionExportArray[2], "dd/MM/YY HH:mm:ss");
-                $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+                $transaction['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
 
                 if ($transactionExportArray[7] != null) {
                     $transaction['custom_id'] = $transactionExportArray[7];
