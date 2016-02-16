@@ -46,7 +46,7 @@ class TradeDoubler extends \Oara\Network
      * @param $buy
      * @return Buy_Api
      */
-    public function __construct($credentials)
+    public function login($credentials)
     {
         $user = $credentials ['user'];
         $password = $credentials ['password'];
@@ -60,7 +60,7 @@ class TradeDoubler extends \Oara\Network
             new \Oara\Curl\Parameter ('j_password', $password)
         );
 
-        $this->_client = new \Oara\Curl\Access ($loginUrl, $valuesLogin, $credentials);
+        $this->_client = new \Oara\Curl\Access ($credentials);
 
 
     }

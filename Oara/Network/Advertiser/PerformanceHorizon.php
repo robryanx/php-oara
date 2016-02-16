@@ -41,7 +41,7 @@ class PerformanceHorizon extends \Oara\Network
      *            $af
      * @return Af_Export
      */
-    public function __construct($credentials)
+    public function login($credentials)
     {
         $this->_pass = $credentials ['apiPassword'];
         $this->_currency = $credentials ['currency'];

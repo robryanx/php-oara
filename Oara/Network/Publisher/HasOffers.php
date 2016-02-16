@@ -47,13 +47,33 @@ class HasOffers extends \Oara\Network
      *            $affiliateWindow
      * @return HasOffers
      */
-    public function __construct($credentials)
+    public function login($credentials)
     {
         ini_set('default_socket_timeout', '120');
 
         $this->_domain = $credentials["domain"];
         $this->_apiPassword = $credentials["apiPassword"];
 
+    }
+
+    /**
+     * @return array
+     */
+    public function getNeededCredentials()
+    {
+        $credentials = array();
+
+        $parameter = array();
+        $parameter["user"]["description"] = "User Log in";
+        $parameter["user"]["required"] = true;
+        $credentials[] = $parameter;
+
+        $parameter = array();
+        $parameter["password"]["description"] = "Password to Log in";
+        $parameter["password"]["required"] = true;
+        $credentials[] = $parameter;
+
+        return $credentials;
     }
 
     /**

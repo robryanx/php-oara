@@ -47,11 +47,31 @@ class SkyParkSecure extends \Oara\Network
      * @param $credentials
      * @return SkyScanner
      */
-    public function __construct($credentials)
+    public function login($credentials)
     {
         $this->_credentials = $credentials;
         self::logIn();
 
+    }
+
+    /**
+     * @return array
+     */
+    public function getNeededCredentials()
+    {
+        $credentials = array();
+
+        $parameter = array();
+        $parameter["user"]["description"] = "User Log in";
+        $parameter["user"]["required"] = true;
+        $credentials[] = $parameter;
+
+        $parameter = array();
+        $parameter["password"]["description"] = "Password to Log in";
+        $parameter["password"]["required"] = true;
+        $credentials[] = $parameter;
+
+        return $credentials;
     }
 
     private function logIn()

@@ -41,11 +41,31 @@ class Effiliation extends \Oara\Network
      * @param $credentials
      * @return Effiliation
      */
-    public function __construct($credentials)
+    public function login($credentials)
     {
 
         $this->_credentials = $credentials;
 
+    }
+
+    /**
+     * @return array
+     */
+    public function getNeededCredentials()
+    {
+        $credentials = array();
+
+        $parameter = array();
+        $parameter["user"]["description"] = "User Log in";
+        $parameter["user"]["required"] = true;
+        $credentials[] = $parameter;
+
+        $parameter = array();
+        $parameter["password"]["description"] = "Password to Log in";
+        $parameter["password"]["required"] = true;
+        $credentials[] = $parameter;
+
+        return $credentials;
     }
 
     /**

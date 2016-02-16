@@ -93,7 +93,7 @@ if (!class_exists('Gpf_Rpc_Array', false)) {
 
         private $array;
 
-        function __construct(array $array = null)
+        function login(array $array = null)
         {
             if ($array === null) {
                 $this->array = array();
@@ -175,7 +175,7 @@ if (!class_exists('Gpf_Rpc_Server', false)) {
          */
         private $dataDecoder;
 
-        public function __construct()
+        public function login()
         {
         }
 
@@ -398,7 +398,7 @@ if (!class_exists('Gpf_Rpc_MultiRequest', false)) {
          */
         private static $instance;
 
-        public function __construct()
+        public function login()
         {
             $this->json = new Gpf_Rpc_Json();
             $this->requests = new Gpf_Rpc_Array();
@@ -541,7 +541,7 @@ if (!class_exists('Gpf_Rpc_Params', false)) {
         const SESSION_ID = 'S';
         const ACCOUNT_ID = 'aid';
 
-        function __construct($params = null)
+        function login($params = null)
         {
             if ($params === null) {
                 $this->params = new stdClass();
@@ -668,9 +668,9 @@ if (!class_exists('Gpf_Exception', false)) {
 
         private $id;
 
-        public function __construct($message, $code = null)
+        public function login($message, $code = null)
         {
-            parent::__construct($message, $code);
+            parent::login($message, $code);
         }
 
         protected function logException()
@@ -695,9 +695,9 @@ if (!class_exists('Gpf_Exception', false)) {
 if (!class_exists('Gpf_Data_RecordSetNoRowException', false)) {
     class Gpf_Data_RecordSetNoRowException extends Gpf_Exception
     {
-        public function __construct($keyValue)
+        public function login($keyValue)
         {
-            parent::__construct("'Row $keyValue does not exist");
+            parent::login("'Row $keyValue does not exist");
         }
 
         protected function logException()
@@ -711,9 +711,9 @@ if (!class_exists('Gpf_Rpc_ExecutionException', false)) {
     class Gpf_Rpc_ExecutionException extends Gpf_Exception
     {
 
-        function __construct($message)
+        function login($message)
         {
-            parent::__construct('RPC Execution exception: ' . $message);
+            parent::login('RPC Execution exception: ' . $message);
         }
     }
 
@@ -725,7 +725,7 @@ if (!class_exists('Gpf_Rpc_Object', false)) {
 
         private $object;
 
-        public function __construct($object = null)
+        public function login($object = null)
         {
             $this->object = $object;
         }
@@ -769,7 +769,7 @@ if (!class_exists('Gpf_Rpc_Request', false)) {
         protected $params;
         private $accountId = null;
 
-        public function __construct($className, $methodName, Gpf_Api_Session $apiSessionObject = null)
+        public function login($className, $methodName, Gpf_Api_Session $apiSessionObject = null)
         {
             $this->className = $className;
             $this->methodName = $methodName;
@@ -1048,7 +1048,7 @@ if (!class_exists('Gpf_Data_RecordHeader', false)) {
          *
          * @param array $headerArray
          */
-        public function __construct($headerArray = null)
+        public function login($headerArray = null)
         {
             if ($headerArray === null) {
                 return;
@@ -1141,7 +1141,7 @@ if (!class_exists('Gpf_Data_Record', false)) {
          * @param array $header
          * @param array $array values of record from array
          */
-        public function __construct($header, $array = array())
+        public function login($header, $array = array())
         {
             if (is_array($header)) {
                 $header = new Gpf_Data_RecordHeader($header);
@@ -1312,7 +1312,7 @@ if (!class_exists('Gpf_Data_Filter', false)) {
         private $operator;
         private $value;
 
-        public function __construct($code, $operator, $value)
+        public function login($code, $operator, $value)
         {
             $this->code = $code;
             $this->operator = $operator;
@@ -1440,7 +1440,7 @@ if (!class_exists('Gpf_Data_RecordSet', false)) {
          */
         private $_header;
 
-        function __construct()
+        function login()
         {
             $this->init();
         }
@@ -1647,7 +1647,7 @@ if (!class_exists('Gpf_Data_RecordSet', false)) {
         private $sortColumn;
         private $sortType;
 
-        function __construct($column, $sortType)
+        function login($column, $sortType)
         {
             $this->sortColumn = $column;
             $this->sortType = $sortType;
@@ -1687,9 +1687,9 @@ if (!class_exists('Gpf_Data_IndexedRecordSet', false)) {
          *
          * @param int $keyIndex specifies which column should be used as a key
          */
-        function __construct($key)
+        function login($key)
         {
-            parent::__construct();
+            parent::login();
             $this->key = $key;
         }
 
@@ -2366,7 +2366,7 @@ if (!class_exists('Gpf_Rpc_Form', false)) {
          */
         private $validators;
 
-        public function __construct(Gpf_Rpc_Params $params = null)
+        public function login(Gpf_Rpc_Params $params = null)
         {
             $this->fields = new Gpf_Data_IndexedRecordSet(self::FIELD_NAME);
 
@@ -2579,7 +2579,7 @@ if (!class_exists('Gpf_Rpc_Form_Validator_FormValidatorCollection', false)) {
          */
         private $form;
 
-        public function __construct(Gpf_Rpc_Form $form)
+        public function login(Gpf_Rpc_Form $form)
         {
             $this->form = $form;
             $this->validators = array();
@@ -2626,9 +2626,9 @@ if (!class_exists('Gpf_Rpc_FormRequest', false)) {
          */
         private $fields;
 
-        public function __construct($className, $methodName, Gpf_Api_Session $apiSessionObject = null)
+        public function login($className, $methodName, Gpf_Api_Session $apiSessionObject = null)
         {
-            parent::__construct($className, $methodName, $apiSessionObject);
+            parent::login($className, $methodName, $apiSessionObject);
             $this->fields = new Gpf_Rpc_Form();
         }
 
@@ -2704,9 +2704,9 @@ if (!class_exists('Gpf_Rpc_DataRequest', false)) {
 
         private $filters = array();
 
-        public function __construct($className, $methodName, Gpf_Api_Session $apiSessionObject = null)
+        public function login($className, $methodName, Gpf_Api_Session $apiSessionObject = null)
         {
-            parent::__construct($className, $methodName, $apiSessionObject);
+            parent::login($className, $methodName, $apiSessionObject);
             $this->data = new Gpf_Rpc_Data();
         }
 
@@ -2808,7 +2808,7 @@ if (!class_exists('Gpf_Rpc_Data', false)) {
          *
          * @param Gpf_Rpc_Params $params
          */
-        public function __construct(Gpf_Rpc_Params $params = null)
+        public function login(Gpf_Rpc_Params $params = null)
         {
             if ($params === null) {
                 $params = new Gpf_Rpc_Params();
@@ -2933,7 +2933,7 @@ if (!class_exists('Gpf_Rpc_FilterCollection', false)) {
          */
         private $filters;
 
-        public function __construct(Gpf_Rpc_Params $params = null)
+        public function login(Gpf_Rpc_Params $params = null)
         {
             $this->filters = array();
             if ($params != null) {
@@ -3094,7 +3094,7 @@ if (!class_exists('Gpf_Rpc_Action', false)) {
         const IDS = 'ids';
         const IDS_REQUEST = 'idsRequest';
 
-        public function __construct(Gpf_Rpc_Params $params, $infoMessage = '', $errorMessage = '')
+        public function login(Gpf_Rpc_Params $params, $infoMessage = '', $errorMessage = '')
         {
             $this->params = $params;
             $this->infoMessage = $infoMessage;
@@ -3211,7 +3211,7 @@ if (!class_exists('Gpf_Rpc_Map', false)) {
     class Gpf_Rpc_Map extends Gpf_Object implements Gpf_Rpc_Serializable
     {
 
-        function __construct(array  $array)
+        function login(array  $array)
         {
             $this->array = $array;
         }
@@ -3255,7 +3255,7 @@ if (!class_exists('Gpf_Log', false)) {
             return self::$logger;
         }
 
-        private function __construct()
+        private function login()
         {
         }
 
@@ -3777,10 +3777,10 @@ if (!class_exists('Gpf_Api_IncompatibleVersionException', false)) {
 
         private $apiLink;
 
-        public function __construct($url)
+        public function login($url)
         {
             $this->apiLink = $url . '?C=Gpf_Api_DownloadAPI&M=download&FormRequest=Y&FormResponse=Y';
-            parent::__construct('Version of API not corresponds to the Application version. Please <a href="' . $this->apiLink . '">download latest version of API</a>.', 0);
+            parent::login('Version of API not corresponds to the Application version. Please <a href="' . $this->apiLink . '">download latest version of API</a>.', 0);
         }
 
         public function getApiDownloadLink()
@@ -3804,7 +3804,7 @@ if (!class_exists('Gpf_Api_Session', false)) {
         private $message = '';
         private $roleType = '';
 
-        public function __construct($url)
+        public function login($url)
         {
             $this->url = $url;
         }
@@ -4008,7 +4008,7 @@ if (!class_exists('Gpf_Rpc_Json', false)) {
          *                                   bubble up with an error, so all return values
          *                                   from encode() should be checked with isError()
          */
-        function __construct($use = 0)
+        function login($use = 0)
         {
             $this->use = $use;
         }
@@ -4682,7 +4682,7 @@ if (!class_exists('Gpf_Rpc_Json', false)) {
     {
         private $message;
 
-        public function __construct($message)
+        public function login($message)
         {
             $this->message = $message;
         }
@@ -4695,7 +4695,7 @@ if (!class_exists('Gpf_Rpc_JsonObject', false)) {
     class Gpf_Rpc_JsonObject extends Gpf_Object
     {
 
-        public function __construct($object = null)
+        public function login($object = null)
         {
             if ($object != null) {
                 $this->initFrom($object);
@@ -4757,7 +4757,7 @@ if (!class_exists('Pap_Api_Object', false)) {
          */
         private $fields;
 
-        public function __construct(Gpf_Api_Session $session)
+        public function login(Gpf_Api_Session $session)
         {
             $this->session = $session;
             $this->fields = new Gpf_Data_IndexedRecordSet(self::FIELD_NAME);
@@ -4985,12 +4985,12 @@ if (!class_exists('Pap_Api_AffiliatesGrid', false)) {
 
         private $dataValues = null;
 
-        public function __construct(Gpf_Api_Session $session)
+        public function login(Gpf_Api_Session $session)
         {
             if ($session->getRoleType() == Gpf_Api_Session::AFFILIATE) {
                 throw new Exception("This class can be used only by merchant!");
             } else {
-                parent::__construct("Pap_Merchants_User_AffiliatesGrid", "getRows", $session);
+                parent::login("Pap_Merchants_User_AffiliatesGrid", "getRows", $session);
             }
         }
     }
@@ -5001,12 +5001,12 @@ if (!class_exists('Pap_Api_BannersGrid', false)) {
     class Pap_Api_BannersGrid extends Gpf_Rpc_GridRequest
     {
 
-        public function __construct(Gpf_Api_Session $session)
+        public function login(Gpf_Api_Session $session)
         {
             if ($session->getRoleType() == Gpf_Api_Session::AFFILIATE) {
                 throw new Exception("This class can be used only by merchant!");
             } else {
-                parent::__construct("Pap_Merchants_Banner_BannersGrid", "getRows", $session);
+                parent::login("Pap_Merchants_Banner_BannersGrid", "getRows", $session);
             }
         }
     }
@@ -5023,7 +5023,7 @@ if (!class_exists('Pap_Api_Affiliate', false)) {
         private $dataValues = null;
         private $equalsFields = array();
 
-        public function __construct(Gpf_Api_Session $session)
+        public function login(Gpf_Api_Session $session)
         {
             if ($session->getRoleType() == Gpf_Api_Session::AFFILIATE) {
                 $this->class = "Pap_Affiliates_Profile_PersonalDetailsForm";
@@ -5031,7 +5031,7 @@ if (!class_exists('Pap_Api_Affiliate', false)) {
                 $this->class = "Pap_Signup_AffiliateForm";
             }
 
-            parent::__construct($session);
+            parent::login($session);
 
             $this->addEqualField('username');
 
@@ -5359,14 +5359,14 @@ if (!class_exists('Pap_Api_TransactionsGrid', false)) {
 
         private $dataValues = null;
 
-        public function __construct(Gpf_Api_Session $session)
+        public function login(Gpf_Api_Session $session)
         {
             if ($session->getRoleType() == Gpf_Api_Session::AFFILIATE) {
                 $className = "Pap_Affiliates_Reports_TransactionsGrid";
             } else {
                 $className = "Pap_Merchants_Transaction_TransactionsGrid";
             }
-            parent::__construct($className, "getRows", $session);
+            parent::login($className, "getRows", $session);
         }
 
         public function refund($note = '', $fee = 0)
@@ -5408,7 +5408,7 @@ if (!class_exists('Pap_Api_Transaction', false)) {
 
         private $dataValues = null;
 
-        public function __construct(Gpf_Api_Session $session)
+        public function login(Gpf_Api_Session $session)
         {
             if ($session->getRoleType() == Gpf_Api_Session::AFFILIATE) {
                 throw new Exception("This class can be used only by merchant!");
@@ -5416,7 +5416,7 @@ if (!class_exists('Pap_Api_Transaction', false)) {
                 $this->class = "Pap_Merchants_Transaction_TransactionsForm";
             }
 
-            parent::__construct($session);
+            parent::login($session);
         }
 
         public function getTransid()
@@ -5947,9 +5947,9 @@ if (!class_exists('Pap_Tracking_Action_RequestActionObject', false)) {
         public $cp = ''; // coupon code
         public $ts = ''; // time stamp
 
-        public function __construct($object = null)
+        public function login($object = null)
         {
-            parent::__construct($object);
+            parent::login($object);
         }
 
         public function getActionCode()
@@ -6192,7 +6192,7 @@ if (!class_exists('Pap_Tracking_Request', false)) {
          */
         protected $logger;
 
-        function __construct()
+        function login()
         {
             $this->request = $_REQUEST;
         }
@@ -6597,7 +6597,7 @@ if (!class_exists('Pap_Api_Tracker', false)) {
          *
          * @param Gpf_Api_Session $session
          */
-        public function __construct(Gpf_Api_Session $session)
+        public function login(Gpf_Api_Session $session)
         {
             if ($session->getRoleType() == Gpf_Api_Session::AFFILIATE) {
                 throw new Exception("This class can be used only by merchant!");
@@ -6884,13 +6884,13 @@ if (!class_exists('Pap_Api_SaleTracker', false)) {
         /**
          * @param string $saleScriptUrl Url to sale.php script
          */
-        public function __construct($saleScriptUrl, $debug = false)
+        public function login($saleScriptUrl, $debug = false)
         {
             $session = new Gpf_Api_Session(str_replace('sale.php', 'server.php', $saleScriptUrl));
             if ($debug) {
                 $session->setDebug(true);
             }
-            parent::__construct($session);
+            parent::login($session);
         }
 
         /**
@@ -6929,9 +6929,9 @@ if (!class_exists('Pap_Api_ClickTracker', false)) {
          * This class requires correctly initialized merchant session
          * @param Gpf_Api_Session $session
          */
-        public function __construct(Gpf_Api_Session $session)
+        public function login(Gpf_Api_Session $session)
         {
-            parent::__construct($session);
+            parent::login($session);
         }
 
         /**
@@ -7018,9 +7018,9 @@ if (!class_exists('Pap_Api_RecurringCommission', false)) {
     class Pap_Api_RecurringCommission extends Pap_Api_Object
     {
 
-        public function __construct(Gpf_Api_Session $session)
+        public function login(Gpf_Api_Session $session)
         {
-            parent::__construct($session);
+            parent::login($session);
             $this->class = 'Pap_Features_RecurringCommissions_RecurringCommissionsForm';
         }
 
@@ -7072,12 +7072,12 @@ if (!class_exists('Pap_Api_RecurringCommissionsGrid', false)) {
 
         private $dataValues = null;
 
-        public function __construct(Gpf_Api_Session $session)
+        public function login(Gpf_Api_Session $session)
         {
             if ($session->getRoleType() == Gpf_Api_Session::AFFILIATE) {
                 throw new Exception("This class can be used only by merchant!");
             } else {
-                parent::__construct("Pap_Features_RecurringCommissions_RecurringCommissionsGrid", "getRows", $session);
+                parent::login("Pap_Features_RecurringCommissions_RecurringCommissionsGrid", "getRows", $session);
             }
         }
     }
@@ -7092,14 +7092,14 @@ if (!class_exists('Pap_Api_PayoutsGrid', false)) {
 
         private $affiliatesToPay = array();
 
-        public function __construct(Gpf_Api_Session $session)
+        public function login(Gpf_Api_Session $session)
         {
             if ($session->getRoleType() == Gpf_Api_Session::AFFILIATE) {
                 throw new Gpf_Exception('Only merchant can view payouts grid. Please login as merchant.');
             }
 
             $className = 'Pap_Merchants_Payout_PayAffiliatesGrid';
-            parent::__construct($className, 'getRows', $session);
+            parent::login($className, 'getRows', $session);
         }
 
         public function payAffiliates($paymentNote = '', $affiliateNote = '', $send_payment_to_affiliate = Gpf::NO, $send_generated_invoices_to_merchant = Gpf::NO, $send_generated_invoices_to_affiliates = Gpf::NO)
@@ -7176,12 +7176,12 @@ if (!class_exists('Pap_Api_PayoutsGrid', false)) {
 if (!class_exists('Pap_Api_PayoutsHistoryGrid', false)) {
     class Pap_Api_PayoutsHistoryGrid extends Gpf_Rpc_GridRequest
     {
-        public function __construct(Gpf_Api_Session $session)
+        public function login(Gpf_Api_Session $session)
         {
             if ($session->getRoleType() == Gpf_Api_Session::AFFILIATE) {
                 throw new Gpf_Exception('Only merchant can view payouts history. Please login as merchant.');
             }
-            parent::__construct('Pap_Merchants_Payout_PayoutsHistoryGrid', 'getRows', $session);
+            parent::login('Pap_Merchants_Payout_PayoutsHistoryGrid', 'getRows', $session);
         }
 
         public function getPayeesDeatilsInfo($payoutId)

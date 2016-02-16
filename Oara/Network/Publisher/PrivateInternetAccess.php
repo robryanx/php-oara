@@ -42,7 +42,7 @@ class PrivateInternetAccess extends \Oara\Network
      * @param $credentials
      * @return Daisycon
      */
-    public function __construct($credentials)
+    public function login($credentials)
     {
         $user = $credentials['user'];
         $password = $credentials['password'];
@@ -127,6 +127,26 @@ class PrivateInternetAccess extends \Oara\Network
 
         $result = curl_exec($ch);
 
+    }
+
+    /**
+     * @return array
+     */
+    public function getNeededCredentials()
+    {
+        $credentials = array();
+
+        $parameter = array();
+        $parameter["user"]["description"] = "User Log in";
+        $parameter["user"]["required"] = true;
+        $credentials[] = $parameter;
+
+        $parameter = array();
+        $parameter["password"]["description"] = "Password to Log in";
+        $parameter["password"]["required"] = true;
+        $credentials[] = $parameter;
+
+        return $credentials;
     }
 
     /**

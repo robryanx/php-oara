@@ -52,7 +52,7 @@ class NetAffiliation extends \Oara\Network
      * @param $credentials
      * @return null
      */
-    public function __construct($credentials)
+    public function login($credentials)
     {
 
         $this->_credentials = $credentials;
@@ -67,7 +67,7 @@ class NetAffiliation extends \Oara\Network
         );
 
 
-        $this->_client = new \Oara\Curl\Access($loginUrl, $valuesLogin, $credentials);
+        $this->_client = new \Oara\Curl\Access($credentials);
 
         $cookieLocalion = COOKIES_BASE_DIR . DIRECTORY_SEPARATOR . $credentials['cookiesDir'] . DIRECTORY_SEPARATOR . $credentials['cookiesSubDir'] . DIRECTORY_SEPARATOR . $credentials["cookieName"] . '_cookies.txt';
 
@@ -102,6 +102,26 @@ class NetAffiliation extends \Oara\Network
         }
 
 
+    }
+
+    /**
+     * @return array
+     */
+    public function getNeededCredentials()
+    {
+        $credentials = array();
+
+        $parameter = array();
+        $parameter["user"]["description"] = "User Log in";
+        $parameter["user"]["required"] = true;
+        $credentials[] = $parameter;
+
+        $parameter = array();
+        $parameter["password"]["description"] = "Password to Log in";
+        $parameter["password"]["required"] = true;
+        $credentials[] = $parameter;
+
+        return $credentials;
     }
 
     /**

@@ -46,7 +46,7 @@ class Skimlinks extends \Oara\Network
      * @param $credentials
      * @return Daisycon
      */
-    public function __construct($credentials)
+    public function login($credentials)
     {
 
         $dir = COOKIES_BASE_DIR . DIRECTORY_SEPARATOR . $credentials ['cookiesDir'] . DIRECTORY_SEPARATOR . $credentials ['cookiesSubDir'] . DIRECTORY_SEPARATOR;
@@ -77,6 +77,26 @@ class Skimlinks extends \Oara\Network
         $this->_publicapikey = $credentials['user'];
         $this->_privateapikey = $credentials['apiPassword'];
 
+    }
+
+    /**
+     * @return array
+     */
+    public function getNeededCredentials()
+    {
+        $credentials = array();
+
+        $parameter = array();
+        $parameter["user"]["description"] = "User Log in";
+        $parameter["user"]["required"] = true;
+        $credentials[] = $parameter;
+
+        $parameter = array();
+        $parameter["password"]["description"] = "Password to Log in";
+        $parameter["password"]["required"] = true;
+        $credentials[] = $parameter;
+
+        return $credentials;
     }
 
     /**

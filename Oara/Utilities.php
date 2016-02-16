@@ -72,6 +72,7 @@ class Utilities
      */
     public static function parseDouble($data)
     {
+        $data = \preg_replace('/[^0-9\.,]/', "", $data);
         $data = \str_replace(" ", "", \trim($data));
         $double = 0;
         if ($data != null) {
@@ -85,6 +86,29 @@ class Utilities
             $double = \number_format((float)$convertnum, 2, '.', '');
         }
         return $double;
+    }
+
+    /**
+     * @param $merchantList
+     * @return array
+     */
+    public static function getMerchantIdMapFromMerchantList($merchantList){
+        $merchantIdMap = array();
+        foreach ($merchantList as $merchant){
+            $merchantIdMap[$merchant["cid"]] = $merchant["name"];
+        }
+        return $merchantIdMap;
+    }
+    /**
+     * @param $merchantList
+     * @return array
+     */
+    public static function getMerchantNameMapFromMerchantList($merchantList){
+        $merchantNameMap = array();
+        foreach ($merchantList as $merchant){
+            $merchantNameMap[$merchant["name"]] = $merchant["cid"];
+        }
+        return $merchantNameMap;
     }
 
 }

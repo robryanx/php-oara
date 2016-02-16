@@ -32,40 +32,56 @@ class AffiliatesUnited extends \Oara\Network
 {
 
     /**
-     * Merchants by name
-     */
-    private $_merchantMap = array();
-    /**
      * Client
      * @var unknown_type
      */
     private $_client = null;
 
     /**
-     * Constructor and Login
      * @param $credentials
-     * @return Daisycon
      */
-    public function __construct($credentials)
+    public function login($credentials)
     {
         $user = $credentials['user'];
         $password = $credentials['password'];
+
+        $this->_client = new \Oara\Curl\Access($credentials);
 
         $valuesLogin = array(
             new \Oara\Curl\Parameter('us', $user),
             new \Oara\Curl\Parameter('pa', $password)
         );
-
         $loginUrl = 'https://affiliates.affutd.com/affiliates/Login.aspx';
-        $this->_client = new \Oara\Curl\Access($loginUrl, $valuesLogin, $credentials);
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request($loginUrl, $valuesLogin);
+        $this->_client->post($urls);
     }
 
     /**
-     * Check the connection
+     * @return array
+     */
+    public function getNeededCredentials()
+    {
+        $credentials = array();
+
+        $parameter = array();
+        $parameter["user"]["description"] = "User Log in";
+        $parameter["user"]["required"] = true;
+        $credentials[] = $parameter;
+
+        $parameter = array();
+        $parameter["password"]["description"] = "Password to Log in";
+        $parameter["password"]["required"] = true;
+        $credentials[] = $parameter;
+
+        return $credentials;
+    }
+
+    /**
+     * @return bool
      */
     public function checkConnection()
     {
-        //If not login properly the construct launch an exception
         $connection = false;
         $urls = array();
         $urls[] = new \Oara\Curl\Request('https://affiliates.affutd.com/affiliates/Dashboard.aspx', array());

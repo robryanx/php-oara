@@ -84,7 +84,7 @@ class ApiAuthorization implements IAuthorization
      *
      * @return     void
      */
-    function __construct()
+    function login()
     {
     }
 

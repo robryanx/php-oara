@@ -48,7 +48,7 @@ class Zanox extends \Oara\Network
      * @param $affiliateWindow
      * @return Zn_Api
      */
-    public function __construct($credentials)
+    public function login($credentials)
     {
 
         $api = ApiClient::factory(PROTOCOL_SOAP, VERSION_2011_03_01);
@@ -63,6 +63,26 @@ class Zanox extends \Oara\Network
 
         $this->_apiClient = $api;
 
+    }
+
+    /**
+     * @return array
+     */
+    public function getNeededCredentials()
+    {
+        $credentials = array();
+
+        $parameter = array();
+        $parameter["user"]["description"] = "User Log in";
+        $parameter["user"]["required"] = true;
+        $credentials[] = $parameter;
+
+        $parameter = array();
+        $parameter["password"]["description"] = "Password to Log in";
+        $parameter["password"]["required"] = true;
+        $credentials[] = $parameter;
+
+        return $credentials;
     }
 
     /**

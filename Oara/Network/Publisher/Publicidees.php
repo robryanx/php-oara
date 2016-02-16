@@ -42,7 +42,7 @@ class Publicidees extends \Oara\Network
      * @param $credentials
      * @return Effiliation
      */
-    public function __construct($credentials)
+    public function login($credentials)
     {
 
         $user = $credentials['user'];
@@ -52,7 +52,7 @@ class Publicidees extends \Oara\Network
             new \Oara\Curl\Parameter('passAff', $password),
             new \Oara\Curl\Parameter('userType', 'aff')
         );
-        $this->_client = new \Oara\Curl\Access($loginUrl, $valuesLogin, $credentials);
+        $this->_client = new \Oara\Curl\Access($credentials);
         $result = json_decode($this->_client->getConstructResult());
         $loginUrl = 'http://publisher.publicideas.com/entree_affilies.php';
         $valuesLogin = array(new \Oara\Curl\Parameter('login', $result->login),
@@ -60,8 +60,28 @@ class Publicidees extends \Oara\Network
             new \Oara\Curl\Parameter('submit', 'Ok'),
             new \Oara\Curl\Parameter('h', $result->h)
         );
-        $this->_client = new \Oara\Curl\Access($loginUrl, $valuesLogin, $credentials);
+        $this->_client = new \Oara\Curl\Access($credentials);
 
+    }
+
+    /**
+     * @return array
+     */
+    public function getNeededCredentials()
+    {
+        $credentials = array();
+
+        $parameter = array();
+        $parameter["user"]["description"] = "User Log in";
+        $parameter["user"]["required"] = true;
+        $credentials[] = $parameter;
+
+        $parameter = array();
+        $parameter["password"]["description"] = "Password to Log in";
+        $parameter["password"]["required"] = true;
+        $credentials[] = $parameter;
+
+        return $credentials;
     }
 
     /**

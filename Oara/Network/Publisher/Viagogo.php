@@ -43,7 +43,7 @@ class Viagogo extends \Oara\Network
      * @param $credentials
      * @return Viagogo
      */
-    public function __construct($credentials)
+    public function login($credentials)
     {
         $user = $credentials ['user'];
         $password = $credentials ['password'];
@@ -102,6 +102,26 @@ class Viagogo extends \Oara\Network
         $html = curl_exec($rch);
         curl_close($rch);
 
+    }
+
+    /**
+     * @return array
+     */
+    public function getNeededCredentials()
+    {
+        $credentials = array();
+
+        $parameter = array();
+        $parameter["user"]["description"] = "User Log in";
+        $parameter["user"]["required"] = true;
+        $credentials[] = $parameter;
+
+        $parameter = array();
+        $parameter["password"]["description"] = "Password to Log in";
+        $parameter["password"]["required"] = true;
+        $credentials[] = $parameter;
+
+        return $credentials;
     }
 
     /**

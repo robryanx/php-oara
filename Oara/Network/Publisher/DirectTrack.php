@@ -60,7 +60,7 @@ class DirectTrack extends \Oara\Network
      *            $affiliateWindow
      * @return Aw_Api
      */
-    public function __construct($credentials)
+    public function login($credentials)
     {
         ini_set('default_socket_timeout', '120');
         $this->_version = '1_0';
@@ -70,6 +70,26 @@ class DirectTrack extends \Oara\Network
         $this->_username = $credentials["user"];
         $this->_password = $credentials["password"];
 
+    }
+
+    /**
+     * @return array
+     */
+    public function getNeededCredentials()
+    {
+        $credentials = array();
+
+        $parameter = array();
+        $parameter["user"]["description"] = "User Log in";
+        $parameter["user"]["required"] = true;
+        $credentials[] = $parameter;
+
+        $parameter = array();
+        $parameter["password"]["description"] = "Password to Log in";
+        $parameter["password"]["required"] = true;
+        $credentials[] = $parameter;
+
+        return $credentials;
     }
 
     /**

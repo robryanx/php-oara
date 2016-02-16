@@ -141,6 +141,8 @@ class Affiliate4You extends \Oara\Network
         $page = 1;
         $import = true;
 
+        $merchantIdMap = \Oara\Utilities::getMerchantIdMapFromMerchantList($merchantList);
+
         while ($import) {
 
             $totalRows = ($page * 300);
@@ -165,7 +167,7 @@ class Affiliate4You extends \Oara\Network
             for ($i = 1; $i < \count($exportData); $i++) {
 
                 $transactionExportArray = \str_getcsv($exportData[$i], ";");
-                if (\in_array($transactionExportArray[12], $merchantList)) {
+                if (isset($merchantIdMap[$transactionExportArray[12]])) {
                     $transaction = Array();
                     $transaction['unique_id'] = $transactionExportArray[3];
                     $transaction['merchantId'] = $transactionExportArray[12];

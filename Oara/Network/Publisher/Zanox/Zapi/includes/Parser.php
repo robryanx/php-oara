@@ -29,7 +29,7 @@ class Parser implements IParser
      *
      * @return     void
      */
-    function __construct()
+    function login()
     {
     }
 

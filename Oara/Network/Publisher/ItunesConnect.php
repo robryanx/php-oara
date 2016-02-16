@@ -45,7 +45,7 @@ class ItunesConnect extends \Oara\Network
      * @param $credentials
      * @return itunesConnect
      */
-    public function __construct($credentials)
+    public function login($credentials)
     {
         $user = $credentials['user'];
         $password = $credentials['password'];
@@ -67,6 +67,26 @@ class ItunesConnect extends \Oara\Network
         $this->_httpLogin = $credentials['httpLogin'];
         //$this->_client = new \Oara\Curl\Access($url, $valuesLogin, $credentials);
         //$this->_constructResult =  $this->_client->getConstructResult();
+    }
+
+    /**
+     * @return array
+     */
+    public function getNeededCredentials()
+    {
+        $credentials = array();
+
+        $parameter = array();
+        $parameter["user"]["description"] = "User Log in";
+        $parameter["user"]["required"] = true;
+        $credentials[] = $parameter;
+
+        $parameter = array();
+        $parameter["password"]["description"] = "Password to Log in";
+        $parameter["password"]["required"] = true;
+        $credentials[] = $parameter;
+
+        return $credentials;
     }
 
     /**

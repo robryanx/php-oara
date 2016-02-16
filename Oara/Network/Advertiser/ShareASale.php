@@ -62,7 +62,7 @@ class ShareASale extends \Oara\Network
      * @param $cj
      * @return ShareASale
      */
-    public function __construct($credentials)
+    public function login($credentials)
     {
 
         $this->_merchantId = $credentials['merchantId'];

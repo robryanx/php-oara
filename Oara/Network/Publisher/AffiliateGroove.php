@@ -38,8 +38,8 @@ class AffiliateGroove extends PostAffiliatePro
     {
         // If not login properly the construct launch an exception
         $connection = true;
-        $session = new Gpf_Api_Session("http://affiliategroove.com/scripts/server.php");
-        if (!@$session->login($this->_credentials ["user"], $this->_credentials ["password"], Gpf_Api_Session::AFFILIATE)) {
+        $session = new \Gpf_Api_Session("http://affiliategroove.com/scripts/server.php");
+        if (!@$session->login($this->_credentials ["user"], $this->_credentials ["password"], \Gpf_Api_Session::AFFILIATE)) {
             $connection = false;
         }
         $this->_session = $session;

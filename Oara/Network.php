@@ -30,7 +30,6 @@ namespace Oara;
  */
 class Network
 {
-
     /**
      *
      * Get an array with the description for credentials needed to log in

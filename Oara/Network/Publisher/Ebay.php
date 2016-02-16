@@ -43,7 +43,7 @@ class Ebay extends \Oara\Network
     /**
      * @param $credentials
      */
-    public function __construct($credentials)
+    public function login($credentials)
     {
         $this->_credentials = $credentials;
 
@@ -56,6 +56,26 @@ class Ebay extends \Oara\Network
 
         $loginUrl = 'https://ebaypartnernetwork.com/PublisherLogin?hubpage=y&lang=en-US?';
         $this->_client = new \Oara\Curl\Access($loginUrl, $valuesLogin, $this->_credentials);
+    }
+
+    /**
+     * @return array
+     */
+    public function getNeededCredentials()
+    {
+        $credentials = array();
+
+        $parameter = array();
+        $parameter["user"]["description"] = "User Log in";
+        $parameter["user"]["required"] = true;
+        $credentials[] = $parameter;
+
+        $parameter = array();
+        $parameter["password"]["description"] = "Password to Log in";
+        $parameter["password"]["required"] = true;
+        $credentials[] = $parameter;
+
+        return $credentials;
     }
 
     /**

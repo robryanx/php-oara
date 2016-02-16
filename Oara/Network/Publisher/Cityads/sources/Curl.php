@@ -40,7 +40,7 @@ class CityAds_Curl
         return $this->_userAgent;
     }
 
-    public function __construct($timeout = 100)
+    public function login($timeout = 100)
     {
         $this->setTimeOut($timeout);
         $this->setUserAgent('CityAds Api version 1.2');

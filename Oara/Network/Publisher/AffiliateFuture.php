@@ -180,7 +180,7 @@ class AffiliateFuture extends \Oara\Network
                 }
 
                 if ($i != $countTd - 1) {
-                    $csv .= \trim($value) . ";,";
+                    $csv .= \trim($value) . ";";
                 } else {
                     $csv .= \trim($value);
                 }
@@ -217,9 +217,9 @@ class AffiliateFuture extends \Oara\Network
      */
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
+        $merchantIdMap = \Oara\Utilities::getMerchantIdMapFromMerchantList($merchantList);
 
         $nowDate = new \DateTime();
-
         $dStartDate = clone $dStartDate;
         $dStartDate->setTime(0,0,0);
         $dEndDate = clone $dEndDate;
@@ -246,7 +246,7 @@ class AffiliateFuture extends \Oara\Network
                 foreach ($xml->TransactionList as $transaction) {
                     $date = new \DateTime(self::findAttribute($transaction, 'TransactionDate'));
 
-                    if (\in_array((int)self::findAttribute($transaction, 'ProgrammeID'), $merchantList) &&
+                    if (isset($merchantIdMap[(int)self::findAttribute($transaction, 'ProgrammeID')]) &&
                         ($date->format("Y-m-d H:i:s") >= $dStartDate->format("Y-m-d H:i:s")) &&
                         ($date->format("Y-m-d H:i:s") <= $dEndDate->format("Y-m-d H:i:s"))) {
 

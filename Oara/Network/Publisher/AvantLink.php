@@ -40,7 +40,7 @@ class AvantLink extends \Oara\Network
      * @param $credentials
      * @return ShareASale
      */
-    public function __construct($credentials)
+    public function login($credentials)
     {
 
         $user = $credentials ['user'];
@@ -63,6 +63,26 @@ class AvantLink extends \Oara\Network
         // Login to the Linkshare Application
         $this->_client = new \Oara\Curl\Access ($this->_domain . "/login.php", $valuesLogin, $credentials);
 
+    }
+
+    /**
+     * @return array
+     */
+    public function getNeededCredentials()
+    {
+        $credentials = array();
+
+        $parameter = array();
+        $parameter["user"]["description"] = "User Log in";
+        $parameter["user"]["required"] = true;
+        $credentials[] = $parameter;
+
+        $parameter = array();
+        $parameter["password"]["description"] = "Password to Log in";
+        $parameter["password"]["required"] = true;
+        $credentials[] = $parameter;
+
+        return $credentials;
     }
 
     /**

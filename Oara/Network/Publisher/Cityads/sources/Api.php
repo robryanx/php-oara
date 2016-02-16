@@ -33,7 +33,7 @@ class CityAds_Api
         return $this;
     }
 
-    public function __construct($accessToken = null)
+    public function login($accessToken = null)
     {
         $this->accessToken = $accessToken;
     }

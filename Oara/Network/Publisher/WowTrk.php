@@ -60,7 +60,7 @@ class WowTrk extends \Oara\Network
      * @param $wow
      * @return Aw_Api
      */
-    public function __construct($credentials)
+    public function login($credentials)
     {
         $user = $credentials['user'];
         $password = $credentials['password'];
@@ -73,7 +73,27 @@ class WowTrk extends \Oara\Network
             new \Oara\Curl\Parameter('_method', 'POST')
         );
 
-        $this->_exportClient = new \Oara\Curl\Access($loginUrl, $valuesLogin, $credentials);
+        $this->_exportClient = new \Oara\Curl\Access($credentials);
+    }
+
+    /**
+     * @return array
+     */
+    public function getNeededCredentials()
+    {
+        $credentials = array();
+
+        $parameter = array();
+        $parameter["user"]["description"] = "User Log in";
+        $parameter["user"]["required"] = true;
+        $credentials[] = $parameter;
+
+        $parameter = array();
+        $parameter["password"]["description"] = "Password to Log in";
+        $parameter["password"]["required"] = true;
+        $credentials[] = $parameter;
+
+        return $credentials;
     }
 
     /**

@@ -41,7 +41,7 @@ class TerraVision extends \Oara\Network
      * @param $cartrawler
      * @return Tv_Export
      */
-    public function __construct($credentials)
+    public function login($credentials)
     {
 
         $user = $credentials['user'];
@@ -53,7 +53,7 @@ class TerraVision extends \Oara\Network
             new \Oara\Curl\Parameter('_submit', 'Login')
         );
 
-        $this->_client = new \Oara\Curl\Access($loginUrl, $valuesLogin, $credentials);
+        $this->_client = new \Oara\Curl\Access($credentials);
 
         $urls = array();
         $urls[] = new \Oara\Curl\Request('https://book.terravision.eu/login', array());
@@ -90,6 +90,26 @@ class TerraVision extends \Oara\Network
             $connection = true;
         }
         return $connection;
+    }
+
+    /**
+     * @return array
+     */
+    public function getNeededCredentials()
+    {
+        $credentials = array();
+
+        $parameter = array();
+        $parameter["user"]["description"] = "User Log in";
+        $parameter["user"]["required"] = true;
+        $credentials[] = $parameter;
+
+        $parameter = array();
+        $parameter["password"]["description"] = "Password to Log in";
+        $parameter["password"]["required"] = true;
+        $credentials[] = $parameter;
+
+        return $credentials;
     }
 
     /**

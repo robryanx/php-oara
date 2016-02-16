@@ -45,7 +45,7 @@ class Zanox extends \Oara\Network
     /**
      * Constructor
      */
-    public function __construct($credentials)
+    public function login($credentials)
     {
 
         $user = $credentials ['user'];
@@ -59,7 +59,7 @@ class Zanox extends \Oara\Network
             new \Oara\Curl\Parameter ('loginForm.loginViaUserAndPassword', "true")
         );
 
-        $this->_client = new \Oara\Curl\Access ($loginUrl, $valuesLogin, $credentials);
+        $this->_client = new \Oara\Curl\Access ($credentials);
 
         $exportReport = $this->_client->getConstructResult();
 

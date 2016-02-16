@@ -148,7 +148,7 @@ abstract class ApiMethods
      *
      * @return     void
      */
-    final public function __construct($protocol, $version)
+    final public function login($protocol, $version)
     {
         $this->setProtocol($protocol);
         $this->setVersion($version);

@@ -168,7 +168,7 @@ final class ApiClient
      * @return void
      * @access privat
      */
-    private function __construct()
+    private function login()
     {
     }
 

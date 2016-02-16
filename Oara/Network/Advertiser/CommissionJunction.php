@@ -80,12 +80,14 @@ class CommissionJunction extends \Oara\Network
      * @param $cj
      * @return Cj_Export
      */
-    public function __construct($credentials)
+    public function login($credentials)
     {
 
         $user = $credentials['user'];
         $password = $credentials['password'];
         $this->_apiPassword = $credentials['apiPassword'];
+
+
 
         $loginUrl = 'https://members.cj.com/member/foundation/memberlogin.do?';
         $valuesLogin = array(new \Oara\Curl\Parameter('uname', $user),
@@ -94,7 +96,7 @@ class CommissionJunction extends \Oara\Network
             new \Oara\Curl\Parameter('submit.y', '8')
         );
 
-        $this->_client = new \Oara\Curl\Access($loginUrl, $valuesLogin, $credentials);
+        $this->_client = new \Oara\Curl\Access($credentials);
 
         $this->_exportMerchantParameters = array(new \Oara\Curl\Parameter('sortKey', 'active_start_date'),
             new \Oara\Curl\Parameter('sortOrder', 'DESC'),

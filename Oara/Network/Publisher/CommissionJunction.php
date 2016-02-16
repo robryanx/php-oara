@@ -85,7 +85,7 @@ class CommissionJunction extends \Oara\Network
      * @param $cj
      * @return Cj_Export
      */
-    public function __construct($credentials)
+    public function login($credentials)
     {
 
         $user = $credentials['user'];
@@ -100,7 +100,7 @@ class CommissionJunction extends \Oara\Network
             new \Oara\Curl\Parameter('submit.y', '8')
         );
 
-        $this->_client = new \Oara\Curl\Access($loginUrl, $valuesLogin, $credentials);
+        $this->_client = new \Oara\Curl\Access($credentials);
 
         $this->_exportMerchantParameters = array(new \Oara\Curl\Parameter('sortKey', 'active_start_date'),
             new \Oara\Curl\Parameter('sortOrder', 'DESC'),
@@ -142,6 +142,26 @@ class CommissionJunction extends \Oara\Network
             new \Oara\Curl\Parameter('button', 'Go')
         );
 
+    }
+
+    /**
+     * @return array
+     */
+    public function getNeededCredentials()
+    {
+        $credentials = array();
+
+        $parameter = array();
+        $parameter["user"]["description"] = "User Log in";
+        $parameter["user"]["required"] = true;
+        $credentials[] = $parameter;
+
+        $parameter = array();
+        $parameter["password"]["description"] = "Password to Log in";
+        $parameter["password"]["required"] = true;
+        $credentials[] = $parameter;
+
+        return $credentials;
     }
 
     /**

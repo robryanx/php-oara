@@ -71,7 +71,7 @@ class WebGains extends \Oara\Network
      * @param $webgains
      * @return Wg_Api
      */
-    public function __construct($credentials)
+    public function login($credentials)
     {
         $user = $credentials['user'];
         $password = $credentials['password'];

@@ -56,7 +56,7 @@ class Dgm extends \Oara\Network
      *            $dgm
      * @return Dgm_Api
      */
-    public function __construct($credentials)
+    public function login($credentials)
     {
         // Reading the different parameters.
         $this->_user = $credentials ['user'];
@@ -69,6 +69,26 @@ class Dgm extends \Oara\Network
             'compression' => SOAP_COMPRESSION_ACCEPT | SOAP_COMPRESSION_GZIP | SOAP_COMPRESSION_DEFLATE,
             'soap_version' => SOAP_1_1
         ));
+    }
+
+    /**
+     * @return array
+     */
+    public function getNeededCredentials()
+    {
+        $credentials = array();
+
+        $parameter = array();
+        $parameter["user"]["description"] = "User Log in";
+        $parameter["user"]["required"] = true;
+        $credentials[] = $parameter;
+
+        $parameter = array();
+        $parameter["password"]["description"] = "Password to Log in";
+        $parameter["password"]["required"] = true;
+        $credentials[] = $parameter;
+
+        return $credentials;
     }
 
     /**

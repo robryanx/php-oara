@@ -52,7 +52,7 @@ class ClickBank extends \Oara\Network
      * @param $credentials
      * @return Effiliation
      */
-    public function __construct($credentials)
+    public function login($credentials)
     {
 
         $user = $credentials["user"];
@@ -68,7 +68,7 @@ class ClickBank extends \Oara\Network
             new \Oara\Curl\Parameter('j_password', $password)
         );
 
-        $this->_client = new \Oara\Curl\Access($loginUrl, $valuesLogin, $credentials);
+        $this->_client = new \Oara\Curl\Access($credentials);
 
         $urls = array();
         $urls[] = new \Oara\Curl\Request("https://" . $user . ".accounts.clickbank.com/account/profile.htm", array());
@@ -80,6 +80,26 @@ class ClickBank extends \Oara\Network
             $this->_dev = $matches[1][0];
         }
 
+    }
+
+    /**
+     * @return array
+     */
+    public function getNeededCredentials()
+    {
+        $credentials = array();
+
+        $parameter = array();
+        $parameter["user"]["description"] = "User Log in";
+        $parameter["user"]["required"] = true;
+        $credentials[] = $parameter;
+
+        $parameter = array();
+        $parameter["password"]["description"] = "Password to Log in";
+        $parameter["password"]["required"] = true;
+        $credentials[] = $parameter;
+
+        return $credentials;
     }
 
     /**

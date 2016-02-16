@@ -41,7 +41,7 @@ class Bol extends \Oara\Network
      * @param $credentials
      * @return Daisycon
      */
-    public function __construct($credentials)
+    public function login($credentials)
     {
         $user = $credentials['user'];
         $password = $credentials['password'];
@@ -53,7 +53,7 @@ class Bol extends \Oara\Network
         );
 
         $loginUrl = 'https://partnerprogramma.bol.com/partner/j_security_check';
-        $this->_client = new \Oara\Curl\Access($loginUrl, $valuesLogin, $credentials);
+        $this->_client = new \Oara\Curl\Access($credentials);
 
     }
 
@@ -72,6 +72,26 @@ class Bol extends \Oara\Network
             $connection = true;
         }
         return $connection;
+    }
+
+    /**
+     * @return array
+     */
+    public function getNeededCredentials()
+    {
+        $credentials = array();
+
+        $parameter = array();
+        $parameter["user"]["description"] = "User Log in";
+        $parameter["user"]["required"] = true;
+        $credentials[] = $parameter;
+
+        $parameter = array();
+        $parameter["password"]["description"] = "Password to Log in";
+        $parameter["password"]["required"] = true;
+        $credentials[] = $parameter;
+
+        return $credentials;
     }
 
     /**
