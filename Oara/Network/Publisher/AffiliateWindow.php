@@ -300,7 +300,7 @@ class AffiliateWindow extends \Oara\Network
                 if ($linkList->length > 0) {
                     $obj = array();
                     $date = \DateTime::createFromFormat('j M Y', $linkList->item(0)->nodeValue);
-                    $date->setTime(0,0);
+                    $date->setTime(0, 0);
                     $obj['date'] = $date->format("Y-m-d H:i:s");
                     $attrs = $linkList->item(0)->attributes;
                     foreach ($attrs as $attrName => $attrNode) {

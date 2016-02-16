@@ -1,24 +1,24 @@
 <?php
 namespace Oara\Network\Publisher;
-/**
- The goal of the Open Affiliate Report Aggregator (OARA) is to develop a set
- of PHP classes that can download affiliate reports from a number of affiliate networks, and store the data in a common format.
-
- Copyright (C) 2016  Fubra Limited
- This program is free software: you can redistribute it and/or modify
- it under the terms of the GNU Affero General Public License as published by
- the Free Software Foundation, either version 3 of the License, or any later version.
- This program is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU Affero General Public License for more details.
- You should have received a copy of the GNU Affero General Public License
- along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
- Contact
- ------------
- Fubra Limited <support@fubra.com> , +44 (0)1252 367 200
- **/
+    /**
+     * The goal of the Open Affiliate Report Aggregator (OARA) is to develop a set
+     * of PHP classes that can download affiliate reports from a number of affiliate networks, and store the data in a common format.
+     *
+     * Copyright (C) 2016  Fubra Limited
+     * This program is free software: you can redistribute it and/or modify
+     * it under the terms of the GNU Affero General Public License as published by
+     * the Free Software Foundation, either version 3 of the License, or any later version.
+     * This program is distributed in the hope that it will be useful,
+     * but WITHOUT ANY WARRANTY; without even the implied warranty of
+     * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+     * GNU Affero General Public License for more details.
+     * You should have received a copy of the GNU Affero General Public License
+     * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+     *
+     * Contact
+     * ------------
+     * Fubra Limited <support@fubra.com> , +44 (0)1252 367 200
+     **/
 /**
  * Export Class
  *
@@ -28,294 +28,304 @@ namespace Oara\Network\Publisher;
  * @version    Release: 01.00
  *
  */
-class PaidOnResults extends \Oara\Network {
-	/**
-	 * Export client.
-	 * @var \Oara\Curl\Access
-	 */
-	private $_client = null;
+class PaidOnResults extends \Oara\Network
+{
+    /**
+     * Export client.
+     * @var \Oara\Curl\Access
+     */
+    private $_client = null;
 
-	/**
-	 * Merchant Export Parameters
-	 * @var array
-	 */
-	private $_exportMerchantParameters = null;
+    /**
+     * Merchant Export Parameters
+     * @var array
+     */
+    private $_exportMerchantParameters = null;
 
-	/**
-	 * Transaction Export Parameters
-	 * @var array
-	 */
-	private $_exportTransactionParameters = null;
+    /**
+     * Transaction Export Parameters
+     * @var array
+     */
+    private $_exportTransactionParameters = null;
 
-	/**
-	 * Api Password
-	 */
-	private $_apiPassword = null;
+    /**
+     * Api Password
+     */
+    private $_apiPassword = null;
 
-	/**
-	 * Session Id
-	 */
-	private $_sessionId = null;
+    /**
+     * Session Id
+     */
+    private $_sessionId = null;
 
-	/**
-	 * Payment History
-	 */
-	private $_paymentHistory = null;
+    /**
+     * Payment History
+     */
+    private $_paymentHistory = null;
 
-	/**
-	 * Constructor and Login
-	 * @param $por
-	 * @return Por_Api
-	 */
-	public function __construct($credentials) {
-		$user = $credentials['user'];
-		$password = $credentials['password'];
-		$this->_apiPassword = $credentials['apiPassword'];
-		
-		$loginUrl = 'https://secure.paidonresults.com/cgi-bin/affiliate/login/login.pl';
+    /**
+     * Constructor and Login
+     * @param $por
+     * @return Por_Api
+     */
+    public function __construct($credentials)
+    {
+        $user = $credentials['user'];
+        $password = $credentials['password'];
+        $this->_apiPassword = $credentials['apiPassword'];
 
-		$valuesLogin = array(new \Oara\Curl\Parameter('username', $user),
-			new \Oara\Curl\Parameter('password', $password)
-		);
+        $loginUrl = 'https://secure.paidonresults.com/cgi-bin/affiliate/login/login.pl';
 
-		$this->_client = new \Oara\Curl\Access($loginUrl, $valuesLogin, $credentials);
+        $valuesLogin = array(new \Oara\Curl\Parameter('username', $user),
+            new \Oara\Curl\Parameter('password', $password)
+        );
 
-		$valuesFormExport = array(new \Oara\Curl\Parameter('username', $user),
-			new \Oara\Curl\Parameter('password', $password)
-		);
+        $this->_client = new \Oara\Curl\Access($loginUrl, $valuesLogin, $credentials);
 
-		$urls = array();
-		$urls[] = new \Oara\Curl\Request($loginUrl, $valuesFormExport);
-		$exportReport = $this->_client->post($urls);
-		if (!preg_match("/session=(.*)\"/", $exportReport[0], $matches)) {
-			throw new Exception("No session found");
-		}
-		$this->_sessionId = $matches[1];
-		if (preg_match("/URL=(.*)\"/", $exportReport[0], $matches)) {
-			$urls = array();
-			$urls[] = new \Oara\Curl\Request($matches[1], array());
-			$exportReport = $this->_client->get($urls);
-		}
+        $valuesFormExport = array(new \Oara\Curl\Parameter('username', $user),
+            new \Oara\Curl\Parameter('password', $password)
+        );
 
-		$this->_exportMerchantParameters = array(new \Oara\Curl\Parameter('apikey', $this->_apiPassword),
-			new \Oara\Curl\Parameter('Format', 'CSV'),
-			new \Oara\Curl\Parameter('FieldSeparator', 'comma'),
-			new \Oara\Curl\Parameter('AffiliateID', $user),
-			new \Oara\Curl\Parameter('MerchantCategories', 'ALL'),
-			new \Oara\Curl\Parameter('Fields', 'MerchantID,MerchantName,MerchantURL'),
-			new \Oara\Curl\Parameter('JoinedMerchants', 'YES'),
-			new \Oara\Curl\Parameter('MerchantsNotJoined', 'NO'),
-		);
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request($loginUrl, $valuesFormExport);
+        $exportReport = $this->_client->post($urls);
+        if (!preg_match("/session=(.*)\"/", $exportReport[0], $matches)) {
+            throw new Exception("No session found");
+        }
+        $this->_sessionId = $matches[1];
+        if (preg_match("/URL=(.*)\"/", $exportReport[0], $matches)) {
+            $urls = array();
+            $urls[] = new \Oara\Curl\Request($matches[1], array());
+            $exportReport = $this->_client->get($urls);
+        }
 
-		$this->_exportTransactionParameters = array(new \Oara\Curl\Parameter('apikey', $this->_apiPassword),
-			new \Oara\Curl\Parameter('Format', 'CSV'),
-			new \Oara\Curl\Parameter('FieldSeparator', 'comma'),
-			new \Oara\Curl\Parameter('AffiliateID', $user),
-			new \Oara\Curl\Parameter('Fields', 'MerchantID,OrderDate,NetworkOrderID,CustomTrackingID,OrderValue,AffiliateCommission,TransactionType,PaidtoAffiliate,DatePaidToAffiliate'),
-			new \Oara\Curl\Parameter('AffiliateID', $user),
-			new \Oara\Curl\Parameter('DateFormat', 'DD/MM/YYYY+HH:MN:SS'),
-			new \Oara\Curl\Parameter('PendingSales', 'YES'),
-			new \Oara\Curl\Parameter('ValidatedSales', 'YES'),
-			new \Oara\Curl\Parameter('VoidSales', 'YES'),
-			new \Oara\Curl\Parameter('GetNewSales', 'YES')
-		);
-	}
-	/**
-	 * Check the connection
-	 */
-	public function checkConnection() {
-		$connection = true;
-		return $connection;
-	}
-	/**
-	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Base#getMerchantList()
-	 */
-	public function getMerchantList() {
-		$merchants = Array();
+        $this->_exportMerchantParameters = array(new \Oara\Curl\Parameter('apikey', $this->_apiPassword),
+            new \Oara\Curl\Parameter('Format', 'CSV'),
+            new \Oara\Curl\Parameter('FieldSeparator', 'comma'),
+            new \Oara\Curl\Parameter('AffiliateID', $user),
+            new \Oara\Curl\Parameter('MerchantCategories', 'ALL'),
+            new \Oara\Curl\Parameter('Fields', 'MerchantID,MerchantName,MerchantURL'),
+            new \Oara\Curl\Parameter('JoinedMerchants', 'YES'),
+            new \Oara\Curl\Parameter('MerchantsNotJoined', 'NO'),
+        );
 
-		$valuesFormExport = \Oara\Utilities::cloneArray($this->_exportMerchantParameters);
-		$urls = array();
-		$urls[] = new \Oara\Curl\Request('http://affiliate.paidonresults.com/api/merchant-directory?', $valuesFormExport);
-		$exportReport = $this->_client->get($urls);
-		$exportData = str_getcsv($exportReport[0], "\r\n");
-		$exportData = preg_replace("/\n/", "", $exportData);
-		$num = count($exportData);
-		for ($i = 1; $i < $num; $i++) {
-			$merchantExportArray = str_getcsv($exportData[$i], ",");
-			$obj = Array();
-			$obj['cid'] = $merchantExportArray[0];
-			$obj['name'] = $merchantExportArray[1];
-			$obj['url'] = $merchantExportArray[2];
-			$merchants[] = $obj;
-		}
-		return $merchants;
-	}
-	/**
-	 * (non-PHPdoc)
-	 * @see library/Oara/Network/Base#getTransactionList($merchantId, $dStartDate, $dEndDate)
-	 */
-	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null) {
-		$totalTransactions = Array();
+        $this->_exportTransactionParameters = array(new \Oara\Curl\Parameter('apikey', $this->_apiPassword),
+            new \Oara\Curl\Parameter('Format', 'CSV'),
+            new \Oara\Curl\Parameter('FieldSeparator', 'comma'),
+            new \Oara\Curl\Parameter('AffiliateID', $user),
+            new \Oara\Curl\Parameter('Fields', 'MerchantID,OrderDate,NetworkOrderID,CustomTrackingID,OrderValue,AffiliateCommission,TransactionType,PaidtoAffiliate,DatePaidToAffiliate'),
+            new \Oara\Curl\Parameter('AffiliateID', $user),
+            new \Oara\Curl\Parameter('DateFormat', 'DD/MM/YYYY+HH:MN:SS'),
+            new \Oara\Curl\Parameter('PendingSales', 'YES'),
+            new \Oara\Curl\Parameter('ValidatedSales', 'YES'),
+            new \Oara\Curl\Parameter('VoidSales', 'YES'),
+            new \Oara\Curl\Parameter('GetNewSales', 'YES')
+        );
+    }
 
-		$valuesFormExport = \Oara\Utilities::cloneArray($this->_exportTransactionParameters);
+    /**
+     * Check the connection
+     */
+    public function checkConnection()
+    {
+        $connection = true;
+        return $connection;
+    }
 
-		$urls = array();
-		$valuesFormExport[] = new \Oara\Curl\Parameter('DateFrom', $dStartDate->toString("yyyy-MM-dd"));
-		$valuesFormExport[] = new \Oara\Curl\Parameter('DateTo', $dEndDate->toString("yyyy-MM-dd"));
-		$urls[] = new \Oara\Curl\Request('http://affiliate.paidonresults.com/api/transactions?', $valuesFormExport);
-		$exportReport = $this->_client->get($urls);
+    /**
+     * (non-PHPdoc)
+     * @see library/Oara/Network/Base#getMerchantList()
+     */
+    public function getMerchantList()
+    {
+        $merchants = Array();
 
-		$exportData = str_getcsv($exportReport[0], "\r\n");
-		$num = count($exportData);
-		for ($i = 1; $i < $num; $i++) {
-			
-			$exportData[$i] = preg_replace("/\n/", "", $exportData[$i]);
-			$transactionExportArray = str_getcsv($exportData[$i], ",");
-			if (in_array($transactionExportArray[0], $merchantList)) {
-				$transaction = array();
-				$transaction['merchantId'] = $transactionExportArray[0];
+        $valuesFormExport = \Oara\Utilities::cloneArray($this->_exportMerchantParameters);
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request('http://affiliate.paidonresults.com/api/merchant-directory?', $valuesFormExport);
+        $exportReport = $this->_client->get($urls);
+        $exportData = str_getcsv($exportReport[0], "\r\n");
+        $exportData = preg_replace("/\n/", "", $exportData);
+        $num = count($exportData);
+        for ($i = 1; $i < $num; $i++) {
+            $merchantExportArray = str_getcsv($exportData[$i], ",");
+            $obj = Array();
+            $obj['cid'] = $merchantExportArray[0];
+            $obj['name'] = $merchantExportArray[1];
+            $obj['url'] = $merchantExportArray[2];
+            $merchants[] = $obj;
+        }
+        return $merchants;
+    }
 
-				$transactionDate = new \DateTime($transactionExportArray[1], "dd/MM/yyyy HH:mm:ss");
-				$transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
+    /**
+     * (non-PHPdoc)
+     * @see library/Oara/Network/Base#getTransactionList($merchantId, $dStartDate, $dEndDate)
+     */
+    public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
+    {
+        $totalTransactions = Array();
 
-				$transaction['unique_id'] = $transactionExportArray[2];
-				if ($transactionExportArray[3] != null) {
-					$transaction['custom_id'] = $transactionExportArray[3];
-				}
+        $valuesFormExport = \Oara\Utilities::cloneArray($this->_exportTransactionParameters);
 
-				$transaction['amount'] = (double) $transactionExportArray[4];
-				$transaction['commission'] = (double) $transactionExportArray[5];
+        $urls = array();
+        $valuesFormExport[] = new \Oara\Curl\Parameter('DateFrom', $dStartDate->toString("yyyy-MM-dd"));
+        $valuesFormExport[] = new \Oara\Curl\Parameter('DateTo', $dEndDate->toString("yyyy-MM-dd"));
+        $urls[] = new \Oara\Curl\Request('http://affiliate.paidonresults.com/api/transactions?', $valuesFormExport);
+        $exportReport = $this->_client->get($urls);
 
-				if ($transactionExportArray[6] == 'VALIDATED') {
-					$transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
-				} else
-					if ($transactionExportArray[6] == 'PENDING') {
-						$transaction['status'] = \Oara\Utilities::STATUS_PENDING;
-					} else
-						if ($transactionExportArray[6] == 'VOID') {
-							$transaction['status'] = \Oara\Utilities::STATUS_DECLINED;
-						}
+        $exportData = str_getcsv($exportReport[0], "\r\n");
+        $num = count($exportData);
+        for ($i = 1; $i < $num; $i++) {
 
-				$totalTransactions[] = $transaction;
-			}
-		}
+            $exportData[$i] = preg_replace("/\n/", "", $exportData[$i]);
+            $transactionExportArray = str_getcsv($exportData[$i], ",");
+            if (in_array($transactionExportArray[0], $merchantList)) {
+                $transaction = array();
+                $transaction['merchantId'] = $transactionExportArray[0];
 
-		return $totalTransactions;
+                $transactionDate = new \DateTime($transactionExportArray[1], "dd/MM/yyyy HH:mm:ss");
+                $transaction['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 
-	}
+                $transaction['unique_id'] = $transactionExportArray[2];
+                if ($transactionExportArray[3] != null) {
+                    $transaction['custom_id'] = $transactionExportArray[3];
+                }
 
-	/**
-	 * (non-PHPdoc)
-	 * @see Oara/Network/Base#getPaymentHistory()
-	 */
-	public function getPaymentHistory() {
-		$paymentHistory = array();
+                $transaction['amount'] = (double)$transactionExportArray[4];
+                $transaction['commission'] = (double)$transactionExportArray[5];
 
-		$paymentExport = array();
-		$paymentExport[] = new \Oara\Curl\Parameter('session', $this->_sessionId);
+                if ($transactionExportArray[6] == 'VALIDATED') {
+                    $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
+                } else
+                    if ($transactionExportArray[6] == 'PENDING') {
+                        $transaction['status'] = \Oara\Utilities::STATUS_PENDING;
+                    } else
+                        if ($transactionExportArray[6] == 'VOID') {
+                            $transaction['status'] = \Oara\Utilities::STATUS_DECLINED;
+                        }
 
-		$urls = array();
-		$urls[] = new \Oara\Curl\Request('http://affiliate.paidonresults.com/cgi-bin/invoice-status.pl?', $paymentExport);
-		$exportReport = $this->_client->get($urls);
+                $totalTransactions[] = $transaction;
+            }
+        }
 
-		$dom = new Zend_Dom_Query($exportReport[0]);
-		$results = $dom->query('#tableID1 tr');
-		foreach ($results as $result) {
-			$childrenList = $result->childNodes;
-			$numberChildren = $childrenList->length;
-			if ($numberChildren == 18) {
+        return $totalTransactions;
 
-				$value = $childrenList->item(14)->nodeValue;
-				if (preg_match('/[0-9]+(,[0-9]{3})*(\.[0-9]{2})?$/', $value, $matches)) {
-					$obj = array();
-					$obj['pid'] = $childrenList->item(4)->nodeValue;
-					$date = new \DateTime($childrenList->item(0)->nodeValue, "dd/MMM/yyyy");
-					$obj['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
-					$obj['value'] = \Oara\Utilities::parseDouble($matches[0]);
-					$obj['method'] = 'BACS';
-					$paymentHistory[] = $obj;
+    }
 
-				}
-			}
+    /**
+     * (non-PHPdoc)
+     * @see Oara/Network/Base#getPaymentHistory()
+     */
+    public function getPaymentHistory()
+    {
+        $paymentHistory = array();
 
-		}
-		$this->_paymentHistory = $paymentHistory;
-		return $paymentHistory;
-	}
+        $paymentExport = array();
+        $paymentExport[] = new \Oara\Curl\Parameter('session', $this->_sessionId);
 
-	/**
-	 *  It returns the transactions for a payment
-	 * @see \Oara\Network::paymentTransactions()
-	 */
-	public function paymentTransactions($paymentId, $merchantList, $startDate) {
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request('http://affiliate.paidonresults.com/cgi-bin/invoice-status.pl?', $paymentExport);
+        $exportReport = $this->_client->get($urls);
 
-		$paymentTransactionList = array();
+        $dom = new Zend_Dom_Query($exportReport[0]);
+        $results = $dom->query('#tableID1 tr');
+        foreach ($results as $result) {
+            $childrenList = $result->childNodes;
+            $numberChildren = $childrenList->length;
+            if ($numberChildren == 18) {
 
-		$paymentHistory = $this->_paymentHistory;
+                $value = $childrenList->item(14)->nodeValue;
+                if (preg_match('/[0-9]+(,[0-9]{3})*(\.[0-9]{2})?$/', $value, $matches)) {
+                    $obj = array();
+                    $obj['pid'] = $childrenList->item(4)->nodeValue;
+                    $date = new \DateTime($childrenList->item(0)->nodeValue, "dd/MMM/yyyy");
+                    $obj['date'] = $date->toString("yyyy-MM-dd HH:mm:ss");
+                    $obj['value'] = \Oara\Utilities::parseDouble($matches[0]);
+                    $obj['method'] = 'BACS';
+                    $paymentHistory[] = $obj;
 
-		$paymentStartDate = new \DateTime($startDate, "yyyy-MM-dd HH:mm:ss");
-		$paymentEndDate = null;
+                }
+            }
 
-		$enc = false;
-		$i = 0;
-		$payment = null;
-		while (!$enc && $i < count($paymentHistory)) {
-			$payment = $paymentHistory[$i];
-			if ($payment['pid'] == $paymentId) {
-				$enc = true;
-				$paymentEndDate = new \DateTime($payment['date'], "yyyy-MM-dd HH:mm:ss");
-			}
-			$i++;
-		}
+        }
+        $this->_paymentHistory = $paymentHistory;
+        return $paymentHistory;
+    }
 
-		if ($enc && $paymentStartDate->compare($paymentEndDate) <= 0) {
-			$totalTransactions = array();
+    /**
+     *  It returns the transactions for a payment
+     * @see \Oara\Network::paymentTransactions()
+     */
+    public function paymentTransactions($paymentId, $merchantList, $startDate)
+    {
 
-			$dateArray = \Oara\Utilities::monthsOfDifference(new \DateTime($startDate, "yyyy-MM-dd HH:mm:ss"), $paymentEndDate);
-			for ($i = 0; $i < count($dateArray); $i++) {
-				$monthStartDate = clone $dateArray[$i];
-				$monthEndDate = null;
+        $paymentTransactionList = array();
 
-				if ($i != count($dateArray) - 1) {
-					$monthEndDate = clone $dateArray[$i];
-					$monthEndDate->setDay(1);
-					$monthEndDate->addMonth(1);
-					$monthEndDate->subDay(1);
-				} else {
-					$monthEndDate = $paymentEndDate;
-				}
-				$monthEndDate->setHour(23);
-				$monthEndDate->setMinute(59);
-				$monthEndDate->setSecond(59);
+        $paymentHistory = $this->_paymentHistory;
 
-				echo "\n importing from ".$monthStartDate->toString("dd-MM-yyyy HH:mm:ss")." to ".$monthEndDate->toString("dd-MM-yyyy HH:mm:ss")."\n";
+        $paymentStartDate = new \DateTime($startDate, "yyyy-MM-dd HH:mm:ss");
+        $paymentEndDate = null;
 
-				$urls = array();
-				$valuesFormExport = \Oara\Utilities::cloneArray($this->_exportTransactionParameters);
-				$valuesFormExport[] = new \Oara\Curl\Parameter('DateFrom', $monthStartDate->toString("yyyy-MM-dd"));
-				$valuesFormExport[] = new \Oara\Curl\Parameter('DateTo', $monthEndDate->toString("yyyy-MM-dd"));
-				$urls[] = new \Oara\Curl\Request('http://affiliate.paidonresults.com/api/transactions?', $valuesFormExport);
-				$exportReport = $this->_client->get($urls);
+        $enc = false;
+        $i = 0;
+        $payment = null;
+        while (!$enc && $i < count($paymentHistory)) {
+            $payment = $paymentHistory[$i];
+            if ($payment['pid'] == $paymentId) {
+                $enc = true;
+                $paymentEndDate = new \DateTime($payment['date'], "yyyy-MM-dd HH:mm:ss");
+            }
+            $i++;
+        }
 
-				$exportData = str_getcsv($exportReport[0], "\r\n");
-				$num = count($exportData);
-				for ($i = 1; $i < $num; $i++) {
-					$transactionExportArray = str_getcsv($exportData[$i], ",");
-					$paid = $transactionExportArray[7] == "YES" ? true : false;
-					if (in_array($transactionExportArray[0], $merchantList) && $paid) {
+        if ($enc && $paymentStartDate->compare($paymentEndDate) <= 0) {
+            $totalTransactions = array();
 
-						$transactionDate = new \DateTime($transactionExportArray[8], "dd/MM/yyyy HH:mm:ss");
-						echo $paymentEndDate->toString("yyyy-MM-dd")."  ".$transactionDate->toString("yyyy-MM-dd")."\n\n";
-						if ($paymentEndDate->toString("yyyy-MM-dd") == $transactionDate->toString("yyyy-MM-dd")) {
-							$paymentTransactionList[] = $transactionExportArray[2];
-						}
-					}
-				}
+            $dateArray = \Oara\Utilities::monthsOfDifference(new \DateTime($startDate, "yyyy-MM-dd HH:mm:ss"), $paymentEndDate);
+            for ($i = 0; $i < count($dateArray); $i++) {
+                $monthStartDate = clone $dateArray[$i];
+                $monthEndDate = null;
 
-			}
-		}
+                if ($i != count($dateArray) - 1) {
+                    $monthEndDate = clone $dateArray[$i];
+                    $monthEndDate->setDay(1);
+                    $monthEndDate->addMonth(1);
+                    $monthEndDate->subDay(1);
+                } else {
+                    $monthEndDate = $paymentEndDate;
+                }
+                $monthEndDate->setHour(23);
+                $monthEndDate->setMinute(59);
+                $monthEndDate->setSecond(59);
 
-		return $paymentTransactionList;
-	}
+                echo "\n importing from " . $monthStartDate->toString("dd-MM-yyyy HH:mm:ss") . " to " . $monthEndDate->toString("dd-MM-yyyy HH:mm:ss") . "\n";
+
+                $urls = array();
+                $valuesFormExport = \Oara\Utilities::cloneArray($this->_exportTransactionParameters);
+                $valuesFormExport[] = new \Oara\Curl\Parameter('DateFrom', $monthStartDate->toString("yyyy-MM-dd"));
+                $valuesFormExport[] = new \Oara\Curl\Parameter('DateTo', $monthEndDate->toString("yyyy-MM-dd"));
+                $urls[] = new \Oara\Curl\Request('http://affiliate.paidonresults.com/api/transactions?', $valuesFormExport);
+                $exportReport = $this->_client->get($urls);
+
+                $exportData = str_getcsv($exportReport[0], "\r\n");
+                $num = count($exportData);
+                for ($i = 1; $i < $num; $i++) {
+                    $transactionExportArray = str_getcsv($exportData[$i], ",");
+                    $paid = $transactionExportArray[7] == "YES" ? true : false;
+                    if (in_array($transactionExportArray[0], $merchantList) && $paid) {
+
+                        $transactionDate = new \DateTime($transactionExportArray[8], "dd/MM/yyyy HH:mm:ss");
+                        echo $paymentEndDate->toString("yyyy-MM-dd") . "  " . $transactionDate->toString("yyyy-MM-dd") . "\n\n";
+                        if ($paymentEndDate->toString("yyyy-MM-dd") == $transactionDate->toString("yyyy-MM-dd")) {
+                            $paymentTransactionList[] = $transactionExportArray[2];
+                        }
+                    }
+                }
+
+            }
+        }
+
+        return $paymentTransactionList;
+    }
 }

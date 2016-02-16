@@ -6,10 +6,10 @@ try {
 
     $cityAdsApi = new CityAds_Api();
     $response = $cityAdsApi->setAccessToken('6420072d37bf14f1df182d0fe0efa2d9')
-                            ->setFormat('xml')
-                            ->put('profile', $newProfileData);
+        ->setFormat('xml')
+        ->put('profile', $newProfileData);
     header("Content-type: text/xml; charset=utf-8");
     print_r($response);
-} catch( Exception $ex ) {
+} catch (Exception $ex) {
     print_r("Code: " . $ex->getCode() . "; Message: " . $ex->getMessage());
 }

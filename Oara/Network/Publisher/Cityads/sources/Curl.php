@@ -1,6 +1,7 @@
 <?php
 
-class CityAds_Curl {
+class CityAds_Curl
+{
 
     private $_userAgent;
     private $_timeout;
@@ -9,13 +10,15 @@ class CityAds_Curl {
      * @param string $timeout
      * @return $this
      */
-    public function setTimeOut( $timeout ) {
+    public function setTimeOut($timeout)
+    {
         $this->_timeout = $timeout;
         return $this;
     }
 
-    public function getTimeOut() {
-        if( !isset($this->_timeout) )
+    public function getTimeOut()
+    {
+        if (!isset($this->_timeout))
             $this->_timeout = 100;
         return $this->_timeout;
     }
@@ -24,23 +27,27 @@ class CityAds_Curl {
      * @param string $userAgent
      * @return $this
      */
-    public function setUserAgent( $userAgent ) {
+    public function setUserAgent($userAgent)
+    {
         $this->_userAgent = $userAgent;
         return $this;
     }
 
-    public function getUserAgent() {
-        if( !isset($this->_userAgent) )
+    public function getUserAgent()
+    {
+        if (!isset($this->_userAgent))
             $this->_userAgent = null;
         return $this->_userAgent;
     }
 
-    public function __construct( $timeout = 100 ) {
+    public function __construct($timeout = 100)
+    {
         $this->setTimeOut($timeout);
         $this->setUserAgent('CityAds Api version 1.2');
     }
 
-    private function initCurl( $url ) {
+    private function initCurl($url)
+    {
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_URL, $url);
         curl_setopt($curl, CURLOPT_HEADER, 0);
@@ -50,11 +57,12 @@ class CityAds_Curl {
         return $curl;
     }
 
-    private function send($curl) {
+    private function send($curl)
+    {
         $return = curl_exec($curl);
-        if( curl_errno($curl) ) {
+        if (curl_errno($curl)) {
             $httpCode = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-            throw new Exception('Request error: ' . curl_error($curl), $httpCode );
+            throw new Exception('Request error: ' . curl_error($curl), $httpCode);
         }
         curl_close($curl);
         return $return;
@@ -64,9 +72,10 @@ class CityAds_Curl {
      * @param string $url
      * @return mixed
      */
-    public function get( $url ) {
-        $curl = $this->initCurl( $url );
-        $return = $this->send( $curl );
+    public function get($url)
+    {
+        $curl = $this->initCurl($url);
+        $return = $this->send($curl);
         return $return;
     }
 
@@ -75,11 +84,12 @@ class CityAds_Curl {
      * @param array $data
      * @return mixed
      */
-    public function post( $url, $data ) {
-        $curl = $this->initCurl( $url );
+    public function post($url, $data)
+    {
+        $curl = $this->initCurl($url);
         curl_setopt($curl, CURLOPT_POST, 1);
         curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
-        $return = $this->send( $curl );
+        $return = $this->send($curl);
         return $return;
     }
 
@@ -88,11 +98,12 @@ class CityAds_Curl {
      * @param array $data
      * @return mixed
      */
-    public function put( $url, $data ) {
-        $curl = $this->initCurl( $url );
+    public function put($url, $data)
+    {
+        $curl = $this->initCurl($url);
         curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'PUT');
         curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
-        $return = $this->send( $curl );
+        $return = $this->send($curl);
         return $return;
     }
 }

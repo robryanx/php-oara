@@ -9,6 +9,6 @@ try {
         ->get('profile');
     header("Content-type: text/xml; charset=utf-8");
     print_r($response);
-} catch( Exception $ex ) {
+} catch (Exception $ex) {
     print_r("Code: " . $ex->getCode() . "; Message: " . $ex->getMessage());
 }
