@@ -169,6 +169,7 @@ class Oara_Network_Publisher_WebGains extends Oara_Network {
 		 */
 		public function getMerchantList() {
 			$merchantList = Array();
+			/*
 			foreach ($this->_campaignMap as $campaignKey => $campaignValue) {
 				$merchants = $this->_soapClient->getProgramsWithMembershipStatus($this->_exportMerchantParameters['username'], $this->_exportMerchantParameters['password'], $campaignKey);
 				foreach ($merchants as $merchant) {
@@ -179,7 +180,7 @@ class Oara_Network_Publisher_WebGains extends Oara_Network {
 				}
 			}
 			$merchantList = Oara_Utilities::soapConverter($merchantList, $this->_merchantConverterConfiguration);
-
+			*/
 			return $merchantList;
 		}
 		/**
