@@ -32,22 +32,19 @@ class Afilio extends \Oara\Network
 {
 
     /**
-     * Client
-     *
-     * @var unknown_type
+     * @var null
      */
     private $_client = null;
 
     /**
-     * Constructor and Login
-     *
-     * @param $buy
-     * @return Buy_Api
+     * @param $credentials
      */
     public function login($credentials)
     {
         $user = $credentials ['user'];
         $password = $credentials ['password'];
+
+        $this->_client = new \Oara\Curl\Access ($credentials);
 
         $loginUrl = 'http://v2.afilio.com.br/index.php';
 
@@ -61,7 +58,9 @@ class Afilio extends \Oara\Network
             new \Oara\Curl\Parameter ('id_regie', "3")
         );
 
-        $this->_client = new \Oara\Curl\Access ($credentials);
+        $urls = array();
+        $urls [] = new \Oara\Curl\Request ($loginUrl, $valuesLogin);
+        $this->_client->post($urls);
     }
 
     /**
@@ -85,7 +84,7 @@ class Afilio extends \Oara\Network
     }
 
     /**
-     * Check the connection
+     * @return bool
      */
     public function checkConnection()
     {
@@ -93,16 +92,14 @@ class Afilio extends \Oara\Network
         $urls = array();
         $urls [] = new \Oara\Curl\Request ('http://v2.afilio.com.br/aff/', array());
         $exportReport = $this->_client->get($urls);
-        if (preg_match("/logout/", $exportReport [0], $matches)) {
+        if (\preg_match("/logout/", $exportReport [0], $matches)) {
             $connection = true;
         }
         return $connection;
     }
 
     /**
-     * (non-PHPdoc)
-     *
-     * @see library/Oara/Network/Interface#getMerchantList()
+     * @return array
      */
     public function getMerchantList()
     {
@@ -113,13 +110,15 @@ class Afilio extends \Oara\Network
         $urls [] = new \Oara\Curl\Request ('http://v2.afilio.com.br/aff/aff_manage_sale.php', $valuesFromExport);
         $exportReport = $this->_client->get($urls);
 
-        $dom = new Zend_Dom_Query ($exportReport [0]);
-        $results = $dom->query('#p_nProgId');
-        $merchantLines = $results->current()->childNodes;
+
+        $doc = new \DOMDocument();
+        @$doc->loadHTML($exportReport[0]);
+        $xpath = new \DOMXPath($doc);
+        $results = $xpath->query('//*[contains(concat(" ", normalize-space(@id), " "), " p_nProgId ")]');
+        $merchantLines = $results->item(0)->childNodes;
         for ($i = 0; $i < $merchantLines->length; $i++) {
             $cid = $merchantLines->item($i)->attributes->getNamedItem("value")->nodeValue;
-            if (is_numeric($cid)) {
-                $obj = array();
+            if (\is_numeric($cid)) {
                 $name = $merchantLines->item($i)->nodeValue;
                 $obj = array();
                 $obj ['cid'] = $cid;
@@ -132,13 +131,17 @@ class Afilio extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     *
-     * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate)
+     * @param null $merchantList
+     * @param \DateTime|null $dStartDate
+     * @param \DateTime|null $dEndDate
+     * @return array
+     * @throws Exception
      */
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
         $totalTransactions = array();
+
+        $merchantMap = \Oara\Utilities::getMerchantNameMapFromMerchantList($merchantList);
 
         $valuesFromExport = array();
         $valuesFromExport [] = new \Oara\Curl\Parameter ('getExcel', '1');
@@ -149,32 +152,32 @@ class Afilio extends \Oara\Network
         $valuesFromExport [] = new \Oara\Curl\Parameter ('p_nStatus', '3');
         $valuesFromExport [] = new \Oara\Curl\Parameter ('p_nNbRowsByPage', '50');
         $valuesFromExport [] = new \Oara\Curl\Parameter ('p_nProgId', '');
-        $valuesFromExport [] = new \Oara\Curl\Parameter ('p_sStartDate', $dStartDate->format!("dd/MM/yyyy"));
-        $valuesFromExport [] = new \Oara\Curl\Parameter ('p_sEndDate', $dEndDate->format!("dd/MM/yyyy"));
+        $valuesFromExport [] = new \Oara\Curl\Parameter ('p_sStartDate', $dStartDate->format("d/m/Y"));
+        $valuesFromExport [] = new \Oara\Curl\Parameter ('p_sEndDate', $dEndDate->format("d/m/Y"));
         $valuesFromExport [] = new \Oara\Curl\Parameter ('p_nPage', '1');
 
         $urls = array();
         $urls [] = new \Oara\Curl\Request ('http://v2.afilio.com.br/include/lib/aff_lib_manage_sale.php?', $valuesFromExport);
 
         $exportReport = $this->_client->get($urls);
-        $dom = new Zend_Dom_Query ($exportReport [0]);
 
-        $tableList = $dom->query('table');
-        $exportData = self::htmlToCsv(self::DOMinnerHTML($tableList->next()));
-
-        $num = count($exportData);
+        $doc = new \DOMDocument();
+        @$doc->loadHTML($exportReport[0]);
+        $xpath = new \DOMXPath($doc);
+        $tableList = $xpath->query('//table');
+        $exportData = self::htmlToCsv(self::DOMinnerHTML($tableList->item(1)));
+        $num = \count($exportData);
         for ($i = 0; $i < $num; $i++) {
-            $transactionExportArray = explode(";,", $exportData [$i]);
-            if (isset ($merchantMap! [$transactionExportArray [0]]) && change_it_for_isset!($merchantMap [$transactionExportArray [0]], $merchantList)) {
+            $transactionExportArray = \explode(";,", $exportData [$i]);
+
+            if (isset ($merchantMap[$transactionExportArray [0]])) {
 
                 $transaction = Array();
-                $transaction ['merchantId'] = $merchantMap! [$transactionExportArray [0]];
+                $transaction ['merchantId'] = $merchantMap[$transactionExportArray [0]];
                 $transaction ['unique_id'] = $transactionExportArray [4];
-                $transactionDate = new \DateTime ($transactionExportArray [1], 'dd/MM/yy HH:mm:dd', 'en');
-                $transaction ['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
-
+                $transactionDate = \DateTime::createFromFormat('d/m/yy H:i:s', $transactionExportArray [1]);
+                $transaction ['date'] = $transactionDate->format("Y-m-d H:i:s");
                 $transaction ['customId'] = $transactionExportArray [5];
-
 
                 if ($transactionExportArray [7] == "Accepted" || $transactionExportArray [7] == "Accepté" || $transactionExportArray [7] == "Aceito") {
                     $transaction ['status'] = \Oara\Utilities::STATUS_CONFIRMED;
@@ -183,11 +186,11 @@ class Afilio extends \Oara\Network
                 } else if ($transactionExportArray [7] == "Rejected" || $transactionExportArray [7] == "Refusé" || $transactionExportArray [7] == "Refused" || $transactionExportArray [7] == "Recusado") {
                     $transaction ['status'] = \Oara\Utilities::STATUS_DECLINED;
                 } else {
-                    throw new Exception ("New status found {$transactionExportArray [7]}");
+                    throw new \Exception ("New status found {$transactionExportArray [7]}");
                 }
 
-                $transaction ['amount'] = \Oara\Utilities::parseDouble(preg_replace('/[^0-9\.,]/', "", $transactionExportArray [6]));
-                $transaction ['commission'] = \Oara\Utilities::parseDouble(preg_replace('/[^0-9\.,]/', "", $transactionExportArray [6]));
+                $transaction ['amount'] = \Oara\Utilities::parseDouble($transactionExportArray [6]);
+                $transaction ['commission'] = \Oara\Utilities::parseDouble($transactionExportArray [6]);
 
                 $totalTransactions [] = $transaction;
             }
@@ -197,87 +200,59 @@ class Afilio extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     *
-     * @see Oara/Network/Base#getPaymentHistory()
-     */
-    public function getPaymentHistory()
-    {
-        $paymentHistory = array();
-
-        return $paymentHistory;
-    }
-
-    /**
-     *
-     *
-     *
-     * It returns the transactions for a payment
-     *
-     * @param int $paymentId
-     */
-    public function paymentTransactions($paymentId, $merchantList, $startDate)
-    {
-        $transactionList = array();
-
-        return $transactionList;
-    }
-
-    /**
-     *
-     *
-     * Function that Convert from a table to Csv
-     *
-     * @param unknown_type $html
+     * @param $html
+     * @return array
      */
     private function htmlToCsv($html)
     {
-        $html = str_replace(array(
+        $html = \str_replace(array(
             "\t",
             "\r",
             "\n"
         ), "", $html);
         $csv = "";
-        $dom = new Zend_Dom_Query ($html);
-        $results = $dom->query('tr');
-        $count = count($results); // get number of matches: 4
+
+        $doc = new \DOMDocument();
+        @$doc->loadHTML($html);
+        $xpath = new \DOMXPath($doc);
+        $results = $xpath->query('//tr');
         foreach ($results as $result) {
 
-            $domTd = new Zend_Dom_Query (self::DOMinnerHTML($result));
-            $resultsTd = $domTd->query('td');
-            $countTd = count($resultsTd);
+            $doc = new \DOMDocument();
+            @$doc->loadHTML(self::DOMinnerHTML($result));
+            $xpath = new \DOMXPath($doc);
+            $resultsTd = $xpath->query('//td');
+            $countTd = $resultsTd->length;
             $i = 0;
             foreach ($resultsTd as $resultTd) {
                 $value = $resultTd->nodeValue;
                 if ($i != $countTd - 1) {
-                    $csv .= trim($value) . ";,";
+                    $csv .= \trim($value) . ";";
                 } else {
-                    $csv .= trim($value);
+                    $csv .= \trim($value);
                 }
                 $i++;
             }
             $csv .= "\n";
         }
-        $exportData = str_getcsv($csv, "\n");
+        $exportData = \str_getcsv($csv, "\n");
         return $exportData;
     }
 
     /**
-     *
-     *
-     * Function that returns the innet HTML code
-     *
-     * @param unknown_type $element
+     * @param $element
+     * @return string
      */
     private function DOMinnerHTML($element)
     {
         $innerHTML = "";
         $children = $element->childNodes;
         foreach ($children as $child) {
-            $tmp_dom = new DOMDocument ();
+            $tmp_dom = new \DOMDocument ();
             $tmp_dom->appendChild($tmp_dom->importNode($child, true));
             $innerHTML .= trim($tmp_dom->saveHTML());
         }
         return $innerHTML;
     }
+
 }

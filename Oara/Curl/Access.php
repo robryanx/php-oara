@@ -64,6 +64,7 @@ class Access
             CURLOPT_USERAGENT => "Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:23.0) Gecko/20100101 Firefox/32.0",
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_FAILONERROR => true,
+            CURLOPT_COOKIESESSION => true,
             CURLOPT_COOKIEJAR => $this->_cookiePath,
             CURLOPT_COOKIEFILE => $this->_cookiePath,
             CURLOPT_HTTPAUTH => CURLAUTH_ANY,
