@@ -33,7 +33,7 @@ class Amazon extends \Oara\Network
 
     private $_idBox = null;
     private $_client = null;
-    private $_networkServer = null;
+    protected $_networkServer = null;
 
     /**
      * @param $credentials
@@ -43,41 +43,8 @@ class Amazon extends \Oara\Network
 
         $user = $credentials['user'];
         $password = $credentials['password'];
-        $network = $credentials['network'];
 
         $this->_client = new \Oara\Curl\Access($credentials);
-
-        $this->_networkServer = "";
-        switch ($network) {
-            case "uk":
-                $this->_networkServer = "https://affiliate-program.amazon.co.uk";
-                break;
-            case "es":
-                $this->_networkServer = "https://afiliados.amazon.es";
-                break;
-            case "us":
-                $this->_networkServer = "https://affiliate-program.amazon.com";
-                break;
-            case "ca":
-                $this->_networkServer = "https://associates.amazon.ca";
-                break;
-            case "de":
-                $this->_networkServer = "https://partnernet.amazon.de";
-                break;
-            case "fr":
-                $this->_networkServer = "https://partenaires.amazon.fr";
-                break;
-            case "it":
-                $this->_networkServer = "https://programma-affiliazione.amazon.it";
-                break;
-            case "jp":
-                $this->_networkServer = "https://affiliate.amazon.co.jp";
-                break;
-            case "cn":
-                $this->_networkServer = "https://associates.amazon.cn";
-                break;
-        }
-
         $urls = array();
         $urls[] = new \Oara\Curl\Request($this->_networkServer, array());
         $exportReport = $this->_client->get($urls);
@@ -120,11 +87,6 @@ class Amazon extends \Oara\Network
         $parameter = array();
         $parameter["password"]["description"] = "Password to Log in";
         $parameter["password"]["required"] = true;
-        $credentials[] = $parameter;
-
-        $parameter = array();
-        $parameter["network"]["description"] = "Network you want to log into (uk, es, us, ca, de, fr, it, jp, cn)";
-        $parameter["network"]["required"] = true;
         $credentials[] = $parameter;
 
         return $credentials;
