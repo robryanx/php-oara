@@ -32,30 +32,20 @@ namespace Oara\Network\Publisher;
 class AutoEurope extends \Oara\Network
 {
     /**
-     * Export client.
-     *
-     * @var \Oara\Curl\Access
+     * @var null
      */
     private $_client = null;
 
-    /**
-     * Transaction Export Parameters
-     *
-     * @var array
-     */
-    private $_exportTransactionParameters = null;
 
     /**
-     * Constructor and Login
-     *
-     * @param
-     *            $au
-     * @return AutoEurope_Export
+     * @param $credentials
      */
     public function login($credentials)
     {
         $user = $credentials ['user'];
         $password = $credentials ['password'];
+        $this->_client = new \Oara\Curl\Access ($credentials);
+
         $loginUrl = 'https://www.autoeurope.co.uk/afftools/index.cfm';
         $valuesLogin = array(
             new \Oara\Curl\Parameter ('action', 'runreport'),
@@ -65,13 +55,14 @@ class AutoEurope extends \Oara\Network
             new \Oara\Curl\Parameter ('Post', 'Log-in')
         );
 
+        $urls = array();
+        $urls [] = new \Oara\Curl\Request ($loginUrl, array());
+        $this->_client->get($urls);
 
-        $this->_client = new \Oara\Curl\Access ($credentials);
+        $urls = array();
+        $urls [] = new \Oara\Curl\Request ($loginUrl, $valuesLogin);
+        $this->_client->post($urls);
 
-        $this->_exportTransactionParameters = array(
-            new \Oara\Curl\Parameter ('pDB', 'UK'),
-            new \Oara\Curl\Parameter ('content', 'PDF')
-        );
     }
 
     /**
@@ -93,9 +84,8 @@ class AutoEurope extends \Oara\Network
 
         return $credentials;
     }
-
     /**
-     * Check the connection
+     * @return bool
      */
     public function checkConnection()
     {
@@ -103,16 +93,14 @@ class AutoEurope extends \Oara\Network
         $urls = array();
         $urls [] = new \Oara\Curl\Request ('https://www.autoeurope.co.uk/afftools/index.cfm', array());
         $exportReport = $this->_client->get($urls);
-        if (preg_match('/logout\.cfm/', $exportReport [0], $matches)) {
+        if (\preg_match('/logout\.cfm/', $exportReport [0], $matches)) {
             $connection = true;
         }
         return $connection;
     }
 
     /**
-     * (non-PHPdoc)
-     *
-     * @see library/Oara/Network/Base#getMerchantList()
+     * @return array
      */
     public function getMerchantList()
     {
@@ -127,18 +115,22 @@ class AutoEurope extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     *
-     * @see library/Oara/Network/Base#getTransactionList($merchantId, $dStartDate, $dEndDate)
+     * @param null $merchantList
+     * @param \DateTime|null $dStartDate
+     * @param \DateTime|null $dEndDate
+     * @return array
+     * @throws Exception
      */
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
         $totalTransactions = Array();
 
-        $dEndDate->addDay(1);
-        $valuesFormExport = \Oara\Utilities::cloneArray($this->_exportTransactionParameters);
-        $valuesFormExport [] = new \Oara\Curl\Parameter ('pDate1', $dStartDate->format!("MM/d/yyyy"));
-        $valuesFormExport [] = new \Oara\Curl\Parameter ('pDate2', $dEndDate->format!("MM/d/yyyy"));
+        $dEndDate->add(new \DateInterval('P1D'));
+        $valuesFormExport = array();
+        $valuesFormExport [] = new \Oara\Curl\Parameter ('pDB', 'UK');
+        $valuesFormExport [] = new \Oara\Curl\Parameter ('content', 'PDF');
+        $valuesFormExport [] = new \Oara\Curl\Parameter ('pDate1', $dStartDate->format("m/j/Y"));
+        $valuesFormExport [] = new \Oara\Curl\Parameter ('pDate2', $dEndDate->format("m/j/Y"));
         $urls = array();
         $urls [] = new \Oara\Curl\Request ('https://www.autoeurope.co.uk/afftools/iatareport_popup.cfm?', $valuesFormExport);
         $exportReport = $this->_client->post($urls);
@@ -147,103 +139,56 @@ class AutoEurope extends \Oara\Network
         foreach ($xmlTransactionList as $xmlTransaction) {
             $transaction = array();
             $transaction ['merchantId'] = 1;
-            $date = new Zend_date ($xmlTransaction ['Booked'], "MM/dd/yyyy");
-            $transaction ['date'] = $date->format!("yyyy-MM-dd 00:00:00");
-            $transaction ['amount'] = ( double )$xmlTransaction ['commissionValue'];
-            $transaction ['commission'] = ( double )$xmlTransaction ['commission'];
+            $date = \DateTime::createFromFormat("m/d/Y", $xmlTransaction ['Booked']);
+            $transaction ['date'] = $date->format("Y-m-d 00:00:00");
+            $transaction ['amount'] = \Oara\Utilities::parseDouble(( double )$xmlTransaction ['commissionValue']);
+            $transaction ['commission'] = \Oara\Utilities::parseDouble(( double )$xmlTransaction ['commission']);
             $transaction ['status'] = \Oara\Utilities::STATUS_CONFIRMED;
             $transaction ['unique_id'] = $xmlTransaction ['Res #'];
             if (isset ($xmlTransaction ['Affiliate1']) && isset ($xmlTransaction ['Affiliate2'])) {
                 $customId = ( string )$xmlTransaction ['Affiliate1'] . ( string )$xmlTransaction ['Affiliate2'];
-                $customId = "afal-" . current(unpack('H*', base64_decode(str_replace(array(
-                        ".",
-                        "-"
-                    ), array(
-                        "/",
-                        "+"
-                    ), $customId))));
                 $transaction ['custom_id'] = $customId;
             }
-
             $totalTransactions [] = $transaction;
         }
         return $totalTransactions;
     }
 
     /**
-     * Read the html table in the report
-     *
-     * @param string $htmlReport
-     * @param \DateTime $startDate
-     * @param \DateTime $endDate
-     * @param int $iteration
-     * @return array:
+     * @param $htmlReport
+     * @return array
+     * @throws Exception
      */
     public function readTransactions($htmlReport)
     {
-        $pdfContent = '';
-        $dom = new Zend_Dom_Query ($htmlReport);
-        $links = $dom->query('.text a');
+        $doc = new \DOMDocument();
+        @$doc->loadHTML($htmlReport);
+        $xpath = new \DOMXPath($doc);
+        $results = $xpath->query('//a');
+
         $pdfUrl = null;
-        foreach ($links as $link) {
+        foreach ($results as $link) {
             $pdfUrl = $link->getAttribute('href');
         }
 
         $urls = array();
         $urls [] = new \Oara\Curl\Request ($pdfUrl, array());
         $exportReport = $this->_client->get($urls);
-        // writing temp pdf
         $exportReportUrl = explode('/', $pdfUrl);
         $exportReportUrl = $exportReportUrl [count($exportReportUrl) - 1];
-        $dir = realpath(dirname(COOKIES_BASE_DIR)) . '/pdf/';
-        $fh = fopen($dir . $exportReportUrl, 'w');
+        $dir = realpath(dirname(COOKIES_BASE_DIR)) . '/pdf/'.$exportReportUrl;
+        $fh = fopen($dir , 'w');
         fwrite($fh, $exportReport [0]);
         fclose($fh);
-        // parsing the pdf
 
-        $pipes = null;
-        $descriptorspec = array(
-            0 => array(
-                'pipe',
-                'r'
-            ),
-            1 => array(
-                'pipe',
-                'w'
-            ),
-            2 => array(
-                'pipe',
-                'w'
-            )
-        );
-        $pdfReader = proc_open("pdftohtml -xml -stdout " . $dir . $exportReportUrl, $descriptorspec, $pipes, null, null);
-        if (is_resource($pdfReader)) {
+        $pdf = new \Gufy\PdfToHtml\Pdf($dir);
+        $pdfContent = $pdf->html();
+        unlink($dir);
 
-            $pdfContent = '';
-            $error = '';
-            $stdin = $pipes [0];
-            $stdout = $pipes [1];
-            $stderr = $pipes [2];
-
-            while (!feof($stdout)) {
-                $pdfContent .= fgets($stdout);
-            }
-
-            while (!feof($stderr)) {
-                $error .= fgets($stderr);
-            }
-            fclose($stdin);
-            fclose($stdout);
-            fclose($stderr);
-            $exit_code = proc_close($pdfReader);
-        }
-        unlink($dir . $exportReportUrl);
-
-        $xml = new SimpleXMLElement ($pdfContent);
+        $xml = new \SimpleXMLElement ($pdfContent);
 
         $list = $xml->xpath("page");
-        $numberPages = 0;
-        $numberPages = count($list);
+        $numberPages = \count($list);
         $transationList = array();
         for ($page = 1; $page <= $numberPages; $page++) {
 
@@ -255,18 +200,18 @@ class AutoEurope extends \Oara\Network
                 $attributes = $header->attributes();
                 $top = ( int )$attributes ['top'];
             } else {
-                throw new Exception ("No Header Found");
+                throw new \Exception ("No Header Found");
             }
 
             if ($top == null) {
-                throw new Exception ("No Top Found");
+                throw new \Exception ("No Top Found");
             }
             $fromTop = $top - 3;
             $toTop = $top + 3;
             $list = $xml->xpath("page[@number=$page]/text[@top>$fromTop and @top<$toTop and @font=0]");
             $headerList = array();
             foreach ($list as $header) {
-                $xmlHeader = new stdClass ();
+                $xmlHeader = new \stdClass ();
                 $attributes = $header->attributes();
                 $xmlHeader->top = ( int )$attributes ['top'];
                 $xmlHeader->left = ( int )$attributes ['left'];
@@ -277,13 +222,13 @@ class AutoEurope extends \Oara\Network
                 if (strpos($xmlHeader->name, "commission") === false) {
                     $headerList [(int)$xmlHeader->left] = $xmlHeader;
                 } else {
-                    $xmlHeaderCommissionValue = new stdClass ();
+                    $xmlHeaderCommissionValue = new \stdClass ();
                     $xmlHeaderCommissionValue->top = $xmlHeader->top;
                     $xmlHeaderCommissionValue->left = $xmlHeader->left;
                     $xmlHeaderCommissionValue->width = 100;
                     $xmlHeaderCommissionValue->name = ( string )"commissionValue";
 
-                    $xmlHeaderCommission = new stdClass ();
+                    $xmlHeaderCommission = new \stdClass ();
                     $xmlHeaderCommission->top = $xmlHeader->top;
                     $xmlHeaderCommission->left = $xmlHeader->left + $xmlHeaderCommissionValue->width;
                     $xmlHeaderCommission->width = 150;
@@ -294,13 +239,13 @@ class AutoEurope extends \Oara\Network
                 }
 
             }
-            ksort($headerList);
+            \ksort($headerList);
             $list = $xml->xpath("page[@number=$page]/text[@font=2]");
             $rowList = array();
             foreach ($list as $row) {
                 $attributes = $row->attributes();
                 $top = ( int )$attributes ['top'];
-                if (!change_it_for_isset!($top, $rowList)) {
+                if (!\in_array($top, $rowList)) {
                     $rowList [] = $top;
                 }
             }
@@ -315,8 +260,6 @@ class AutoEurope extends \Oara\Network
                     $fromLeft = ( int )$attributes ['left'];
                     $toLeft = ( int )($attributes ['left'] + $attributes ['width']);
 
-                    $i = 0;
-                    $enc = false;
                     foreach ($headerList as $header) {
                         $headerFromLeft = $header->left;
                         $headerToLeft = $header->left + $header->width;

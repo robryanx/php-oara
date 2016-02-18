@@ -31,7 +31,7 @@ namespace Oara\Network\Publisher;
 class AffiliateGateway extends \Oara\Network
 {
     private $_client = null;
-    private $_extension = null;
+    protected $_extension = null;
 
     /**
      * @param $credentials
@@ -41,14 +41,6 @@ class AffiliateGateway extends \Oara\Network
     {
         $user = $credentials['user'];
         $password = $credentials['password'];
-        $extension = null;
-        if ($credentials["network"] == "uk") {
-            $extension = "https://www.tagpm.com";
-        } else if ($credentials["network"] == "au") {
-            $extension = "https://www.tagadmin.com.au";
-        }
-        $this->_extension = $extension;
-
         $this->_client = new \Oara\Curl\Access($credentials);
 
         $valuesLogin = array(

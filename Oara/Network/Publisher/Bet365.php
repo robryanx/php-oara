@@ -31,54 +31,22 @@ namespace Oara\Network\Publisher;
 class Bet365 extends \Oara\Network
 {
 
-
-    /**
-     * Client
-     * @var unknown_type
-     */
     private $_client = null;
 
     /**
-     * Constructor and Login
      * @param $credentials
-     * @return Daisycon
+     * @throws Exception
      */
     public function login($credentials)
     {
         $user = $credentials['user'];
         $password = $credentials['password'];
+        $this->_client = new \Oara\Curl\Access($credentials);
 
-        $ch = curl_init();
-        //Check HTTP Authentication
-        if (!curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_ANY)) {
-            //HTTP Authentication failed. Offline?
-            throw new Exception("FAIL: curl_setopt(CURLOPT_HTTPAUTH, CURLAUTH_ANY)");
-        }
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request('http://www.bet365affiliates.com/ui/pages/affiliates/affiliates.aspx', array());
+        $exportReport = $this->_client->get($urls);
 
-        //Check SSL Connection
-        if (!curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false)) {
-            //SSL connection not possible
-            throw new Exception("FAIL: curl_setopt(CURLOPT_SSL_VERIFYPEER, false)");
-        }
-
-        //Check URL validity (last check)
-        if (!curl_setopt($ch, CURLOPT_URL, 'http://www.bet365affiliates.com/ui/pages/affiliates/affiliates.aspx')) {
-            throw new Exception("FAIL: curl_setopt(CURLOPT_URL, http://www.bet365affiliates.com/ui/pages/affiliates/affiliates.aspx)");
-        }
-
-        //Set to 1 to prevent output of entire xml file
-        if (!curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1)) {
-            throw new Exception("FAIL: curl_setopt(CURLOPT_RETURNTRANSFER, 1)");
-        }
-
-        // Get the data
-        $data = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        if ($httpCode != 200) {
-            throw new Exception("Couldn't connect to the the page");
-        }
-        //Close Curl session
-        curl_close($ch);
 
         $valuesLogin = array(
             new \Oara\Curl\Parameter('txtUserName', $user),
@@ -90,20 +58,21 @@ class Bet365 extends \Oara\Network
             new \Oara\Curl\Parameter('ctl00%24MasterHeaderPlaceHolder%24ctl00%24goButton.y', '15')
         );
         $forbiddenList = array('txtPassword', 'txtUserName');
-        $dom = new Zend_Dom_Query($data);
-        $hiddenList = $dom->query('input[type="hidden"]');
+
+        $doc = new \DOMDocument();
+        @$doc->loadHTML($exportReport[0]);
+        $xpath = new \DOMXPath($doc);
+        $hiddenList = $xpath->query('//input[@type="hidden"]');
         foreach ($hiddenList as $hidden) {
-            if (!change_it_for_isset!($hidden->getAttribute("name"), $forbiddenList)) {
+            if (!in_array($hidden->getAttribute("name"), $forbiddenList)) {
                 $valuesLogin[] = new \Oara\Curl\Parameter($hidden->getAttribute("name"), $hidden->getAttribute("value"));
             }
         }
 
         $loginUrl = 'https://www.bet365affiliates.com/Members/CMSitePages/SiteLogin.aspx?lng=1';
-        $this->_client = new \Oara\Curl\Access($credentials);
-
-
-        $this->_exportPaymentParameters = array();
-
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request('http://www.bet365affiliates.com/ui/pages/affiliates/affiliates.aspx', array());
+        $this->_client->post($loginUrl, $valuesLogin);
     }
 
     /**
@@ -137,8 +106,10 @@ class Bet365 extends \Oara\Network
         $urls[] = new \Oara\Curl\Request('http://www.bet365affiliates.com/UI/Pages/Affiliates/?', array());
         $exportReport = $this->_client->get($urls);
 
-        $dom = new Zend_Dom_Query($exportReport[0]);
-        $results = $dom->query('#ctl00_MasterHeaderPlaceHolder_ctl00_LogoutLinkButton');
+        $doc = new \DOMDocument();
+        @$doc->loadHTML($exportReport[0]);
+        $xpath = new \DOMXPath($doc);
+        $results = $xpath->query('//*[contains(concat(" ", normalize-space(@id), " "), " ctl00_MasterHeaderPlaceHolder_ctl00_LogoutLinkButton ")]');
         if (count($results) > 0) {
             $connection = true;
         }
@@ -171,8 +142,8 @@ class Bet365 extends \Oara\Network
         $totalTransactions = array();
 
         $valuesFromExport = array();
-        $valuesFromExport[] = new \Oara\Curl\Parameter('FromDate', $dStartDate->format!("dd/MM/yyyy"));
-        $valuesFromExport[] = new \Oara\Curl\Parameter('ToDate', $dEndDate->format!("dd/MM/yyyy"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('FromDate', $dStartDate->format("d/m/Y"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('ToDate', $dEndDate->format("d/m/Y"));
         $valuesFromExport[] = new \Oara\Curl\Parameter('ReportType', 'dailyReport');
         $valuesFromExport[] = new \Oara\Curl\Parameter('Link', '-1');
 
@@ -180,22 +151,21 @@ class Bet365 extends \Oara\Network
         $urls[] = new \Oara\Curl\Request('https://www.bet365affiliates.com/Members/Members/Statistics/Print.aspx?', $valuesFromExport);
         $exportReport = $this->_client->get($urls);
 
-        $dom = new Zend_Dom_Query($exportReport[0]);
-        $tableList = $dom->query('#Results');
-        if (!preg_match("/No results exist/", $exportReport[0])) {
+        $doc = new \DOMDocument();
+        @$doc->loadHTML($exportReport[0]);
+        $xpath = new \DOMXPath($doc);
+        $tableList = $xpath->query('//*[contains(concat(" ", normalize-space(@id), " "), " Results ")]');
 
-
-            $exportData = self::htmlToCsv(self::DOMinnerHTML($tableList->current()));
-            $num = count($exportData);
+        if (!\preg_match("/No results exist/", $exportReport[0])) {
+            $exportData = self::htmlToCsv(self::DOMinnerHTML($tableList->item(0)));
+            $num = \count($exportData);
             for ($i = 2; $i < $num - 1; $i++) {
-                $transactionExportArray = str_getcsv($exportData[$i], ";");
-
+                $transactionExportArray = \str_getcsv($exportData[$i], ";");
 
                 $transaction = Array();
                 $transaction['merchantId'] = 1;
-                $transactionDate = new \DateTime($transactionExportArray[1], 'dd-MM-yyyy', 'en');
-                $transaction['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
-
+                $transactionDate = \DateTime::createFromFormat("d-m-Y", $transactionExportArray[1]);
+                $transaction['date'] = $transactionDate->format("Y-m-d H:i:s");
                 $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
                 $transaction['amount'] = \Oara\Utilities::parseDouble($transactionExportArray[27]);
                 $transaction['commission'] = \Oara\Utilities::parseDouble($transactionExportArray[32]);
@@ -209,58 +179,55 @@ class Bet365 extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see Oara/Network/Base#getPaymentHistory()
-     */
-    public function getPaymentHistory()
-    {
-        $paymentHistory = array();
-
-        return $paymentHistory;
-    }
-
-    /**
-     *
-     * Function that Convert from a table to Csv
-     * @param unknown_type $html
+     * @param $html
+     * @return array
      */
     private function htmlToCsv($html)
     {
-        $html = str_replace(array("\t", "\r", "\n"), "", $html);
+        $html = str_replace(array(
+            "\t",
+            "\r",
+            "\n"
+        ), "", $html);
         $csv = "";
-        $dom = new Zend_Dom_Query($html);
-        $results = $dom->query('tr');
-        $count = count($results); // get number of matches: 4
+
+        $doc = new \DOMDocument();
+        @$doc->loadHTML($html);
+        $xpath = new \DOMXPath($doc);
+        $results = $xpath->query('//tr');
         foreach ($results as $result) {
-            $tdList = $result->childNodes;
-            $tdNumber = $tdList->length;
-            if ($tdNumber > 0) {
-                for ($i = 0; $i < $tdNumber; $i++) {
-                    $value = $tdList->item($i)->nodeValue;
-                    if ($i != $tdNumber - 1) {
-                        $csv .= trim($value) . ";";
-                    } else {
-                        $csv .= trim($value);
-                    }
+
+            $doc = new \DOMDocument();
+            @$doc->loadHTML(self::DOMinnerHTML($result));
+            $xpath = new \DOMXPath($doc);
+            $resultsTd = $xpath->query('//td');
+            $countTd = $resultsTd->length;
+            $i = 0;
+            foreach ($resultsTd as $resultTd) {
+                $value = $resultTd->nodeValue;
+                if ($i != $countTd - 1) {
+                    $csv .= \trim($value) . ";";
+                } else {
+                    $csv .= \trim($value);
                 }
-                $csv .= "\n";
+                $i++;
             }
+            $csv .= "\n";
         }
-        $exportData = str_getcsv($csv, "\n");
+        $exportData = \str_getcsv($csv, "\n");
         return $exportData;
     }
 
     /**
-     *
-     * Function that returns the innet HTML code
-     * @param unknown_type $element
+     * @param $element
+     * @return string
      */
     private function DOMinnerHTML($element)
     {
         $innerHTML = "";
         $children = $element->childNodes;
         foreach ($children as $child) {
-            $tmp_dom = new DOMDocument();
+            $tmp_dom = new \DOMDocument ();
             $tmp_dom->appendChild($tmp_dom->importNode($child, true));
             $innerHTML .= trim($tmp_dom->saveHTML());
         }

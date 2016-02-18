@@ -30,22 +30,18 @@ namespace Oara\Network\Publisher;
  */
 class Bol extends \Oara\Network
 {
-    /**
-     * Client
-     * @var unknown_type
-     */
+
     private $_client = null;
 
     /**
-     * Constructor and Login
      * @param $credentials
-     * @return Daisycon
      */
     public function login($credentials)
     {
         $user = $credentials['user'];
         $password = $credentials['password'];
 
+        $this->_client = new \Oara\Curl\Access($credentials);
 
         $valuesLogin = array(
             new \Oara\Curl\Parameter('j_username', $user),
@@ -53,12 +49,14 @@ class Bol extends \Oara\Network
         );
 
         $loginUrl = 'https://partnerprogramma.bol.com/partner/j_security_check';
-        $this->_client = new \Oara\Curl\Access($credentials);
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request($loginUrl, $valuesLogin);
+        $this->_client->post($urls);
 
     }
 
     /**
-     * Check the connection
+     * @return bool
      */
     public function checkConnection()
     {
@@ -68,7 +66,7 @@ class Bol extends \Oara\Network
         $urls[] = new \Oara\Curl\Request('https://partnerprogramma.bol.com/partner/index.do?', array());
         $exportReport = $this->_client->get($urls);
 
-        if (preg_match('/partner\/logout\.do/', $exportReport[0], $match)) {
+        if (\preg_match('/partner\/logout\.do/', $exportReport[0], $match)) {
             $connection = true;
         }
         return $connection;
@@ -95,8 +93,7 @@ class Bol extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getMerchantList()
+     * @return array
      */
     public function getMerchantList()
     {
@@ -111,42 +108,39 @@ class Bol extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
+     * @param null $merchantList
+     * @param \DateTime|null $dStartDate
+     * @param \DateTime|null $dEndDate
+     * @return array
      */
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
-        $folder = realpath(dirname(COOKIES_BASE_DIR)) . '/pdf/';
+        $folder = \realpath(\dirname(COOKIES_BASE_DIR)) . '/pdf/';
         $totalTransactions = array();
         $valuesFromExport = array();
         $valuesFromExport[] = new \Oara\Curl\Parameter('id', "-1");
-        $valuesFromExport[] = new \Oara\Curl\Parameter('yearStart', $dStartDate->format!("yyyy"));
-        $valuesFromExport[] = new \Oara\Curl\Parameter('monthStart', $dStartDate->format!("MM"));
-        $valuesFromExport[] = new \Oara\Curl\Parameter('dayStart', $dStartDate->format!("dd"));
-        $valuesFromExport[] = new \Oara\Curl\Parameter('yearEnd', $dEndDate->format!("yyyy"));
-        $valuesFromExport[] = new \Oara\Curl\Parameter('monthEnd', $dEndDate->format!("MM"));
-        $valuesFromExport[] = new \Oara\Curl\Parameter('dayEnd', $dEndDate->format!("dd"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('yearStart', $dStartDate->format("Y"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('monthStart', $dStartDate->format("m"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('dayStart', $dStartDate->format("d"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('yearEnd', $dEndDate->format("Y"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('monthEnd', $dEndDate->format("m"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('dayEnd', $dEndDate->format("d"));
 
         $urls = array();
         $urls[] = new \Oara\Curl\Request('https://partnerprogramma.bol.com/partner/s/excelReport/orders?', $valuesFromExport);
         $exportReport = $this->_client->get($urls);
 
-        $my_file = $folder . mt_rand() . '.xlsx';
-        $handle = fopen($my_file, 'w') or die('Cannot open file:  ' . $my_file);
+        $my_file = $folder . \mt_rand() . '.xlsx';
+        $handle = \fopen($my_file, 'w') or die('Cannot open file:  ' . $my_file);
         $data = $exportReport[0];
-        fwrite($handle, $data);
-        fclose($handle);
+        \fwrite($handle, $data);
+        \fclose($handle);
 
-        $objReader = PHPExcel_IOFactory::createReader('Excel2007');
+        $objReader = \PHPExcel_IOFactory::createReader('Excel2007');
         $objReader->setReadDataOnly(true);
-
         $objPHPExcel = $objReader->load($my_file);
         $objWorksheet = $objPHPExcel->getActiveSheet();
-
         $highestRow = $objWorksheet->getHighestRow();
-        $highestColumn = $objWorksheet->getHighestColumn();
-
-        $highestColumnIndex = PHPExcel_Cell::columnIndexFromString($highestColumn);
 
         for ($row = 2; $row <= $highestRow; ++$row) {
 
@@ -154,13 +148,9 @@ class Bol extends \Oara\Network
             $transaction = Array();
             $transaction['unique_id'] = $objWorksheet->getCellByColumnAndRow(0, $row)->getValue() . "_" . $objWorksheet->getCellByColumnAndRow(1, $row)->getValue();
             $transaction['merchantId'] = "1";
-
-            $transactionDate = new \DateTime($objWorksheet->getCellByColumnAndRow(2, $row)->getValue(), 'dd-MM-yyyy');
-            $transaction['date'] = $transactionDate->format!("yyyy-MM-dd 00:00:00");
-
+            $transactionDate = \DateTime::createFromFormat("d-m-Y", $objWorksheet->getCellByColumnAndRow(2, $row)->getValue());
+            $transaction['date'] = $transactionDate->format("Y-m-d 00:00:00");
             $transaction['custom_id'] = $objWorksheet->getCellByColumnAndRow(8, $row)->getValue();
-
-
             if ($objWorksheet->getCellByColumnAndRow(14, $row)->getValue() == 'geaccepteerd') {
                 $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
             } else
@@ -170,29 +160,16 @@ class Bol extends \Oara\Network
                     if ($objWorksheet->getCellByColumnAndRow(14, $row)->getValue() == 'geweigerd: klik te oud' || $objWorksheet->getCellByColumnAndRow(14, $row)->getValue() == 'geweigerd') {
                         $transaction['status'] = \Oara\Utilities::STATUS_DECLINED;
                     } else {
-                        echo "new status " . $objWorksheet->getCellByColumnAndRow(14, $row)->getValue();
+                        throw new \Exception("new status " . $objWorksheet->getCellByColumnAndRow(14, $row)->getValue());
                     }
-
-            $transaction['amount'] = round($objWorksheet->getCellByColumnAndRow(11, $row)->getValue(), 2);
-
-            $transaction['commission'] = round($objWorksheet->getCellByColumnAndRow(12, $row)->getValue(), 2);
+            $transaction['amount'] = \Oara\Utilities::parseDouble(round($objWorksheet->getCellByColumnAndRow(11, $row)->getValue(), 2));
+            $transaction['commission'] = \Oara\Utilities::parseDouble(round($objWorksheet->getCellByColumnAndRow(12, $row)->getValue(), 2));
             $totalTransactions[] = $transaction;
 
         }
         unlink($my_file);
 
         return $totalTransactions;
-    }
-
-    /**
-     * (non-PHPdoc)
-     * @see Oara/Network/Base#getPaymentHistory()
-     */
-    public function getPaymentHistory()
-    {
-        $paymentHistory = array();
-
-        return $paymentHistory;
     }
 
 }

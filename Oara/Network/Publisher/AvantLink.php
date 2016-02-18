@@ -31,7 +31,7 @@ namespace Oara\Network\Publisher;
 class AvantLink extends \Oara\Network
 {
 
-    private $_domain = null;
+    protected $_domain = null;
     private $_id = null;
     private $_apikey = null;
 
@@ -45,23 +45,20 @@ class AvantLink extends \Oara\Network
 
         $user = $credentials ['user'];
         $password = $credentials ['password'];
-        // Choosing the Linkshare network
-
-        if ($credentials ['network'] == 'ca') {
-            $this->_domain = "https://www.avantlink.ca";
-        }
+        $this->_client = new \Oara\Curl\Access ($credentials);
 
         $valuesLogin = array(
             new \Oara\Curl\Parameter ('strLoginType', 'affiliate'),
             new \Oara\Curl\Parameter ('cmdLogin', 'Login'),
             new \Oara\Curl\Parameter ('loginre', ''),
-            new \Oara\Curl\Parameter ('strEmailAddress', $user),
-            new \Oara\Curl\Parameter ('strPassword', $password),
+            new \Oara\Curl\Parameter ('email', $user),
+            new \Oara\Curl\Parameter ('password', $password),
             new \Oara\Curl\Parameter ('intScreenResWidth', '1920'),
             new \Oara\Curl\Parameter ('intScreenResHeight', '1080')
         );
-        // Login to the Linkshare Application
-        $this->_client = new \Oara\Curl\Access ($this->_domain . "/login.php", $valuesLogin, $credentials);
+        $urls = array();
+        $urls [] = new \Oara\Curl\Request ("https://www.".$this->_domain . "/signin", $valuesLogin);
+        $this->_client->post($urls);
 
     }
 
@@ -93,11 +90,11 @@ class AvantLink extends \Oara\Network
         $connection = false;
 
         $urls = array();
-        $urls [] = new \Oara\Curl\Request ('https://www.avantlink.ca/affiliate/view_edit_auth_key.php', array());
+        $urls [] = new \Oara\Curl\Request ("https://classic.".$this->_domain .'/affiliate/view_edit_auth_key.php', array());
         $result = $this->_client->get($urls);
-        if (preg_match("/<p><strong>Affiliate ID:<\/strong> (.*)?<\/p>/", $result [0], $matches)) {
+        if (\preg_match("/<p><strong>Affiliate ID:<\/strong> (.*)?<\/p>/", $result [0], $matches)) {
             $this->_id = $matches[1];
-            if (preg_match("/<p><strong>API Authorization Key:<\/strong> (.*)?<\/p>/", $result [0], $matches)) {
+            if (\preg_match("/<p><strong>API Authorization Key:<\/strong> (.*)?<\/p>/", $result [0], $matches)) {
                 $this->_apikey = $matches[1];
                 $connection = true;
             }
@@ -107,48 +104,39 @@ class AvantLink extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getMerchantList()
+     * @return array
      */
     public function getMerchantList()
     {
 
         $merchants = array();
+
         $params = array(
             new \Oara\Curl\Parameter ('cmdDownload', 'Download All Active Merchants'),
             new \Oara\Curl\Parameter ('strRelationStatus', 'active')
         );
 
         $urls = array();
-        $urls [] = new \Oara\Curl\Request ($this->_domain . '/affiliate/merchants.php', $params);
+        $urls [] = new \Oara\Curl\Request ("https://classic.".$this->_domain . '/affiliate/merchants.php', $params);
         $result = $this->_client->post($urls);
+        $folder = \realpath(\dirname(COOKIES_BASE_DIR)) . '/pdf/';
+        $my_file = $folder . \mt_rand() . '.xls';
 
-        $folder = realpath(dirname(COOKIES_BASE_DIR)) . '/pdf/';
-        $my_file = $folder . mt_rand() . '.xls';
-
-        $handle = fopen($my_file, 'w') or die('Cannot open file:  ' . $my_file);
+        $handle = \fopen($my_file, 'w') or die('Cannot open file:  ' . $my_file);
         $data = $result[0];
-        fwrite($handle, $data);
-        fclose($handle);
+        \fwrite($handle, $data);
+        \fclose($handle);
 
-        $objReader = PHPExcel_IOFactory::createReader('Excel5');
+        $objReader = \PHPExcel_IOFactory::createReader('Excel5');
         $objReader->setReadDataOnly(true);
-
         $objPHPExcel = $objReader->load($my_file);
         $objWorksheet = $objPHPExcel->getActiveSheet();
-
         $highestRow = $objWorksheet->getHighestRow();
-        $highestColumn = $objWorksheet->getHighestColumn();
-
-        $highestColumnIndex = PHPExcel_Cell::columnIndexFromString($highestColumn);
-
         for ($row = 2; $row <= $highestRow; ++$row) {
-
             $obj = Array();
             $obj['cid'] = $objWorksheet->getCellByColumnAndRow(0, $row)->getValue();
             $obj['name'] = $objWorksheet->getCellByColumnAndRow(1, $row)->getValue();
             $merchants[] = $obj;
-
         }
         unlink($my_file);
 
@@ -156,39 +144,41 @@ class AvantLink extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getTransactionList($idMerchant, $dStartDate, $dEndDate)
+     * @param null $merchantList
+     * @param \DateTime|null $dStartDate
+     * @param \DateTime|null $dEndDate
+     * @return array
      */
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
         $totalTransactions = array();
-
-
         $affiliate_id = $this->_id;
         $auth_key = $this->_apikey;
 
-        $strUrl = 'https://www.avantlink.ca/api.php';
+        $merchantIdList = \Oara\Utilities::getMerchantIdMapFromMerchantList($merchantList);
+
+        $strUrl = "https://classic.".$this->_domain .'/api.php';
         $strUrl .= "?affiliate_id=$affiliate_id";
         $strUrl .= "&auth_key=$auth_key";
         $strUrl .= "&module=AffiliateReport";
-        $strUrl .= "&output=" . urlencode('csv');
+        $strUrl .= "&output=" . \urlencode('csv');
         $strUrl .= "&report_id=8";
-        $strUrl .= "&date_begin=" . urlencode($dStartDate->format!("yyyy-MM-dd HH:mm:ss"));
-        $strUrl .= "&date_end=" . urlencode($dEndDate->format!("yyyy-MM-dd HH:mm:ss"));
+        $strUrl .= "&date_begin=" . \urlencode($dStartDate->format("Y-m-d H:i:s"));
+        $strUrl .= "&date_end=" . \urlencode($dEndDate->format("Y-m-d H:i:s"));
         $strUrl .= "&include_inactive_merchants=0";
         $strUrl .= "&search_results_include_cpc=0";
 
         $returnResult = self::makeCall($strUrl);
-        $exportData = str_getcsv($returnResult, "\r\n");
-        $num = count($exportData);
+        $exportData = \str_getcsv($returnResult, "\r\n");
+        $num = \count($exportData);
         for ($i = 1; $i < $num; $i++) {
-            $transactionExportArray = str_getcsv($exportData[$i], ",");
-            if (count($transactionExportArray) > 1 && change_it_for_isset!((int)$transactionExportArray[17], $merchantList)) {
+            $transactionExportArray = \str_getcsv($exportData[$i], ",");
+            if (\count($transactionExportArray) > 1 && isset($merchantIdList[(int)$transactionExportArray[17]])  ) {
                 $transaction = Array();
                 $merchantId = (int)$transactionExportArray[17];
                 $transaction['merchantId'] = $merchantId;
-                $transactionDate = new \DateTime($transactionExportArray[11], 'MM-dd-yyyy HH:mm:ss');
-                $transaction['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
+                $transactionDate = \DateTime::createFromFormat("m-d-Y H:i:s", $transactionExportArray[11]);
+                $transaction['date'] = $transactionDate->format("Y-m-d H:i:s");
                 $transaction['unique_id'] = (int)$transactionExportArray[5];
 
                 if ($transactionExportArray[4] != null) {
@@ -196,8 +186,8 @@ class AvantLink extends \Oara\Network
                 }
 
                 $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
-                $transaction['amount'] = \Oara\Utilities::parseDouble(preg_replace('/[^0-9\.,]/', "", $transactionExportArray[6]));
-                $transaction['commission'] = \Oara\Utilities::parseDouble(preg_replace('/[^0-9\.,]/', "", $transactionExportArray[7]));
+                $transaction['amount'] = \Oara\Utilities::parseDouble($transactionExportArray[6]);
+                $transaction['commission'] = \Oara\Utilities::parseDouble($transactionExportArray[7]);
                 $totalTransactions[] = $transaction;
             }
         }
@@ -205,29 +195,17 @@ class AvantLink extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see Oara/Network/Base#getPaymentHistory()
-     */
-    public function getPaymentHistory()
-    {
-        $paymentHistory = array();
-
-        return $paymentHistory;
-    }
-
-    /**
-     *
-     * Make the call for this API
-     * @param string $actionVerb
+     * @param $strUrl
+     * @return mixed
      */
     private function makeCall($strUrl)
     {
 
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $strUrl);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-        $returnResult = curl_exec($ch);
-        curl_close($ch);
+        $ch = \curl_init();
+        \curl_setopt($ch, CURLOPT_URL, $strUrl);
+        \curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+        $returnResult = \curl_exec($ch);
+        \curl_close($ch);
         return $returnResult;
     }
 }
