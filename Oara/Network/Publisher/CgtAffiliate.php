@@ -31,31 +31,26 @@ namespace Oara\Network\Publisher;
 class CgtAffiliate extends \Oara\Network
 {
 
-
-    /**
-     * Client
-     * @var unknown_type
-     */
     private $_client = null;
 
     /**
-     * Constructor and Login
      * @param $credentials
-     * @return Daisycon
      */
     public function login($credentials)
     {
         $user = $credentials['user'];
         $password = $credentials['password'];
+        $this->_client = new \Oara\Curl\Access($credentials);
 
         $valuesLogin = array(
             new \Oara\Curl\Parameter('userid', $user),
             new \Oara\Curl\Parameter('password', $password),
         );
         $loginUrl = 'http://www.cgtaffiliate.com/idevaffiliate/login.php';
-        $this->_client = new \Oara\Curl\Access($credentials);
 
-
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request($loginUrl, $valuesLogin);
+        $this->_client->post($urls);
     }
 
     /**
@@ -79,7 +74,7 @@ class CgtAffiliate extends \Oara\Network
     }
 
     /**
-     * Check the connection
+     * @return bool
      */
     public function checkConnection()
     {
@@ -89,15 +84,14 @@ class CgtAffiliate extends \Oara\Network
         $urls[] = new \Oara\Curl\Request('http://www.cgtaffiliate.com/idevaffiliate/account.php', array());
         $exportReport = $this->_client->get($urls);
 
-        if (preg_match("/Logout/", $exportReport[0])) {
+        if (\preg_match("/Logout/", $exportReport[0])) {
             $connection = true;
         }
         return $connection;
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getMerchantList()
+     * @return array
      */
     public function getMerchantList()
     {
@@ -112,27 +106,27 @@ class CgtAffiliate extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
+     * @param null $merchantList
+     * @param \DateTime|null $dStartDate
+     * @param \DateTime|null $dEndDate
+     * @return array
      */
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
 
         $totalTransactions = array();
-
-        $transactionUrl = array();
         $urls = array();
         $urls[] = new \Oara\Curl\Request('http://www.cgtaffiliate.com/idevaffiliate/account.php?page=4&report=1', array());
         $exportReport = $this->_client->get($urls);
-        $totalTransactions = array_merge($totalTransactions, self::readTransactions($exportReport[0]));
+        $totalTransactions = \array_merge($totalTransactions, self::readTransactions($exportReport[0]));
         $urls = array();
         $urls[] = new \Oara\Curl\Request('http://www.cgtaffiliate.com/idevaffiliate/account.php?page=4&report=3', array());
         $exportReport = $this->_client->get($urls);
-        $totalTransactions = array_merge($totalTransactions, self::readTransactions($exportReport[0]));
+        $totalTransactions = \array_merge($totalTransactions, self::readTransactions($exportReport[0]));
         $urls = array();
         $urls[] = new \Oara\Curl\Request('http://www.cgtaffiliate.com/idevaffiliate/account.php?page=4&report=4', array());
         $exportReport = $this->_client->get($urls);
-        $totalTransactions = array_merge($totalTransactions, self::readTransactions($exportReport[0]));
+        $totalTransactions = \array_merge($totalTransactions, self::readTransactions($exportReport[0]));
 
         return $totalTransactions;
     }
@@ -141,88 +135,82 @@ class CgtAffiliate extends \Oara\Network
     {
         $totalTransactions = array();
 
-        $dom = new Zend_Dom_Query($html);
-        $tableList = $dom->query('table[bgcolor="#003366"][align="center"][width="100%"]');
-        $exportData = self::htmlToCsv(self::DOMinnerHTML($tableList->current()));
-        $num = count($exportData);
+        $doc = new \DOMDocument();
+        @$doc->loadHTML($html);
+        $xpath = new \DOMXPath($doc);
+        $tableList = $xpath->query('//table[@bgcolor="#003366"][@align="center"][@width="100%"]');
+        $exportData = self::htmlToCsv(self::DOMinnerHTML($tableList->item(0)));
+        $num = \count($exportData);
         for ($i = 3; $i < $num; $i++) {
-            $transactionExportArray = str_getcsv($exportData[$i], ";");
-
+            $transactionExportArray = \str_getcsv($exportData[$i], ";");
             $transaction = Array();
             $transaction['merchantId'] = 1;
-            $transaction['date'] = preg_replace("/[^0-9\-]/", "", $transactionExportArray[0]) . " 00:00:00";
-
-            $transactionExportArray[1] = trim($transactionExportArray[1]);
-
-            if (preg_match("/Paid/", $transactionExportArray[1])) {
+            $transaction['date'] = \preg_replace("/[^0-9\-]/", "", $transactionExportArray[0]) . " 00:00:00";
+            $transactionExportArray[1] = \trim($transactionExportArray[1]);
+            if (\preg_match("/Paid/", $transactionExportArray[1])) {
                 $transaction['status'] = \Oara\Utilities::STATUS_PAID;
-            } else if (preg_match("/Pending/", $transactionExportArray[1])) {
+            } else if (\preg_match("/Pending/", $transactionExportArray[1])) {
                 $transaction['status'] = \Oara\Utilities::STATUS_PENDING;
-            } else if (preg_match("/Approved/", $transactionExportArray[1])) {
+            } else if (\preg_match("/Approved/", $transactionExportArray[1])) {
                 $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
             }
-
-            $transaction['amount'] = preg_replace('/[^0-9\.,]/', "", $transactionExportArray[2]);
-            $transaction['commission'] = preg_replace('/[^0-9\.,]/', "", $transactionExportArray[2]);
+            $transaction['amount'] = \Oara\Utilities::parseDouble($transactionExportArray[2]);
+            $transaction['commission'] = \Oara\Utilities::parseDouble($transactionExportArray[2]);
             $totalTransactions[] = $transaction;
         }
         return $totalTransactions;
     }
 
-
     /**
-     * (non-PHPdoc)
-     * @see Oara/Network/Base#getPaymentHistory()
-     */
-    public function getPaymentHistory()
-    {
-        $paymentHistory = array();
-
-        return $paymentHistory;
-    }
-
-    /**
-     *
-     * Function that Convert from a table to Csv
-     * @param unknown_type $html
+     * @param $html
+     * @return array
      */
     private function htmlToCsv($html)
     {
-        $html = str_replace(array("\t", "\r", "\n"), "", $html);
+        $html = str_replace(array(
+            "\t",
+            "\r",
+            "\n"
+        ), "", $html);
         $csv = "";
-        $dom = new Zend_Dom_Query($html);
-        $results = $dom->query('tr');
-        $count = count($results); // get number of matches: 4
+
+        $doc = new \DOMDocument();
+        @$doc->loadHTML($html);
+        $xpath = new \DOMXPath($doc);
+        $results = $xpath->query('//tr');
         foreach ($results as $result) {
-            $tdList = $result->childNodes;
-            $tdNumber = $tdList->length;
-            if ($tdNumber > 0) {
-                for ($i = 0; $i < $tdNumber; $i++) {
-                    $value = $tdList->item($i)->nodeValue;
-                    if ($i != $tdNumber - 1) {
-                        $csv .= trim($value) . ";";
-                    } else {
-                        $csv .= trim($value);
-                    }
+
+            $doc = new \DOMDocument();
+            @$doc->loadHTML(self::DOMinnerHTML($result));
+            $xpath = new \DOMXPath($doc);
+            $resultsTd = $xpath->query('//td');
+            $countTd = $resultsTd->length;
+            $i = 0;
+            foreach ($resultsTd as $resultTd) {
+                $value = $resultTd->nodeValue;
+                if ($i != $countTd - 1) {
+                    $csv .= \trim($value) . ";";
+                } else {
+                    $csv .= \trim($value);
                 }
-                $csv .= "\n";
+                $i++;
             }
+            $csv .= "\n";
         }
-        $exportData = str_getcsv($csv, "\n");
+        $exportData = \str_getcsv($csv, "\n");
         return $exportData;
     }
 
     /**
-     *
-     * Function that returns the innet HTML code
-     * @param unknown_type $element
+     * @param $element
+     * @return string
      */
     private function DOMinnerHTML($element)
     {
         $innerHTML = "";
         $children = $element->childNodes;
         foreach ($children as $child) {
-            $tmp_dom = new DOMDocument();
+            $tmp_dom = new \DOMDocument ();
             $tmp_dom->appendChild($tmp_dom->importNode($child, true));
             $innerHTML .= trim($tmp_dom->saveHTML());
         }

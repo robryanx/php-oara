@@ -41,24 +41,20 @@ class ClickBank extends \Oara\Network
      */
     private $_dev = null;
 
-    /**
-     * Merchant List
-     * @var array
-     */
-    private $_merchantList = null;
 
     /**
-     * Constructor and Login
      * @param $credentials
-     * @return Effiliation
+     * @throws \Exception
+     * @throws \Oara\Curl\Exception
      */
     public function login($credentials)
     {
 
         $user = $credentials["user"];
         $password = $credentials["password"];
-        $loginUrl = "https://" . $user . ".accounts.clickbank.com/account/login?";
+        $this->_client = new \Oara\Curl\Access($credentials);
 
+        $loginUrl = "https://" . $user . ".accounts.clickbank.com/account/login?";
         $valuesLogin = array(new \Oara\Curl\Parameter('destination', "/account/mainMenu.htm"),
             new \Oara\Curl\Parameter('nick', $user),
             new \Oara\Curl\Parameter('pass', $password),
@@ -68,15 +64,18 @@ class ClickBank extends \Oara\Network
             new \Oara\Curl\Parameter('j_password', $password)
         );
 
-        $this->_client = new \Oara\Curl\Access($credentials);
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request($loginUrl, $valuesLogin);
+        $this->_client->post($urls);
 
         $urls = array();
         $urls[] = new \Oara\Curl\Request("https://" . $user . ".accounts.clickbank.com/account/profile.htm", array());
         $result = $this->_client->get($urls);
-        if (preg_match_all("/(API-(.*)?)\s</", $result[0], $matches)) {
+
+        if (\preg_match_all("/(API-(.*)?)\s</", $result[0], $matches)) {
             $this->_api = $matches[1][0];
         }
-        if (preg_match_all("/(DEV-(.*)?)</", $result[0], $matches)) {
+        if (\preg_match_all("/(DEV-(.*)?)</", $result[0], $matches)) {
             $this->_dev = $matches[1][0];
         }
 
@@ -103,7 +102,7 @@ class ClickBank extends \Oara\Network
     }
 
     /**
-     * Check the connection
+     * @return bool
      */
     public function checkConnection()
     {
@@ -115,8 +114,7 @@ class ClickBank extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getMerchantList()
+     * @return array
      */
     public function getMerchantList()
     {
@@ -130,43 +128,35 @@ class ClickBank extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate)
+     * @param null $merchantList
+     * @param \DateTime|null $dStartDate
+     * @param \DateTime|null $dEndDate
+     * @return array
+     * @throws \Exception
      */
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
         $totalTransactions = array();
-        $filter = new Zend_Filter_LocalizedToNormalized(array('precision' => 2));
-        $number = self::returnApiData("https://api.clickbank.com/rest/1.3/orders/count?startDate=" . $dStartDate->format!("yyyy-MM-dd") . "&endDate=" . $dEndDate->format!("yyyy-MM-dd"));
+        $number = self::returnApiData("https://api.clickbank.com/rest/1.3/orders/count?startDate=" . $dStartDate->format("Y-m-d") . "&endDate=" . $dEndDate->format("Y-m-d"));
 
         if ($number[0] != 0) {
-            $transactionXMLList = self::returnApiData("https://api.clickbank.com/rest/1.3/orders/list?startDate=" . $dStartDate->format!("yyyy-MM-dd") . "&endDate=" . $dEndDate->format!("yyyy-MM-dd"));
+            $transactionXMLList = self::returnApiData("https://api.clickbank.com/rest/1.3/orders/list?startDate=" . $dStartDate->format("Y-m-d") . "&endDate=" . $dEndDate->format("Y-m-d"));
             foreach ($transactionXMLList as $transactionXML) {
-                $transactionXML = simplexml_load_string($transactionXML, null, LIBXML_NOERROR | LIBXML_NOWARNING);
+                $transactionXML = \simplexml_load_string($transactionXML, null, LIBXML_NOERROR | LIBXML_NOWARNING);
 
                 foreach ($transactionXML->orderData as $singleTransaction) {
 
                     $transaction = Array();
                     $transaction['merchantId'] = 1;
-                    $transactionDate = new \DateTime(self::findAttribute($singleTransaction, 'date'), 'yyyy-MM-ddTHH:mm:ss');
-                    $transaction['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
-                    unset($transactionDate);
-
+                    $transactionDate = \DateTime::createFromFormat("Y-m-d\TH:i:s", self::findAttribute($singleTransaction, 'date'));
+                    $transaction['date'] = $transactionDate->format("Y-m-d H:i:s");
                     if (self::findAttribute($singleTransaction, 'affi') != null) {
                         $transaction['custom_id'] = self::findAttribute($singleTransaction, 'affi');
                     }
-
                     $transaction['unique_id'] = self::findAttribute($singleTransaction, 'receipt');
-
-                    $transaction['amount'] = (double)$filter->filter(self::findAttribute($singleTransaction, 'amount'));
-                    $transaction['commission'] = (double)$filter->filter(self::findAttribute($singleTransaction, 'amount'));
-
-                    //if (self::findAttribute($singleTransaction, 'txnType') == 'RFND'){
-                    //	$transaction['status'] = \Oara\Utilities::STATUS_DECLINED;
-                    //} else {
+                    $transaction['amount'] = \Oara\Utilities::parseDouble(self::findAttribute($singleTransaction, 'amount'));
+                    $transaction['commission'] = \Oara\Utilities::parseDouble(self::findAttribute($singleTransaction, 'amount'));
                     $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
-                    //}
-
                     $totalTransactions[] = $transaction;
                 }
 
@@ -178,10 +168,9 @@ class ClickBank extends \Oara\Network
     }
 
     /**
-     *
-     * Api connection to ClickBank
-     * @param unknown_type $xmlLocation
-     * @throws Exception
+     * @param $xmlLocation
+     * @return array
+     * @throws \Exception
      */
     private function returnApiData($xmlLocation)
     {
@@ -190,19 +179,18 @@ class ClickBank extends \Oara\Network
         $httpCode = 206;
         $page = 1;
         while ($httpCode != 200) {
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_URL, $xmlLocation);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, array("Page: $page", "Accept: application/xml", "Authorization: " . $this->_dev . ":" . $this->_api));
+            $ch = \curl_init();
+            \curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            \curl_setopt($ch, CURLOPT_URL, $xmlLocation);
+            \curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+            \curl_setopt($ch, CURLOPT_HTTPHEADER, array("Page: $page", "Accept: application/xml", "Authorization: " . $this->_dev . ":" . $this->_api));
 
-            $dataArray[] = curl_exec($ch);
-            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            $dataArray[] = \curl_exec($ch);
+            $httpCode = \curl_getinfo($ch, CURLINFO_HTTP_CODE);
             if ($httpCode != 200 && $httpCode != 206) {
-                throw new Exception("Couldn't connect to the API");
+                throw new \Exception("Couldn't connect to the API");
             }
-            //Close Curl session
-            curl_close($ch);
+            \curl_close($ch);
             $page++;
         }
 
@@ -211,15 +199,14 @@ class ClickBank extends \Oara\Network
     }
 
     /**
-     * Cast the XMLSIMPLE object into string
-     * @param $object
-     * @param $attribute
-     * @return unknown_type
+     * @param null $object
+     * @param null $attribute
+     * @return null|string
      */
     private function findAttribute($object = null, $attribute = null)
     {
         $return = null;
-        $return = trim($object->$attribute);
+        $return = \trim($object->$attribute);
         return $return;
     }
 }

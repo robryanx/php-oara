@@ -31,19 +31,10 @@ namespace Oara\Network\Publisher;
 class CommissionFactory extends \Oara\Network
 {
 
-    /**
-     * Client
-     *
-     * @var unknown_type
-     */
     private $_apiKey = null;
 
     /**
-     * Constructor and Login
-     *
-     * @param
-     *            $af
-     * @return Af_Export
+     * @param $credentials
      */
     public function login($credentials)
     {
@@ -51,7 +42,7 @@ class CommissionFactory extends \Oara\Network
     }
 
     /**
-     * Check the connection
+     * @return bool
      */
     public function checkConnection()
     {
@@ -72,22 +63,15 @@ class CommissionFactory extends \Oara\Network
         $credentials = array();
 
         $parameter = array();
-        $parameter["user"]["description"] = "User Log in";
-        $parameter["user"]["required"] = true;
-        $credentials[] = $parameter;
-
-        $parameter = array();
-        $parameter["password"]["description"] = "Password to Log in";
-        $parameter["password"]["required"] = true;
+        $parameter["apiPassword"]["description"] = "API password";
+        $parameter["apiPassword"]["required"] = true;
         $credentials[] = $parameter;
 
         return $credentials;
     }
 
     /**
-     * (non-PHPdoc)
-     *
-     * @see library/Oara/Network/Interface#getMerchantList()
+     * @return array
      */
     public function getMerchantList()
     {
@@ -104,31 +88,28 @@ class CommissionFactory extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     *
-     * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
+     * @param null $merchantList
+     * @param \DateTime|null $dStartDate
+     * @param \DateTime|null $dEndDate
+     * @return array
      */
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
         $transactions = array();
-        $transactionsExportList = self::request("https://api.commissionfactory.com.au/V1/Affiliate/Transactions?apiKey={$this->_apiKey}&fromDate={$dStartDate->format!("yyyy-MM-dd")}&toDate={$dEndDate->format!("yyyy-MM-dd")}");
+        $merchantIdList = \Oara\Utilities::getMerchantIdMapFromMerchantList($merchantList);
+        $transactionsExportList = self::request("https://api.commissionfactory.com.au/V1/Affiliate/Transactions?apiKey={$this->_apiKey}&fromDate={$dStartDate->format("Y-m-d")}&toDate={$dEndDate->format("Y-m-d")}");
 
         foreach ($transactionsExportList as $transaction) {
-
-            if (change_it_for_isset!(( int )$transaction ["MerchantId"], $merchantList)) {
+            if (isset($merchantIdList[$transaction ["MerchantId"]])) {
 
                 $obj = Array();
-
                 $obj ['merchantId'] = $transaction ["MerchantId"];
-
-                $date = new \DateTime ($transaction ["DateCreated"], "yyyy-MM-ddTHH:mm:ss");
-                $obj ['date'] = $date->format!("yyyy-MM-dd HH:mm:ss");
-
+                $transactionDate = \DateTime::createFromFormat("Y-m-d\TH:i:s", $transaction ["DateCreated"]);
+                $obj ['date'] = $transactionDate->format("Y-m-d H:i:s");
                 if ($transaction ["UniqueId"] != null) {
                     $obj ['custom_id'] = $transaction ["UniqueId"];
                 }
                 $obj ['unique_id'] = $transaction ["Id"];
-
                 if ($transaction ["Status"] == "Approved") {
                     $obj ['status'] = \Oara\Utilities::STATUS_CONFIRMED;
                 } else if ($transaction ["Status"] == "Pending") {
@@ -137,9 +118,8 @@ class CommissionFactory extends \Oara\Network
                     $obj ['status'] = \Oara\Utilities::STATUS_DECLINED;
                 }
 
-                $obj ['amount'] = $transaction ["SaleValue"];
-                $obj ['commission'] = $transaction ["Commission"];
-
+                $obj ['amount'] = \Oara\Utilities::parseDouble($transaction ["SaleValue"]);
+                $obj ['commission'] = \Oara\Utilities::parseDouble($transaction ["Commission"]);
                 $transactions [] = $obj;
             }
         }
@@ -148,21 +128,19 @@ class CommissionFactory extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     *
-     * @see Oara/Network/Base#getPaymentHistory()
+     * @return array
      */
     public function getPaymentHistory()
     {
         $paymentHistory = array();
 
         $today = new \DateTime();
-        $paymentExportList = self::request("https://api.commissionfactory.com.au/V1/Affiliate/Payments?apiKey={$this->_apiKey}&fromDate=2000-01-01&toDate={$today->format!("yyyy-MM-dd")}");
+        $paymentExportList = self::request("https://api.commissionfactory.com.au/V1/Affiliate/Payments?apiKey={$this->_apiKey}&fromDate=2000-01-01&toDate={$today->format("Y-m-d")}");
 
         foreach ($paymentExportList as $payment) {
             $obj = array();
-            $date = new \DateTime ($payment["DateCreated"], "yyyy-MM-ddTHH:mm:ss");
-            $obj ['date'] = $date->format!("yyyy-MM-dd HH:mm:ss");
+            $date = \DateTime::createFromFormat("Y-m-d\TH:i:s", $payment ["DateCreated"]);
+            $obj ['date'] = $date->format("Y-m-d H:i:s");
             $obj ['pid'] = $payment["Id"];
             $obj ['value'] = $payment["Amount"];
             $obj ['method'] = 'BACS';
@@ -184,11 +162,11 @@ class CommissionFactory extends \Oara\Network
             CURLOPT_SSL_VERIFYHOST => false,
             CURLOPT_FOLLOWLOCATION => true
         );
-        $rch = curl_init();
-        curl_setopt($rch, CURLOPT_URL, $url);
-        curl_setopt_array($rch, $options);
-        $response = curl_exec($rch);
-        curl_close($rch);
-        return json_decode($response, true);
+        $rch = \curl_init();
+        \curl_setopt($rch, CURLOPT_URL, $url);
+        \curl_setopt_array($rch, $options);
+        $response = \curl_exec($rch);
+        \curl_close($rch);
+        return \json_decode($response, true);
     }
 }

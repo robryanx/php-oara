@@ -30,60 +30,13 @@ namespace Oara\Network\Publisher;
  */
 class CommissionJunction extends \Oara\Network
 {
-    /**
-     * Export Merchants Parameters
-     * @var array
-     */
-    private $_exportMerchantParameters = null;
-    /**
-     * Export Transaction Parameters
-     * @var array
-     */
-    private $_exportTransactionParameters = null;
-
-    /**
-     * Export Transaction Parameters
-     * @var array
-     */
-    private $_exportOverviewParameters = null;
-
-    /**
-     * merchantMap.
-     * @var array
-     */
-    private $_merchantMap = array();
-
-    /**
-     * Client
-     * @var unknown_type
-     */
     private $_client = null;
-
-    /**
-     * Client
-     * @var unknown_type
-     */
-    private $_apiClient = null;
-    /**
-     * Member id
-     * @var int
-     */
     private $_memberId = null;
-    /**
-     * Account id
-     * @var int
-     */
     private $_accountId = null;
-    /**
-     * API Password
-     * @var string
-     */
     private $_apiPassword = null;
 
     /**
-     * Constructor and Login
-     * @param $cj
-     * @return Cj_Export
+     * @param $credentials
      */
     public function login($credentials)
     {
@@ -92,6 +45,7 @@ class CommissionJunction extends \Oara\Network
         $password = $credentials['password'];
         $this->_apiPassword = $credentials['apiPassword'];
 
+        $this->_client = new \Oara\Curl\Access($credentials);
 
         $loginUrl = 'https://members.cj.com/member/foundation/memberlogin.do?';
         $valuesLogin = array(new \Oara\Curl\Parameter('uname', $user),
@@ -100,47 +54,9 @@ class CommissionJunction extends \Oara\Network
             new \Oara\Curl\Parameter('submit.y', '8')
         );
 
-        $this->_client = new \Oara\Curl\Access($credentials);
-
-        $this->_exportMerchantParameters = array(new \Oara\Curl\Parameter('sortKey', 'active_start_date'),
-            new \Oara\Curl\Parameter('sortOrder', 'DESC'),
-            new \Oara\Curl\Parameter('contractView', 'ALL'),
-            new \Oara\Curl\Parameter('contractView', 'ALL'),
-            new \Oara\Curl\Parameter('format', '6'),
-            new \Oara\Curl\Parameter('contractState', 'active'),
-            new \Oara\Curl\Parameter('column', 'merchantid'),
-            new \Oara\Curl\Parameter('column', 'websitename'),
-            new \Oara\Curl\Parameter('column', 'merchantcategory')
-        );
-
-        $this->_exportTransactionParameters = array(new \Oara\Curl\Parameter('actionname', '0'),
-            new \Oara\Curl\Parameter('period', 'range'),
-            new \Oara\Curl\Parameter('what', 'commDetail'),
-            new \Oara\Curl\Parameter('corrected', ''),
-            new \Oara\Curl\Parameter('dtType', 'event'),
-            new \Oara\Curl\Parameter('filterby', '-1'),
-            new \Oara\Curl\Parameter('actiontype', ''),
-            new \Oara\Curl\Parameter('status', ''),
-            new \Oara\Curl\Parameter('filter', ''),
-            new \Oara\Curl\Parameter('website', ''),
-            new \Oara\Curl\Parameter('preselectrange', 'today'),
-            new \Oara\Curl\Parameter('download', 'csv')
-        );
-        $this->_exportOverviewParameters = array(
-            new \Oara\Curl\Parameter('perfPubByWebsite', ''),
-            new \Oara\Curl\Parameter('periodValue', ''),
-            new \Oara\Curl\Parameter('what_name', 'All Web Sites'),
-            new \Oara\Curl\Parameter('what', 'perfPubByAdvCompany'),
-            new \Oara\Curl\Parameter('period', 'range'),
-            new \Oara\Curl\Parameter('download', 'csv')
-        );
-
-        $this->_exportPaymentParameters = array(new \Oara\Curl\Parameter('startRow', '0'),
-            new \Oara\Curl\Parameter('sortKey', ''),
-            new \Oara\Curl\Parameter('sortOrder', ''),
-            new \Oara\Curl\Parameter('format', '6'),
-            new \Oara\Curl\Parameter('button', 'Go')
-        );
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request($loginUrl, $valuesLogin);
+        $this->_client->post($urls);
 
     }
 
@@ -161,11 +77,16 @@ class CommissionJunction extends \Oara\Network
         $parameter["password"]["required"] = true;
         $credentials[] = $parameter;
 
+        $parameter = array();
+        $parameter["apiPassword"]["description"] = "API Password ";
+        $parameter["apiPassword"]["required"] = true;
+        $credentials[] = $parameter;
+
         return $credentials;
     }
 
     /**
-     * Check the connection
+     * @return bool
      */
     public function checkConnection()
     {
@@ -173,13 +94,12 @@ class CommissionJunction extends \Oara\Network
 
         $cookieMap = array();
         $cookieContent = $this->_client->getCookies();
-        $cookieArray = explode("\n", $cookieContent);
-        for ($i = 4; $i < count($cookieArray); $i++) {
-            $cookieValue = explode("\t", $cookieArray[$i]);
-            if (count($cookieValue) == 7) {
-                $cookieMap[$cookieValue[count($cookieValue) - 2]] = $cookieValue[count($cookieValue) - 1];
+        $cookieArray = \explode("\n", $cookieContent);
+        for ($i = 4; $i < \count($cookieArray); $i++) {
+            $cookieValue = \explode("\t", $cookieArray[$i]);
+            if (\count($cookieValue) == 7) {
+                $cookieMap[$cookieValue[\count($cookieValue) - 2]] = $cookieValue[\count($cookieValue) - 1];
             }
-
         }
 
         if (isset($cookieMap["jsContactId"])) {
@@ -194,11 +114,8 @@ class CommissionJunction extends \Oara\Network
             return false;
         }
 
-        $restUrl = 'https://commission-detail.api.cj.com/v3/commissions?date-type=event';
-        $client = new Zend_Http_Client($restUrl);
-        $client->setHeaders('Authorization', $this->_apiPassword);
-        $response = $client->request('GET');
-        if ($response->getStatus() != 200) {
+        $result = self::apiCall('https://commission-detail.api.cj.com/v3/commissions?date-type=event');
+        if (\preg_match("/error/", $result)) {
             return false;
         }
 
@@ -206,8 +123,7 @@ class CommissionJunction extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getMerchantList()
+     * @return array
      */
     public function getMerchantList()
     {
@@ -223,133 +139,21 @@ class CommissionJunction extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getTransactionList($idMerchant, $dStartDate, $dEndDate)
-     */
-    public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
-    {
-
-        $totalTransactions = Array();
-        //The end data for the API has to be one day more
-        $iteration = self::calculeIterationNumber(count($merchantList), '20');
-        for ($it = 0; $it < $iteration; $it++) {
-            echo "iteration $it of $iteration \n\n";
-            //echo "mechant".$cid." ".count($totalTransactions)."\n\n";
-            $merchantSlice = array_slice($merchantList, $it * 20, 20);
-            try {
-
-                $transactionDateEnd = clone $dEndDate;
-                $transactionDateEnd->addDay(1);
-                $restUrl = 'https://commission-detail.api.cj.com/v3/commissions?cids=' . implode(',', $merchantSlice) . '&date-type=posting&start-date=' . $dStartDate->format!("yyyy-MM-dd") . '&end-date=' . $transactionDateEnd->format!("yyyy-MM-dd");
-                unset($transactionDateEnd);
-                $totalTransactions = array_merge($totalTransactions, self::getTransactionsXml($restUrl, $merchantList));
-
-            } catch (Exception $e) {
-
-                $dateArray = \Oara\Utilities::daysOfDifference($dStartDate, $dEndDate);
-                $dateArraySize = sizeof($dateArray);
-                for ($j = 0; $j < $dateArraySize; $j++) {
-                    $transactionDateEnd = clone $dateArray[$j];
-                    $transactionDateEnd->addDay(1);
-                    echo $dateArray[$j]->format!("yyyy-MM-dd") . "\n\n";
-                    $restUrl = 'https://commission-detail.api.cj.com/v3/commissions?cids=' . implode(',', $merchantSlice) . '&date-type=posting&start-date=' . $dateArray[$j]->format!("yyyy-MM-dd") . '&end-date=' . $transactionDateEnd->format!("yyyy-MM-dd");
-                    try {
-                        $totalTransactions = array_merge($totalTransactions, self::getTransactionsXml($restUrl, $merchantList));
-                    } catch (Exception $e) {
-                        $try = 0;
-                        $done = false;
-                        while (!$done && $try < 5) {
-                            try {
-                                $totalTransactions = array_merge($totalTransactions, self::transactionsByType(implode(',', $merchantSlice), $dateArray[$j], $transactionDateEnd, $merchantList));
-                                $done = true;
-                            } catch (Exception $e) {
-                                $try++;
-                                echo "try again $try\n\n";
-                            }
-                        }
-                        if ($try == 5) {
-                            throw new Exception("Couldn't get data from the Transaction");
-                        }
-
-                    }
-                    unset($transactionDateEnd);
-                }
-            }
-        }
-        return $totalTransactions;
-    }
-
-    private function getTransactionsXml($restUrl, $merchantList)
-    {
-        $totalTransactions = array();
-        $filter = new Zend_Filter_LocalizedToNormalized(array('precision' => 2));
-        $client = new Zend_Http_Client($restUrl, array('timeout' => 180));
-        $client->setHeaders('Authorization', $this->_apiPassword);
-        $response = $client->request('GET');
-        $xml = simplexml_load_string($response->getBody(), null, LIBXML_NOERROR | LIBXML_NOWARNING);
-        if (isset($xml->commissions->commission)) {
-            foreach ($xml->commissions->commission as $singleTransaction) {
-
-                if (change_it_for_isset!((int)self::findAttribute($singleTransaction, 'cid'), $merchantList)) {
-
-                    $transaction = Array();
-                    $transaction['merchantId'] = self::findAttribute($singleTransaction, 'cid');
-                    $transactionDate = new \DateTime(self::findAttribute($singleTransaction, 'event-date'), 'yyyy-MM-ddTHH:mm:ss');
-                    $transaction['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
-                    unset($transactionDate);
-
-                    if (self::findAttribute($singleTransaction, 'sid') != null) {
-                        $transaction['custom_id'] = self::findAttribute($singleTransaction, 'sid');
-                    }
-
-                    //$transaction['unique_id'] = self::findAttribute($singleTransaction, 'commission-id');
-                    $transaction ['amount'] = ( double )$filter->filter(self::findAttribute($singleTransaction, 'sale-amount'));
-                    $transaction ['commission'] = ( double )$filter->filter(self::findAttribute($singleTransaction, 'commission-amount'));
-
-                    if (self::findAttribute($singleTransaction, 'action-status') == 'locked' || self::findAttribute($singleTransaction, 'action-status') == 'closed') {
-                        $transaction ['status'] = \Oara\Utilities::STATUS_CONFIRMED;
-                    } else if (self::findAttribute($singleTransaction, 'action-status') == 'extended' || self::findAttribute($singleTransaction, 'action-status') == 'new') {
-                        $transaction ['status'] = \Oara\Utilities::STATUS_PENDING;
-                    } else if (self::findAttribute($singleTransaction, 'action-status') == 'corrected') {
-                        $transaction ['status'] = \Oara\Utilities::STATUS_DECLINED;
-                    }
-
-                    if ($transaction ['commission'] == 0) {
-                        $transaction ['status'] = \Oara\Utilities::STATUS_PENDING;
-                    }
-
-                    if ($transaction ['amount'] < 0 || $transaction ['commission'] < 0) {
-                        $transaction ['status'] = \Oara\Utilities::STATUS_DECLINED;
-                        $transaction ['amount'] = abs($transaction ['amount']);
-                        $transaction ['commission'] = abs($transaction ['commission']);
-                    }
-                    $totalTransactions[] = $transaction;
-                }
-            }
-        }
-        return $totalTransactions;
-    }
-
-    private function transactionsByType($cid, $startDate, $endDate, $merchantList)
-    {
-        $totalTransactions = array();
-        $typeTransactions = array("bonus", "click", "impression", "sale", "lead", "advanced%20sale", "advanced%20lead", "performance%20incentive");
-        foreach ($typeTransactions as $type) {
-            //echo $type."\n\n";
-            $restUrl = 'https://commission-detail.api.cj.com/v3/commissions?action-types=' . $type . '&cids=' . $cid . '&date-type=posting&start-date=' . $startDate->format!("yyyy-MM-dd") . '&end-date=' . $endDate->format!("yyyy-MM-dd");
-            $totalTransactions = array_merge($totalTransactions, self::getTransactionsXml($restUrl, $merchantList));
-        }
-        return $totalTransactions;
-    }
-
-    /**
-     * Gets all the merchants and returns them in an array.
      * @return array
      */
     private function getMerchantExport()
     {
-        $merchantReportList = Array();
-        $valuesFromExport = $this->_exportMerchantParameters;
+        $merchantReportList = array();
+        $valuesFromExport = array(new \Oara\Curl\Parameter('sortKey', 'active_start_date'),
+            new \Oara\Curl\Parameter('sortOrder', 'DESC'),
+            new \Oara\Curl\Parameter('contractView', 'ALL'),
+            new \Oara\Curl\Parameter('contractView', 'ALL'),
+            new \Oara\Curl\Parameter('format', '6'),
+            new \Oara\Curl\Parameter('contractState', 'active'),
+            new \Oara\Curl\Parameter('column', 'merchantid'),
+            new \Oara\Curl\Parameter('column', 'websitename'),
+            new \Oara\Curl\Parameter('column', 'merchantcategory')
+        );
 
         $urls = array();
         $urls[] = new \Oara\Curl\Request('https://members.cj.com/member/' . $this->_memberId . '/publisher/accounts/listmyadvertisers.do', array());
@@ -372,83 +176,64 @@ class CommissionJunction extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see Oara/Network/Base#getPaymentHistory()
+     * @param null $merchantList
+     * @param \DateTime|null $dStartDate
+     * @param \DateTime|null $dEndDate
+     * @return array
+     * @throws Exception
      */
-    public function getPaymentHistory()
+    public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
-        $paymentHistory = array();
-        $urls = array();
-        $urls[] = new \Oara\Curl\Request('https://members.cj.com/member/cj/publisher/paymentStatus', array());
-        $exportReport = $this->_client->get($urls);
-        if (preg_match('/\/publisher\/getpublisherpaymenthistory\.do/', $exportReport[0], $matches)) {
-            $urls = array();
-            $valuesFromExport = $this->_exportPaymentParameters;
-            $urls[] = new \Oara\Curl\Request('https://members.cj.com/member/' . $this->_memberId . '/publisher/getpublisherpaymenthistory.do?', $valuesFromExport);
-            $exportReport = $this->_client->get($urls);
-            $exportData = str_getcsv($exportReport[0], "\n");
-            $num = count($exportData);
-            for ($j = 1; $j < $num; $j++) {
-                $paymentData = str_getcsv($exportData[$j], ",");
-                $obj = array();
-                $date = new \DateTime($paymentData[0], "dd-MMM-yyyy HH:mm", 'en_US');
-                $obj['date'] = $date->format!("yyyy-MM-dd HH:mm:ss");
-                $obj['value'] = \Oara\Utilities::parseDouble($paymentData[1]);
-                $obj['method'] = $paymentData[2];
-                $obj['pid'] = $paymentData[6];
-                $paymentHistory[] = $obj;
+
+        $totalTransactions = Array();
+        $merchantIdArray = \array_keys(\Oara\Utilities::getMerchantIdMapFromMerchantList($merchantList));
+
+        $iteration = self::calculeIterationNumber(\count($merchantIdArray), '20');
+        for ($it = 0; $it < $iteration; $it++) {
+            echo "iteration $it of $iteration \n\n";
+            $merchantSlice = \array_slice($merchantIdArray, $it * 20, 20);
+            try {
+
+                $transactionDateEnd = clone $dEndDate;
+                $transactionDateEnd->add(new \DateInterval('P1D'));
+                $restUrl = 'https://commission-detail.api.cj.com/v3/commissions?cids=' . \implode(',', $merchantSlice) . '&date-type=posting&start-date=' . $dStartDate->format("Y-m-d") . '&end-date=' . $transactionDateEnd->format("Y-m-d");
+                $totalTransactions = \array_merge($totalTransactions, self::getTransactionsXml($restUrl, $merchantList));
+            } catch (\Exception $e) {
+                $amountDays = $dStartDate->diff($dEndDate)->days;
+                $auxDate = clone $dStartDate;
+                for ($j = 0; $j < $amountDays; $j++) {
+                    $transactionDateEnd = clone $auxDate;
+                    $transactionDateEnd->add(new \DateInterval('P1D'));
+                    $restUrl = 'https://commission-detail.api.cj.com/v3/commissions?cids=' . \implode(',', $merchantSlice) . '&date-type=posting&start-date=' . $auxDate->format("Y-m-d") . '&end-date=' . $transactionDateEnd->format("Y-m-d");
+                    try {
+                        $totalTransactions = \array_merge($totalTransactions, self::getTransactionsXml($restUrl, $merchantList));
+                    } catch (\Exception $e) {
+                        $try = 0;
+                        $done = false;
+                        while (!$done && $try < 5) {
+                            try {
+                                $totalTransactions = \array_merge($totalTransactions, self::transactionsByType(\implode(',', $merchantSlice), $auxDate, $transactionDateEnd, $merchantList));
+                                $done = true;
+                            } catch (\Exception $e) {
+                                $try++;
+                                echo "try again $try\n\n";
+                            }
+                        }
+                        if ($try == 5) {
+                            throw new \Exception("Couldn't get data from the Transaction");
+                        }
+                    }
+                    $auxDate->add(new \DateInterval('P1D'));
+                }
             }
         }
-        return $paymentHistory;
+        return $totalTransactions;
     }
 
     /**
-     *
-     * It returns the transactions for a payment
-     * @param int $paymentId
-     */
-    public function paymentTransactions($pid, $merchantList = null, $startDate = null)
-    {
-        $transactionList = array();
-        $invoices = $this->getPaymentHistory();
-        for ($i = 0; $i < count($invoices); $i++) {
-            if ($invoices[$i]['pid'] == $pid) {
-                $endDate = $invoices[$i]['date'];
-                if (isset($invoices[$i + 1])) {
-                    $startDate = $invoices[$i + 1]['date'];
-                } else {
-                    $startDate = date("Y-m-d", strtotime($invoices[i]['date']) - (90 * 60 * 60 * 24));
-                }
-                break;
-            }
-        }
-        $startDate = date("Y-m-d", strtotime($startDate));
-        $endDate = date("Y-m-d", strtotime($endDate));
-        $exportReport = $this->_client->get(array(new \Oara\Curl\Request('https://members.cj.com/member/publisher/' . $this->_accountId . '/transactionReport.json?startDate=' . $startDate . '&endDate=' . $endDate . '&allowAllDateRanges=true&columnSort=amount%09DESC&startRow=1&endRow=1000', array())));
-        $advertiserPaymentIds = array();
-        foreach (json_decode($exportReport[0])->{'records'}->{'record'} as $advertiser) {
-            if (($advertiser->{'advertiserId'} != '-3') && (!change_it_for_isset!($advertiser->{'txnId'}, $advertiserPaymentIds))) {
-                $advertiserPaymentIds[] = $advertiser->{'txnId'};
-            }
-        }
-        foreach ($advertiserPaymentIds as $id) {
-            $exportReport = $this->_client->get(array(new \Oara\Curl\Request('https://members.cj.com/member/publisher/' . $this->_accountId . '/commissionReport/detailForTransactionId.json?allowAllDateRanges=true&txnId=' . $id . '&columnSort=publisherCommission%09DESC&startRow=1&endRow=1000', array())));
-            $transactions = json_decode($exportReport[0])->{'records'}->{'record'};
-            if (!isset($transactions->{'advertiserId'})) {
-                foreach ($transactions as $transaction) {
-                    $transactionList[] = $transaction->{'commissionId'};
-                }
-            } else {
-                $transactionList[] = $transactions->{'commissionId'};
-            }
-        }
-        return $transactionList;
-    }
-
-    /**
-     * Calculate the number of iterations needed
      * @param $rowAvailable
      * @param $rowsReturned
+     * @return int
      */
     private function calculeIterationNumber($rowAvailable, $rowsReturned)
     {
@@ -461,15 +246,179 @@ class CommissionJunction extends \Oara\Network
     }
 
     /**
-     * Cast the XMLSIMPLE object into string
-     * @param $object
-     * @param $attribute
-     * @return unknown_type
+     * @param $restUrl
+     * @param $merchantList
+     * @return array
+     */
+    private function getTransactionsXml($restUrl, $merchantList)
+    {
+        $totalTransactions = array();
+        $merchantIdList = \Oara\Utilities::getMerchantIdMapFromMerchantList($merchantList);
+        $response = self::apiCall($restUrl);
+        $xml = \simplexml_load_string($response, null, LIBXML_NOERROR | LIBXML_NOWARNING);
+        if (isset($xml->commissions->commission)) {
+            foreach ($xml->commissions->commission as $singleTransaction) {
+
+                if (isset($merchantIdList[(int)self::findAttribute($singleTransaction, 'cid')])) {
+
+                    $transaction = Array();
+                    $transaction['merchantId'] = self::findAttribute($singleTransaction, 'cid');
+                    $transactionDate = \DateTime::createFromFormat("Y-m-d\TH:i:s", \substr(self::findAttribute($singleTransaction, 'event-date'),0,19));
+                    $transaction['date'] = $transactionDate->format("Y-m-d H:i:s");
+
+                    if (self::findAttribute($singleTransaction, 'sid') != null) {
+                        $transaction['custom_id'] = self::findAttribute($singleTransaction, 'sid');
+                    }
+
+                    //$transaction['unique_id'] = self::findAttribute($singleTransaction, 'commission-id');
+                    $transaction ['amount'] = \Oara\Utilities::parseDouble(self::findAttribute($singleTransaction, 'sale-amount'));
+                    $transaction ['commission'] = \Oara\Utilities::parseDouble(self::findAttribute($singleTransaction, 'commission-amount'));
+
+                    if (self::findAttribute($singleTransaction, 'action-status') == 'locked' || self::findAttribute($singleTransaction, 'action-status') == 'closed') {
+                        $transaction ['status'] = \Oara\Utilities::STATUS_CONFIRMED;
+                    } else if (self::findAttribute($singleTransaction, 'action-status') == 'extended' || self::findAttribute($singleTransaction, 'action-status') == 'new') {
+                        $transaction ['status'] = \Oara\Utilities::STATUS_PENDING;
+                    } else if (self::findAttribute($singleTransaction, 'action-status') == 'corrected') {
+                        $transaction ['status'] = \Oara\Utilities::STATUS_DECLINED;
+                    }
+
+                    if ($transaction ['commission'] == 0) {
+                        $transaction ['status'] = \Oara\Utilities::STATUS_PENDING;
+                    }
+
+                    if ($transaction ['amount'] < 0 || $transaction ['commission'] < 0) {
+                        $transaction ['status'] = \Oara\Utilities::STATUS_DECLINED;
+                        $transaction ['amount'] = \abs($transaction ['amount']);
+                        $transaction ['commission'] = \abs($transaction ['commission']);
+                    }
+                    $totalTransactions[] = $transaction;
+                }
+            }
+        }
+        return $totalTransactions;
+    }
+
+    /**
+     * @param null $object
+     * @param null $attribute
+     * @return null|string
      */
     private function findAttribute($object = null, $attribute = null)
     {
         $return = null;
-        $return = trim($object->$attribute);
+        $return = \trim($object->$attribute);
         return $return;
+    }
+
+    /**
+     * @param $cid
+     * @param $startDate
+     * @param $endDate
+     * @param $merchantList
+     * @return array
+     */
+    private function transactionsByType($cid, $startDate, $endDate, $merchantList)
+    {
+        $totalTransactions = array();
+        $typeTransactions = array("bonus", "click", "impression", "sale", "lead", "advanced%20sale", "advanced%20lead", "performance%20incentive");
+        foreach ($typeTransactions as $type) {
+            $restUrl = 'https://commission-detail.api.cj.com/v3/commissions?action-types=' . $type . '&cids=' . $cid . '&date-type=posting&start-date=' . $startDate->format("Y-m-d") . '&end-date=' . $endDate->format("Y-m-d");
+            $totalTransactions = \array_merge($totalTransactions, self::getTransactionsXml($restUrl, $merchantList));
+        }
+        return $totalTransactions;
+    }
+
+    /**
+     * @param $pid
+     * @param null $merchantList
+     * @param null $startDate
+     * @return array
+     */
+    public function paymentTransactions($pid, $merchantList = null, $startDate = null)
+    {
+        $transactionList = array();
+        $invoices = $this->getPaymentHistory();
+        for ($i = 0; $i < \count($invoices); $i++) {
+            if ($invoices[$i]['pid'] == $pid) {
+                $endDate = $invoices[$i]['date'];
+                if (isset($invoices[$i + 1])) {
+                    $startDate = $invoices[$i + 1]['date'];
+                } else {
+                    $startDate = \date("Y-m-d", strtotime($invoices[i]['date']) - (90 * 60 * 60 * 24));
+                }
+                break;
+            }
+        }
+        $startDate = \date("Y-m-d", \strtotime($startDate));
+        $endDate = \date("Y-m-d", \strtotime($endDate));
+        $exportReport = $this->_client->get(array(new \Oara\Curl\Request('https://members.cj.com/member/publisher/' . $this->_accountId . '/transactionReport.json?startDate=' . $startDate . '&endDate=' . $endDate . '&allowAllDateRanges=true&columnSort=amount%09DESC&startRow=1&endRow=1000', array())));
+        $advertiserPaymentIds = array();
+        foreach (\json_decode($exportReport[0])->{'records'}->{'record'} as $advertiser) {
+            if (($advertiser->{'advertiserId'} != '-3') && (!in_array($advertiser->{'txnId'}, $advertiserPaymentIds))) {
+                $advertiserPaymentIds[] = $advertiser->{'txnId'};
+            }
+        }
+        foreach ($advertiserPaymentIds as $id) {
+            $exportReport = $this->_client->get(array(new \Oara\Curl\Request('https://members.cj.com/member/publisher/' . $this->_accountId . '/commissionReport/detailForTransactionId.json?allowAllDateRanges=true&txnId=' . $id . '&columnSort=publisherCommission%09DESC&startRow=1&endRow=1000', array())));
+            $transactions = \json_decode($exportReport[0])->{'records'}->{'record'};
+            if (!isset($transactions->{'advertiserId'})) {
+                foreach ($transactions as $transaction) {
+                    $transactionList[] = $transaction->{'commissionId'};
+                }
+            } else {
+                $transactionList[] = $transactions->{'commissionId'};
+            }
+        }
+        return $transactionList;
+    }
+
+    /**
+     * @return array
+     */
+    public function getPaymentHistory()
+    {
+        $paymentHistory = array();
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request('https://members.cj.com/member/cj/publisher/paymentStatus', array());
+        $exportReport = $this->_client->get($urls);
+        if (\preg_match('/\/publisher\/getpublisherpaymenthistory\.do/', $exportReport[0], $matches)) {
+            $urls = array();
+            $valuesFromExport = array(new \Oara\Curl\Parameter('startRow', '0'),
+                new \Oara\Curl\Parameter('sortKey', ''),
+                new \Oara\Curl\Parameter('sortOrder', ''),
+                new \Oara\Curl\Parameter('format', '6'),
+                new \Oara\Curl\Parameter('button', 'Go')
+            );
+            $urls[] = new \Oara\Curl\Request('https://members.cj.com/member/' . $this->_memberId . '/publisher/getpublisherpaymenthistory.do?', $valuesFromExport);
+            $exportReport = $this->_client->get($urls);
+            $exportData = \str_getcsv($exportReport[0], "\n");
+            $num = \count($exportData);
+            for ($j = 1; $j < $num; $j++) {
+                $paymentData = \str_getcsv($exportData[$j], ",");
+                $obj = array();
+                $date = \DateTime::createFromFormat("d-M-Y H:i \P\S\T",$paymentData[0]);
+                if (!$date){
+                    $date = \DateTime::createFromFormat("d-M-Y H:i \P\D\T",$paymentData[0]);
+                }
+                $obj['date'] = $date->format("Y-m-d H:i:s");
+                $obj['value'] = \Oara\Utilities::parseDouble($paymentData[1]);
+                $obj['method'] = $paymentData[2];
+                $obj['pid'] = $paymentData[6];
+                $paymentHistory[] = $obj;
+            }
+        }
+        return $paymentHistory;
+    }
+
+    private function apiCall($url)
+    {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_POST, FALSE);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array("Authorization: " . $this->_apiPassword));
+        $curl_results = curl_exec($ch);
+        curl_close($ch);
+        return $curl_results;
     }
 }

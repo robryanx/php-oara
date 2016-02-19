@@ -30,46 +30,21 @@ namespace Oara\Network\Publisher;
  */
 class ClixGalore extends \Oara\Network
 {
-    /**
-     * Export Merchants Parameters
-     * @var array
-     */
-    private $_exportMerchantParameters = null;
-    /**
-     * Export Transaction Parameters
-     * @var array
-     */
-    private $_exportTransactionParameters = null;
-    /**
-     * Export Overview Parameters
-     * @var array
-     */
-    private $_exportOverviewParameters = null;
-    /**
-     * Export Payment Parameters
-     * @var array
-     */
-    private $_exportPaymentParameters = null;
-    /**
-     * Client
-     * @var unknown_type
-     */
     private $_client = null;
-    /**
-     * Website List
-     * @var unknown_type
-     */
     private $_websiteList = array();
 
     /**
-     * Constructor and Login
      * @param $credentials
-     * @return Daisycon
+     * @throws Exception
+     * @throws \Exception
+     * @throws \Oara\Curl\Exception
      */
     public function login($credentials)
     {
         $user = $credentials['user'];
         $password = $credentials['password'];
+        $this->_client = new \Oara\Curl\Access($credentials);
+
 
         $loginUrl = 'https://www.clixgalore.co.uk/MemberLogin.aspx';
         $valuesLogin = array(new \Oara\Curl\Parameter('txt_UserName', $user),
@@ -77,55 +52,19 @@ class ClixGalore extends \Oara\Network
             new \Oara\Curl\Parameter('cmd_login.x', '29'),
             new \Oara\Curl\Parameter('cmd_login.y', '8')
         );
-        $dom = new Zend_Dom_Query(file_get_contents("https://www.clixgalore.co.uk/Memberlogin.aspx"));
-        $results = $dom->query('input[type="hidden"]');
-        $hiddenValue = null;
-        foreach ($results as $result) {
-            $name = $result->attributes->getNamedItem("name")->nodeValue;
-            $hiddenValue = $result->attributes->getNamedItem("value")->nodeValue;
-            $valuesLogin[] = new \Oara\Curl\Parameter($name, $hiddenValue);
-        }
 
-        $this->_client = new \Oara\Curl\Access($credentials);
+        $html = \file_get_contents("https://www.clixgalore.co.uk/Memberlogin.aspx");
+        $doc = new \DOMDocument();
+        @$doc->loadHTML($html);
+        $xpath = new \DOMXPath($doc);
+        $hidden = $xpath->query('//input[@type="hidden"]');
+        foreach ($hidden as $values) {
+            $valuesLogin[] = new \Oara\Curl\Parameter($values->getAttribute("name"), $values->getAttribute("value"));
+        }
 
         $urls = array();
-        $urls[] = new \Oara\Curl\Request('https://www.clixgalore.co.uk/CreateAffiliateProgram.aspx', array());
-        $exportReport = $this->_client->get($urls);
-        $dom = new Zend_Dom_Query($exportReport[0]);
-
-        $this->_websiteList = array();
-        $results = $dom->query('#AffProgramDropDown1_aff_program_list');
-        $count = count($results);
-        if ($count == 1) {
-            $selectNode = $results->current();
-            $websiteLines = $selectNode->childNodes;
-            for ($i = 0; $i < $websiteLines->length; $i++) {
-                $wid = $websiteLines->item($i)->attributes->getNamedItem("value")->nodeValue;
-                if ($wid != 0) {
-                    $this->_websiteList[$wid] = $websiteLines->item($i)->nodeValue;
-                }
-            }
-        } else {
-            throw new Exception('Problem getting the websites');
-        }
-
-        $this->_exportMerchantParameters = array();
-
-        $this->_exportTransactionParameters = array(new \Oara\Curl\Parameter('AfID', '0'),
-            new \Oara\Curl\Parameter('S', ''),
-            new \Oara\Curl\Parameter('ST', '2'),
-            new \Oara\Curl\Parameter('Period', '6'),
-            new \Oara\Curl\Parameter('AdID', '0'),
-            new \Oara\Curl\Parameter('B', '2')
-        );
-
-        $this->_exportOverviewParameters = array(new \Oara\Curl\Parameter('WNO', '0')
-        );
-
-        $this->_exportPaymentParameters = array(new \Oara\Curl\Parameter('dd_Period', '0'),
-            new \Oara\Curl\Parameter('cmd_retrieve', 'Retrieve Payments')
-        );
-
+        $urls[] = new \Oara\Curl\Request($loginUrl, $valuesLogin);
+        $this->_client->post($urls);
     }
 
     /**
@@ -149,7 +88,7 @@ class ClixGalore extends \Oara\Network
     }
 
     /**
-     * Check the connection
+     * @return bool
      */
     public function checkConnection()
     {
@@ -159,77 +98,83 @@ class ClixGalore extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getMerchantList()
+     * @return array
+     * @throws Exception
      */
     public function getMerchantList()
     {
         $merchants = array();
 
-        foreach (array_keys($this->_websiteList) as $websiteId) {
-            $urls = array();
-            $urls[] = new \Oara\Curl\Request('http://www.clixgalore.co.uk/AffiliateAdvancedReporting.aspx', array());
-            $exportReport = $this->_client->get($urls);
-            $dom = new Zend_Dom_Query($exportReport[0]);
-            $results = $dom->query('#dd_AffAdv_program_list_aff_adv_program_list');
-            $count = count($results);
-            if ($count == 1) {
-                $selectNode = $results->current();
-                $merchantLines = $selectNode->childNodes;
-                for ($i = 0; $i < $merchantLines->length; $i++) {
-                    $cid = $merchantLines->item($i)->attributes->getNamedItem("value")->nodeValue;
-                    if ($cid != 0) {
-                        $obj = array();
-                        $obj['cid'] = $merchantLines->item($i)->attributes->getNamedItem("value")->nodeValue;
-                        $obj['name'] = $merchantLines->item($i)->nodeValue;
-                        $obj['url'] = '';
-                        $merchants[] = $obj;
-                    }
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request('http://www.clixgalore.co.uk/AffiliateAdvancedReporting.aspx', array());
+        $exportReport = $this->_client->get($urls);
+
+        $doc = new \DOMDocument();
+        @$doc->loadHTML($exportReport[0]);
+        $xpath = new \DOMXPath($doc);
+        $results = $xpath->query('//*[contains(concat(" ", normalize-space(@id), " "), " dd_AffAdv_program_list_aff_adv_program_list ")]');
+
+        $count = $results->length;
+        if ($count == 1) {
+            $selectNode = $results->item(0);
+            $merchantLines = $selectNode->childNodes;
+            for ($i = 0; $i < $merchantLines->length; $i++) {
+                $cid = $merchantLines->item($i)->attributes->getNamedItem("value")->nodeValue;
+                if ($cid != 0) {
+                    $obj = array();
+                    $obj['cid'] = $merchantLines->item($i)->attributes->getNamedItem("value")->nodeValue;
+                    $obj['name'] = $merchantLines->item($i)->nodeValue;
+                    $obj['url'] = '';
+                    $merchants[] = $obj;
                 }
-            } else {
-                throw new Exception('Problem getting the websites');
             }
+        } else {
+            throw new \Exception('Problem getting the websites');
         }
 
         return $merchants;
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate)
+     * @param null $merchantList
+     * @param \DateTime|null $dStartDate
+     * @param \DateTime|null $dEndDate
+     * @return array
      */
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
-
         $totalTransactions = array();
-
+        $merchantMap = \Oara\Utilities::getMerchantNameMapFromMerchantList($merchantList);
         $statusArray = array(0, 1, 2);
-
         foreach ($statusArray as $status) {
-
-            $valuesFromExport = \Oara\Utilities::cloneArray($this->_exportTransactionParameters);
-            $valuesFromExport[] = new \Oara\Curl\Parameter('SD', $dStartDate->format!("yyyy-MM-dd"));
-            $valuesFromExport[] = new \Oara\Curl\Parameter('ED', $dEndDate->format!("yyyy-MM-dd"));
+            $valuesFromExport = array(new \Oara\Curl\Parameter('AfID', '0'),
+                new \Oara\Curl\Parameter('S', ''),
+                new \Oara\Curl\Parameter('ST', '2'),
+                new \Oara\Curl\Parameter('Period', '6'),
+                new \Oara\Curl\Parameter('AdID', '0'),
+                new \Oara\Curl\Parameter('B', '2')
+            );
+            $valuesFromExport[] = new \Oara\Curl\Parameter('SD', $dStartDate->format("Y-m-d"));
+            $valuesFromExport[] = new \Oara\Curl\Parameter('ED', $dEndDate->format("Y-m-d"));
             $valuesFromExport[] = new \Oara\Curl\Parameter('Status', $status);
 
             $urls = array();
             $urls[] = new \Oara\Curl\Request('http://www.clixgalore.co.uk/AffiliateTransactionSentReport_Excel.aspx?', $valuesFromExport);
             $exportReport = $this->_client->get($urls);
             $exportData = self::htmlToCsv($exportReport[0]);
-            $num = count($exportData);
+            $num = \count($exportData);
             for ($i = 1; $i < $num; $i++) {
-                $transactionExportArray = str_getcsv($exportData[$i], ";");
-                if (isset($merchantMap![$transactionExportArray[2]]) && change_it_for_isset!((int)$merchantMap![$transactionExportArray[2]], $merchantList)) {
+                $transactionExportArray = \str_getcsv($exportData[$i], ";");
+                if (isset($merchantMap[$transactionExportArray[2]])) {
                     $transaction = Array();
-                    $merchantId = (int)$merchantMap![$transactionExportArray[2]];
+                    $merchantId = (int)$merchantMap[$transactionExportArray[2]];
                     $transaction['merchantId'] = $merchantId;
-                    $transactionDate = new \DateTime($transactionExportArray[0], 'dd MMM yyyy HH:mm', 'en');
-                    $transaction['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
+                    $transactionDate = \DateTime::createFromFormat("d M Y H:m", $transactionExportArray[0]);
+                    $transaction['date'] = $transactionDate->format("Y-m-d H:i:s");
 
                     if ($transactionExportArray[6] != null) {
                         $transaction['custom_id'] = $transactionExportArray[6];
                     }
-
                     if ($status == 1) {
                         $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
                     } else
@@ -239,14 +184,8 @@ class ClixGalore extends \Oara\Network
                             if ($status == 0) {
                                 $transaction['status'] = \Oara\Utilities::STATUS_DECLINED;
                             }
-
-                    if (preg_match('/[0-9]*,?[0-9]*\.?[0-9]+/', $transactionExportArray[4], $matches)) {
-                        $transaction['amount'] = \Oara\Utilities::parseDouble($matches[0]);
-                    }
-                    if (preg_match('/[0-9]*,?[0-9]*\.?[0-9]+/', $transactionExportArray[5], $matches)) {
-                        $transaction['commission'] = \Oara\Utilities::parseDouble($matches[0]);
-                    }
-
+                    $transaction['amount'] = \Oara\Utilities::parseDouble($transactionExportArray[4]);
+                    $transaction['commission'] = \Oara\Utilities::parseDouble($transactionExportArray[5]);
                     $totalTransactions[] = $transaction;
                 }
             }
@@ -255,102 +194,55 @@ class ClixGalore extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see Oara/Network/Base#getPaymentHistory()
-     */
-    public function getPaymentHistory()
-    {
-        $paymentHistory = array();
-
-        foreach (array_keys($this->_websiteList) as $websiteId) {
-            $paymentExport = \Oara\Utilities::cloneArray($this->_exportPaymentParameters);
-
-            $urls = array();
-            $urls[] = new \Oara\Curl\Request('http://www.clixgalore.co.uk/AffiliatePaymentDetail.aspx?', array());
-            $exportReport = $this->_client->post($urls);
-
-            $dom = new Zend_Dom_Query($exportReport[0]);
-            $results = $dom->query('input[type="hidden"]');
-            $count = count($results);
-            foreach ($results as $result) {
-                $hiddenName = $result->attributes->getNamedItem("name")->nodeValue;
-                $hiddenValue = $result->attributes->getNamedItem("value")->nodeValue;
-                $paymentExport[] = new \Oara\Curl\Parameter($hiddenName, $hiddenValue);
-            }
-
-            $paymentExport[] = new \Oara\Curl\Parameter('AffProgramDropDown1$aff_program_list', $websiteId);
-
-            $urls = array();
-            $urls[] = new \Oara\Curl\Request('http://www.clixgalore.co.uk/AffiliatePaymentDetail.aspx', $paymentExport);
-            $exportReport = $this->_client->post($urls);
-
-            $dom = new Zend_Dom_Query($exportReport[0]);
-            $results = $dom->query('#dg_payments');
-            $count = count($results);
-            if ($count == 1) {
-                $exportData = self::htmlToCsv(self::DOMinnerHTML($results->current()));
-                for ($j = 1; $j < count($exportData) - 1; $j++) {
-
-                    $paymentExportArray = str_getcsv($exportData[$j], ";");
-                    $obj = array();
-                    $paymentDate = new \DateTime($paymentExportArray[0], "MMM d yyyy", "en");
-                    $obj['date'] = $paymentDate->format!("yyyy-MM-dd HH:mm:ss");
-                    $obj['pid'] = $paymentDate->format!("yyyyMMdd");
-                    $obj['method'] = 'BACS';
-                    if (preg_match('/[-+]?[0-9]*,?[0-9]*\.?[0-9]+/', $paymentExportArray[2], $matches)) {
-                        $obj['value'] = \Oara\Utilities::parseDouble($matches[0]);
-                    } else {
-                        throw new Exception("Problem reading payments");
-                    }
-
-                    $paymentHistory[] = $obj;
-                }
-
-            }
-        }
-        return $paymentHistory;
-    }
-
-    /**
-     *
-     * Function that Convert from a table to Csv
-     * @param unknown_type $html
+     * @param $html
+     * @return array
      */
     private function htmlToCsv($html)
     {
-        $html = str_replace(array("\t", "\r", "\n"), "", $html);
+        $html = str_replace(array(
+            "\t",
+            "\r",
+            "\n"
+        ), "", $html);
         $csv = "";
-        $dom = new Zend_Dom_Query($html);
-        $results = $dom->query('tr');
-        $count = count($results); // get number of matches: 4
+
+        $doc = new \DOMDocument();
+        @$doc->loadHTML($html);
+        $xpath = new \DOMXPath($doc);
+        $results = $xpath->query('//tr');
         foreach ($results as $result) {
-            $tdList = $result->childNodes;
-            $tdNumber = $tdList->length;
-            for ($i = 0; $i < $tdNumber; $i++) {
-                $value = $tdList->item($i)->nodeValue;
-                if ($i != $tdNumber - 1) {
-                    $csv .= trim($value) . ";";
+
+            $doc = new \DOMDocument();
+            @$doc->loadHTML(self::DOMinnerHTML($result));
+            $xpath = new \DOMXPath($doc);
+            $resultsTd = $xpath->query('//td');
+            $countTd = $resultsTd->length;
+            $i = 0;
+            foreach ($resultsTd as $resultTd) {
+                $value = $resultTd->nodeValue;
+                if ($i != $countTd - 1) {
+                    $csv .= \trim($value) . ";";
                 } else {
-                    $csv .= trim($value);
+                    $csv .= \trim($value);
                 }
+                $i++;
             }
             $csv .= "\n";
         }
-        $exportData = str_getcsv($csv, "\n");
+        $exportData = \str_getcsv($csv, "\n");
         return $exportData;
     }
 
     /**
-     *
-     * Function that returns the innet HTML code
-     * @param unknown_type $element
+     * @param $element
+     * @return string
      */
     private function DOMinnerHTML($element)
     {
         $innerHTML = "";
         $children = $element->childNodes;
         foreach ($children as $child) {
-            $tmp_dom = new DOMDocument();
+            $tmp_dom = new \DOMDocument ();
             $tmp_dom->appendChild($tmp_dom->importNode($child, true));
             $innerHTML .= trim($tmp_dom->saveHTML());
         }

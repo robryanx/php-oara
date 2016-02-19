@@ -31,26 +31,16 @@ namespace Oara\Network\Publisher;
 class Daisycon extends \Oara\Network
 {
 
-    /**
-     * Client
-     * @var unknown_type
-     */
-    private $_client = null;
-
     private $_credentials = null;
 
     private $_publisherId = array();
 
     /**
-     * Constructor and Login
      * @param $credentials
-     * @return Daisycon
      */
     public function login($credentials)
     {
         $this->_credentials = $credentials;
-
-
     }
 
     /**
@@ -68,24 +58,24 @@ class Daisycon extends \Oara\Network
 
             $url = "https://services.daisycon.com:443/publishers?page=1&per_page=100";
             // initialize curl resource
-            $ch = curl_init();
+            $ch = \curl_init();
             // set the http request authentication headers
-            $headers = array('Authorization: Basic ' . base64_encode($user . ':' . $password));
+            $headers = array('Authorization: Basic ' . \base64_encode($user . ':' . $password));
             // set curl options
-            curl_setopt($ch, CURLOPT_URL, $url);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            \curl_setopt($ch, CURLOPT_URL, $url);
+            \curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+            \curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             // execute curl
-            $response = curl_exec($ch);
-            $publisherList = json_decode($response, true);
+            $response = \curl_exec($ch);
+            $publisherList = \json_decode($response, true);
             foreach ($publisherList as $publisher) {
                 $this->_publisherId[] = $publisher["id"];
             }
-            if (count($this->_publisherId) == 0) {
+            if (\count($this->_publisherId) == 0) {
                 throw new \Exception("No publisher found");
             }
 
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $connection = false;
         }
         return $connection;
@@ -118,7 +108,6 @@ class Daisycon extends \Oara\Network
     public function getMerchantList()
     {
         $merchants = array();
-        $merchantList = array();
         $user = $this->_credentials['user'];
         $password = $this->_credentials['password'];
 
@@ -131,16 +120,16 @@ class Daisycon extends \Oara\Network
             while (!$finish) {
                 $url = "https://services.daisycon.com:443/publishers/$publisherId/programs?page=$page&per_page=$pageSize";
                 // initialize curl resource
-                $ch = curl_init();
+                $ch = \curl_init();
                 // set the http request authentication headers
-                $headers = array('Authorization: Basic ' . base64_encode($user . ':' . $password));
+                $headers = array('Authorization: Basic ' . \base64_encode($user . ':' . $password));
                 // set curl options
-                curl_setopt($ch, CURLOPT_URL, $url);
-                curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                \curl_setopt($ch, CURLOPT_URL, $url);
+                \curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+                \curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
                 // execute curl
-                $response = curl_exec($ch);
-                $merchantList = json_decode($response, true);
+                $response = \curl_exec($ch);
+                $merchantList = \json_decode($response, true);
 
                 foreach ($merchantList as $merchant) {
                     if ($merchant['status'] == 'active') {
@@ -151,7 +140,7 @@ class Daisycon extends \Oara\Network
                     }
                 }
 
-                if (count($merchantList) != $pageSize) {
+                if (\count($merchantList) != $pageSize) {
                     $finish = true;
                 }
                 $page++;
@@ -162,17 +151,20 @@ class Daisycon extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
+     * @param null $merchantList
+     * @param \DateTime|null $dStartDate
+     * @param \DateTime|null $dEndDate
+     * @return array
+     * @throws Exception
      */
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
         $totalTransactions = array();
 
+        $merchantIdList = \Oara\Utilities::getMerchantIdMapFromMerchantList($merchantList);
 
         $user = $this->_credentials['user'];
         $password = $this->_credentials['password'];
-
 
         foreach ($this->_publisherId as $publisherId) {
             $page = 1;
@@ -180,32 +172,29 @@ class Daisycon extends \Oara\Network
             $finish = false;
 
             while (!$finish) {
-                $url = "https://services.daisycon.com:443/publishers/$publisherId/transactions?page=$page&per_page=$pageSize&start=" . urlencode($dStartDate->format!("yyyy-MM-dd HH:mm:ss")) . "&end=" . urlencode($dEndDate->format!("yyyy-MM-dd HH:mm:ss")) . "";
+                $url = "https://services.daisycon.com:443/publishers/$publisherId/transactions?page=$page&per_page=$pageSize&start=" . \urlencode($dStartDate->format("Y-m-d H:i:s")) . "&end=" . \urlencode($dEndDate->format("Y-m-d H:i:s"));
                 // initialize curl resource
-                $ch = curl_init();
+                $ch = \curl_init();
                 // set the http request authentication headers
-                $headers = array('Authorization: Basic ' . base64_encode($user . ':' . $password));
+                $headers = array('Authorization: Basic ' . \base64_encode($user . ':' . $password));
                 // set curl options
-                curl_setopt($ch, CURLOPT_URL, $url);
-                curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+                \curl_setopt($ch, CURLOPT_URL, $url);
+                \curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+                \curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
                 // execute curl
-                $response = curl_exec($ch);
-                $transactionList = json_decode($response, true);
+                $response = \curl_exec($ch);
+                $transactionList = \json_decode($response, true);
 
                 foreach ($transactionList as $transaction) {
                     $merchantId = $transaction['program_id'];
-                    if ($merchantList == null || change_it_for_isset!($merchantId, $merchantList)) {
+                    if (isset($merchantIdList[$merchantId])) {
 
                         $transactionArray = Array();
                         $transactionArray['unique_id'] = $transaction['affiliatemarketing_id'];
-
                         $transactionArray['merchantId'] = $merchantId;
-                        $transactionDate = new \DateTime($transaction['date'], 'dd-MM-yyyyTHH:mm:ss');
-                        $transactionArray['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
-
-                        $parts = current($transaction['parts']);
-
+                        $transactionDate = \DateTime::createFromFormat("d-m-Y\TH:i:s", $transaction['date']);
+                        $transactionArray['date'] = $transactionDate->format("Y-m-d H:i:s");
+                        $parts = \current($transaction['parts']);
                         if ($parts['subid'] != null) {
                             $transactionArray['custom_id'] = $parts['subid'];
                         }
@@ -218,16 +207,15 @@ class Daisycon extends \Oara\Network
                                 if ($parts['status'] == 'disapproved' || $parts['status'] == 'incasso') {
                                     $transactionArray['status'] = \Oara\Utilities::STATUS_DECLINED;
                                 } else {
-                                    throw new Exception("New status {$parts['status']}");
+                                    throw new \Exception("New status {$parts['status']}");
                                 }
                         $transactionArray['amount'] = \Oara\Utilities::parseDouble($parts['revenue']);
-                        //$transaction['currency'] = $transactionObject->currency;
                         $transactionArray['commission'] = \Oara\Utilities::parseDouble($parts['commission']);
                         $totalTransactions[] = $transactionArray;
                     }
                 }
 
-                if (count($transactionList) != $pageSize) {
+                if (\count($transactionList) != $pageSize) {
                     $finish = true;
                 }
                 $page++;
@@ -235,16 +223,6 @@ class Daisycon extends \Oara\Network
         }
 
         return $totalTransactions;
-    }
-
-    /**
-     * (non-PHPdoc)
-     * @see Oara/Network/Base#getPaymentHistory()
-     */
-    public function getPaymentHistory()
-    {
-        $paymentHistory = array();
-        return $paymentHistory;
     }
 
 }

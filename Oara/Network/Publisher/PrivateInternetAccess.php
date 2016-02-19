@@ -72,7 +72,6 @@ class PrivateInternetAccess extends \Oara\Network
             CURLOPT_SSL_VERIFYPEER => false,
             CURLOPT_SSL_VERIFYHOST => false,
             CURLOPT_HEADER => false,
-            //CURLOPT_VERBOSE => true,
         );
 
         //Init curl

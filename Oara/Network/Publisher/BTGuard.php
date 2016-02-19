@@ -30,23 +30,24 @@ namespace Oara\Network\Publisher;
  */
 class BTGuard extends \Oara\Network
 {
-
-    private $_credentials = null;
-    /**
-     * Client
-     * @var unknown_type
-     */
     private $_client = null;
 
     /**
-     * Constructor and Login
      * @param $credentials
-     * @return PureVPN
      */
     public function login($credentials)
     {
-        $this->_credentials = $credentials;
-        self::logIn();
+        $this->_client = new \Oara\Curl\Access($credentials);
+
+        $valuesLogin = array(
+            new \Oara\Curl\Parameter('username', $this->_credentials['user']),
+            new \Oara\Curl\Parameter('password', $this->_credentials['password']),
+        );
+        $loginUrl = 'https://affiliate.btguard.com/login';
+
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request($loginUrl, $valuesLogin);
+        $this->_client->post($urls);
 
     }
 
@@ -70,21 +71,6 @@ class BTGuard extends \Oara\Network
         return $credentials;
     }
 
-    private function logIn()
-    {
-
-        $valuesLogin = array(
-            new \Oara\Curl\Parameter('username', $this->_credentials['user']),
-            new \Oara\Curl\Parameter('password', $this->_credentials['password']),
-        );
-
-        $loginUrl = 'https://affiliate.btguard.com/login';
-        $this->_client = new \Oara\Curl\Access($loginUrl, $valuesLogin, $this->_credentials);
-
-        if (!self::checkConnection()) {
-            throw new Exception("You are not connected\n\n");
-        }
-    }
 
     /**
      * Check the connection
@@ -95,21 +81,20 @@ class BTGuard extends \Oara\Network
         $connection = true;
         $urls = array();
         $urls[] = new \Oara\Curl\Request('https://affiliate.btguard.com/member', array());
-
         $exportReport = $this->_client->get($urls);
 
-        $dom = new Zend_Dom_Query($exportReport[0]);
-        $results = $dom->query('#login');
-
-        if (count($results) > 0) {
+        $doc = new \DOMDocument();
+        @$doc->loadHTML($exportReport[0]);
+        $xpath = new \DOMXPath($doc);
+        $tableList = $xpath->query('//*[contains(concat(" ", normalize-space(@id), " "), " login ")]');
+        if ($tableList->length > 0) {
             $connection = false;
         }
         return $connection;
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getMerchantList()
+     * @return array
      */
     public function getMerchantList()
     {
@@ -125,43 +110,47 @@ class BTGuard extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
+     * @param null $merchantList
+     * @param \DateTime|null $dStartDate
+     * @param \DateTime|null $dEndDate
+     * @return array
      */
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
-
         $totalTransactions = array();
-        $valuesFormExport = array();
-
-        $dateArray = \Oara\Utilities::daysOfDifference($dStartDate, $dEndDate);
-        $dateArraySize = sizeof($dateArray);
 
 
-        for ($j = 0; $j < $dateArraySize; $j++) {
+        $amountDays = $dStartDate->diff($dEndDate)->days;
+        $auxDate = clone $dStartDate;
+
+        for ($j = 0; $j < $amountDays; $j++) {
+
             $valuesFormExport = array();
-            $valuesFormExport[] = new \Oara\Curl\Parameter('date1', $dateArray[$j]->format!("yyyy-MM-dd"));
-            $valuesFormExport[] = new \Oara\Curl\Parameter('date2', $dateArray[$j]->format!("yyyy-MM-dd"));
+            $valuesFormExport[] = new \Oara\Curl\Parameter('date1', $auxDate->format("Y-m-d"));
+            $valuesFormExport[] = new \Oara\Curl\Parameter('date2', $auxDate->format("Y-m-d"));
             $valuesFormExport[] = new \Oara\Curl\Parameter('prerange', '0');
 
             $urls = array();
             $urls[] = new \Oara\Curl\Request('https://affiliate.btguard.com/reports?', $valuesFormExport);
             $exportReport = $this->_client->get($urls);
-            $dom = new Zend_Dom_Query($exportReport[0]);
-            $results = $dom->query('.title table[cellspacing="12"]');
-            if (count($results) > 0) {
-                $exportData = self::htmlToCsv(self::DOMinnerHTML($results->current()));
 
-                for ($z = 1; $z < count($exportData); $z++) {
-                    $transactionLineArray = str_getcsv($exportData[$z], ";");
+            $doc = new \DOMDocument();
+            @$doc->loadHTML($exportReport[0]);
+            $xpath = new \DOMXPath($doc);
+            $results = $xpath->query('//table[@cellspacing="12"]');
+            if ($results->length > 0) {
+                $exportData = self::htmlToCsv(self::DOMinnerHTML($results->item(0)));
+
+                for ($z = 1; $z < \count($exportData); $z++) {
+                    $transactionLineArray = \str_getcsv($exportData[$z], ";");
                     $numberTransactions = (int)$transactionLineArray[2];
                     if ($numberTransactions != 0) {
-                        $commission = preg_replace('/[^0-9\.,]/', "", $transactionLineArray[3]);
+                        $commission = \Oara\Utilities::parseDouble($transactionLineArray[3]);
                         $commission = ((double)$commission) / $numberTransactions;
                         for ($y = 0; $y < $numberTransactions; $y++) {
                             $transaction = Array();
                             $transaction['merchantId'] = "1";
-                            $transaction['date'] = $dateArray[$j]->format!("yyyy-MM-dd HH:mm:ss");
+                            $transaction['date'] = $auxDate->format("Y-m-d H:i:s");
                             $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
                             $transaction['amount'] = $commission;
                             $transaction['commission'] = $commission;
@@ -171,89 +160,62 @@ class BTGuard extends \Oara\Network
                 }
             }
 
-
+            $auxDate->add(new \DateInterval('P1D'));
         }
 
         return $totalTransactions;
     }
 
     /**
-     * (non-PHPdoc)
-     * @see Oara/Network/Base#getPaymentHistory()
-     */
-    public function getPaymentHistory()
-    {
-        $paymentHistory = array();
-
-        $urls = array();
-        $urls[] = new \Oara\Curl\Request('https://publisher.ebaypartnernetwork.com/PublisherAccountPaymentHistory', array());
-        $exportReport = $this->_client->get($urls);
-
-        $dom = new Zend_Dom_Query($exportReport[0]);
-        $results = $dom->query('table .aruba_report_table');
-        if (count($results) > 0) {
-            $exportData = self::htmlToCsv(self::DOMinnerHTML($results->current()));
-            for ($j = 1; $j < count($exportData); $j++) {
-
-                $paymentExportArray = str_getcsv($exportData[$j], ";");
-                $obj = array();
-                $paymentDate = new \DateTime($paymentExportArray[0], "dd/MM/yy", "en");
-                $obj['date'] = $paymentDate->format!("yyyy-MM-dd HH:mm:ss");
-                $obj['pid'] = $paymentDate->format!("yyyyMMdd");
-                $obj['method'] = 'BACS';
-                if (preg_match('/[-+]?[0-9]*,?[0-9]*\.?[0-9]+/', $paymentExportArray[2], $matches)) {
-                    $obj['value'] = \Oara\Utilities::parseDouble($matches[0]);
-                } else {
-                    throw new Exception("Problem reading payments");
-                }
-
-                $paymentHistory[] = $obj;
-            }
-        }
-
-        return $paymentHistory;
-    }
-
-    /**
-     *
-     * Function that Convert from a table to Csv
-     * @param unknown_type $html
+     * @param $html
+     * @return array
      */
     private function htmlToCsv($html)
     {
-        $html = str_replace(array("\t", "\r", "\n"), "", $html);
+        $html = str_replace(array(
+            "\t",
+            "\r",
+            "\n"
+        ), "", $html);
         $csv = "";
-        $dom = new Zend_Dom_Query($html);
-        $results = $dom->query('tr');
-        $count = count($results); // get number of matches: 4
+
+        $doc = new \DOMDocument();
+        @$doc->loadHTML($html);
+        $xpath = new \DOMXPath($doc);
+        $results = $xpath->query('//tr');
         foreach ($results as $result) {
-            $tdList = $result->childNodes;
-            $tdNumber = $tdList->length;
-            for ($i = 0; $i < $tdNumber; $i++) {
-                $value = $tdList->item($i)->nodeValue;
-                if ($i != $tdNumber - 1) {
-                    $csv .= trim($value) . ";";
+
+            $doc = new \DOMDocument();
+            @$doc->loadHTML(self::DOMinnerHTML($result));
+            $xpath = new \DOMXPath($doc);
+            $resultsTd = $xpath->query('//td');
+            $countTd = $resultsTd->length;
+            $i = 0;
+            foreach ($resultsTd as $resultTd) {
+                $value = $resultTd->nodeValue;
+                if ($i != $countTd - 1) {
+                    $csv .= \trim($value) . ";";
                 } else {
-                    $csv .= trim($value);
+                    $csv .= \trim($value);
                 }
+                $i++;
             }
             $csv .= "\n";
         }
-        $exportData = str_getcsv($csv, "\n");
+        $exportData = \str_getcsv($csv, "\n");
         return $exportData;
     }
 
     /**
-     *
-     * Function that returns the innet HTML code
-     * @param unknown_type $element
+     * @param $element
+     * @return string
      */
     private function DOMinnerHTML($element)
     {
         $innerHTML = "";
         $children = $element->childNodes;
         foreach ($children as $child) {
-            $tmp_dom = new DOMDocument();
+            $tmp_dom = new \DOMDocument ();
             $tmp_dom->appendChild($tmp_dom->importNode($child, true));
             $innerHTML .= trim($tmp_dom->saveHTML());
         }
