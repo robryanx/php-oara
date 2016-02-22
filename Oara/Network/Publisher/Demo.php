@@ -31,24 +31,13 @@ namespace Oara\Network\Publisher;
 class Demo extends \Oara\Network
 {
 
-    private $_affiliateNetwork = null;
-
     private $_merchantList = array("Acme Corp", "Allied Biscuit", "Ankh-Sto Associates", "Extensive Enterprise", "Corp", "Globo-Chem",
         "Mr. Sparkle", "Globex Corporation", "LexCorp", "LuthorCorp", "North Central Electronics",
         "Omni Consumer Products", "Praxis Corporation", "Sombra Corporation", "Sto Plains Holdings",
         "Sto Plains Holdings", "Yuhu Limited");
 
-    //private $_linkList = array("homepage_content", "shopping_cart_sidenav", "footer", "linkspage", "homepage_header", "para_one_content_home");
-    private $_linkList = array("unknown");
-    //private $_websiteList = array("Money Guide Site", "Football Guide Site", "Hotel Guide Site", "Browser Guide Site", "Paper Cup Site", "Lightbulb Shop Site");
-    private $_websiteList = array("unknown");
-    //private $_pageList = array("/home.html", "/sales.html", "/contact.html", "/book.html", "/index.html","/info.html");
-    private $_pageList = array("unknown");
-
     /**
-     * Constructor and Login
-     * @param $cartrawler
-     * @return Demo_Export
+     * @param $credentials
      */
     public function login($credentials)
     {
@@ -61,16 +50,6 @@ class Demo extends \Oara\Network
     public function getNeededCredentials()
     {
         $credentials = array();
-
-        $parameter = array();
-        $parameter["user"]["description"] = "User Log in";
-        $parameter["user"]["required"] = true;
-        $credentials[] = $parameter;
-
-        $parameter = array();
-        $parameter["password"]["description"] = "Password to Log in";
-        $parameter["password"]["required"] = true;
-        $credentials[] = $parameter;
 
         return $credentials;
     }
@@ -85,13 +64,12 @@ class Demo extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Base#getMerchantList()
+     * @return array
      */
     public function getMerchantList()
     {
         $merchants = Array();
-        $merchantsNumber = count($this->_merchantList);
+        $merchantsNumber = \count($this->_merchantList);
 
         for ($i = 0; $i < $merchantsNumber; $i++) {
             //Getting the array Id
@@ -104,32 +82,32 @@ class Demo extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Base#getTransactionList($merchantId, $dStartDate, $dEndDate)
+     * @param null $merchantList
+     * @param \DateTime|null $dStartDate
+     * @param \DateTime|null $dEndDate
+     * @return array
      */
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
         $totalTransactions = Array();
-        $transactionNumber = rand(1, 200);
+        $transactionNumber = \rand(1, 200);
         $twoMonthsAgoDate = new \DateTime();
-        $twoMonthsAgoDate->subMonth(2);
-        $dateArray = \Oara\Utilities::daysOfDifference($dStartDate, $dEndDate);
+        $interval = new \DateInterval('P2M');
+        $twoMonthsAgoDate->sub($interval);
         for ($i = 0; $i < $transactionNumber; $i++) {
-            $dateIndex = rand(0, count($dateArray) - 1);
-            $merchantIndex = rand(0, count($merchantList) - 1);
+
+            $transactionDate = self::randomDate($dStartDate->format("Y-m-d H:i:s"), $dEndDate->format("Y-m-d H:i:s"));
+            $merchantIndex = \rand(0, \count($merchantList) - 1);
             $transaction = array();
-            $transaction['unique_id'] = md5(mt_rand() . $dateArray[$dateIndex]->format!("yyyy-MM-dd HH:mm:ss"));
+            $transaction['unique_id'] = \md5(\mt_rand() . $transactionDate->format("Y-m-d H:i:s"));
             $transaction['custom_id'] = "my_custom_id";
             $transaction['merchantId'] = $merchantList[$merchantIndex];
-            $transaction['date'] = $dateArray[$dateIndex]->format!("yyyy-MM-dd HH:mm:ss");
-            $transactionAmount = rand(1, 1000);
+            $transaction['date'] = $transactionDate->format("Y-m-d H:i:s");
+            $transactionAmount = \rand(1, 1000);
             $transaction['amount'] = $transactionAmount;
             $transaction['commission'] = $transactionAmount / 10;
-            //$transaction['link'] = $this->_linkList[rand(0, count($this->_linkList)-1)];
-            //$transaction['website'] = $this->_websiteList[rand(0, count($this->_websiteList)-1)];
-            //$transaction['page'] = $this->_pageList[rand(0, count($this->_pageList)-1)];
-            $transactionStatusChances = rand(1, 100);
-            if ($dateArray[$dateIndex]->compare($twoMonthsAgoDate) >= 0) {
+            $transactionStatusChances = \rand(1, 100);
+            if ($transaction['date'] >= $twoMonthsAgoDate->format("Y-m-d H:i:s")) {
                 if ($transactionStatusChances < 60) {
                     $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
                 } else
@@ -152,25 +130,40 @@ class Demo extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see Oara/Network/Base#getPaymentHistory()
+     * @return array
      */
     public function getPaymentHistory()
     {
         $paymentHistory = array();
-        $startDate = new \DateTime('01-01-2011', 'dd-MM-yyyy');
+        $startDate = new \DateTime('01-01-2015', 'dd-MM-yyyy');
         $endDate = new \DateTime();
-        $dateArray = \Oara\Utilities::monthsOfDifference($startDate, $endDate);
-        for ($i = 0; $i < count($dateArray); $i++) {
-            $dateMonth = $dateArray[$i];
+        $diff = $startDate->diff($endDate);
+        $monthsDifference = (int) $diff->format('%m');
+        for ($i = 0; $i < $monthsDifference; $i++) {
             $obj = array();
-            $obj['date'] = $dateMonth->format!("yyyy-MM-dd HH:mm:ss");
-            $value = rand(1, 1300);
+            $obj['date'] = $startDate->format("Y-m-d H:i:s");
+            $value = \rand(1, 1300);
             $obj['value'] = $value;
             $obj['method'] = 'BACS';
-            $obj['pid'] = $dateMonth->format!('yyyyMMdd');
+            $obj['pid'] = $startDate->format('Ymd');
             $paymentHistory[] = $obj;
+
+            $interval = new \DateInterval('P1M');
+            $startDate->add($interval);
         }
         return $paymentHistory;
+    }
+
+    private function randomDate($start_date, $end_date)
+    {
+        // Convert to timetamps
+        $min = \strtotime($start_date);
+        $max = \strtotime($end_date);
+
+        // Generate random number using above bounds
+        $val = \rand($min, $max);
+
+        // Convert back to desired date format
+        return \date('Y-m-d H:i:s', $val);
     }
 }

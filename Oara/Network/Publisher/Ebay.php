@@ -30,14 +30,7 @@ namespace Oara\Network\Publisher;
  */
 class Ebay extends \Oara\Network
 {
-
-    private $_credentials = null;
-    /**
-     * Client
-     * @var unknown_type
-     */
     private $_client = null;
-
     protected $_sitesAllowed = array();
 
     /**
@@ -46,6 +39,7 @@ class Ebay extends \Oara\Network
     public function login($credentials)
     {
         $this->_credentials = $credentials;
+        $this->_client = new \Oara\Curl\Access($credentials);
 
         $valuesLogin = array(
             new \Oara\Curl\Parameter('login_username', $this->_credentials['user']),
@@ -53,9 +47,11 @@ class Ebay extends \Oara\Network
             new \Oara\Curl\Parameter('submit_btn', 'GO'),
             new \Oara\Curl\Parameter('hubpage', 'y')
         );
-
         $loginUrl = 'https://ebaypartnernetwork.com/PublisherLogin?hubpage=y&lang=en-US?';
-        $this->_client = new \Oara\Curl\Access($loginUrl, $valuesLogin, $this->_credentials);
+
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request($loginUrl, $valuesLogin);
+        $this->_client->post($urls);
     }
 
     /**
@@ -79,27 +75,27 @@ class Ebay extends \Oara\Network
     }
 
     /**
-     * Check the connection
+     * @return bool
      */
     public function checkConnection()
     {
         //If not login properly the construct launch an exception
         $connection = true;
-        $yesterday = new \\DateTime();
-        $yesterday->subDay(2);
+        $yesterday = new \DateTime();
+        $yesterday->sub(new \DateInterval('P2D'));
+
         $urls = array();
-        $urls[] = new \Oara\Curl\Request("https://publisher.ebaypartnernetwork.com/PublisherReportsTx?pt=2&start_date={$yesterday->toSTring("M/d/yyyy")}&end_date={$yesterday->toSTring("M/d/yyyy")}&user_name={$this->_credentials['user']}&user_password={$this->_credentials['password']}&advIdProgIdCombo=&tx_fmt=2&submit_tx=Download", array());
+        $urls[] = new \Oara\Curl\Request("https://publisher.ebaypartnernetwork.com/PublisherReportsTx?pt=2&start_date={$yesterday->format("n/j/Y")}&end_date={$yesterday->format("n/j/Y")}&user_name={$this->_credentials['user']}&user_password={$this->_credentials['password']}&advIdProgIdCombo=&tx_fmt=2&submit_tx=Download", array());
         $exportReport = $this->_client->get($urls);
 
-        if (preg_match("/DOCTYPE html PUBLIC/", $exportReport[0])) {
+        if (\preg_match("/DOCTYPE html PUBLIC/", $exportReport[0])) {
             $connection = false;
         }
         return $connection;
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getMerchantList()
+     * @return array
      */
     public function getMerchantList()
     {
@@ -115,32 +111,33 @@ class Ebay extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
+     * @param null $merchantList
+     * @param \DateTime|null $dStartDate
+     * @param \DateTime|null $dEndDate
+     * @return array
      */
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
         $totalTransactions = array();
         $urls = array();
-        $urls[] = new \Oara\Curl\Request("https://publisher.ebaypartnernetwork.com/PublisherReportsTx?pt=2&start_date={$dStartDate->toSTring("M/d/yyyy")}&end_date={$dEndDate->toSTring("M/d/yyyy")}&user_name={$this->_credentials['user']}&user_password={$this->_credentials['password']}&advIdProgIdCombo=&tx_fmt=3&submit_tx=Download", array());
+        $urls[] = new \Oara\Curl\Request("https://publisher.ebaypartnernetwork.com/PublisherReportsTx?pt=2&start_date={$dStartDate->format("n/j/Y")}&end_date={$dEndDate->toSTring("n/j/Y")}&user_name={$this->_credentials['user']}&user_password={$this->_credentials['password']}&advIdProgIdCombo=&tx_fmt=3&submit_tx=Download", array());
         $exportData = array();
         try {
             $exportReport = $this->_client->get($urls, 'content', 5);
-            $exportData = str_getcsv($exportReport[0], "\n");
-        } catch (Exception $e) {
+            $exportData = \str_getcsv($exportReport[0], "\n");
+        } catch (\Exception $e) {
 
         }
-        $num = count($exportData);
+        $num = \count($exportData);
         for ($i = 1; $i < $num; $i++) {
-            $transactionExportArray = str_getcsv($exportData[$i], "\t");
+            $transactionExportArray = \str_getcsv($exportData[$i], "\t");
 
-            if ($transactionExportArray[2] == "Winning Bid (Revenue)" && (empty($this->_sitesAllowed) || change_it_for_isset!($transactionExportArray[5], $this->_sitesAllowed))) {
-
+            if ($transactionExportArray[2] == "Winning Bid (Revenue)" && (empty($this->_sitesAllowed) || \in_array($transactionExportArray[5], $this->_sitesAllowed))) {
 
                 $transaction = Array();
                 $transaction['merchantId'] = 1;
-                $transactionDate = new \DateTime($transactionExportArray[1], 'yyyy-MM-dd', 'en');
-                $transaction['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
+                $transactionDate = \DateTime::createFromFormat("Y-m-d", $transactionExportArray[1]);
+                $transaction['date'] = $transactionDate->format("Y-m-d H:i:s");
                 unset($transactionDate);
                 if ($transactionExportArray[10] != null) {
                     $transaction['custom_id'] = $transactionExportArray[10];
@@ -154,17 +151,6 @@ class Ebay extends \Oara\Network
             }
         }
         return $totalTransactions;
-    }
-
-    /**
-     * (non-PHPdoc)
-     * @see Oara/Network/Base#getPaymentHistory()
-     */
-    public function getPaymentHistory()
-    {
-        $paymentHistory = array();
-
-        return $paymentHistory;
     }
 
 }

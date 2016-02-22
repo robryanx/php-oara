@@ -31,34 +31,9 @@ namespace Oara\Network\Publisher;
  */
 class DirectTrack extends \Oara\Network
 {
-    /**
-     * Soap client.
-     */
-    private $_apiClient = null;
 
     /**
-     * Client
-     */
-    private $_client = null;
-    /**
-     * Password
-     */
-    private $_password = null;
-    /**
-     * Publisher
-     */
-    private $_publisherId = null;
-    /**
-     * Params
-     */
-    private $_params = null;
-
-    /**
-     * Constructor.
-     *
-     * @param
-     *            $affiliateWindow
-     * @return Aw_Api
+     * @param $credentials
      */
     public function login($credentials)
     {
@@ -80,6 +55,21 @@ class DirectTrack extends \Oara\Network
         $credentials = array();
 
         $parameter = array();
+        $parameter["domain"]["description"] = "Domain for the networks Ex:www.myweb.com";
+        $parameter["domain"]["required"] = true;
+        $credentials[] = $parameter;
+
+        $parameter = array();
+        $parameter["client"]["description"] = "Id for the client";
+        $parameter["client"]["required"] = true;
+        $credentials[] = $parameter;
+
+        $parameter = array();
+        $parameter["access"]["description"] = "Access ID";
+        $parameter["access"]["required"] = true;
+        $credentials[] = $parameter;
+
+        $parameter = array();
         $parameter["user"]["description"] = "User Log in";
         $parameter["user"]["required"] = true;
         $credentials[] = $parameter;
@@ -93,7 +83,7 @@ class DirectTrack extends \Oara\Network
     }
 
     /**
-     * Check the connection
+     * @return bool
      */
     public function checkConnection()
     {
@@ -107,9 +97,7 @@ class DirectTrack extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     *
-     * @see library/Oara/Network/Base#getMerchantList()
+     * @return array
      */
     public function getMerchantList()
     {
@@ -122,27 +110,29 @@ class DirectTrack extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     *
-     * @see library/Oara/Network/Base#getTransactionList($merchantId,$dStartDate,$dEndDate)
+     * @param null $merchantList
+     * @param \DateTime|null $dStartDate
+     * @param \DateTime|null $dEndDate
+     * @return array
      */
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
         $totalTransactions = array();
 
-        $dateArray = \Oara\Utilities::daysOfDifference($dStartDate, $dEndDate);
-        foreach ($dateArray as $date) {
+        $amountDays = $dStartDate->diff($dEndDate)->days;
+        $auxDate = clone $dStartDate;
 
-            $apiURL = "https://{$this->_domain}/apifleet/rest/{$this->_clientId}/{$this->_accessId}/statCampaign/quick/{$date->format!("yyyy-MM-dd")}";
+        for ($j = 0; $j < $amountDays; $j++) {
+
+            $apiURL = "https://{$this->_domain}/apifleet/rest/{$this->_clientId}/{$this->_accessId}/statCampaign/quick/{$auxDate->format("Y-m-d")}";
             $response = self::call($apiURL);
 
             if (isset($response["resource"]["numSales"])) {
 
                 $transaction = Array();
                 $transaction ['merchantId'] = "1";
-                $transaction ['date'] = $date->format!("yyyy-MM-dd HH:mm:ss");
+                $transaction ['date'] = $auxDate->format("Y-m-d H:i:s");
                 $transaction ['status'] = \Oara\Utilities::STATUS_CONFIRMED;
-
                 $transaction ['amount'] = $response["resource"]["saleAmount"];
                 $transaction ['commission'] = $response["resource"]["theyGet"];
                 $transaction ['currency'] = $response["resource"]["currency"];
@@ -152,45 +142,35 @@ class DirectTrack extends \Oara\Network
                 }
             }
 
+            $auxDate->add(new \DateInterval('P1D'));
+
         }
         return $totalTransactions;
     }
 
-    /**
-     * (non-PHPdoc)
-     *
-     * @see Oara/Network/Base#getPaymentHistory()
-     */
-    public function getPaymentHistory()
-    {
-        $paymentHistory = array();
-
-        return $paymentHistory;
-    }
-
     private function call($apiUrl)
     {
-        $headers[] = "Authorization: Basic " . base64_encode($this->_username . ":" . $this->_password);
+        $headers[] = "Authorization: Basic " . \base64_encode($this->_username . ":" . $this->_password);
 
         // Initiate the REST call via curl
-        $ch = curl_init($apiUrl);
+        $ch = \curl_init($apiUrl);
 
         // Set the HTTP method to GET
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'GET');
+        \curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'GET');
         // Add the headers defined above
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        \curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         // Don't return headers
-        curl_setopt($ch, CURLOPT_HEADER, false);
+        \curl_setopt($ch, CURLOPT_HEADER, false);
         // Return data after call is made
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        \curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
         // Execute the REST call
-        $response = curl_exec($ch);
-        $data = simplexml_load_string($response, 'SimpleXMLElement', LIBXML_NOCDATA);
-        $json = json_encode($data);
-        $array = json_decode($json, true);
+        $response = \curl_exec($ch);
+        $data = \simplexml_load_string($response, 'SimpleXMLElement', LIBXML_NOCDATA);
+        $json = \json_encode($data);
+        $array = \json_decode($json, true);
         // Close the connection
-        curl_close($ch);
+        \curl_close($ch);
         return $array;
     }
 }

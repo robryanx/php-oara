@@ -31,38 +31,28 @@ namespace Oara\Network\Publisher;
 class Etrader extends \Oara\Network
 {
     private $_credentials = null;
-    /**
-     * Client
-     *
-     * @var unknown_type
-     */
     private $_client = null;
 
     /**
-     * Constructor and Login
-     *
-     * @param
-     *            $credentials
-     * @return PureVPN
+     * @param $credentials
+     * @throws \Exception
      */
     public function login($credentials)
     {
         $this->_credentials = $credentials;
-        self::logIn();
-    }
+        $this->_client = new \Oara\Curl\Access($credentials);
 
-    private function logIn()
-    {
         $valuesLogin = array(
             new \Oara\Curl\Parameter ('j_username', $this->_credentials ['user']),
             new \Oara\Curl\Parameter ('j_password', $this->_credentials ['password']),
             new \Oara\Curl\Parameter ('_spring_security_remember_me', 'true')
         );
-
-
         $loginUrl = 'http://etrader.kalahari.com/login?';
-        $this->_client = new \Oara\Curl\Access ($loginUrl, $valuesLogin, $this->_credentials);
 
+
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request($loginUrl, $valuesLogin);
+        $this->_client->post($urls);
     }
 
     /**
@@ -86,7 +76,7 @@ class Etrader extends \Oara\Network
     }
 
     /**
-     * Check the connection
+     * @return bool
      */
     public function checkConnection()
     {
@@ -97,16 +87,14 @@ class Etrader extends \Oara\Network
 
         $exportReport = $this->_client->get($urls);
 
-        if (preg_match("/signout/", $exportReport [0])) {
+        if (\preg_match("/signout/", $exportReport [0])) {
             $connection = true;
         }
         return $connection;
     }
 
     /**
-     * (non-PHPdoc)
-     *
-     * @see library/Oara/Network/Interface#getMerchantList()
+     * @return array
      */
     public function getMerchantList()
     {
@@ -122,9 +110,10 @@ class Etrader extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     *
-     * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
+     * @param null $merchantList
+     * @param \DateTime|null $dStartDate
+     * @param \DateTime|null $dEndDate
+     * @return array
      */
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
@@ -134,8 +123,8 @@ class Etrader extends \Oara\Network
         $continue = true;
         while ($continue) {
             $valuesFormExport = array();
-            $valuesFormExport [] = new \Oara\Curl\Parameter ('dateFrom', $dStartDate->format!("dd/MM/yyyy"));
-            $valuesFormExport [] = new \Oara\Curl\Parameter ('dateTo', $dEndDate->format!("dd/MM/yyyy"));
+            $valuesFormExport [] = new \Oara\Curl\Parameter ('dateFrom', $dStartDate->format("d/m/Y"));
+            $valuesFormExport [] = new \Oara\Curl\Parameter ('dateTo', $dEndDate->format("d/m/Y"));
             $valuesFormExport [] = new \Oara\Curl\Parameter ('startIndex', $page);
             $valuesFormExport [] = new \Oara\Curl\Parameter ('numberOfPages', '1');
 
@@ -143,40 +132,38 @@ class Etrader extends \Oara\Network
             $urls [] = new \Oara\Curl\Request ('https://etrader.kalahari.com/view/affiliate/transactionreport', $valuesFormExport);
             $exportReport = $this->_client->post($urls);
 
-            $dom = new Zend_Dom_Query ($exportReport [0]);
-            $results = $dom->query('table');
-            $exportData = self::htmlToCsv(self::DOMinnerHTML($results->current()));
+            $doc = new \DOMDocument();
+            @$doc->loadHTML($exportReport[0]);
+            $xpath = new \DOMXPath($doc);
+            $results = $xpath->query('//table');
+            $exportData = self::htmlToCsv(self::DOMinnerHTML($results->item(0)));
 
-            if (preg_match("/No results found/", $exportData[1])) {
-                $continue = false;
+            if (\preg_match("/No results found/", $exportData[1])) {
                 break;
             } else {
                 $page++;
             }
 
-            for ($j = 1; $j < count($exportData); $j++) {
+            for ($j = 1; $j < \count($exportData); $j++) {
 
-                $transactionDetail = str_getcsv($exportData[$j], ";");
+                $transactionDetail = \str_getcsv($exportData[$j], ";");
                 $transaction = Array();
                 $transaction ['merchantId'] = "1";
 
-                if (preg_match("/Order dispatched: ([0-9]+) /", $transactionDetail[2], $match)) {
+                if (\preg_match("/Order dispatched: ([0-9]+) /", $transactionDetail[2], $match)) {
                     $transaction ['custom_id'] = $match[1];
                 }
 
-                $date = new \DateTime($transactionDetail[0], "dd MMM yyyy", "en_GB");
-                $transaction ['date'] = $date->format!("yyyy-MM-dd 00:00:00");
+                $date = \DateTime::createFromFormat("d M Y", $transactionDetail[0]);
+                $transaction ['date'] = $date->format("Y-m-d 00:00:00");
                 $transaction ['status'] = \Oara\Utilities::STATUS_CONFIRMED;
 
                 if ($transactionDetail[3] != null) {
-                    preg_match('/[-+]?[0-9]*\.?[0-9]+/', $transactionDetail[3], $match);
-                    $transaction['amount'] = (double)$match[0];
-                    $transaction['commission'] = (double)$match[0];
-
+                    $transaction['amount'] = \Oara\Utilities::parseDouble($transactionDetail[3]);
+                    $transaction['commission'] = \Oara\Utilities::parseDouble($transactionDetail[3]);
                 } else if ($transactionDetail[4] != null) {
-                    preg_match('/[-+]?[0-9]*\.?[0-9]+/', $transactionDetail[4], $match);
-                    $transaction['amount'] = (double)$match[0];
-                    $transaction['commission'] = (double)$match[0];
+                    $transaction['amount'] = \Oara\Utilities::parseDouble($transactionDetail[4]);
+                    $transaction['commission'] = \Oara\Utilities::parseDouble($transactionDetail[4]);
                 }
                 $totalTransactions [] = $transaction;
 
@@ -188,67 +175,57 @@ class Etrader extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     *
-     * @see Oara/Network/Base#getPaymentHistory()
-     */
-    public function getPaymentHistory()
-    {
-        $paymentHistory = array();
-
-        return $paymentHistory;
-    }
-
-    /**
-     *
-     *
-     * Function that Convert from a table to Csv
-     *
-     * @param unknown_type $html
+     * @param $html
+     * @return array
      */
     private function htmlToCsv($html)
     {
-        $html = str_replace(array(
+        $html = \str_replace(array(
             "\t",
             "\r",
             "\n"
         ), "", $html);
         $csv = "";
-        $dom = new Zend_Dom_Query ($html);
-        $results = $dom->query('tr');
-        $count = count($results); // get number of matches: 4
+
+        $doc = new \DOMDocument();
+        @$doc->loadHTML($html);
+        $xpath = new \DOMXPath($doc);
+        $results = $xpath->query('//tr');
         foreach ($results as $result) {
-            $tdList = $result->childNodes;
-            $tdNumber = $tdList->length;
-            for ($i = 0; $i < $tdNumber; $i++) {
-                $value = $tdList->item($i)->nodeValue;
-                if ($i != $tdNumber - 1) {
-                    $csv .= trim($value) . ";";
+
+            $doc = new \DOMDocument();
+            @$doc->loadHTML(self::DOMinnerHTML($result));
+            $xpath = new \DOMXPath($doc);
+            $resultsTd = $xpath->query('//td');
+            $countTd = $resultsTd->length;
+            $i = 0;
+            foreach ($resultsTd as $resultTd) {
+                $value = $resultTd->nodeValue;
+                if ($i != $countTd - 1) {
+                    $csv .= \trim($value) . ";";
                 } else {
-                    $csv .= trim($value);
+                    $csv .= \trim($value);
                 }
+                $i++;
             }
             $csv .= "\n";
         }
-        $exportData = str_getcsv($csv, "\n");
+        $exportData = \str_getcsv($csv, "\n");
         return $exportData;
     }
 
     /**
-     *
-     *
-     * Function that returns the innet HTML code
-     *
-     * @param unknown_type $element
+     * @param $element
+     * @return string
      */
     private function DOMinnerHTML($element)
     {
         $innerHTML = "";
         $children = $element->childNodes;
         foreach ($children as $child) {
-            $tmp_dom = new DOMDocument ();
+            $tmp_dom = new \DOMDocument ();
             $tmp_dom->appendChild($tmp_dom->importNode($child, true));
-            $innerHTML .= trim($tmp_dom->saveHTML());
+            $innerHTML .= \trim($tmp_dom->saveHTML());
         }
         return $innerHTML;
     }

@@ -31,29 +31,17 @@ namespace Oara\Network\Publisher;
  */
 class GetCake extends \Oara\Network
 {
-    /**
-     * Client
-     */
+
     private $_user = null;
-    /**
-     * Domain
-     */
     private $_domain = null;
-    /**
-     * Password
-     */
     private $_apiPassword = null;
 
     /**
-     * Constructor.
-     *
-     * @param
-     *            $affiliateWindow
-     * @return Aw_Api
+     * @param $credentials
      */
     public function login($credentials)
     {
-        ini_set('default_socket_timeout', '120');
+        \ini_set('default_socket_timeout', '120');
 
         $this->_domain = $credentials["domain"];
         $this->_user = $credentials["user"];
@@ -69,26 +57,29 @@ class GetCake extends \Oara\Network
         $credentials = array();
 
         $parameter = array();
+        $parameter["apiPassword"]["description"] = "API password";
+        $parameter["apiPassword"]["required"] = true;
+        $credentials[] = $parameter;
+
+        $parameter = array();
         $parameter["user"]["description"] = "User Log in";
         $parameter["user"]["required"] = true;
         $credentials[] = $parameter;
 
         $parameter = array();
-        $parameter["password"]["description"] = "Password to Log in";
-        $parameter["password"]["required"] = true;
+        $parameter["domain"]["description"] = "Domain of the website";
+        $parameter["domain"]["required"] = true;
         $credentials[] = $parameter;
 
         return $credentials;
     }
 
     /**
-     * Check the connection
+     * @return bool
      */
     public function checkConnection()
     {
         $connection = false;
-
-
         $apiURL = "http://{$this->_domain}/affiliates/api/4/offers.asmx/OfferFeed?api_key={$this->_apiPassword}&affiliate_id={$this->_user}&campaign_name=&media_type_category_id=0&vertical_category_id=0&vertical_id=0&offer_status_id=0&tag_id=0&start_at_row=1&row_limit=0";
         $response = self::call($apiURL);
         if ($response["success"] == "true") {
@@ -98,9 +89,7 @@ class GetCake extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     *
-     * @see library/Oara/Network/Base#getMerchantList()
+     * @return array
      */
     public function getMerchantList()
     {
@@ -120,19 +109,21 @@ class GetCake extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     *
-     * @see library/Oara/Network/Base#getTransactionList($merchantId,$dStartDate,$dEndDate)
+     * @param null $merchantList
+     * @param \DateTime|null $dStartDate
+     * @param \DateTime|null $dEndDate
+     * @return array
      */
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
         $totalTransactions = array();
+        $merchantIdList = \Oara\Utilities::getMerchantIdMapFromMerchantList($merchantList);
 
         $rowIndex = 1;
         $rowCount = 100;
         $request = true;
         while ($request) {
-            $apiURL = "http://{$this->_domain}/affiliates/api/5/reports.asmx/Conversions?api_key={$this->_apiPassword}&affiliate_id={$this->_user}&start_date=" . urlencode($dStartDate->format!("yyyy-MM-dd HH:mm:ss")) . "&end_date=" . urlencode($dEndDate->format!("yyyy-MM-dd HH:mm:ss")) . "&offer_id=0&start_at_row=$rowIndex&row_limit=$rowCount";
+            $apiURL = "http://{$this->_domain}/affiliates/api/5/reports.asmx/Conversions?api_key={$this->_apiPassword}&affiliate_id={$this->_user}&start_date=" . \urlencode($dStartDate->format("Y-m-d H:i:s")) . "&end_date=" . \urlencode($dEndDate->format("Y-m-d H:i:s")) . "&offer_id=0&start_at_row=$rowIndex&row_limit=$rowCount";
             $response = self::call($apiURL);
 
             if (isset($response["conversions"]["conversion"])) {
@@ -141,29 +132,24 @@ class GetCake extends \Oara\Network
                     $transaction = Array();
                     $merchantId = (int)$transactionApi["offer_id"];
 
-                    if (change_it_for_isset!($merchantId, $merchantList)) {
+                    if (isset($merchantIdList[$merchantId])) {
                         $transaction['merchantId'] = $merchantId;
-
-                        $transactionDate = new \DateTime($transactionApi["conversion_date"], 'yyyy-MM-ddTHH:mm:ss', 'en');
-                        $transaction['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
-
+                        $transactionDate = \DateTime::createFromFormat("Y-m-d\TH:i:s", $transactionApi["conversion_date"]);
+                        $transaction['date'] = $transactionDate->format("Y-m-d H:i:s");
                         if (!isset($transactionApi["order_id"])) {
                             $transaction ['uniqueId'] = $transactionApi["conversion_id"];
                         } else {
                             $transaction ['uniqueId'] = $transactionApi["order_id"];
                         }
-
-                        if (count($transactionApi["subid_1"]) > 0) {
-                            $transaction['custom_id'] = implode(",", $transactionApi["subid_1"]);
+                        if (\count($transactionApi["subid_1"]) > 0) {
+                            $transaction['custom_id'] = \implode(",", $transactionApi["subid_1"]);
                         }
 
                         if ($transactionApi["disposition"] == "Approved") {
                             $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
-                        } else
-                            if ($transactionApi["disposition"] == "Pending" || $transactionApi["disposition"] == null) {
+                        } else if ($transactionApi["disposition"] == "Pending" || $transactionApi["disposition"] == null) {
                                 $transaction['status'] = \Oara\Utilities::STATUS_PENDING;
-                            } else
-                                if ($transactionApi["disposition"] == "Rejected") {
+                            } else if ($transactionApi["disposition"] == "Rejected") {
                                     $transaction['status'] = \Oara\Utilities::STATUS_DECLINED;
                                 }
 
@@ -175,7 +161,7 @@ class GetCake extends \Oara\Network
                 }
 
             }
-            if (count($response["conversions"]) == $rowCount) {
+            if (\count($response["conversions"]) == $rowCount) {
                 $rowIndex = $rowIndex + $rowCount;
             } else {
                 $request = false;
@@ -185,45 +171,30 @@ class GetCake extends \Oara\Network
         return $totalTransactions;
     }
 
-    /**
-     * (non-PHPdoc)
-     *
-     * @see Oara/Network/Base#getPaymentHistory()
-     */
-    public function getPaymentHistory()
-    {
-        $paymentHistory = array();
-
-        return $paymentHistory;
-    }
-
     private function call($apiUrl)
     {
 
         // Initiate the REST call via curl
-        $ch = curl_init($apiUrl);
-        curl_setopt($ch, CURLOPT_USERAGENT, "Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:26.0) Gecko/20100101 Firefox/26.0");
-        curl_setopt($ch, CURLOPT_FAILONERROR, true);
-        curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
-        curl_setopt($ch, CURLOPT_AUTOREFERER, true);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-        curl_setopt($ch, CURLOPT_VERBOSE, false);
+        $ch = \curl_init($apiUrl);
+        \curl_setopt($ch, CURLOPT_USERAGENT, "Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:26.0) Gecko/20100101 Firefox/26.0");
+        \curl_setopt($ch, CURLOPT_FAILONERROR, true);
+        \curl_setopt($ch, CURLOPT_HTTPAUTH, CURLAUTH_ANY);
+        \curl_setopt($ch, CURLOPT_AUTOREFERER, true);
+        \curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        \curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        \curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        \curl_setopt($ch, CURLOPT_VERBOSE, false);
         // Set the HTTP method to GET
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'GET');
+        \curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'GET');
         // Don't return headers
-        curl_setopt($ch, CURLOPT_HEADER, false);
+        \curl_setopt($ch, CURLOPT_HEADER, false);
         // Return data after call is made
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
+        \curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         // Execute the REST call
-        $response = curl_exec($ch);
-
-
-        $xml = simplexml_load_string($response);
-        $json = json_encode($xml);
-        $array = json_decode($json, true);
+        $response = \curl_exec($ch);
+        $xml = \simplexml_load_string($response);
+        $json = \json_encode($xml);
+        $array = \json_decode($json, true);
         // Close the connection
         curl_close($ch);
         return $array;

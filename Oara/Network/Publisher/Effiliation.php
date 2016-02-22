@@ -30,16 +30,11 @@ namespace Oara\Network\Publisher;
  */
 class Effiliation extends \Oara\Network
 {
-    /**
-     * Export Credentials
-     * @var array
-     */
+
     private $_credentials = null;
 
     /**
-     * Constructor and Login
      * @param $credentials
-     * @return Effiliation
      */
     public function login($credentials)
     {
@@ -56,42 +51,36 @@ class Effiliation extends \Oara\Network
         $credentials = array();
 
         $parameter = array();
-        $parameter["user"]["description"] = "User Log in";
-        $parameter["user"]["required"] = true;
-        $credentials[] = $parameter;
-
-        $parameter = array();
-        $parameter["password"]["description"] = "Password to Log in";
-        $parameter["password"]["required"] = true;
+        $parameter["apiPassword"]["description"] = "API Password";
+        $parameter["apiPassword"]["required"] = true;
         $credentials[] = $parameter;
 
         return $credentials;
     }
 
     /**
-     * Check the connection
+     * @return bool
      */
     public function checkConnection()
     {
         $connection = false;
 
-        $content = file_get_contents('http://api.effiliation.com/apiv2/transaction.csv?key=' . $this->_credentials["apiPassword"]);
-        if (!preg_match("/bad credentials !/", $content, $matches)) {
+        $content = \file_get_contents('http://api.effiliation.com/apiv2/transaction.csv?key=' . $this->_credentials["apiPassword"]);
+        if (!\preg_match("/bad credentials !/", $content, $matches)) {
             $connection = true;
         }
         return $connection;
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getMerchantList()
+     * @return array
      */
     public function getMerchantList()
     {
         $merchants = array();
         $url = 'http://api.effiliation.com/apiv2/programs.xml?key=' . $this->_credentials["apiPassword"] . "&filter=active";
-        $content = @file_get_contents($url);
-        $xml = simplexml_load_string($content, null, LIBXML_NOERROR | LIBXML_NOWARNING);
+        $content = @\file_get_contents($url);
+        $xml = \simplexml_load_string($content, null, LIBXML_NOERROR | LIBXML_NOWARNING);
         foreach ($xml->program as $merchant) {
             $obj = array();
             $obj['cid'] = (string)$merchant->id_programme;
@@ -103,29 +92,24 @@ class Effiliation extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate)
+     * @param null $merchantList
+     * @param \DateTime|null $dStartDate
+     * @param \DateTime|null $dEndDate
+     * @return array
      */
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
         $totalTransactions = array();
 
-        $url = 'http://api.effiliation.com/apiv2/transaction.csv?key=' . $this->_credentials["apiPassword"] . '&start=' . $dStartDate->format!("dd/MM/yyyy") . '&end=' . $dEndDate->format!("dd/MM/yyyy") . '&type=date';
-        $content = utf8_encode(file_get_contents($url));
-        $exportData = str_getcsv($content, "\n");
-        $num = count($exportData);
+        $merchantIdList = \Oara\Utilities::getMerchantIdMapFromMerchantList($merchantList);
+
+        $url = 'http://api.effiliation.com/apiv2/transaction.csv?key=' . $this->_credentials["apiPassword"] . '&start=' . $dStartDate->format("d/m/Y") . '&end=' . $dEndDate->format("d/m/Y") . '&type=date';
+        $content = \utf8_encode(\file_get_contents($url));
+        $exportData = \str_getcsv($content, "\n");
+        $num = \count($exportData);
         for ($i = 1; $i < $num; $i++) {
-            $transactionExportArray = str_getcsv($exportData[$i], "|");
-            if (change_it_for_isset!((int)$transactionExportArray[2], $merchantList)) {
-                /*
-                $numFields = 0;
-                foreach ($transactionExportArray as $fieldValue){
-                    if ($fieldValue == "Valide" || $fieldValue == "Attente" || $fieldValue == "Refusé"){
-                        break;
-                    }
-                    $numFields ++;
-                }
-                */
+            $transactionExportArray = \str_getcsv($exportData[$i], "|");
+            if (isset($merchantIdList[(int)$transactionExportArray[2]])) {
 
                 $transaction = Array();
                 $merchantId = (int)$transactionExportArray[2];

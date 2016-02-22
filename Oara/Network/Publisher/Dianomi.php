@@ -31,21 +31,19 @@ namespace Oara\Network\Publisher;
 class Dianomi extends \Oara\Network
 {
     /**
-     * Export client.
-     * @var \Oara\Curl\Access
+     * @var null
      */
     private $_client = null;
 
     /**
-     * Constructor and Login
-     * @param $cartrawler
-     * @return Tv_Export
+     * @param $credentials
      */
     public function login($credentials)
     {
 
         $user = $credentials['user'];
         $password = $credentials['password'];
+        $this->_client = new \Oara\Curl\Access($credentials);
 
         $valuesLogin = array(new \Oara\Curl\Parameter('username', $user),
             new \Oara\Curl\Parameter('password', $password),
@@ -55,8 +53,9 @@ class Dianomi extends \Oara\Network
             new \Oara\Curl\Parameter('redir', '')
         );
 
-        $loginUrl = 'https://my.dianomi.com/index.epl?';
-        $this->_client = new \Oara\Curl\Access($credentials);
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request('https://my.dianomi.com/index.epl?', $valuesLogin);
+        $this->_client->post($urls);
 
     }
 
@@ -81,7 +80,7 @@ class Dianomi extends \Oara\Network
     }
 
     /**
-     * Check the connection
+     * @return bool
      */
     public function checkConnection()
     {
@@ -90,15 +89,14 @@ class Dianomi extends \Oara\Network
         $urls = array();
         $urls[] = new \Oara\Curl\Request('https://my.dianomi.com/Campaign-Analysis-378_1.html?', array());
         $exportReport = $this->_client->get($urls);
-        if (preg_match("/app=logout&amp;page=378&amp;partner=1/", $exportReport[0], $matches)) {
+        if (\preg_match("/app=logout&amp;page=378&amp;partner=1/", $exportReport[0], $matches)) {
             $connection = true;
         }
         return $connection;
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Base#getMerchantList()
+     * @return array
      */
     public function getMerchantList()
     {
@@ -112,8 +110,10 @@ class Dianomi extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Base#getTransactionList($merchantId, $dStartDate, $dEndDate)
+     * @param null $merchantList
+     * @param \DateTime|null $dStartDate
+     * @param \DateTime|null $dEndDate
+     * @return array
      */
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
@@ -121,35 +121,36 @@ class Dianomi extends \Oara\Network
 
         $valuesFormExport = array();
         $valuesFormExport[] = new \Oara\Curl\Parameter('periodtype', "fromtolong");
-        $valuesFormExport[] = new \Oara\Curl\Parameter('fromday', $dStartDate->format!("dd"));
-        $valuesFormExport[] = new \Oara\Curl\Parameter('frommonth', $dStartDate->format!("MM"));
-        $valuesFormExport[] = new \Oara\Curl\Parameter('fromyear', $dStartDate->format!("yyyy"));
-
-        $valuesFormExport[] = new \Oara\Curl\Parameter('today', $dEndDate->format!("dd"));
-        $valuesFormExport[] = new \Oara\Curl\Parameter('tomonth', $dEndDate->format!("MM"));
-        $valuesFormExport[] = new \Oara\Curl\Parameter('toyear', $dEndDate->format!("yyyy"));
-
+        $valuesFormExport[] = new \Oara\Curl\Parameter('fromday', $dStartDate->format("d"));
+        $valuesFormExport[] = new \Oara\Curl\Parameter('frommonth', $dStartDate->format("m"));
+        $valuesFormExport[] = new \Oara\Curl\Parameter('fromyear', $dStartDate->format("Y"));
+        $valuesFormExport[] = new \Oara\Curl\Parameter('today', $dEndDate->format("d"));
+        $valuesFormExport[] = new \Oara\Curl\Parameter('tomonth', $dEndDate->format("m"));
+        $valuesFormExport[] = new \Oara\Curl\Parameter('toyear', $dEndDate->format("Y"));
         $valuesFormExport[] = new \Oara\Curl\Parameter('Go', 'Go');
-
         $valuesFormExport[] = new \Oara\Curl\Parameter('partnerId', '326');
         $valuesFormExport[] = new \Oara\Curl\Parameter('action', 'partnerLeads');
         $valuesFormExport[] = new \Oara\Curl\Parameter('subaction', 'RevenueOverTime');
         $urls = array();
         $urls[] = new \Oara\Curl\Request('https://my.dianomi.com/Campaign-Analysis-378_1.html?', $valuesFormExport);
         $exportReport = $this->_client->get($urls);
-        $dom = new Zend_Dom_Query($exportReport[0]);
-        $results = $dom->query('.tabular');
-        if (count($results) > 0) {
-            $exportData = self::htmlToCsv(self::DOMinnerHTML($results->current()));
+
+        $doc = new \DOMDocument();
+        @$doc->loadHTML($exportReport[0]);
+        $xpath = new \DOMXPath($doc);
+        $results = $xpath->query('//*[contains(concat(" ", normalize-space(@class), " "), " tabular ")]');
+
+
+        if ($results->length > 0) {
+            $exportData = self::htmlToCsv(self::DOMinnerHTML($results->item(0)));
             $num = count($exportData);
             for ($i = 1; $i < $num; $i++) {
-                $overviewExportArray = str_getcsv($exportData[$i], ";");
+                $overviewExportArray = \str_getcsv($exportData[$i], ";");
 
                 $transaction = Array();
-
                 $transaction['merchantId'] = 1;
-                $date = new \DateTime($overviewExportArray[0], "yyyy-MM-dd");
-                $transaction['date'] = $date->format!("yyyy-MM-dd HH:mm:ss");
+                $date = \DateTime::createFromFormat("Y-m-d 00:00:00", $overviewExportArray[0]);
+                $transaction['date'] = $date->format("Y-m-d H:i:s");
                 $transaction['amount'] = $overviewExportArray[1];
                 $transaction['commission'] = $overviewExportArray[1];
                 $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
@@ -157,53 +158,60 @@ class Dianomi extends \Oara\Network
             }
         }
 
-
         return $totalTransactions;
 
     }
 
     /**
-     *
-     * Function that Convert from a table to Csv
-     * @param unknown_type $html
+     * @param $html
+     * @return array
      */
     private function htmlToCsv($html)
     {
-        $html = str_replace(array("\t", "\r", "\n"), "", $html);
+        $html = str_replace(array(
+            "\t",
+            "\r",
+            "\n"
+        ), "", $html);
         $csv = "";
-        $dom = new Zend_Dom_Query($html);
-        $results = $dom->query('tr');
-        $count = count($results); // get number of matches: 4
+
+        $doc = new \DOMDocument();
+        @$doc->loadHTML($html);
+        $xpath = new \DOMXPath($doc);
+        $results = $xpath->query('//tr');
         foreach ($results as $result) {
-            $tdList = $result->childNodes;
-            $tdNumber = $tdList->length;
-            if ($tdNumber > 0) {
-                for ($i = 0; $i < $tdNumber; $i++) {
-                    $value = $tdList->item($i)->nodeValue;
-                    if ($i != $tdNumber - 1) {
-                        $csv .= trim($value) . ";";
-                    } else {
-                        $csv .= trim($value);
-                    }
+
+            $doc = new \DOMDocument();
+            @$doc->loadHTML(self::DOMinnerHTML($result));
+            $xpath = new \DOMXPath($doc);
+            $resultsTd = $xpath->query('//td');
+            $countTd = $resultsTd->length;
+            $i = 0;
+            foreach ($resultsTd as $resultTd) {
+                $value = $resultTd->nodeValue;
+                if ($i != $countTd - 1) {
+                    $csv .= \trim($value) . ";";
+                } else {
+                    $csv .= \trim($value);
                 }
-                $csv .= "\n";
+                $i++;
             }
+            $csv .= "\n";
         }
-        $exportData = str_getcsv($csv, "\n");
+        $exportData = \str_getcsv($csv, "\n");
         return $exportData;
     }
 
     /**
-     *
-     * Function that returns the innet HTML code
-     * @param unknown_type $element
+     * @param $element
+     * @return string
      */
     private function DOMinnerHTML($element)
     {
         $innerHTML = "";
         $children = $element->childNodes;
         foreach ($children as $child) {
-            $tmp_dom = new DOMDocument();
+            $tmp_dom = new \DOMDocument ();
             $tmp_dom->appendChild($tmp_dom->importNode($child, true));
             $innerHTML .= trim($tmp_dom->saveHTML());
         }

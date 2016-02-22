@@ -30,25 +30,15 @@ namespace Oara\Network\Publisher;
  */
 class FashionTraffic extends \Oara\Network
 {
-    /**
-     * Export client.
-     * @var \Oara\Curl\Access
-     */
     private $_client = null;
 
     /**
-     * Transaction Export Parameters
-     * @var array
-     */
-    private $_exportTransactionParameters = null;
-
-    /**
-     * Constructor and Login
-     * @param $traveljigsaw
-     * @return Tj_Export
+     * @param $credentials
      */
     public function login($credentials)
     {
+        $this->_client = new \Oara\Curl\Access($credentials);
+
         $user = $credentials['user'];
         $password = $credentials['password'];
         $loginUrl = 'http://system.fashiontraffic.com/';
@@ -60,7 +50,9 @@ class FashionTraffic extends \Oara\Network
 
         );
 
-        $this->_client = new \Oara\Curl\Access($credentials);
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request($loginUrl, $valuesLogin);
+        $this->_client->post($urls);
 
     }
 
@@ -85,7 +77,7 @@ class FashionTraffic extends \Oara\Network
     }
 
     /**
-     * Check the connection
+     * @return bool
      */
     public function checkConnection()
     {
@@ -94,15 +86,14 @@ class FashionTraffic extends \Oara\Network
         $urls[] = new \Oara\Curl\Request('http://system.fashiontraffic.com/', array());
         $exportReport = $this->_client->get($urls);
 
-        if (preg_match("/\/logout/", $exportReport[0], $matches)) {
+        if (\preg_match("/\/logout/", $exportReport[0], $matches)) {
             $connection = true;
         }
         return $connection;
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Base#getMerchantList()
+     * @return array
      */
     public function getMerchantList()
     {
@@ -111,51 +102,52 @@ class FashionTraffic extends \Oara\Network
         $valuesFormExport = array();
         $urls = array();
         $urls[] = new \Oara\Curl\Request('http://system.fashiontraffic.com/stats/ajax_filter_options/Offers', $valuesFormExport);
-
         $exportReport = $this->_client->post($urls);
-        $dom = new Zend_Dom_Query($exportReport[0]);
 
-        $results = $dom->query('option');
+        $doc = new \DOMDocument();
+        @$doc->loadHTML($exportReport[0]);
+        $xpath = new \DOMXPath($doc);
+        $results = $xpath->query('//option');
         foreach ($results as $result) {
             $cid = $result->attributes->getNamedItem("value")->nodeValue;
-            $obj = array();
             $name = $result->nodeValue;
             $obj = array();
             $obj['cid'] = $cid;
             $obj['name'] = $name;
             $merchants[] = $obj;
         }
-
-
         return $merchants;
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Base#getTransactionList($merchantId, $dStartDate, $dEndDate)
+     * @param null $merchantList
+     * @param \DateTime|null $dStartDate
+     * @param \DateTime|null $dEndDate
+     * @return array
+     * @throws \Exception
      */
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
         $totalTransactions = Array();
 
+        $merchantIdList = \Oara\Utilities::getMerchantIdMapFromMerchantList($merchantList);
+
         $valuesFormExport = array();
         $urls = array();
         $urls[] = new \Oara\Curl\Request('http://system.fashiontraffic.com/stats/lead_report', $valuesFormExport);
         $exportReport = $this->_client->post($urls);
-        $dom = new Zend_Dom_Query($exportReport[0]);
 
-
-        $valuesFormExport = array();
-        $hidden = $dom->query('#ConversionReportForm input[name="data[_Token][key]"][type="hidden"]');
-        foreach ($hidden as $values) {
+        $doc = new \DOMDocument();
+        @$doc->loadHTML($exportReport[0]);
+        $xpath = new \DOMXPath($doc);
+        $results = $xpath->query('//input[@name="data[_Token][key]"]');
+        foreach ($results as $values) {
             $valuesFormExport[] = new \Oara\Curl\Parameter($values->getAttribute("name"), $values->getAttribute("value"));
         }
-
-        $hidden = $dom->query('#ConversionReportForm input[name="data[_Token][fields]"][type="hidden"]');
-        foreach ($hidden as $values) {
+        $results = $xpath->query('//input[@name="data[_Token][fields]"]');
+        foreach ($results as $values) {
             $valuesFormExport[] = new \Oara\Curl\Parameter($values->getAttribute("name"), $values->getAttribute("value"));
         }
-
         $valuesFormExport[] = new \Oara\Curl\Parameter("_method", 'POST');
         $valuesFormExport[] = new \Oara\Curl\Parameter("data[Report][page]", '');
         $valuesFormExport[] = new \Oara\Curl\Parameter("data[Report][fields][]", 'Stat.offer_id');
@@ -171,32 +163,29 @@ class FashionTraffic extends \Oara\Network
         $valuesFormExport[] = new \Oara\Curl\Parameter("data[Report][fields][]", 'Stat.conversion_status');
         $valuesFormExport[] = new \Oara\Curl\Parameter("data[Report][search][field]", '');
         $valuesFormExport[] = new \Oara\Curl\Parameter("data[Report][search][value]", '');
-
         $valuesFormExport[] = new \Oara\Curl\Parameter("data[DateRange][timezone]", 'America/New_York');
         $valuesFormExport[] = new \Oara\Curl\Parameter("data[DateRange][preset_date_range]", 'other');
-        $valuesFormExport[] = new \Oara\Curl\Parameter("data[DateRange][start_date]", $dStartDate->format!("yyyy-MM-dd"));
-        $valuesFormExport[] = new \Oara\Curl\Parameter("data[DateRange][end_date]", $dEndDate->format!("yyyy-MM-dd"));
+        $valuesFormExport[] = new \Oara\Curl\Parameter("data[DateRange][start_date]", $dStartDate->format("Y-m-d"));
+        $valuesFormExport[] = new \Oara\Curl\Parameter("data[DateRange][end_date]", $dEndDate->format("Y-m-d"));
 
         $urls = array();
         $urls[] = new \Oara\Curl\Request('http://system.fashiontraffic.com/stats/lead_report', $valuesFormExport);
         $exportReport = $this->_client->post($urls);
 
         $csvUrl = null;
-        if (preg_match("/report:(.*).csv/", $exportReport[0], $match)) {
+        if (\preg_match("/report:(.*).csv/", $exportReport[0], $match)) {
             $csvUrl = "http://system.fashiontraffic.com/stats/conversion_report/report:{$match[1]}.csv";
         }
-
-
         $valuesFormExport = array();
         $urls = array();
         $urls[] = new \Oara\Curl\Request($csvUrl, $valuesFormExport);
         $exportReport = $this->_client->get($urls);
-        $exportData = str_getcsv($exportReport[0], "\n");
+        $exportData = \str_getcsv($exportReport[0], "\n");
 
-        $num = count($exportData);
+        $num = \count($exportData);
         for ($i = 1; $i < $num; $i++) {
-            $transactionExportArray = str_getcsv($exportData[$i], ",");
-            if (change_it_for_isset!((int)$transactionExportArray[0], $merchantList)) {
+            $transactionExportArray = \str_getcsv($exportData[$i], ",");
+            if (isset($merchantIdList[(int)$transactionExportArray[0]])) {
                 $transaction = Array();
                 $merchantId = (int)$transactionExportArray[0];
                 $transaction['merchantId'] = $merchantId;
@@ -211,32 +200,15 @@ class FashionTraffic extends \Oara\Network
                 } else if ($transactionExportArray[10] == 'rejected') {
                     $transaction['status'] = \Oara\Utilities::STATUS_DECLINED;
                 } else {
-                    throw new Exception("Status {$transactionExportArray[10]} unknown");
+                    throw new \Exception("Status {$transactionExportArray[10]} unknown");
                 }
-
-                if (preg_match('/[-+]?[0-9]*\.?[0-9]+/', $transactionExportArray[9], $match)) {
-                    $transaction['amount'] = (double)$match[0];
-                }
-                if (preg_match('/[-+]?[0-9]*\.?[0-9]+/', $transactionExportArray[9], $match)) {
-                    $transaction['commission'] = (double)$match[0];
-                }
+                $transaction['amount'] = \Oara\Utilities::parseDouble($transactionExportArray[9]);
+                $transaction['commission'] = \Oara\Utilities::parseDouble($transactionExportArray[9]);
                 $totalTransactions[] = $transaction;
             }
         }
-
         return $totalTransactions;
 
-    }
-
-    /**
-     * (non-PHPdoc)
-     * @see Oara/Network/Base#getPaymentHistory()
-     */
-    public function getPaymentHistory()
-    {
-        $paymentHistory = array();
-
-        return $paymentHistory;
     }
 
 }

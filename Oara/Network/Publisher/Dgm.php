@@ -36,25 +36,10 @@ class Dgm extends \Oara\Network
     private $_apiClient = null;
     private $_user = null;
     private $_pass = null;
-    /**
-     * Merchant Campaigns
-     *
-     * @var array
-     */
     private $_advertisersCampaings = null;
-    /**
-     * Export Merchants Parameters
-     *
-     * @var array
-     */
-    private $_exportMerchantParameters = null;
 
     /**
-     * Constructor.
-     *
-     * @param
-     *            $dgm
-     * @return Dgm_Api
+     * @param $credentials
      */
     public function login($credentials)
     {
@@ -64,7 +49,7 @@ class Dgm extends \Oara\Network
 
         $wsdlUrl = 'http://webservices.dgperform.com/dgmpublisherwebservices.cfc?wsdl';
         // Setting the apiClient.
-        $this->_apiClient = new Zend_Soap_Client ($wsdlUrl, array(
+        $this->_apiClient = new \SoapClient ($wsdlUrl, array(
             'encoding' => 'UTF-8',
             'compression' => SOAP_COMPRESSION_ACCEPT | SOAP_COMPRESSION_GZIP | SOAP_COMPRESSION_DEFLATE,
             'soap_version' => SOAP_1_1
@@ -92,14 +77,14 @@ class Dgm extends \Oara\Network
     }
 
     /**
-     * Check the connection
+     * @return bool
      */
     public function checkConnection()
     {
         $connection = true;
 
         $merchantsImportXml = $this->_apiClient->GetCampaigns($this->_user, $this->_pass, 'approved');
-        $xmlObject = new SimpleXMLElement ($merchantsImportXml);
+        $xmlObject = new \SimpleXMLElement ($merchantsImportXml);
         if ($xmlObject->attributes()->status == 'error') {
             $connection = false;
         }
@@ -107,18 +92,17 @@ class Dgm extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     *
-     * @see library/Oara/Network/Base#getMerchantList()
+     * @return array
+     * @throws \Exception
      */
     public function getMerchantList()
     {
         $merchants = array();
 
         $merchantsImportXml = $this->_apiClient->GetCampaigns($this->_user, $this->_pass, 'approved');
-        $xmlObject = new SimpleXMLElement ($merchantsImportXml);
+        $xmlObject = new \SimpleXMLElement ($merchantsImportXml);
         if ($xmlObject->attributes()->status == 'error') {
-            throw new Exception ('Error advertisers not found');
+            throw new \Exception ('Error advertisers not found');
         }
 
         foreach ($xmlObject->campaigns->campaign as $campaing) {
@@ -139,22 +123,23 @@ class Dgm extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     *
-     * @see library/Oara/Network/Base#getTransactionList($merchantId, $dStartDate, $dEndDate)
+     * @param null $merchantList
+     * @param \DateTime|null $dStartDate
+     * @param \DateTime|null $dEndDate
+     * @return array
      */
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
         $totalTransactions = Array();
 
-        $transactionXml = $this->_apiClient->GetSales($this->_user, $this->_pass, 0, 'all', 'validated', $dStartDate->format!("yyyy-MM-dd"), $dEndDate->format!("yyyy-MM-dd"));
-        $xmlObject = new SimpleXMLElement ($transactionXml);
+        $transactionXml = $this->_apiClient->GetSales($this->_user, $this->_pass, 0, 'all', 'validated', $dStartDate->format("Y-m-d"), $dEndDate->format("Y-m-d"));
+        $xmlObject = new \SimpleXMLElement ($transactionXml);
         if ($xmlObject->attributes()->status != 'error') {
 
             $campaignIdList = array();
             foreach ($merchantList as $merchantId) {
                 if (isset($this->_advertisersCampaings [( string )$merchantId])) {
-                    $campaingList = explode(",", $this->_advertisersCampaings [( string )$merchantId]);
+                    $campaingList = \explode(",", $this->_advertisersCampaings [( string )$merchantId]);
                     foreach ($campaingList as $campaignId) {
                         $campaignIdList [$campaignId] = $merchantId;
                     }
@@ -168,8 +153,7 @@ class Dgm extends \Oara\Network
                     $transaction = Array();
                     $transaction ['unique_id'] = ( string )$sale->OrderID;
                     $transaction ['merchantId'] = $campaignIdList [( string )$sale->CampaignID];
-                    $transactionDate = new \DateTime (( string )$sale->SaleDate, 'yyyy-MM-dd HH:mm:ss');
-                    $transaction ['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
+                    $transaction ['date'] = ( string )$sale->SaleDate;
 
                     if (( string )$sale->CompanyID != null) {
                         $transaction ['custom_id'] = ( string )$sale->CompanyID;
@@ -192,17 +176,5 @@ class Dgm extends \Oara\Network
         }
 
         return $totalTransactions;
-    }
-
-    /**
-     * (non-PHPdoc)
-     *
-     * @see Oara/Network/Base#getPaymentHistory()
-     */
-    public function getPaymentHistory()
-    {
-        $paymentHistory = array();
-
-        return $paymentHistory;
     }
 }
