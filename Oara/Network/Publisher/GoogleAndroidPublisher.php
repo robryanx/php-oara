@@ -32,15 +32,12 @@ class GoogleAndroidPublisher extends \Oara\Network
 {
 
     /**
-     * Adsense Client
-     * @var unknown_type
+     * @var null
      */
     private $_bucket = null;
 
     /**
-     * Constructor and Login
-     * @param $buy
-     * @return Buy_Api
+     * @param $credentials
      */
     public function login($credentials)
     {
@@ -56,43 +53,42 @@ class GoogleAndroidPublisher extends \Oara\Network
         $credentials = array();
 
         $parameter = array();
-        $parameter["user"]["description"] = "User Log in";
+        $parameter["user"]["description"] = "Bucket";
         $parameter["user"]["required"] = true;
         $credentials[] = $parameter;
 
         $parameter = array();
-        $parameter["password"]["description"] = "Password to Log in";
-        $parameter["password"]["required"] = true;
+        $parameter["httpLogin"]["description"] = "Password for the bucket";
+        $parameter["httpLogin"]["required"] = true;
         $credentials[] = $parameter;
 
         return $credentials;
     }
 
     /**
-     * Check the connection
+     * @return bool
      */
     public function checkConnection()
     {
         $connection = false;
 
-        $url = "http://affjet.dc.fubra.net/tools/gsutil/gs.php?bucket=" . urlencode($this->_bucket) . "&type=ls";
+        $url = "http://affjet.dc.fubra.net/tools/gsutil/gs.php?bucket=" . \urlencode($this->_bucket) . "&type=ls";
         $context = \stream_context_create(array(
             'http' => array(
-                'header' => "Authorization: Basic " . base64_encode("{$this->_httpLogin}")
+                'header' => "Authorization: Basic " . \base64_encode("{$this->_httpLogin}")
             )
         ));
 
 
         $return = \file_get_contents($url, false, $context);
-        if (preg_match("/ls works/", $return)) {
+        if (\preg_match("/ls works/", $return)) {
             $connection = true;
         }
         return $connection;
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getMerchantList()
+     * @return array
      */
     public function getMerchantList()
     {
@@ -108,21 +104,23 @@ class GoogleAndroidPublisher extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate)
+     * @param null $merchantList
+     * @param \DateTime|null $dStartDate
+     * @param \DateTime|null $dEndDate
+     * @return array
      */
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
         $totalTransactions = array();
 
-        $dirDestination = realpath(dirname(COOKIES_BASE_DIR)) . '/pdf';
+        $dirDestination = \realpath(\dirname(COOKIES_BASE_DIR)) . '/pdf';
 
-        $file = "{$this->_bucket}/sales/salesreport_" . $dStartDate->format!("yyyyMM") . ".zip";
-        $url = "http://affjet.dc.fubra.net/tools/gsutil/gs.php?bucket=" . urlencode($file) . "&type=cp";
+        $file = "{$this->_bucket}/sales/salesreport_" . $dStartDate->format("Ym") . ".zip";
+        $url = "http://affjet.dc.fubra.net/tools/gsutil/gs.php?bucket=" . \urlencode($file) . "&type=cp";
 
         $context = \stream_context_create(array(
             'http' => array(
-                'header' => "Authorization: Basic " . base64_encode("{$this->_httpLogin}")
+                'header' => "Authorization: Basic " . \base64_encode("{$this->_httpLogin}")
             )
         ));
 
@@ -135,12 +133,12 @@ class GoogleAndroidPublisher extends \Oara\Network
         } else {
             return $totalTransactions;
         }
-        unlink($dirDestination . "/report.zip");
-        $salesReport = file_get_contents($dirDestination . "/salesreport_" . $dStartDate->format!("yyyyMM") . ".csv");
-        $salesReport = explode("\n", $salesReport);
-        for ($i = 1; $i < count($salesReport) - 1; $i++) {
+        \unlink($dirDestination . "/report.zip");
+        $salesReport = \file_get_contents($dirDestination . "/salesreport_" . $dStartDate->format("Ym") . ".csv");
+        $salesReport = \explode("\n", $salesReport);
+        for ($i = 1; $i < \count($salesReport) - 1; $i++) {
 
-            $row = str_getcsv($salesReport[$i], ",");
+            $row = \str_getcsv($salesReport[$i], ",");
             $sub = false;
             if ($row[12] < 0) {
                 $sub = true;
@@ -176,20 +174,7 @@ class GoogleAndroidPublisher extends \Oara\Network
 
             $totalTransactions[] = $obj;
         }
-        unlink($dirDestination . "/salesreport_" . $dStartDate->format!("yyyyMM") . ".csv");
-
-
+        \unlink($dirDestination . "/salesreport_" . $dStartDate->format("Ym") . ".csv");
         return $totalTransactions;
-    }
-
-    /**
-     * (non-PHPdoc)
-     * @see Oara/Network/Base#getPaymentHistory()
-     */
-    public function getPaymentHistory()
-    {
-        $paymentHistory = array();
-
-        return $paymentHistory;
     }
 }

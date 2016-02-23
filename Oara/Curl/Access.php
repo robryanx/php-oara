@@ -330,6 +330,23 @@ class Access
     }
 
     /**
+     * @return array
+     */
+    public function getCookiePath()
+    {
+        return $this->_cookiePath;
+    }
+
+    /**
+     * @param $cookiePath
+     */
+    public function setCookiePath($cookiePath)
+    {
+        $this->_cookiePath = $cookiePath;
+    }
+
+
+    /**
      * @return string
      */
     public function getCookies()

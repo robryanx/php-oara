@@ -30,37 +30,20 @@ namespace Oara\Network\Publisher;
  */
 class Groupon extends \Oara\Network
 {
-    /**
-     * Private API Key
-     * @var string
-     */
-    private $_credentials = null;
-    private $_client = null;
 
     /**
-     * Constructor and Login
      * @param $credentials
-     * @return Daisycon
+     * @throws Exception
      */
     public function login($credentials)
     {
-        $this->_credentials = $credentials;
-
-        $dir = COOKIES_BASE_DIR . DIRECTORY_SEPARATOR . $credentials ['cookiesDir'] . DIRECTORY_SEPARATOR . $credentials ['cookiesSubDir'] . DIRECTORY_SEPARATOR;
-
-        if (!\Oara\Utilities::mkdir_recursive($dir, 0777)) {
-            throw new Exception ('Problem creating folder in Access');
-        }
-
-        $cookies = $dir . $credentials["cookieName"] . '_cookies.txt';
-        unlink($cookies);
-
-        $this->_options = array(
+        $this->_client = new \Oara\Curl\Access($credentials);
+        $options = array(
             CURLOPT_USERAGENT => "Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:26.0) Gecko/20100101 Firefox/26.0",
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_FAILONERROR => true,
-            CURLOPT_COOKIEJAR => $cookies,
-            CURLOPT_COOKIEFILE => $cookies,
+            CURLOPT_COOKIEJAR => $this->_client->getCookiePath(),
+            CURLOPT_COOKIEFILE => $this->_client->getCookiePath(),
             CURLOPT_HTTPAUTH => CURLAUTH_ANY,
             CURLOPT_AUTOREFERER => true,
             CURLOPT_SSL_VERIFYPEER => false,
@@ -71,8 +54,8 @@ class Groupon extends \Oara\Network
             CURLOPT_ENCODING => "gzip",
             CURLOPT_VERBOSE => false
         );
-
-
+        $this->_client->setOptions($options);
+        $this->_credentials = $credentials;
     }
 
     /**
@@ -83,29 +66,32 @@ class Groupon extends \Oara\Network
         $credentials = array();
 
         $parameter = array();
-        $parameter["user"]["description"] = "User Log in";
-        $parameter["user"]["required"] = true;
-        $credentials[] = $parameter;
-
-        $parameter = array();
-        $parameter["password"]["description"] = "Password to Log in";
-        $parameter["password"]["required"] = true;
+        $parameter["apiPassword"]["description"] = "API password";
+        $parameter["apiPassword"]["required"] = true;
         $credentials[] = $parameter;
 
         return $credentials;
     }
 
     /**
-     * Check the connection
+     * @return bool
      */
     public function checkConnection()
     {
         $connection = false;
 
         try {
-            self::getMerchantList();
+            $date = new \DateTime();
+            $url = "https://partner-int-api.groupon.com/reporting/v2/order.csv?clientId={$this->_credentials['apiPassword']}&group=order&date=[{$date->format('Y-m-d')}&date={$date->format('Y-m-d')}]";
+            $valuesFormExport = array();
+            $urls = array();
+            $urls[] = new \Oara\Curl\Request($url, $valuesFormExport);
+            $exportReport = $this->_client->get($urls);
+            if ($exportReport[0] === false) {
+                throw new \Exception ("API key not valid");
+            }
             $connection = true;
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
 
         }
 
@@ -113,61 +99,43 @@ class Groupon extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getMerchantList()
+     * @return array
      */
     public function getMerchantList()
     {
-
-        $date = new \DateTime();
         $merchants = Array();
-        $url = "https://partner-int-api.groupon.com/reporting/v2/order.csv?clientId={$this->_credentials['apiPassword']}&group=order&date=[{$date->format('Y-m-d')}&date={$date->format('Y-m-d')}]";
-        $rch = curl_init();
-        $options = $this->_options;
-        curl_setopt($rch, CURLOPT_URL, $url);
-        curl_setopt_array($rch, $options);
-        $result = curl_exec($rch);
-        curl_close($rch);
-        if ($result === false) {
-            throw new Exception ("API key not valid");
-        }
         $obj = Array();
         $obj['cid'] = "1";
         $obj['name'] = "Groupon Partner Network";
         $merchants[] = $obj;
-
-
         return $merchants;
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
+     * @param null $merchantList
+     * @param \DateTime|null $dStartDate
+     * @param \DateTime|null $dEndDate
+     * @return array
+     * @throws \Exception
      */
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
-
         $totalTransactions = array();
-        $dateArray = \Oara\Utilities::daysOfDifference($dStartDate, $dEndDate);
-        $dateArraySize = sizeof($dateArray);
-        for ($j = 0; $j < $dateArraySize; $j++) {
-            $date = $dateArray[$j];
-
-            $url = "https://partner-int-api.groupon.com/reporting/v2/order.csv?clientId={$this->_credentials['apiPassword']}&group=order&date={$date->format!("yyyy-MM-dd")}";
-            $rch = curl_init();
-            $options = $this->_options;
-            curl_setopt($rch, CURLOPT_URL, $url);
-            curl_setopt_array($rch, $options);
-            $result = curl_exec($rch);
-            curl_close($rch);
-
-            $exportData = str_getcsv($result, "\n");
-            $num = count($exportData);
+        $auxDate = clone $dStartDate;
+        $amountDays = $dStartDate->diff($dEndDate)->days;
+        for ($j = 0; $j < $amountDays; $j++) {
+            $valuesFormExport = array();
+            $url = "https://partner-int-api.groupon.com/reporting/v2/order.csv?clientId={$this->_credentials['apiPassword']}&group=order&date={$auxDate->format("Y-m-d")}";
+            $urls = array();
+            $urls[] = new \Oara\Curl\Request($url, $valuesFormExport);
+            $exportReport = $this->_client->get($urls);
+            $exportData = \str_getcsv($exportReport[0], "\n");
+            $num = \count($exportData);
             for ($i = 1; $i < $num; $i++) {
-                $transactionExportArray = str_getcsv($exportData[$i], ",");
+                $transactionExportArray = \str_getcsv($exportData[$i], ",");
                 $transaction = Array();
                 $transaction['merchantId'] = "1";
-                $transaction['date'] = $date->format!("yyyy-MM-dd HH:mm:ss");
+                $transaction['date'] = $auxDate->format("Y-m-d H:i:s");
                 $transaction['unique_id'] = $transactionExportArray[0];
                 $transaction['currency'] = $transactionExportArray[4];
 
@@ -180,31 +148,17 @@ class Groupon extends \Oara\Network
                 } else if ($transactionExportArray[5] == 'INVALID') {
                     $transaction['status'] = \Oara\Utilities::STATUS_DECLINED;
                 } else {
-                    throw new Exception("Status {$transactionExportArray[5]} unknown");
+                    throw new \Exception("Status {$transactionExportArray[5]} unknown");
                 }
 
-                if (preg_match("/[-+]?[0-9]*\.?[0-9]+/", $transactionExportArray[8], $match)) {
-                    $transaction['amount'] = (double)$match[0];
-                }
-                if (preg_match("/[-+]?[0-9]*\.?[0-9]+/", $transactionExportArray[12], $match)) {
-                    $transaction['commission'] = (double)$match[0];
-                }
+                $transaction['amount'] = \Oara\Utilities::parseDouble((double)$transactionExportArray[8]);
+                $transaction['commission'] = \Oara\Utilities::parseDouble((double)$transactionExportArray[12]);
                 $totalTransactions[] = $transaction;
             }
+            $auxDate->add(new \DateInterval('P1D'));
         }
 
         return $totalTransactions;
-    }
-
-    /**
-     * (non-PHPdoc)
-     * @see Oara/Network/Base#getPaymentHistory()
-     */
-    public function getPaymentHistory()
-    {
-        $paymentHistory = array();
-
-        return $paymentHistory;
     }
 
 }

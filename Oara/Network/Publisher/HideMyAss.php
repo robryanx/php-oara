@@ -235,14 +235,4 @@ class HideMyAss extends \Oara\Network
         return $totalTransactions;
     }
 
-    /**
-     * (non-PHPdoc)
-     * @see Oara/Network/Base#getPaymentHistory()
-     */
-    public function getPaymentHistory()
-    {
-        $paymentHistory = array();
-
-        return $paymentHistory;
-    }
 }

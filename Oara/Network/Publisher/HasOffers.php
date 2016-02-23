@@ -31,25 +31,15 @@ namespace Oara\Network\Publisher;
  */
 class HasOffers extends \Oara\Network
 {
-    /**
-     * Client
-     */
     private $_domain = null;
-    /**
-     * Password
-     */
     private $_apiPassword = null;
 
     /**
-     * Constructor.
-     *
-     * @param
-     *            $affiliateWindow
-     * @return HasOffers
+     * @param $credentials
      */
     public function login($credentials)
     {
-        ini_set('default_socket_timeout', '120');
+        \ini_set('default_socket_timeout', '120');
 
         $this->_domain = $credentials["domain"];
         $this->_apiPassword = $credentials["apiPassword"];
@@ -64,13 +54,13 @@ class HasOffers extends \Oara\Network
         $credentials = array();
 
         $parameter = array();
-        $parameter["user"]["description"] = "User Log in";
-        $parameter["user"]["required"] = true;
+        $parameter["domain"]["description"] = "Domain Ex:www.mydomain.com";
+        $parameter["domain"]["required"] = true;
         $credentials[] = $parameter;
 
         $parameter = array();
-        $parameter["password"]["description"] = "Password to Log in";
-        $parameter["password"]["required"] = true;
+        $parameter["apiPassword"]["description"] = "API Password";
+        $parameter["apiPassword"]["required"] = true;
         $credentials[] = $parameter;
 
         return $credentials;
@@ -85,16 +75,14 @@ class HasOffers extends \Oara\Network
 
         $apiURL = "http://api.hasoffers.com/v3/Affiliate_Offer.json?Method=findMyOffers&api_key={$this->_apiPassword}&NetworkId={$this->_domain}";
         $response = self::call($apiURL);
-        if (count($response["response"]["errors"]) == 0) {
+        if (\count($response["response"]["errors"]) == 0) {
             $connection = true;
         }
         return $connection;
     }
 
     /**
-     * (non-PHPdoc)
-     *
-     * @see library/Oara/Network/Base#getMerchantList()
+     * @return array
      */
     public function getMerchantList()
     {
@@ -114,23 +102,23 @@ class HasOffers extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     *
-     * @see library/Oara/Network/Base#getTransactionList($merchantId,$dStartDate,$dEndDate)
+     * @param null $merchantList
+     * @param \DateTime|null $dStartDate
+     * @param \DateTime|null $dEndDate
+     * @return array
      */
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
         $totalTransactions = array();
 
-        //fields[]=Stat.offer_id&fields[]=Stat.datetime&fields[]=Offer.name&fields[]=Stat.conversion_status&fields[]=Stat.payout&fields[]=Stat.conversion_sale_amount&fields[]=Stat.ip&fields[]=Stat.ad_id&fields[]=Stat.affiliate_info1&sort[Stat.datetime]=desc&filters[Stat.date][conditional]=BETWEEN&filters[Stat.date][values][]=2014-03-13&filters[Stat.date][values][]=2014-03-19&data_start=2014-03-13&data_end=2014-03-19
-
+        $merchantIdList = \Oara\Utilities::getMerchantIdMapFromMerchantList($merchantList);
 
         $limit = 100;
         $page = 1;
         $loop = true;
         while ($loop) {
 
-            $apiURL = "http://api.hasoffers.com/v3/Affiliate_Report.json?limit=$limit&page=$page&Method=getConversions&api_key={$this->_apiPassword}&NetworkId={$this->_domain}&fields[]=Stat.offer_id&fields[]=Stat.datetime&fields[]=Offer.name&fields[]=Stat.conversion_status&fields[]=Stat.payout&fields[]=Stat.conversion_sale_amount&fields[]=Stat.ip&fields[]=Stat.ad_id&fields[]=Stat.affiliate_info1&sort[Stat.datetime]=desc&filters[Stat.date][conditional]=BETWEEN&filters[Stat.date][values][]={$dStartDate->format!("yyyy-MM-dd")}&filters[Stat.date][values][]={$dEndDate->format!("yyyy-MM-dd")}&data_start={$dStartDate->format!("yyyy-MM-dd")}&data_end={$dEndDate->format!("yyyy-MM-dd")}";
+            $apiURL = "http://api.hasoffers.com/v3/Affiliate_Report.json?limit=$limit&page=$page&Method=getConversions&api_key={$this->_apiPassword}&NetworkId={$this->_domain}&fields[]=Stat.offer_id&fields[]=Stat.datetime&fields[]=Offer.name&fields[]=Stat.conversion_status&fields[]=Stat.payout&fields[]=Stat.conversion_sale_amount&fields[]=Stat.ip&fields[]=Stat.ad_id&fields[]=Stat.affiliate_info1&sort[Stat.datetime]=desc&filters[Stat.date][conditional]=BETWEEN&filters[Stat.date][values][]={$dStartDate->format("Y-m-d")}&filters[Stat.date][values][]={$dEndDate->format("Y-m-d")}&data_start={$dStartDate->format("Y-m-d")}&data_end={$dEndDate->format("Y-m-d")}";
 
             $response = self::call($apiURL);
             foreach ($response["response"]["data"]["data"] as $transactionApi) {
@@ -138,11 +126,9 @@ class HasOffers extends \Oara\Network
                 $transaction = Array();
                 $merchantId = (int)$transactionApi["Stat"]["offer_id"];
 
-                if ($merchantList == null || change_it_for_isset!($merchantId, $merchantList)) {
+                if ($merchantList == null || isset($merchantIdList[$merchantId])) {
                     $transaction['merchantId'] = $merchantId;
-
-                    $transactionDate = new \DateTime($transactionApi["Stat"]["datetime"], 'yyyy-MM-dd HH:mm:ss', 'en');
-                    $transaction['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
+                    $transaction['date'] = $transactionApi["Stat"]["datetime"];
 
                     if ($transactionApi["Stat"]["ad_id"] != null) {
                         $transaction['unique_id'] = $transactionApi["Stat"]["ad_id"];
@@ -167,7 +153,6 @@ class HasOffers extends \Oara\Network
                     }
                     $transaction['commission'] = $transactionApi["Stat"]["payout"];
                     $totalTransactions[] = $transaction;
-
                 }
 
             }
@@ -181,37 +166,24 @@ class HasOffers extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     *
-     * @see Oara/Network/Base#getPaymentHistory()
+     * @param $apiUrl
+     * @return mixed
      */
-    public function getPaymentHistory()
-    {
-        $paymentHistory = array();
-
-        return $paymentHistory;
-    }
-
     private function call($apiUrl)
     {
-
-
         // Initiate the REST call via curl
-        $ch = curl_init($apiUrl);
-
+        $ch = \curl_init($apiUrl);
         // Set the HTTP method to GET
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'GET');
+        \curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'GET');
         // Don't return headers
-        curl_setopt($ch, CURLOPT_HEADER, false);
+        \curl_setopt($ch, CURLOPT_HEADER, false);
         // Return data after call is made
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
+        \curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         // Execute the REST call
-        $response = curl_exec($ch);
-
-        $array = json_decode($response, true);
+        $response = \curl_exec($ch);
+        $array = \json_decode($response, true);
         // Close the connection
-        curl_close($ch);
+        \curl_close($ch);
         return $array;
     }
 }

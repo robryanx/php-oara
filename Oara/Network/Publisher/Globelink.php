@@ -30,28 +30,18 @@ namespace Oara\Network\Publisher;
  */
 class Globelink extends \Oara\Network
 {
-
-    /**
-     * Export Credentials
-     * @var array
-     */
     private $_credentials = null;
-
-    /**
-     * Client
-     * @var \Oara\Curl\Access
-     */
     private $_client = null;
 
     /**
-     * Constructor and Login
      * @param $credentials
-     * @return null
+     * @throws \Exception
      */
     public function login($credentials)
     {
 
         $this->_credentials = $credentials;
+        $this->_client = new \Oara\Curl\Access($credentials);
 
 
         $user = $credentials['user'];
@@ -65,8 +55,9 @@ class Globelink extends \Oara\Network
             new \Oara\Curl\Parameter('form-submit-button', true),
         );
 
-        $this->_client = new \Oara\Curl\Access($credentials);
-
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request($loginUrl, $valuesLogin);
+        $this->_client->post($urls);
 
     }
 
@@ -91,7 +82,7 @@ class Globelink extends \Oara\Network
     }
 
     /**
-     * Check the connection
+     * @return bool
      */
     public function checkConnection()
     {
@@ -101,15 +92,14 @@ class Globelink extends \Oara\Network
         $urls = array();
         $urls[] = new \Oara\Curl\Request('http://affiliate.globelink.co.uk/home/', $valuesFormExport);
         $exportReport = $this->_client->get($urls);
-        if (!preg_match("/\/form\/CMSFormsUsersLogout/", $exportReport[0], $matches)) {
+        if (!\preg_match("/\/form\/CMSFormsUsersLogout/", $exportReport[0], $matches)) {
             $connection = false;
         }
         return $connection;
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getMerchantList()
+     * @return array
      */
     public function getMerchantList()
     {
@@ -125,20 +115,21 @@ class Globelink extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate)
+     * @param null $merchantList
+     * @param \DateTime|null $dStartDate
+     * @param \DateTime|null $dEndDate
+     * @return array
      */
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
         $totalTransactions = array();
-
 
         $urls = array();
         $valuesFormExport = array();
         $urls[] = new \Oara\Curl\Request('http://affiliate.globelink.co.uk/home/', $valuesFormExport);
         $exportReport = $this->_client->get($urls);
         $commmisionUrl = "";
-        if (preg_match("/\/profile\/(.*)\/sales/", $exportReport[0], $matches)) {
+        if (\preg_match("/\/profile\/(.*)\/sales/", $exportReport[0], $matches)) {
             $commmisionUrl = "http://affiliate.globelink.co.uk/profile/" . $matches[1] . "/sales/?";
         }
 
@@ -152,14 +143,17 @@ class Globelink extends \Oara\Network
             $valuesFormExport[] = new \Oara\Curl\Parameter('count', 20);
             $urls[] = new \Oara\Curl\Request($commmisionUrl, $valuesFormExport);
             $exportReport = $this->_client->get($urls);
-            $dom = new Zend_Dom_Query($exportReport[0]);
-            $results = $dom->query('.affs-list-r');
+
+            $doc = new \DOMDocument();
+            @$doc->loadHTML($exportReport[0]);
+            $xpath = new \DOMXPath($doc);
+            $results = $xpath->query('//*[contains(concat(" ", normalize-space(@class), " "), " affs-list-r ")]');
 
             foreach ($results as $line) {
                 $auxTransaction = array();
                 foreach ($line->childNodes as $attribute) {
-                    $value = trim((string)$attribute->nodeValue);
-                    if (strlen($value) > 0) {
+                    $value = \trim((string)$attribute->nodeValue);
+                    if (\strlen($value) > 0) {
                         if ($value != "n/a") {
                             $auxTransaction[] = $value;
                         }
@@ -168,20 +162,19 @@ class Globelink extends \Oara\Network
                 $auxTransactionList[] = $auxTransaction;
             }
 
-            if (preg_match("/<li><span>&raquo;<\/span><\/li>/", $exportReport[0])) {
+            if (\preg_match("/<li><span>&raquo;<\/span><\/li>/", $exportReport[0])) {
                 $exit = true;
             }
             $page++;
         }
 
         foreach ($auxTransactionList as $auxTransaction) {
-            $transactionDate = new \DateTime($auxTransaction[0], "yyyy-MM-dd HH:mm:ss");
 
-            if ($dStartDate->compare($transactionDate) <= 0 && $dEndDate->compare($transactionDate) >= 0) {
+            if ($dStartDate->format("Y-m-d H:i:s") <= $auxTransaction[0] && $dEndDate->format("Y-m-d H:i:s") >= $auxTransaction[0]) {
                 $transaction = Array();
                 $transaction['merchantId'] = 1;
 
-                $transaction['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
+                $transaction['date'] = $auxTransaction[0];
                 $transaction['unique_id'] = $auxTransaction[1];
 
 
