@@ -31,8 +31,7 @@ namespace Oara;
 class Network
 {
     /**
-     *
-     * Get an array with the description for credentials needed to log in
+     * @return array
      */
     public function getNeededCredentials()
     {
@@ -41,8 +40,7 @@ class Network
     }
 
     /**
-     *
-     * It checks if we are succesfully connected to the network
+     * @return bool
      */
     public function checkConnection()
     {
@@ -50,9 +48,7 @@ class Network
     }
 
     /**
-     *
-     * Get the merchants joined for the network
-     * it could be that we don't work with a merchant any more, but we want to retrieve its data
+     * @return array
      */
     public function getMerchantList()
     {
@@ -61,7 +57,6 @@ class Network
     }
 
     /**
-     * Get the transactions for the network and the merchants selected for the date given
      * @param $merchantList
      * @param \DateTime $dStartDate
      * @param \DateTime $dEndDate
@@ -74,8 +69,7 @@ class Network
     }
 
     /**
-     *
-     * Get the Payments already done for this network
+     * @return array
      */
     public function getPaymentHistory()
     {
@@ -84,9 +78,7 @@ class Network
     }
 
     /**
-     * Returns the transactions for a payment
      * @param $paymentId
-     * @param $merchantList
      * @return array
      */
     public function paymentTransactions($paymentId)

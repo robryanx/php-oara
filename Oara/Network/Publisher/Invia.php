@@ -32,34 +32,17 @@ class Invia extends \Oara\Network
 {
 
     /**
-     * Client
-     *
-     * @var unknown_type
-     */
-    private $_client = null;
-
-    /**
-     * Constructor and Login
-     *
-     * @param $buy
-     * @return Buy_Api
+     * @param $credentials
+     * @throws Exception
      */
     public function login($credentials)
     {
 
         $user = $credentials ['user'];
         $password = $credentials ['password'];
+        $this->_client = new \Oara\Curl\Access($credentials);
 
         $loginUrl = 'http://partner2.invia.cz/';
-
-        $dir = COOKIES_BASE_DIR . DIRECTORY_SEPARATOR . $credentials ['cookiesDir'] . DIRECTORY_SEPARATOR . $credentials ['cookiesSubDir'] . DIRECTORY_SEPARATOR;
-
-        if (!\Oara\Utilities::mkdir_recursive($dir, 0777)) {
-            throw new Exception ('Problem creating folder in Access');
-        }
-        $cookies = $dir . $credentials["cookieName"] . '_cookies.txt';
-        unlink($cookies);
-
         $valuesLogin = array(
             new \Oara\Curl\Parameter ('ac-email', $user),
             new \Oara\Curl\Parameter ('ac-password', $password),
@@ -68,48 +51,10 @@ class Invia extends \Oara\Network
             new \Oara\Curl\Parameter ('k2form_login', '1')
         );
 
-        $this->_options = array(
-            CURLOPT_USERAGENT => "Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:26.0) Gecko/20100101 Firefox/26.0",
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_FAILONERROR => true,
-            CURLOPT_COOKIEJAR => $cookies,
-            CURLOPT_COOKIEFILE => $cookies,
-            CURLOPT_HTTPAUTH => CURLAUTH_ANY,
-            CURLOPT_AUTOREFERER => true,
-            CURLOPT_SSL_VERIFYPEER => false,
-            CURLOPT_SSL_VERIFYHOST => false,
-            CURLOPT_HEADER => false,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_HTTPHEADER => array('Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', 'Accept-Language: es,en-us;q=0.7,en;q=0.3', 'Accept-Encoding: gzip, deflate', 'Connection: keep-alive', 'Cache-Control: max-age=0'),
-            CURLOPT_ENCODING => "gzip",
-            CURLOPT_VERBOSE => false
-        );
-        $rch = curl_init();
-        $options = $this->_options;
-        curl_setopt($rch, CURLOPT_URL, "http://partner2.invia.cz/");
-        curl_setopt_array($rch, $options);
-        $html = curl_exec($rch);
-        curl_close($rch);
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request($loginUrl, $valuesLogin);
+        $this->_client->post($urls);
 
-        $dom = new Zend_Dom_Query($html);
-        $hidden = $dom->query('input[type="hidden"]');
-
-        foreach ($hidden as $values) {
-            $valuesLogin[] = new \Oara\Curl\Parameter($values->getAttribute("name"), $values->getAttribute("value"));
-        }
-        $rch = curl_init();
-        $options = $this->_options;
-        curl_setopt($rch, CURLOPT_URL, "http://partner2.invia.cz/");
-        $options [CURLOPT_POST] = true;
-        $arg = array();
-        foreach ($valuesLogin as $parameter) {
-            $arg [] = urlencode($parameter->getKey()) . '=' . urlencode($parameter->getValue());
-        }
-        $options [CURLOPT_POSTFIELDS] = implode('&', $arg);
-        curl_setopt_array($rch, $options);
-        $html = curl_exec($rch);
-
-        curl_close($rch);
 
     }
 
@@ -134,20 +79,17 @@ class Invia extends \Oara\Network
     }
 
     /**
-     * Check the connection
+     * @return bool
      */
     public function checkConnection()
     {
         $connection = false;
 
-        $rch = curl_init();
-        $options = $this->_options;
-        curl_setopt($rch, CURLOPT_URL, 'http://partner2.invia.cz/');
-        curl_setopt_array($rch, $options);
-        $html = curl_exec($rch);
-        curl_close($rch);
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request("http://partner2.invia.cz/", array());
+        $exportReport = $this->_client->get($urls);
 
-        if (preg_match("/odhlaseni/", $html, $matches)) {
+        if (\preg_match("/odhlaseni/", $exportReport[0], $matches)) {
             $connection = true;
         }
 
@@ -155,9 +97,7 @@ class Invia extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     *
-     * @see library/Oara/Network/Interface#getMerchantList()
+     * @return array
      */
     public function getMerchantList()
     {
@@ -172,83 +112,17 @@ class Invia extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     *
-     * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate)
+     * @param null $merchantList
+     * @param \DateTime|null $dStartDate
+     * @param \DateTime|null $dEndDate
+     * @return array
+     * @throws Exception
      */
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
         $totalTransactions = array();
 
-        /*
-         $ch = curl_init ();
-        curl_setopt ( $ch, CURLOPT_URL, $url );
-        curl_setopt ( $ch, CURLOPT_RETURNTRANSFER, 1 );
-        curl_setopt ( $ch, CURLOPT_SSL_VERIFYPEER, 0 );
-        curl_setopt ( $ch, CURLOPT_SSL_VERIFYHOST, 0 );
-        curl_setopt ( $ch, CURLOPT_HTTPHEADER, array('Client-Key:'.$this->_apiKey,'X-Originating-Ip:'.$this->_apiIP	) );
 
-        $result = curl_exec ( $ch );
-        $info = curl_getinfo($ch);
-        curl_close($ch);
-        */
-
-        /*
-                $params = "";
-                $params .= "-----------------------------30593287953754";
-                $params .= "Content-Disposition: form-data; name=\"AffilUI_Filter\"";
-                $params .= "";
-                $params .= "";
-                $params .= "-----------------------------30593287953754";
-                $params .= "Content-Disposition: form-data; name=\"AffilUI_FilterStr\"";
-                $params .= "";
-                $params .= "";
-                $params .= "-----------------------------30593287953754";
-                $params .= "Content-Disposition: form-data; name=\"AffilUI_FilterTag\"";
-                $params .= "";
-                $params .= "";
-                $params .= "-----------------------------30593287953754";
-                $params .= "Content-Disposition: form-data; name=\"AdvancedFilter_State\"";
-                $params .= "";
-                $params .= "0";
-                $params .= "-----------------------------30593287953754";
-                $params .= "Content-Disposition: form-data; name=\"AdvancedFilter_nl_stav_id\"";
-                $params .= "";
-                $params .= "0";
-                $params .= "-----------------------------30593287953754";
-                $params .= "Content-Disposition: form-data; name=\"AdvancedFilter_nl_invia_id\"";
-                $params .= "";
-                $params .= "1"; //2 y 3 tambien hay que hacerlos
-                $params .= "-----------------------------30593287953754";
-                $params .= "Content-Disposition: form-data; name=\"AdvancedFilter_departure\"";
-                $params .= "";
-                $params .= "0";
-                $params .= "-----------------------------30593287953754";
-                $params .= "Content-Disposition: form-data; name=\"AdvancedFilter_b_show_invoiced\"";
-                $params .= "";
-                $params .= "on";
-                $params .= "-----------------------------30593287953754";
-                $params .= "Content-Disposition: form-data; name=\"AdvancedFilter_date_from\"";
-                $params .= "";
-                $params .= "01.01.2014";
-                $params .= "-----------------------------30593287953754";
-                $params .= "Content-Disposition: form-data; name=\"AdvancedFilter_date_to\"";
-                $params .= "";
-                $params .= "31.10.2014";
-                $params .= "-----------------------------30593287953754";
-                $params .= "Content-Disposition: form-data; name=\"AdvancedFilter_nl_rows\"";
-                $params .= "";
-                $params .= "";
-                $params .= "-----------------------------30593287953754";
-                $params .= "Content-Disposition: form-data; name=\"AdvancedFilter_sent\"";
-                $params .= "";
-                $params .= "1";
-                $params .= "-----------------------------30593287953754--";
-
-                $valuesFromExport = array(
-                        new \Oara\Curl\Parameter('POSTDATA', $params)
-                );
-        */
         $valuesFromExport = array(
             new \Oara\Curl\Parameter('AffilUI_Filter', ''),
             new \Oara\Curl\Parameter('AffilUI_FilterStr', ''),
@@ -264,36 +138,24 @@ class Invia extends \Oara\Network
             new \Oara\Curl\Parameter('AdvancedFilter_sent', '1')
         );
 
-        $rch = curl_init();
-        $options = $this->_options;
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request("http://partner2.invia.cz/ikomunity/index.php?k2MAIN[action]=AFFIL_OBJ", $valuesFromExport);
+        $exportReport = $this->_client->get($urls);
 
-        $arg = array();
-        foreach ($valuesFromExport as $parameter) {
-            $arg [] = urlencode($parameter->getKey()) . '=' . urlencode($parameter->getValue());
-        }
-//		curl_setopt ( $rch, CURLOPT_URL, 'http://partner2.invia.cz/ikomunity/index.php?k2MAIN[action]=AFFIL_OBJ?'.implode ( '&', $arg ) );
-        curl_setopt($rch, CURLOPT_URL, 'http://partner2.invia.cz/ikomunity/index.php?k2MAIN[action]=AFFIL_OBJ?' . $params);
-        curl_setopt_array($rch, $options);
+        $doc = new \DOMDocument();
+        @$doc->loadHTML($exportReport[0]);
+        $xpath = new \DOMXPath($doc);
+        $tableList = $xpath->query('//*[contains(concat(" ", normalize-space(@id), " "), " k2table_AffilUI ")]');
+        if ($tableList->length > 0) {
 
-        $html = curl_exec($rch);
-        echo $html;
-        curl_close($rch);
+            $exportData = \Oara\Utilities::htmlToCsv(\Oara\Utilities::DOMinnerHTML($tableList->item(0)));
 
-        $dom = new Zend_Dom_Query($html);
-
-        $tableList = $dom->query('k2table_AffilUI');
-        if (count($tableList) > 0) {
-
-            $exportData = self::htmlToCsv(self::DOMinnerHTML($tableList->current()));
-
-            $num = count($exportData);
+            $num = \count($exportData);
             for ($i = 1; $i < $num - 1; $i++) {
-                $transactionExportArray = explode(";,", $exportData [$i]);
-
+                $transactionExportArray = \explode(";", $exportData [$i]);
                 $transaction = Array();
-
-                $transactionDate = new \DateTime ($transactionExportArray [2], 'dd.MM.yyyy');
-                $transaction ['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
+                $transactionDate = \DateTime::createFromFormat("d.m.Y", $transactionExportArray [2]);
+                $transaction ['date'] = $transactionDate->format("Y-m-d H:i:s");
                 $status = $transactionExportArray [4];
                 if ($status == "Zaplaceno") {
                     $transaction ['status'] = \Oara\Utilities::STATUS_CONFIRMED;
@@ -302,106 +164,15 @@ class Invia extends \Oara\Network
                 } else if ($status == "Storno") {
                     $transaction ['status'] = \Oara\Utilities::STATUS_DECLINED;
                 } else {
-                    throw new Exception ("New status found {$status}");
+                    throw new \Exception ("New status found {$status}");
                 }
-
-
-                $transaction ['amount'] = \Oara\Utilities::parseDouble(preg_replace('/[^0-9\.,]/', "", $transactionExportArray [6]));
-                $transaction ['commission'] = \Oara\Utilities::parseDouble(preg_replace('/[^0-9\.,]/', "", $transactionExportArray [6]));
-
-
+                $transaction ['amount'] = \Oara\Utilities::parseDouble($transactionExportArray [6]);
+                $transaction ['commission'] = \Oara\Utilities::parseDouble($transactionExportArray [6]);
                 $transaction ['merchantId'] = 1;
                 $transaction ['unique_id'] = $transactionExportArray [0];
-
                 $totalTransactions [] = $transaction;
-
             }
         }
         return $totalTransactions;
-    }
-
-    /**
-     * (non-PHPdoc)
-     *
-     * @see Oara/Network/Base#getPaymentHistory()
-     */
-    public function getPaymentHistory()
-    {
-        $paymentHistory = array();
-
-        return $paymentHistory;
-    }
-
-    /**
-     *
-     *
-     *
-     * It returns the transactions for a payment
-     *
-     * @param int $paymentId
-     */
-    public function paymentTransactions($paymentId, $merchantList, $startDate)
-    {
-        $transactionList = array();
-
-        return $transactionList;
-    }
-
-    /**
-     *
-     *
-     * Function that Convert from a table to Csv
-     *
-     * @param unknown_type $html
-     */
-    private function htmlToCsv($html)
-    {
-        $html = str_replace(array(
-            "\t",
-            "\r",
-            "\n"
-        ), "", $html);
-        $csv = "";
-        $dom = new Zend_Dom_Query ($html);
-        $results = $dom->query('tr');
-        $count = count($results); // get number of matches: 4
-        foreach ($results as $result) {
-
-            $domTd = new Zend_Dom_Query (self::DOMinnerHTML($result));
-            $resultsTd = $domTd->query('td');
-            $countTd = count($resultsTd);
-            $i = 0;
-            foreach ($resultsTd as $resultTd) {
-                $value = $resultTd->nodeValue;
-                if ($i != $countTd - 1) {
-                    $csv .= trim($value) . ";,";
-                } else {
-                    $csv .= trim($value);
-                }
-                $i++;
-            }
-            $csv .= "\n";
-        }
-        $exportData = str_getcsv($csv, "\n");
-        return $exportData;
-    }
-
-    /**
-     *
-     *
-     * Function that returns the innet HTML code
-     *
-     * @param unknown_type $element
-     */
-    private function DOMinnerHTML($element)
-    {
-        $innerHTML = "";
-        $children = $element->childNodes;
-        foreach ($children as $child) {
-            $tmp_dom = new DOMDocument ();
-            $tmp_dom->appendChild($tmp_dom->importNode($child, true));
-            $innerHTML .= trim($tmp_dom->saveHTML());
-        }
-        return $innerHTML;
     }
 }

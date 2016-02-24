@@ -92,23 +92,82 @@ class Utilities
      * @param $merchantList
      * @return array
      */
-    public static function getMerchantIdMapFromMerchantList($merchantList){
+    public static function getMerchantIdMapFromMerchantList($merchantList)
+    {
         $merchantIdMap = array();
-        foreach ($merchantList as $merchant){
+        foreach ($merchantList as $merchant) {
             $merchantIdMap[$merchant["cid"]] = $merchant["name"];
         }
         return $merchantIdMap;
     }
+
     /**
      * @param $merchantList
      * @return array
      */
-    public static function getMerchantNameMapFromMerchantList($merchantList){
+    public static function getMerchantNameMapFromMerchantList($merchantList)
+    {
         $merchantNameMap = array();
-        foreach ($merchantList as $merchant){
+        foreach ($merchantList as $merchant) {
             $merchantNameMap[$merchant["name"]] = $merchant["cid"];
         }
         return $merchantNameMap;
+    }
+
+    /**
+     * @param $html
+     * @return array
+     */
+    public static function htmlToCsv($html)
+    {
+        $html = str_replace(array(
+            "\t",
+            "\r",
+            "\n"
+        ), "", $html);
+        $csv = "";
+
+        $doc = new \DOMDocument();
+        @$doc->loadHTML($html);
+        $xpath = new \DOMXPath($doc);
+        $results = $xpath->query('//tr');
+        foreach ($results as $result) {
+
+            $doc = new \DOMDocument();
+            @$doc->loadHTML(\Oara\Utilities::DOMinnerHTML($result));
+            $xpath = new \DOMXPath($doc);
+            $resultsTd = $xpath->query('//td');
+            $countTd = $resultsTd->length;
+            $i = 0;
+            foreach ($resultsTd as $resultTd) {
+                $value = $resultTd->nodeValue;
+                if ($i != $countTd - 1) {
+                    $csv .= \trim($value) . ";";
+                } else {
+                    $csv .= \trim($value);
+                }
+                $i++;
+            }
+            $csv .= "\n";
+        }
+        $exportData = \str_getcsv($csv, "\n");
+        return $exportData;
+    }
+
+    /**
+     * @param $element
+     * @return string
+     */
+    public static function DOMinnerHTML($element)
+    {
+        $innerHTML = "";
+        $children = $element->childNodes;
+        foreach ($children as $child) {
+            $tmp_dom = new \DOMDocument ();
+            $tmp_dom->appendChild($tmp_dom->importNode($child, true));
+            $innerHTML .= \trim($tmp_dom->saveHTML());
+        }
+        return $innerHTML;
     }
 
 }

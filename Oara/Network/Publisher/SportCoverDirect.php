@@ -176,7 +176,7 @@ class SportCoverDirect extends \Oara\Network
         $dom = new Zend_Dom_Query($html);
         $results = $dom->query('.performance');
         if (count($results) > 0) {
-            $exportData = self::htmlToCsv(self::DOMinnerHTML($results->current()));
+            $exportData = \Oara\Utilities::htmlToCsv(\Oara\Utilities::DOMinnerHTML($results->current()));
             $num = count($exportData) - 1; //the last row is show-more show-less
             for ($i = 1; $i < $num; $i++) {
                 $overviewExportArray = str_getcsv($exportData[$i], ";");
@@ -198,59 +198,4 @@ class SportCoverDirect extends \Oara\Network
         return $totalTransactions;
 
     }
-
-    /**
-     *
-     * Function that Convert from a table to Csv
-     * @param unknown_type $html
-     */
-    private function htmlToCsv($html)
-    {
-        $html = str_replace(array(
-            "\t",
-            "\r",
-            "\n"
-        ), "", $html);
-        $csv = "";
-        $dom = new Zend_Dom_Query ($html);
-        $results = $dom->query('tr');
-        $count = count($results); // get number of matches: 4
-        foreach ($results as $result) {
-
-            $domTd = new Zend_Dom_Query (self::DOMinnerHTML($result));
-            $resultsTd = $domTd->query('td');
-            $countTd = count($resultsTd);
-            $i = 0;
-            foreach ($resultsTd as $resultTd) {
-                $value = $resultTd->nodeValue;
-                if ($i != $countTd - 1) {
-                    $csv .= trim($value) . ";,";
-                } else {
-                    $csv .= trim($value);
-                }
-                $i++;
-            }
-            $csv .= "\n";
-        }
-        $exportData = str_getcsv($csv, "\n");
-        return $exportData;
-    }
-
-    /**
-     *
-     * Function that returns the innet HTML code
-     * @param unknown_type $element
-     */
-    private function DOMinnerHTML($element)
-    {
-        $innerHTML = "";
-        $children = $element->childNodes;
-        foreach ($children as $child) {
-            $tmp_dom = new DOMDocument();
-            $tmp_dom->appendChild($tmp_dom->importNode($child, true));
-            $innerHTML .= trim($tmp_dom->saveHTML());
-        }
-        return $innerHTML;
-    }
-
 }

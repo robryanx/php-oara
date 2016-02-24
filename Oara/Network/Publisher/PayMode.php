@@ -352,14 +352,14 @@ class PayMode extends \Oara\Network
                 $dom = new Zend_Dom_Query($exportReport[0]);
                 $results = $dom->query('form[name="transform"] table');
                 if (count($results) > 0) {
-                    $tableCsv = self::htmlToCsv(self::DOMinnerHTML($results->current()));
+                    $tableCsv = \Oara\Utilities::htmlToCsv(\Oara\Utilities::DOMinnerHTML($results->current()));
                     $payment = Array();
                     $paymentArray = str_getcsv($tableCsv[4], ";");
                     $payment['pid'] = $paymentArray[1];
 
                     $dateResult = $dom->query('form[name="collForm"] table');
                     if (count($dateResult) > 0) {
-                        $dateCsv = self::htmlToCsv(self::DOMinnerHTML($dateResult->current()));
+                        $dateCsv = \Oara\Utilities::htmlToCsv(\Oara\Utilities::DOMinnerHTML($dateResult->current()));
                         $dateArray = str_getcsv($dateCsv[2], ";");
 
                         $paymentDate = new \DateTime($dateArray[1], 'dd-MMM-yyyy', 'en');
@@ -375,7 +375,7 @@ class PayMode extends \Oara\Network
                     $results = $dom->query('table[cellpadding="2"]');
                     foreach ($results as $table) {
 
-                        $tableCsv = self::htmlToCsv(self::DOMinnerHTML($table));
+                        $tableCsv = \Oara\Utilities::htmlToCsv(\Oara\Utilities::DOMinnerHTML($table));
                         $num = count($tableCsv);
                         for ($i = 1; $i < $num; $i++) {
                             $payment = Array();
@@ -399,53 +399,4 @@ class PayMode extends \Oara\Network
         }
         return $paymentHistory;
     }
-
-    /**
-     *
-     * Function that returns the inner HTML code
-     * @param unknown_type $element
-     */
-    private function DOMinnerHTML($element)
-    {
-        $innerHTML = "";
-        $children = $element->childNodes;
-        foreach ($children as $child) {
-            $tmp_dom = new DOMDocument();
-            $tmp_dom->appendChild($tmp_dom->importNode($child, true));
-            $innerHTML .= trim($tmp_dom->saveHTML());
-        }
-        return $innerHTML;
-    }
-
-    /**
-     *
-     * Function that Convert from a table to Csv
-     * @param unknown_type $html
-     */
-    private function htmlToCsv($html)
-    {
-        $html = str_replace(array("\t", "\r", "\n"), "", $html);
-        $csv = "";
-        $dom = new Zend_Dom_Query($html);
-        $results = $dom->query('tr');
-        $count = count($results); // get number of matches: 4
-        foreach ($results as $result) {
-            $tdList = $result->childNodes;
-            $tdNumber = $tdList->length;
-            if ($tdNumber > 0) {
-                for ($i = 0; $i < $tdNumber; $i++) {
-                    $value = $tdList->item($i)->nodeValue;
-                    if ($i != $tdNumber - 1) {
-                        $csv .= trim($value) . ";";
-                    } else {
-                        $csv .= trim($value);
-                    }
-                }
-                $csv .= "\n";
-            }
-        }
-        $exportData = str_getcsv($csv, "\n");
-        return $exportData;
-    }
-
 }

@@ -182,7 +182,7 @@ class Chegg extends \Oara\Network
         if (!\preg_match("/No results exist/", $exportReport[0])) {
 
 
-            $exportData = self::htmlToCsv(self::DOMinnerHTML($tableList->current()));
+            $exportData = \Oara\Utilities::htmlToCsv(\Oara\Utilities::DOMinnerHTML($tableList->current()));
             $num = \count($exportData);
             for ($i = 2; $i < $num - 1; $i++) {
                 $transactionExportArray = \str_getcsv($exportData[$i], ";");
@@ -200,62 +200,6 @@ class Chegg extends \Oara\Network
         }
 
         return $totalTransactions;
-    }
-
-    /**
-     * @param $html
-     * @return array
-     */
-    private function htmlToCsv($html)
-    {
-        $html = str_replace(array(
-            "\t",
-            "\r",
-            "\n"
-        ), "", $html);
-        $csv = "";
-
-        $doc = new \DOMDocument();
-        @$doc->loadHTML($html);
-        $xpath = new \DOMXPath($doc);
-        $results = $xpath->query('//tr');
-        foreach ($results as $result) {
-
-            $doc = new \DOMDocument();
-            @$doc->loadHTML(self::DOMinnerHTML($result));
-            $xpath = new \DOMXPath($doc);
-            $resultsTd = $xpath->query('//td');
-            $countTd = $resultsTd->length;
-            $i = 0;
-            foreach ($resultsTd as $resultTd) {
-                $value = $resultTd->nodeValue;
-                if ($i != $countTd - 1) {
-                    $csv .= \trim($value) . ";";
-                } else {
-                    $csv .= \trim($value);
-                }
-                $i++;
-            }
-            $csv .= "\n";
-        }
-        $exportData = \str_getcsv($csv, "\n");
-        return $exportData;
-    }
-
-    /**
-     * @param $element
-     * @return string
-     */
-    private function DOMinnerHTML($element)
-    {
-        $innerHTML = "";
-        $children = $element->childNodes;
-        foreach ($children as $child) {
-            $tmp_dom = new \DOMDocument ();
-            $tmp_dom->appendChild($tmp_dom->importNode($child, true));
-            $innerHTML .= trim($tmp_dom->saveHTML());
-        }
-        return $innerHTML;
     }
 
 }

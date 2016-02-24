@@ -32,25 +32,10 @@ namespace Oara\Network\Publisher;
 class LinkShare extends \Oara\Network
 {
 
+    public $_nid = null;
     protected $_sitesAllowed = array();
-    /**
-     * Client
-     *
-     * @var unknown_type
-     */
     private $_client = null;
-    /**
-     * Site List
-     *
-     * @var unknown_type
-     */
     private $_siteList = array();
-    /**
-     * Nid for this Linkshare instance
-     *
-     * @var string
-     */
-    private $_nid = null;
 
     /**
      * @param $credentials
@@ -59,40 +44,37 @@ class LinkShare extends \Oara\Network
     {
         $user = $credentials ['user'];
         $password = $credentials ['password'];
-        // Choosing the Linkshare network
-        if ($credentials ['network'] == 'us') {
-            $this->_nid = '1';
-        } else if ($credentials ['network'] == 'uk') {
-            $this->_nid = '3';
-        } else if ($credentials ['network'] == 'ca') {
-            $this->_nid = '5';
-        } else if ($credentials ['network'] == 'fr') {
-            $this->_nid = '7';
-        } else if ($credentials ['network'] == 'br') {
-            $this->_nid = '8';
-        } else if ($credentials ['network'] == 'de') {
-            $this->_nid = '9';
-        } else if ($credentials ['network'] == 'eu') {
-            $this->_nid = '31';
-        } else if ($credentials ['network'] == 'au') {
-            $this->_nid = '41';
-        } else if ($credentials ['network'] == 'la') {
-            $this->_nid = '54';
-        }
-
-        $loginUrl = 'https://cli.linksynergy.com/cli/common/authenticateUser.php';
-
-        $valuesLogin = array(
-            new \Oara\Curl\Parameter ('front_url', ''),
-            new \Oara\Curl\Parameter ('postLoginDestination', ''),
-            new \Oara\Curl\Parameter ('cuserid', ''),
-            new \Oara\Curl\Parameter ('loginUsername', $user),
-            new \Oara\Curl\Parameter ('loginPassword', $password),
-            new \Oara\Curl\Parameter ('x', '28'),
-            new \Oara\Curl\Parameter ('y', '10')
-        );
-        // Login to the Linkshare Application
         $this->_client = new \Oara\Curl\Access ($credentials);
+
+        $loginUrl = 'https://login.linkshare.com/sso/login?service=' . \urlencode("http://cli.linksynergy.com/cli/publisher/home.php");
+        $valuesLogin = array(
+            new \Oara\Curl\Parameter ('HEALTHCHECK', 'HEALTHCHECK PASSED.'),
+            new \Oara\Curl\Parameter ('username', $user),
+            new \Oara\Curl\Parameter ('password', $password),
+            new \Oara\Curl\Parameter ('login', 'Log In')
+        );
+
+        $urls = array();
+        $urls [] = new \Oara\Curl\Request ($loginUrl, array());
+        $exportReport = $this->_client->get($urls);
+        $doc = new \DOMDocument();
+        @$doc->loadHTML($exportReport[0]);
+        $xpath = new \DOMXPath($doc);
+        $hidden = $xpath->query('//input[@type="hidden"]');
+        foreach ($hidden as $values) {
+            $valuesLogin[] = new \Oara\Curl\Parameter($values->getAttribute("name"), $values->getAttribute("value"));
+        }
+        $doc = new \DOMDocument();
+        @$doc->loadHTML($exportReport[0]);
+        $xpath = new \DOMXPath($doc);
+        $formList = $xpath->query('//form');
+        foreach ($formList as $form) {
+            $loginUrl = "https://login.linkshare.com".$form->getAttribute("action");
+        }
+        $urls = array();
+        $urls [] = new \Oara\Curl\Request ($loginUrl, $valuesLogin);
+        $this->_client->post($urls);
+
     }
 
     /**
@@ -117,35 +99,36 @@ class LinkShare extends \Oara\Network
 
     /**
      * @return bool
-     * @throws Exception
      */
     public function checkConnection()
     {
         $connection = false;
 
         $urls = array();
-        $urls [] = new \Oara\Curl\Request ('http://cli.linksynergy.com/cli/publisher/home.php', array());
+
+        $urls [] = new \Oara\Curl\Request ('http://cli.linksynergy.com/cli/publisher/home.php?', array());
         $result = $this->_client->get($urls);
 
         // Check if the credentials are right
-        if (preg_match('/https:\/\/cli\.linksynergy\.com\/cli\/common\/logout\.php/', $result [0], $matches)) {
+        if (\preg_match('/https:\/\/cli\.linksynergy\.com\/cli\/common\/logout\.php/', $result [0], $matches)) {
 
             $urls = array();
             $urls [] = new \Oara\Curl\Request ('https://cli.linksynergy.com/cli/publisher/my_account/marketingChannels.php', array());
-            $resultHtml = $this->_client->get($urls);
+            $exportReport = $this->_client->get($urls);
 
-            $dom = new Zend_Dom_Query ($resultHtml [0]);
-            $results = $dom->query('table');
+            $doc = new \DOMDocument();
+            @$doc->loadHTML($exportReport[0]);
+            $xpath = new \DOMXPath($doc);
+            $results = $xpath->query('//table');
             foreach ($results as $table) {
-                $tableCsv = self::htmlToCsv(self::DOMinnerHTML($table));
+                $tableCsv = \Oara\Utilities::htmlToCsv(\Oara\Utilities::DOMinnerHTML($table));
             }
 
             $resultsSites = array();
-            $num = count($tableCsv);
+            $num = \count($tableCsv);
             for ($i = 1; $i < $num; $i++) {
-                $payment = Array();
-                $siteArray = str_getcsv($tableCsv [$i], ";");
-                if (isset ($siteArray [2]) && is_numeric($siteArray [2])) {
+                $siteArray = \str_getcsv($tableCsv [$i], ";");
+                if (isset ($siteArray [2]) && \is_numeric($siteArray [2])) {
                     $result = array();
                     $result ["id"] = $siteArray [2];
                     $result ["name"] = $siteArray [1];
@@ -156,39 +139,39 @@ class LinkShare extends \Oara\Network
 
             $siteList = array();
             foreach ($resultsSites as $resultSite) {
-                $site = new stdClass ();
-
+                $site = new \stdClass ();
                 $site->website = $resultSite ["name"];
-
                 $site->url = $resultSite ["url"];
-
-                $parsedUrl = parse_url($site->url);
-                $attributesArray = explode('&', $parsedUrl ['query']);
+                $parsedUrl = \parse_url($site->url);
+                $attributesArray = \explode('&', $parsedUrl ['query']);
                 $attributeMap = array();
                 foreach ($attributesArray as $attribute) {
-                    $attributeValue = explode('=', $attribute);
+                    $attributeValue = \explode('=', $attribute);
                     $attributeMap [$attributeValue [0]] = $attributeValue [1];
                 }
                 $site->id = $attributeMap ['sid'];
                 // Login into the Site ID
                 $urls = array();
                 $urls [] = new \Oara\Curl\Request ($site->url, array());
-                $result = $this->_client->get($urls);
+                $this->_client->get($urls);
 
                 $urls = array();
                 $urls [] = new \Oara\Curl\Request ('http://cli.linksynergy.com/cli/publisher/links/webServices.php', array());
                 $result = $this->_client->get($urls);
 
-                // Getting the API Token
-                $dom = new Zend_Dom_Query ($result [0]);
-                $results = $dom->query('.commonBoxContentArea .commonBoxInnerArea .contentPaddedRow');
-                $count = count($results);
+                $doc = new \DOMDocument();
+                @$doc->loadHTML($result[0]);
+                $xpath = new \DOMXPath($doc);
+                $results = $xpath->query('//*[contains(concat(" ", normalize-space(@class), " "), " contentPaddedRow ")]');
+
                 foreach ($results as $result) {
-                    if (preg_match("/[a-fA-F0-9]{64}/", $result->nodeValue, $match)) {
+                    if (\preg_match("/[a-fA-F0-9]{64}/", $result->nodeValue, $match)) {
                         $token = $match [0];
-                        $dom = new Zend_Dom_Query ($result->ownerDocument->saveXML($result));
-                        $image = $dom->query('#sidIcon');
-                        if (count($image) == 1) {
+                        $doc = new \DOMDocument();
+                        @$doc->loadHTML($result->ownerDocument->saveXML($result));
+                        $xpath = new \DOMXPath($doc);
+                        $image = $xpath->query('//*[contains(concat(" ", normalize-space(@id), " "), " sidIcon ")]');
+                        if ($image->length == 1) {
                             $site->secureToken = $token;
                         } else {
                             $site->token = $token;
@@ -206,15 +189,19 @@ class LinkShare extends \Oara\Network
                     $urls [] = new \Oara\Curl\Request ('http://cli.linksynergy.com/cli/publisher/links/webServices.php?', $urlParams);
                     $result = $this->_client->post($urls);
                     // Getting the API Token
-                    $dom = new Zend_Dom_Query ($result [0]);
-                    $results = $dom->query('.commonBoxContentArea .commonBoxInnerArea .contentPaddedRow');
-                    $count = count($results);
+                    $doc = new \DOMDocument();
+                    @$doc->loadHTML($result[0]);
+                    $xpath = new \DOMXPath($doc);
+                    $results = $xpath->query('//*[contains(concat(" ", normalize-space(@class), " "), " contentPaddedRow ")]');
+
                     foreach ($results as $result) {
-                        if (preg_match("/[a-fA-F0-9]{64}/", $result->nodeValue, $match)) {
+                        if (\preg_match("/[a-fA-F0-9]{64}/", $result->nodeValue, $match)) {
                             $token = $match [0];
-                            $dom = new Zend_Dom_Query ($result->ownerDocument->saveXML($result));
-                            $image = $dom->query('#sidIcon');
-                            if (count($image) == 0) {
+                            $doc = new \DOMDocument();
+                            @$doc->loadHTML($result->ownerDocument->saveXML($result));
+                            $xpath = new \DOMXPath($doc);
+                            $image = $xpath->query('//*[contains(concat(" ", normalize-space(@id), " "), " sidIcon ")]');
+                            if ($image->length == 0) {
                                 $site->token = $token;
                             }
                         }
@@ -230,15 +217,18 @@ class LinkShare extends \Oara\Network
                     $urls [] = new \Oara\Curl\Request ('http://cli.linksynergy.com/cli/publisher/links/webServices.php?', $urlParams);
                     $result = $this->_client->post($urls);
                     // Getting the API Token
-                    $dom = new Zend_Dom_Query ($result [0]);
-                    $results = $dom->query('.commonBoxContentArea .commonBoxInnerArea .contentPaddedRow');
-                    $count = count($results);
+                    $doc = new \DOMDocument();
+                    @$doc->loadHTML($result[0]);
+                    $xpath = new \DOMXPath($doc);
+                    $results = $xpath->query('//*[contains(concat(" ", normalize-space(@class), " "), " contentPaddedRow ")]');
                     foreach ($results as $result) {
-                        if (preg_match("/[a-fA-F0-9]{64}/", $result->nodeValue, $match)) {
+                        if (\preg_match("/[a-fA-F0-9]{64}/", $result->nodeValue, $match)) {
                             $token = $match [0];
-                            $dom = new Zend_Dom_Query ($result->ownerDocument->saveXML($result));
-                            $image = $dom->query('#sidIcon');
-                            if (count($image) == 1) {
+                            $doc = new \DOMDocument();
+                            @$doc->loadHTML($result->ownerDocument->saveXML($result));
+                            $xpath = new \DOMXPath($doc);
+                            $image = $xpath->query('//*[contains(concat(" ", normalize-space(@id), " "), " sidIcon ")]');
+                            if ($image->length == 1) {
                                 $site->secureToken = $token;
                             }
                         }
@@ -247,61 +237,11 @@ class LinkShare extends \Oara\Network
                 $siteList [] = $site;
             }
             $connection = true;
-
             $this->_siteList = $siteList;
         }
         return $connection;
     }
 
-    /**
-     * @param $html
-     * @return array
-     */
-    private function htmlToCsv($html)
-    {
-        $html = str_replace(array(
-            "\t",
-            "\r",
-            "\n"
-        ), "", $html);
-        $csv = "";
-        $dom = new Zend_Dom_Query ($html);
-        $results = $dom->query('tr');
-        $count = count($results); // get number of matches: 4
-        foreach ($results as $result) {
-            $tdList = $result->childNodes;
-            $tdNumber = $tdList->length;
-            if ($tdNumber > 0) {
-                for ($i = 0; $i < $tdNumber; $i++) {
-                    $value = $tdList->item($i)->nodeValue;
-                    if ($i != $tdNumber - 1) {
-                        $csv .= trim($value) . ";";
-                    } else {
-                        $csv .= trim($value);
-                    }
-                }
-                $csv .= "\n";
-            }
-        }
-        $exportData = str_getcsv($csv, "\n");
-        return $exportData;
-    }
-
-    /**
-     * @param $element
-     * @return string
-     */
-    private function DOMinnerHTML($element)
-    {
-        $innerHTML = "";
-        $children = $element->childNodes;
-        foreach ($children as $child) {
-            $tmp_dom = new DOMDocument ();
-            $tmp_dom->appendChild($tmp_dom->importNode($child, true));
-            $innerHTML .= trim($tmp_dom->saveHTML());
-        }
-        return $innerHTML;
-    }
 
     /**
      * @return array
@@ -315,25 +255,23 @@ class LinkShare extends \Oara\Network
 
             $urls = array();
             $urls [] = new \Oara\Curl\Request ($site->url, array());
-            $result = $this->_client->get($urls);
+            $this->_client->get($urls);
 
             $urls = array();
             $urls [] = new \Oara\Curl\Request ('http://cli.linksynergy.com/cli/publisher/programs/carDownload.php', array());
             $result = $this->_client->get($urls);
 
-            $result [0] = str_replace("Baseline TrueLock\"\n", "Baseline TrueLock\",\n", $result [0]);
-            $exportData = explode(",\n", $result [0]);
+            $result [0] = \str_replace("Baseline TrueLock\"\n", "Baseline TrueLock\",\n", $result [0]);
+            $exportData = \explode(",\n", $result [0]);
 
-            $num = count($exportData);
+            $num = \count($exportData);
             for ($i = 1; $i < $num - 1; $i++) {
-                $merchantArray = str_getcsv($exportData [$i], ",", '"');
-                if (!change_it_for_isset!($merchantArray [2], $merchantIdMap)) {
+                $merchantArray = \str_getcsv($exportData [$i], ",", '"');
+                if (!\in_array($merchantArray [2], $merchantIdMap)) {
                     $obj = Array();
-
                     if (!isset ($merchantArray [2])) {
-                        throw new Exception ("Error getting merchants");
+                        throw new \Exception ("Error getting merchants");
                     }
-
                     $obj ['cid'] = ( int )$merchantArray [2];
                     $obj ['name'] = $merchantArray [0];
                     $obj ['description'] = $merchantArray [3];
@@ -356,53 +294,45 @@ class LinkShare extends \Oara\Network
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
         $totalTransactions = Array();
+        $merchantIdList = \Oara\Utilities::getMerchantIdMapFromMerchantList($merchantList);
 
-        $filter = new Zend_Filter_LocalizedToNormalized (array(
-            'precision' => 2
-        ));
         foreach ($this->_siteList as $site) {
-            if (empty($this->_sitesAllowed) || change_it_for_isset!($site->id, $this->_sitesAllowed)) {
+            if (empty($this->_sitesAllowed) || in_array($site->id, $this->_sitesAllowed)) {
                 echo "getting Transactions for site " . $site->id . "\n\n";
 
-                $url = "https://reportws.linksynergy.com/downloadreport.php?bdate=" . $dStartDate->format!("yyyyMMdd") . "&edate=" . $dEndDate->format!("yyyyMMdd") . "&token=" . $site->secureToken . "&nid=" . $this->_nid . "&reportid=12";
-                $result = file_get_contents($url);
-                if (preg_match("/You cannot request/", $result)) {
-                    throw new Exception ("Reached the limit");
+                $url = "https://reportws.linksynergy.com/downloadreport.php?bdate=" . $dStartDate->format("Ymd") . "&edate=" . $dEndDate->format("Ymd") . "&token=" . $site->secureToken . "&nid=" . $this->_nid . "&reportid=12";
+                $result = \file_get_contents($url);
+                if (\preg_match("/You cannot request/", $result)) {
+                    throw new \Exception ("Reached the limit");
                 }
-                $exportData = str_getcsv($result, "\n");
-                $num = count($exportData);
+                $exportData = \str_getcsv($result, "\n");
+                $num = \count($exportData);
                 for ($j = 1; $j < $num; $j++) {
-                    $transactionData = str_getcsv($exportData [$j], ",");
+                    $transactionData = \str_getcsv($exportData [$j], ",");
 
-                    if (change_it_for_isset!(( int )$transactionData [1], $merchantList)) {
+                    if (isset($merchantIdList[$transactionData [1]])) {
                         $transaction = Array();
                         $transaction ['merchantId'] = ( int )$transactionData [1];
-                        $transactionDate = new \DateTime ($transactionData [10] . " " . $transactionData [11], "MM/dd/yyyy HH:mm:ss");
-                        $transaction ['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
-
+                        $transactionDate = \DateTime::createFromFormat("m/d/Y H:i:s", $transactionData [10] . " " . $transactionData [11]);
+                        $transaction ['date'] = $transactionDate->format("Y-m-d H:i:s");
                         if ($transactionData [0] != '<none>') {
                             $transaction ['custom_id'] = $transactionData [0];
                         }
                         $transaction ['unique_id'] = $transactionData [3] . "_" . $transactionData [6];
-
-                        $sales = $filter->filter($transactionData [7]);
+                        $sales = \Oara\Utilities::parseDouble($transactionData [7]);
 
                         if ($sales != 0) {
                             $transaction ['status'] = \Oara\Utilities::STATUS_CONFIRMED;
                         } else if ($sales == 0) {
                             $transaction ['status'] = \Oara\Utilities::STATUS_PENDING;
                         }
-
-                        $transaction ['amount'] = $filter->filter($transactionData [7]);
-
-                        $transaction ['commission'] = $filter->filter($transactionData [9]);
-
+                        $transaction ['amount'] = $sales;
+                        $transaction ['commission'] = \Oara\Utilities::parseDouble($transactionData [9]);
                         if ($transaction ['commission'] < 0) {
                             $transaction ['amount'] = 0;
                             $transaction ['commission'] = 0;
                             $transaction ['status'] = \Oara\Utilities::STATUS_DECLINED;
                         }
-
                         $totalTransactions [] = $transaction;
                     }
                 }
@@ -414,89 +344,34 @@ class LinkShare extends \Oara\Network
 
     /**
      * @return array
-     * @throws Exception
+     * @throws \Exception
      */
     public function getPaymentHistory()
     {
         $paymentHistory = array();
-
-        $filter = new Zend_Filter_LocalizedToNormalized (array(
-            'precision' => 2
-        ));
-        $past = new \DateTime ("01-01-2010", "dd-MM-yyyy");
+        $past = new \DateTime ("2010-01-01 00:00:00");
         $now = new \DateTime ();
-        $dateList = \Oara\Utilities::yearsOfDifference($past, $now);
-        $dateList [] = $now;
+
         foreach ($this->_siteList as $site) {
-            for ($i = 0; $i < count($dateList) - 1; $i++) {
-                $bdate = clone $dateList [$i];
-                $edate = clone $dateList [$i + 1];
-                if ($i != (count($dateList) - 1)) {
-                    $edate->subDay(1);
-                }
-
-                //echo "getting Payment for Site " . $site->id . " and year " . $bdate->format!("yyyy") . " \n\n";
-                $url = "https://reportws.linksynergy.com/downloadreport.php?bdate=" . $bdate->format!("yyyyMMdd") . "&edate=" . $edate->format!("yyyyMMdd") . "&token=" . $site->secureToken . "&nid=" . $this->_nid . "&reportid=1";
-                $result = file_get_contents($url);
-                if (preg_match("/You cannot request/", $result)) {
-                    throw new Exception ("Reached the limit");
-                }
-
-                $paymentLines = str_getcsv($result, "\n");
-                $number = count($paymentLines);
-                for ($j = 1; $j < $number; $j++) {
-                    $paymentData = str_getcsv($paymentLines [$j], ",");
-                    $obj = array();
-                    $date = new \DateTime ($paymentData [1], "yyyy-MM-dd");
-                    $obj ['date'] = $date->format!("yyyy-MM-dd HH:mm:ss");
-
-                    $obj ['value'] = $filter->filter($paymentData [5]);
-                    $obj ['method'] = "BACS";
-                    $obj ['pid'] = $paymentData [0];
-                    $paymentHistory [] = $obj;
-                }
+            $url = "https://reportws.linksynergy.com/downloadreport.php?bdate=" . $past->format("Ymd") . "&edate=" . $now->format("Ymd") . "&token=" . $site->secureToken . "&nid=" . $this->_nid . "&reportid=1";
+            $result = \file_get_contents($url);
+            if (\preg_match("/You cannot request/", $result)) {
+                throw new \Exception ("Reached the limit");
+            }
+            $paymentLines = \str_getcsv($result, "\n");
+            $number = \count($paymentLines);
+            for ($j = 1; $j < $number; $j++) {
+                $paymentData = \str_getcsv($paymentLines [$j], ",");
+                $obj = array();
+                $date = \DateTime::createFromFormat("Y-m-d", $paymentData [1]);
+                $obj ['date'] = $date->format("Y-m-d H:i:s");
+                $obj ['value'] = \Oara\Utilities::parseDouble($paymentData [5]);
+                $obj ['method'] = "BACS";
+                $obj ['pid'] = $paymentData [0];
+                $paymentHistory [] = $obj;
             }
         }
 
         return $paymentHistory;
-    }
-
-    /**
-     * @param string $paymentId
-     * @param $merchantList
-     * @param $startDate
-     * @return array
-     */
-    public function paymentTransactions($paymentId, $merchantList, $startDate)
-    {
-        $transactionList = array();
-        /*
-        foreach ( $this->_siteList as $site ) {
-
-            $url = "https://reportws.linksynergy.com/downloadreport.php?payid=$paymentId&token=" . $site->secureToken . "&reportid=2";
-            $result = file_get_contents ( $url );
-            if (preg_match ( "/You cannot request/", $result )) {
-                throw new Exception ( "Reached the limit" );
-            }
-            $paymentLines = str_getcsv ( $result, "\n" );
-            $number = count ( $paymentLines );
-            for($j = 1; $j < $number; $j ++) {
-                $paymentData = str_getcsv ( $paymentLines [$j], "," );
-
-                $url = "https://reportws.linksynergy.com/downloadreport.php?invoiceid={$paymentData[2]}&token=" . $site->secureToken . "&reportid=3";
-                $result = file_get_contents ( $url );
-                if (preg_match ( "/You cannot request/", $result )) {
-                    throw new Exception ( "Reached the limit" );
-                }
-                $transactionLines = str_getcsv ( $result, "\n" );
-                $numbeTr = count ( $transactionLines );
-                for($z = 1; $z < $numbeTr; $z ++) {
-                    $transactionData = str_getcsv ( $transactionLines [$z], "," );
-                    $transactionList [] = $transactionData [4];
-                }
-            }
-        }
-        */
-        return $transactionList;
     }
 }

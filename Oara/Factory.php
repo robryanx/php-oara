@@ -32,11 +32,9 @@ namespace Oara;
 class Factory
 {
     /**
-     * Factory create instance function, It returns the specific Affiliate Network
-     *
      * @param $credentials
-     * @return \Oara\Network
-     * @throws Exception
+     * @return null
+     * @throws \Exception
      */
     public static function createInstance($credentials)
     {

@@ -123,7 +123,7 @@ class AffiliateFuture extends \Oara\Network
         $xpath = new \DOMXPath($doc);
         $results = $xpath->query('//table[@id="DataGrid1"]');
 
-        $merchantCsv = self::htmlToCsv(self::DOMinnerHTML($results->item(0)));
+        $merchantCsv = self::htmlToCsv(\Oara\Utilities::DOMinnerHTML($results->item(0)));
 
         for ($i = 1; $i < \count($merchantCsv) - 1; $i++) {
             $merchant = array();
@@ -163,7 +163,7 @@ class AffiliateFuture extends \Oara\Network
         foreach ($results as $result) {
 
             $doc = new \DOMDocument();
-            @$doc->loadHTML(self::DOMinnerHTML($result));
+            @$doc->loadHTML(\Oara\Utilities::DOMinnerHTML($result));
             $xpath = new \DOMXPath($doc);
             $resultsTd = $xpath->query('//td');
             $countTd = $resultsTd->length;
@@ -172,7 +172,7 @@ class AffiliateFuture extends \Oara\Network
                 $value = $resultTd->nodeValue;
 
                 $doc = new \DOMDocument();
-                @$doc->loadHTML(self::DOMinnerHTML($resultTd));
+                @$doc->loadHTML(\Oara\Utilities::DOMinnerHTML($resultTd));
                 $xpath = new \DOMXPath($doc);
                 $resultsA = $xpath->query('//a');
                 foreach ($resultsA as $resultA) {
@@ -190,22 +190,6 @@ class AffiliateFuture extends \Oara\Network
         }
         $exportData = \str_getcsv($csv, "\n");
         return $exportData;
-    }
-
-    /**
-     * @param $element
-     * @return string
-     */
-    private function DOMinnerHTML($element)
-    {
-        $innerHTML = "";
-        $children = $element->childNodes;
-        foreach ($children as $child) {
-            $tmp_dom = new \DOMDocument ();
-            $tmp_dom->appendChild($tmp_dom->importNode($child, true));
-            $innerHTML .= trim($tmp_dom->saveHTML());
-        }
-        return $innerHTML;
     }
 
     /**

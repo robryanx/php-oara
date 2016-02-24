@@ -32,28 +32,24 @@ class Itunes extends \Oara\Network
 {
 
     private $_pass = null;
-
     private $_publisherList = null;
 
     /**
-     * Constructor and Login
-     * @param $af
-     * @return Af_Export
+     * @param $credentials
      */
     public function login($credentials)
     {
         $this->_pass = $credentials['apiPassword'];
-
     }
 
     /**
-     * Check the connection
+     * @return bool
      */
     public function checkConnection()
     {
         //If not login properly the construct launch an exception
         $connection = true;
-        $result = file_get_contents("https://{$this->_pass}@itunes-api.performancehorizon.com/user/publisher.json");
+        $result = \file_get_contents("https://{$this->_pass}@itunes-api.performancehorizon.com/user/publisher.json");
         if ($result == false) {
             $connection = false;
         }
@@ -68,27 +64,21 @@ class Itunes extends \Oara\Network
         $credentials = array();
 
         $parameter = array();
-        $parameter["user"]["description"] = "User Log in";
-        $parameter["user"]["required"] = true;
-        $credentials[] = $parameter;
-
-        $parameter = array();
-        $parameter["password"]["description"] = "Password to Log in";
-        $parameter["password"]["required"] = true;
+        $parameter["apiPassword"]["description"] = "API password";
+        $parameter["apiPassword"]["required"] = true;
         $credentials[] = $parameter;
 
         return $credentials;
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getMerchantList()
+     * @return array
      */
     public function getMerchantList()
     {
         $merchants = Array();
-        $result = file_get_contents("https://{$this->_pass}@itunes-api.performancehorizon.com/user/account.json");
-        $publisherList = json_decode($result, true);
+        $result = \file_get_contents("https://{$this->_pass}@itunes-api.performancehorizon.com/user/account.json");
+        $publisherList = \json_decode($result, true);
         foreach ($publisherList["user_accounts"] as $publisher) {
             if (isset($publisher["publisher"])) {
                 $publisher = $publisher["publisher"];
@@ -98,12 +88,12 @@ class Itunes extends \Oara\Network
 
         foreach ($this->_publisherList as $id => $name) {
             $url = "https://{$this->_pass}@itunes-api.performancehorizon.com/user/publisher/$id/campaign/a.json";
-            $result = file_get_contents($url);
-            $merchantList = json_decode($result, true);
+            $result = \file_get_contents($url);
+            $merchantList = \json_decode($result, true);
             foreach ($merchantList["campaigns"] as $merchant) {
                 $merchant = $merchant["campaign"];
                 $obj = Array();
-                $obj['cid'] = str_replace("l", "", $merchant["campaign_id"]);
+                $obj['cid'] = \str_replace("l", "", $merchant["campaign_id"]);
                 $obj['name'] = $merchant["title"];
                 $merchants[] = $obj;
             }
@@ -114,12 +104,15 @@ class Itunes extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
+     * @param null $merchantList
+     * @param \DateTime|null $dStartDate
+     * @param \DateTime|null $dEndDate
+     * @return array
      */
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
         $transactions = array();
+        $merchantIdList = \Oara\Utilities::getMerchantIdMapFromMerchantList($merchantList);
 
 
         foreach ($this->_publisherList as $publisherId => $publisherName) {
@@ -131,22 +124,21 @@ class Itunes extends \Oara\Network
 
                 $url = "https://{$this->_pass}@itunes-api.performancehorizon.com/reporting/report_publisher/publisher/$publisherId/conversion.json?";
                 $url .= "status=approved|mixed|pending|rejected";
-                $url .= "&start_date=" . urlencode($dStartDate->format!("yyyy-MM-dd HH:mm"));
-                $url .= "&end_date=" . urlencode($dEndDate->format!("yyyy-MM-dd HH:mm"));
+                $url .= "&start_date=" . \urlencode($dStartDate->format("Y-m-d H:i"));
+                $url .= "&end_date=" . \urlencode($dEndDate->format("Y-m-d H:i"));
                 $url .= "&offset=" . $offset;
 
-                $result = file_get_contents($url);
-                $conversionList = json_decode($result, true);
+                $result = \file_get_contents($url);
+                $conversionList = \json_decode($result, true);
 
                 foreach ($conversionList["conversions"] as $conversion) {
                     $conversion = $conversion["conversion_data"];
-                    $conversion["campaign_id"] = str_replace("l", "", $conversion["campaign_id"]);
-                    if (change_it_for_isset!($conversion["campaign_id"], $merchantList)) {
+                    $conversion["campaign_id"] = \str_replace("l", "", $conversion["campaign_id"]);
+                    if (isset($merchantIdList[$conversion["campaign_id"]])) {
                         $transaction = Array();
                         $transaction['unique_id'] = $conversion["conversion_id"];
                         $transaction['merchantId'] = $conversion["campaign_id"];
-                        $transactionDate = new \DateTime($conversion["conversion_time"], 'yyyy-MM-dd HH:mm:ss');
-                        $transaction['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
+                        $transaction['date'] = $conversion["conversion_time"];
 
                         if ($conversion["publisher_reference"] != null) {
                             $transaction['custom_id'] = $conversion["publisher_reference"];
@@ -192,15 +184,14 @@ class Itunes extends \Oara\Network
 
         foreach ($this->_publisherList as $publisherId => $publisherName) {
             $url = "https://{$this->_pass}@itunes-api.performancehorizon.com/user/publisher/$publisherId/selfbill.json?";
-            $result = file_get_contents($url);
-            $paymentList = json_decode($result, true);
+            $result = \file_get_contents($url);
+            $paymentList = \json_decode($result, true);
 
             foreach ($paymentList["selfbills"] as $selfbill) {
                 $selfbill = $selfbill["selfbill"];
                 $obj = array();
-                $date = new \DateTime($selfbill["payment_date"], "yyyy-MM-dd HH:mm:ss");
-                $obj['date'] = $date->format!("yyyy-MM-dd HH:mm:ss");
-                $obj['pid'] = intval($selfbill["publisher_self_bill_id"]);
+                $obj['date'] = $selfbill["payment_date"];
+                $obj['pid'] = \intval($selfbill["publisher_self_bill_id"]);
                 $obj['value'] = $selfbill["total_value"];
                 $obj['method'] = "BACS";
                 $paymentHistory[] = $obj;
