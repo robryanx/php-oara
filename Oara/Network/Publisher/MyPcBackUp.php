@@ -32,40 +32,32 @@ class MyPcBackUP extends \Oara\Network
 {
 
     private $_credentials = null;
-    /**
-     * Client
-     * @var unknown_type
-     */
     private $_client = null;
 
     /**
-     * Constructor and Login
      * @param $credentials
-     * @return PureVPN
      */
     public function login($credentials)
     {
         $this->_credentials = $credentials;
-        self::logIn();
+        $this->_client = new \Oara\Curl\Access ($credentials);
 
-    }
-
-    private function logIn()
-    {
 
         $valuesLogin = array(
             new \Oara\Curl\Parameter('username', $this->_credentials['user']),
             new \Oara\Curl\Parameter('password', $this->_credentials['password']),
             new \Oara\Curl\Parameter('login', 'Login'),
         );
-
         $loginUrl = 'http://affiliates.mypcbackup.com/login';
-        $this->_client = new \Oara\Curl\Access($loginUrl, $valuesLogin, $this->_credentials);
+
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request($loginUrl, $valuesLogin);
+        $this->_client->post($urls);
 
     }
 
     /**
-     * Check the connection
+     * @return bool
      */
     public function checkConnection()
     {
@@ -75,7 +67,7 @@ class MyPcBackUP extends \Oara\Network
         $urls[] = new \Oara\Curl\Request('http://affiliates.mypcbackup.com/', array());
 
         $exportReport = $this->_client->get($urls);
-        if (!preg_match("/logout/", $exportReport[0])) {
+        if (!\preg_match("/logout/", $exportReport[0])) {
             $connection = false;
         }
         return $connection;
@@ -102,8 +94,7 @@ class MyPcBackUP extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getMerchantList()
+     * @return array
      */
     public function getMerchantList()
     {
@@ -118,8 +109,10 @@ class MyPcBackUP extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
+     * @param null $merchantList
+     * @param \DateTime|null $dStartDate
+     * @param \DateTime|null $dEndDate
+     * @return array
      */
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
@@ -132,28 +125,23 @@ class MyPcBackUP extends \Oara\Network
         $valuesFromExport[] = new \Oara\Curl\Parameter('sales', "1");
         $valuesFromExport[] = new \Oara\Curl\Parameter('refunds', "1");
         $valuesFromExport[] = new \Oara\Curl\Parameter('csv', "Download CSV");
-        $valuesFromExport[] = new \Oara\Curl\Parameter('start', $dStartDate->format!("MM/dd/yyyy"));
-        $valuesFromExport[] = new \Oara\Curl\Parameter('end', $dEndDate->format!("MM/dd/yyyy"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('start', $dStartDate->format("m/d/Y"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('end', $dEndDate->format("m/d/Y"));
 
         $urls[] = new \Oara\Curl\Request('http://affiliates.mypcbackup.com/transactions?', $valuesFromExport);
         $exportReport = $this->_client->get($urls);
-        $exportData = str_getcsv($exportReport[0], "\n");
-        $num = count($exportData);
+        $exportData = \str_getcsv($exportReport[0], "\n");
+        $num = \count($exportData);
         for ($i = 1; $i < $num; $i++) {
-            $transactionExportArray = str_getcsv($exportData[$i], ",");
+            $transactionExportArray = \str_getcsv($exportData[$i], ",");
             $transaction = Array();
             $transaction['merchantId'] = 1;
             $transaction['uniqueId'] = $transactionExportArray[2];
-            $transactionDate = new \DateTime($transactionExportArray[0] . " " . $transactionExportArray[1], 'yyyy-MM-dd HH:mm:ss', 'en');
-            $transaction['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
-            unset($transactionDate);
+            $transaction['date'] = $transactionExportArray[0] . " " . $transactionExportArray[1];
 
-            if (preg_match('/[-+]?[0-9]*\.?[0-9]+/', $transactionExportArray[5], $match)) {
-                $transaction['amount'] = (double)$match[0];
-            }
-            if (preg_match('/[-+]?[0-9]*\.?[0-9]+/', $transactionExportArray[5], $match)) {
-                $transaction['commission'] = (double)$match[0];
-            }
+            $transaction['amount'] = \Oara\Utilities::parseDouble($transactionExportArray[5]);
+            $transaction['commission'] = \Oara\Utilities::parseDouble($transactionExportArray[5]);
+
             if ($transactionExportArray[4] == "Sale") {
                 $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
             } else if ($transactionExportArray[4] == "Refund") {
@@ -165,16 +153,13 @@ class MyPcBackUP extends \Oara\Network
                 $transaction['customId'] = $transactionExportArray[7];
             }
             $totalTransactions[] = $transaction;
-
-
         }
 
         return $totalTransactions;
     }
 
     /**
-     * (non-PHPdoc)
-     * @see Oara/Network/Base#getPaymentHistory()
+     * @return array
      */
     public function getPaymentHistory()
     {
@@ -183,27 +168,29 @@ class MyPcBackUP extends \Oara\Network
         $urls = array();
         $urls[] = new \Oara\Curl\Request('http://affiliates.mypcbackup.com/paychecks', array());
         $exportReport = $this->_client->get($urls);
-        $dom = new Zend_Dom_Query($exportReport[0]);
-        $tableList = $dom->query('.transtable');
-        if ($tableList->current() != null) {
-            $exportData = \Oara\Utilities::htmlToCsv(\Oara\Utilities::DOMinnerHTML($tableList->current()));
-            $num = count($exportData);
+
+        $doc = new \DOMDocument();
+        @$doc->loadHTML($exportReport[0]);
+        $xpath = new \DOMXPath($doc);
+        $tableList = $xpath->query('//*[contains(concat(" ", normalize-space(@class), " "), " transtable ")]');
+        if ($tableList->item(0) != null) {
+            $exportData = \Oara\Utilities::htmlToCsv(\Oara\Utilities::DOMinnerHTML($tableList->item(0)));
+            $num = \count($exportData);
             for ($i = 1; $i < $num; $i++) {
-                $paymentExportArray = str_getcsv($exportData[$i], ";");
+                $paymentExportArray = \str_getcsv($exportData[$i], ";");
                 try {
                     $obj = array();
-                    $date = new \DateTime($paymentExportArray[14], "MM/dd/yyyy");
-                    $obj['date'] = $date->format!("yyyy-MM-dd HH:mm:ss");
-                    $obj['pid'] = preg_replace('/[^0-9\.,]/', "", $paymentExportArray[14]);
+                    $date = \DateTime::createFromFormat("m/d/Y", $paymentExportArray[14]);
+                    $date->setTime(0,0);
+                    $obj ['date'] = $date->format("Y-m-d H:i:s");
+                    $obj['pid'] = \preg_replace('/[^0-9\.,]/', "", $paymentExportArray[14]);
                     $obj['method'] = $paymentExportArray[16];
-                    $value = preg_replace('/[^0-9\.,]/', "", $paymentExportArray[12]);
-
-                    $obj['value'] = \Oara\Utilities::parseDouble($value);
+                    $obj['value'] = \Oara\Utilities::parseDouble($paymentExportArray[12]);
                     $paymentHistory[] = $obj;
-                } catch (Exception $e) {
+
+                } catch (\Exception $e) {
                     echo "Payment failed\n";
                 }
-
             }
         }
         return $paymentHistory;

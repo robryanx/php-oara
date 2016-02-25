@@ -286,27 +286,4 @@ class SilverTap extends \Oara\Network
 
     }
 
-    /**
-     * (non-PHPdoc)
-     * @see Oara/Network/Base#getPaymentHistory()
-     */
-    public function getPaymentHistory($currentPage = 1)
-    {
-        $paymentHistory = array();
-
-
-        return $paymentHistory;
-    }
-
-    /**
-     *  It returns the transactions for a payment
-     * @see \Oara\Network::paymentTransactions()
-     */
-    public function paymentTransactions($paymentId, $merchantList, $startDate)
-    {
-
-        $paymentTransactionList = array();
-
-        return $paymentTransactionList;
-    }
 }

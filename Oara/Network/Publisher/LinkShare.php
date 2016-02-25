@@ -261,7 +261,6 @@ class LinkShare extends \Oara\Network
             $urls [] = new \Oara\Curl\Request ('http://cli.linksynergy.com/cli/publisher/programs/carDownload.php', array());
             $result = $this->_client->get($urls);
 
-            $result [0] = \str_replace("Baseline TrueLock\"\n", "Baseline TrueLock\",\n", $result [0]);
             $exportData = \explode(",\n", $result [0]);
 
             $num = \count($exportData);
@@ -313,7 +312,8 @@ class LinkShare extends \Oara\Network
                     if (isset($merchantIdList[$transactionData [1]])) {
                         $transaction = Array();
                         $transaction ['merchantId'] = ( int )$transactionData [1];
-                        $transactionDate = \DateTime::createFromFormat("m/d/Y H:i:s", $transactionData [10] . " " . $transactionData [11]);
+                        $date = $transactionData [10] . " " . $transactionData [11].":00";
+                        $transactionDate = \DateTime::createFromFormat("m/d/Y H:i:s", $date);
                         $transaction ['date'] = $transactionDate->format("Y-m-d H:i:s");
                         if ($transactionData [0] != '<none>') {
                             $transaction ['custom_id'] = $transactionData [0];
@@ -349,26 +349,39 @@ class LinkShare extends \Oara\Network
     public function getPaymentHistory()
     {
         $paymentHistory = array();
-        $past = new \DateTime ("2010-01-01 00:00:00");
+        $past = new \DateTime ("2013-01-01 00:00:00");
         $now = new \DateTime ();
 
         foreach ($this->_siteList as $site) {
-            $url = "https://reportws.linksynergy.com/downloadreport.php?bdate=" . $past->format("Ymd") . "&edate=" . $now->format("Ymd") . "&token=" . $site->secureToken . "&nid=" . $this->_nid . "&reportid=1";
-            $result = \file_get_contents($url);
-            if (\preg_match("/You cannot request/", $result)) {
-                throw new \Exception ("Reached the limit");
-            }
-            $paymentLines = \str_getcsv($result, "\n");
-            $number = \count($paymentLines);
-            for ($j = 1; $j < $number; $j++) {
-                $paymentData = \str_getcsv($paymentLines [$j], ",");
-                $obj = array();
-                $date = \DateTime::createFromFormat("Y-m-d", $paymentData [1]);
-                $obj ['date'] = $date->format("Y-m-d H:i:s");
-                $obj ['value'] = \Oara\Utilities::parseDouble($paymentData [5]);
-                $obj ['method'] = "BACS";
-                $obj ['pid'] = $paymentData [0];
-                $paymentHistory [] = $obj;
+
+            $interval = $past->diff($now);
+            $numberYears = (int)$interval->format('%y')+1;
+            $auxStartDate = clone $past;
+
+            for ($i = 0; $i < $numberYears; $i++){
+
+                $auxEndData = clone $auxStartDate;
+                $auxEndData = $auxEndData->add(new \DateInterval('P1Y'));
+
+                $url = "https://reportws.linksynergy.com/downloadreport.php?bdate=" . $auxStartDate->format("Ymd") . "&edate=" . $auxEndData->format("Ymd") . "&token=" . $site->secureToken . "&nid=" . $this->_nid . "&reportid=1";
+                $result = \file_get_contents($url);
+                if (\preg_match("/You cannot request/", $result)) {
+                    throw new \Exception ("Reached the limit");
+                }
+                $paymentLines = \str_getcsv($result, "\n");
+                $number = \count($paymentLines);
+                for ($j = 1; $j < $number; $j++) {
+                    $paymentData = \str_getcsv($paymentLines [$j], ",");
+                    $obj = array();
+                    $date = \DateTime::createFromFormat("Y-m-d", $paymentData [1]);
+                    $obj ['date'] = $date->format("Y-m-d H:i:s");
+                    $obj ['value'] = \Oara\Utilities::parseDouble($paymentData [5]);
+                    $obj ['method'] = "BACS";
+                    $obj ['pid'] = $paymentData [0];
+                    $paymentHistory [] = $obj;
+                }
+
+                $auxStartDate->add(new \DateInterval('P1Y'));
             }
         }
 

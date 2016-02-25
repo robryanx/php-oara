@@ -32,38 +32,16 @@ class ParkAndGo extends \Oara\Network
 {
 
     private $_credentials = null;
-    /**
-     * Client
-     * @var unknown_type
-     */
     private $_client = null;
 
-    private $_apiKey = null;
-    private $_agent = null;
 
     /**
-     * Constructor and Login
      * @param $credentials
-     * @return SkyScanner
      */
     public function login($credentials)
     {
         $this->_credentials = $credentials;
-        self::logIn();
-
-    }
-
-    private function logIn()
-    {
-
-        $valuesLogin = array(
-            new \Oara\Curl\Parameter('agentcode', $this->_credentials['user']),
-            new \Oara\Curl\Parameter('pword', $this->_credentials['password']),
-        );
-
-        $loginUrl = 'https://www.parkandgo.co.uk/agents/';
-        $this->_client = new \Oara\Curl\Access($loginUrl, $valuesLogin, $this->_credentials);
-
+        $this->_client = new \Oara\Curl\Access ($credentials);
 
     }
 
@@ -88,7 +66,7 @@ class ParkAndGo extends \Oara\Network
     }
 
     /**
-     * Check the connection
+     * @return bool
      */
     public function checkConnection()
     {
@@ -96,15 +74,15 @@ class ParkAndGo extends \Oara\Network
         $connection = true;
         $urls = array();
 
-
         $valuesLogin = array(
             new \Oara\Curl\Parameter('agentcode', $this->_credentials['user']),
             new \Oara\Curl\Parameter('pword', $this->_credentials['password']),
         );
 
-        $urls[] = new \Oara\Curl\Request('https://www.parkandgo.co.uk/agents/', $valuesLogin);
+        $loginUrl = 'https://www.parkandgo.co.uk/agents/';
+        $urls[] = new \Oara\Curl\Request($loginUrl, $valuesLogin);
         $exportReport = $this->_client->post($urls);
-        if (!preg_match("/Produce Report/", $exportReport[0], $match)) {
+        if (!\preg_match("/Produce Report/", $exportReport[0], $match)) {
             $connection = false;
         }
 
@@ -112,8 +90,7 @@ class ParkAndGo extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getMerchantList()
+     * @return array
      */
     public function getMerchantList()
     {
@@ -129,8 +106,10 @@ class ParkAndGo extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
+     * @param null $merchantList
+     * @param \DateTime|null $dStartDate
+     * @param \DateTime|null $dEndDate
+     * @return array
      */
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
@@ -141,56 +120,37 @@ class ParkAndGo extends \Oara\Network
         $exportParams = array(
             new \Oara\Curl\Parameter('agentcode', $this->_credentials['user']),
             new \Oara\Curl\Parameter('pword', $this->_credentials['password']),
-            new \Oara\Curl\Parameter('fromdate', $dStartDate->format!("dd-MM-yyyy")),
-            new \Oara\Curl\Parameter('todate', $dEndDate->format!("dd-MM-yyyy")),
+            new \Oara\Curl\Parameter('fromdate', $dStartDate->format("d-m-Y")),
+            new \Oara\Curl\Parameter('todate', $dEndDate->format("d-m-Y")),
             new \Oara\Curl\Parameter('rqtype', "report")
         );
         $urls[] = new \Oara\Curl\Request('https://www.parkandgo.co.uk/agents/', $exportParams);
         $exportReport = $this->_client->post($urls);
 
         $today = new \DateTime();
-        $today->setHour(0);
-        $today->setMinute(0);
+        $today->setTime(0,0);
 
-        $exportData = str_getcsv($exportReport [0], "\n");
-        $num = count($exportData);
+        $exportData = \str_getcsv($exportReport [0], "\n");
+        $num = \count($exportData);
         for ($i = 1; $i < $num; $i++) {
 
-            $transactionExportArray = str_getcsv($exportData [$i], ",");
-
-            $arrivalDate = new \DateTime ($transactionExportArray [3], 'yyyy-MM-dd 00:00:00', 'en');
-
+            $transactionExportArray = \str_getcsv($exportData [$i], ",");
+            $arrivalDate = $transactionExportArray [3]." 00:00:00";
             $transaction = Array();
             $transaction ['merchantId'] = 1;
             $transaction ['unique_id'] = $transactionExportArray [0];
-            $transactionDate = new \DateTime ($transactionExportArray [2], 'yyyy-MM-dd 00:00:00', 'en');
-            $transaction ['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
-            unset ($transactionDate);
+            $transaction ['date'] = $transactionExportArray [2]." 00:00:00";
             $transaction ['status'] = \Oara\Utilities::STATUS_PENDING;
             if ($today > $arrivalDate) {
                 $transaction ['status'] = \Oara\Utilities::STATUS_CONFIRMED;
             }
-
-            $transaction ['amount'] = \Oara\Utilities::parseDouble($transactionExportArray [6]) / 1.2;
-            $transaction ['commission'] = \Oara\Utilities::parseDouble($transactionExportArray [7]) / 1.2;
-
+            $transaction ['amount'] = \Oara\Utilities::parseDouble($transactionExportArray [6] / 1.2) ;
+            $transaction ['commission'] = \Oara\Utilities::parseDouble($transactionExportArray [7] / 1.2) ;
             $totalTransactions [] = $transaction;
         }
 
 
         return $totalTransactions;
-    }
-
-    /**
-     * (non-PHPdoc)
-     * @see Oara/Network/Base#getPaymentHistory()
-     */
-    public function getPaymentHistory()
-    {
-        $paymentHistory = array();
-
-
-        return $paymentHistory;
     }
 
 }

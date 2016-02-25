@@ -30,43 +30,28 @@ namespace Oara\Network\Publisher;
  */
 class PaddyPower extends \Oara\Network
 {
-    /**
-     * Export Merchants Parameters
-     * @var array
-     */
-    private $_exportMerchantParameters = null;
-    /**
-     * Export Transaction Parameters
-     * @var array
-     */
-    private $_exportTransactionParameters = null;
-    /**
-     * Export Overview Parameters
-     * @var array
-     */
-    private $_exportOverviewParameters = null;
-    /**
-     * Export Payment Parameters
-     * @var array
-     */
-    private $_exportPaymentParameters = null;
 
     private $_credentials = null;
-    /**
-     * Client
-     * @var unknown_type
-     */
     private $_client = null;
 
     /**
-     * Constructor and Login
      * @param $credentials
-     * @return HideMyAss
      */
     public function login($credentials)
     {
         $this->_credentials = $credentials;
-        self::logIn();
+        $this->_client = new \Oara\Curl\Access ($credentials);
+
+        $valuesLogin = array(
+            new \Oara\Curl\Parameter('_method', 'POST'),
+            new \Oara\Curl\Parameter('us', $this->_credentials['user']),
+            new \Oara\Curl\Parameter('pa', $this->_credentials['password']),
+        );
+
+        $loginUrl = 'http://affiliates.paddypartners.com/affiliates/login.aspx?';
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request($loginUrl, $valuesLogin);
+        $this->_client->post($urls);
     }
 
     /**
@@ -89,21 +74,9 @@ class PaddyPower extends \Oara\Network
         return $credentials;
     }
 
-    private function logIn()
-    {
-
-        $valuesLogin = array(
-            new \Oara\Curl\Parameter('_method', 'POST'),
-            new \Oara\Curl\Parameter('us', $this->_credentials['user']),
-            new \Oara\Curl\Parameter('pa', $this->_credentials['password']),
-        );
-
-        $loginUrl = 'http://affiliates.paddypartners.com/affiliates/login.aspx?';
-        $this->_client = new \Oara\Curl\Access($loginUrl, $valuesLogin, $this->_credentials);
-    }
 
     /**
-     * Check the connection
+     * @return bool
      */
     public function checkConnection()
     {
@@ -111,20 +84,21 @@ class PaddyPower extends \Oara\Network
         $connection = false;
         $urls = array();
         $urls[] = new \Oara\Curl\Request('http://affiliates.paddypartners.com/affiliates/Dashboard.aspx', array());
-
         $exportReport = $this->_client->post($urls);
-        $dom = new Zend_Dom_Query($exportReport[0]);
-        $results = $dom->query('.lnkLogOut');
 
-        if (count($results) > 0) {
+        $doc = new \DOMDocument();
+        @$doc->loadHTML($exportReport[0]);
+        $xpath = new \DOMXPath($doc);
+        $results = $xpath->query('//*[contains(concat(" ", normalize-space(@class), " "), " lnkLogOut ")]');
+
+        if ($results->length > 0) {
             $connection = true;
         }
         return $connection;
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getMerchantList()
+     * @return array
      */
     public function getMerchantList()
     {
@@ -140,8 +114,10 @@ class PaddyPower extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
+     * @param null $merchantList
+     * @param \DateTime|null $dStartDate
+     * @param \DateTime|null $dEndDate
+     * @return array
      */
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
@@ -150,22 +126,18 @@ class PaddyPower extends \Oara\Network
 
         $urls = array();
         $urls[] = new \Oara\Curl\Request('http://affiliates.paddypartners.com/affiliates/DataServiceWrapper/DataService.svc/Export/CSV/Affiliates_Reports_Earnings_GetMonthlyBreakDown', array());
-
-        $exportReport = array();
         $exportReport = $this->_client->get($urls);
-        $exportData = str_getcsv($exportReport[0], "\n");
+        $exportData = \str_getcsv($exportReport[0], "\n");
 
-        $num = count($exportData);
+        $num = \count($exportData);
         for ($i = 1; $i < $num - 1; $i++) {
-            $transactionExportArray = str_getcsv($exportData[$i], ",");
+            $transactionExportArray = \str_getcsv($exportData[$i], ",");
             $transaction = Array();
             $transaction['merchantId'] = 1;
-            $transactionDate = new \DateTime($transactionExportArray[0], 'yyyy-MM-dd HH:mm:ss', 'en');
-            $transaction['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
-            unset($transactionDate);
+            $transaction['date'] = $transactionExportArray[0];
             $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
-            $transaction['amount'] = (double)$transactionExportArray[2];
-            $transaction['commission'] = (double)$transactionExportArray[6];
+            $transaction['amount'] = \Oara\Utilities::parseDouble($transactionExportArray[2]);
+            $transaction['commission'] = \Oara\Utilities::parseDouble($transactionExportArray[6]);
 
             if ($transaction['amount'] != 0 && $transaction['commission'] != 0) {
                 $totalTransactions[] = $transaction;
@@ -174,17 +146,6 @@ class PaddyPower extends \Oara\Network
 
         return $totalTransactions;
 
-    }
-
-    /**
-     * (non-PHPdoc)
-     * @see Oara/Network/Base#getPaymentHistory()
-     */
-    public function getPaymentHistory()
-    {
-        $paymentHistory = array();
-
-        return $paymentHistory;
     }
 
 }

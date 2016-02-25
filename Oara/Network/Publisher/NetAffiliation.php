@@ -30,32 +30,20 @@ namespace Oara\Network\Publisher;
  */
 class NetAffiliation extends \Oara\Network
 {
-    /**
-     * Server Number
-     * @var array
-     */
     private $_serverNumber = null;
-    /**
-     * Export Credentials
-     * @var array
-     */
     private $_credentials = null;
-
-    /**
-     * Client
-     * @var \Oara\Curl\Access
-     */
     private $_client = null;
 
     /**
-     * Constructor and Login
      * @param $credentials
-     * @return null
+     * @throws \Exception
+     * @throws \Oara\Curl\Exception
      */
     public function login($credentials)
     {
 
         $this->_credentials = $credentials;
+        $this->_client = new \Oara\Curl\Access($credentials);
 
         $user = $credentials['user'];
         $password = $credentials['password'];
@@ -65,15 +53,13 @@ class NetAffiliation extends \Oara\Network
             new \Oara\Curl\Parameter('login[email]', $user),
             new \Oara\Curl\Parameter('login[mdp]', $password)
         );
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request($loginUrl, $valuesLogin);
+        $this->_client->post($urls);
 
-
-        $this->_client = new \Oara\Curl\Access($credentials);
-
-        $cookieLocalion = COOKIES_BASE_DIR . DIRECTORY_SEPARATOR . $credentials['cookiesDir'] . DIRECTORY_SEPARATOR . $credentials['cookiesSubDir'] . DIRECTORY_SEPARATOR . $credentials["cookieName"] . '_cookies.txt';
-
-        $cookieContent = file_get_contents($cookieLocalion);
+        $cookieContent = $this->_client->getCookies();
         $serverNumber = null;
-        if (preg_match('/www(.)\.netaffiliation\.com/', $cookieContent, $matches)) {
+        if (\preg_match('/www(.)\.netaffiliation\.com/', $cookieContent, $matches)) {
             $this->_serverNumber = $matches[1];
         }
 
@@ -81,26 +67,30 @@ class NetAffiliation extends \Oara\Network
         $valuesFormExport = array();
         $urls[] = new \Oara\Curl\Request('http://www' . $this->_serverNumber . '.netaffiliation.com/affiliate/webservice', $valuesFormExport);
         $exportReport = $this->_client->get($urls);
-        $dom = new Zend_Dom_Query($exportReport[0]);
-        $results = $dom->query('.margeHaut5');
+
+        $doc = new \DOMDocument();
+        @$doc->loadHTML($exportReport[0]);
+        $xpath = new \DOMXPath($doc);
+        $results = $xpath->query('//*[contains(concat(" ", normalize-space(@class), " "), " margeHaut5 ")]');
         foreach ($results as $result) {
             $this->_credentials["apiPassword"] = $result->nodeValue;
         }
         if (!isset($this->_credentials["apiPassword"])) {
             $valuesFormExport = array();
             $urls[] = new \Oara\Curl\Request('http://www' . $this->_serverNumber . '.netaffiliation.com/affiliate/webservice?d=1', $valuesFormExport);
-            $exportReport = $this->_client->get($urls);
+            $this->_client->get($urls);
         }
         $urls = array();
         $valuesFormExport = array();
         $urls[] = new \Oara\Curl\Request('http://www' . $this->_serverNumber . '.netaffiliation.com/affiliate/webservice', $valuesFormExport);
         $exportReport = $this->_client->get($urls);
-        $dom = new Zend_Dom_Query($exportReport[0]);
-        $results = $dom->query('.margeHaut5');
+        $doc = new \DOMDocument();
+        @$doc->loadHTML($exportReport[0]);
+        $xpath = new \DOMXPath($doc);
+        $results = $xpath->query('//*[contains(concat(" ", normalize-space(@class), " "), " margeHaut5 ")]');
         foreach ($results as $result) {
             $this->_credentials["apiPassword"] = $result->nodeValue;
         }
-
 
     }
 
@@ -125,7 +115,7 @@ class NetAffiliation extends \Oara\Network
     }
 
     /**
-     * Check the connection
+     * @return bool
      */
     public function checkConnection()
     {
@@ -135,15 +125,14 @@ class NetAffiliation extends \Oara\Network
         $urls = array();
         $urls[] = new \Oara\Curl\Request('http://www' . $this->_serverNumber . '.netaffiliation.com/index.php/', $valuesFormExport);
         $exportReport = $this->_client->get($urls);
-        if (!preg_match("/logout/", $exportReport[0], $matches) || !isset($this->_credentials["apiPassword"])) {
+        if (!\preg_match("/logout/", $exportReport[0], $matches) || !isset($this->_credentials["apiPassword"])) {
             $connection = false;
         }
         return $connection;
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getMerchantList()
+     * @return array
      */
     public function getMerchantList()
     {
@@ -152,17 +141,17 @@ class NetAffiliation extends \Oara\Network
         $valuesFormExport = array();
         $urls = array();
         $urls[] = new \Oara\Curl\Request('http://www' . $this->_serverNumber . '.netaffiliation.com/index.php/affiliate/statistics', $valuesFormExport);
-
         $exportReport = $this->_client->post($urls);
-        $dom = new Zend_Dom_Query($exportReport[0]);
 
-        $results = $dom->query('#statistiquesGenerales_liste_programme optgroup');
+        $doc = new \DOMDocument();
+        @$doc->loadHTML($exportReport[0]);
+        $xpath = new \DOMXPath($doc);
+        $results = $xpath->query('//optgroup[contains(concat(" ", normalize-space(@id), " "), " statistiquesGenerales_liste_programme ")]');
         foreach ($results as $result) {
             $merchantLines = $result->childNodes;
             for ($i = 0; $i < $merchantLines->length; $i++) {
                 $cid = $merchantLines->item($i)->attributes->getNamedItem("value")->nodeValue;
-                $cid = str_replace("p", "", $cid);
-                $obj = array();
+                $cid = \str_replace("p", "", $cid);
                 $name = $merchantLines->item($i)->nodeValue;
                 $obj = array();
                 $obj['cid'] = $cid;
@@ -170,25 +159,27 @@ class NetAffiliation extends \Oara\Network
                 $merchants[] = $obj;
             }
         }
-
         return $merchants;
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate)
+     * @param null $merchantList
+     * @param \DateTime|null $dStartDate
+     * @param \DateTime|null $dEndDate
+     * @return array
+     * @throws Exception
      */
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
         $totalTransactions = array();
+        $merchantIdList = \Oara\Utilities::getMerchantIdMapFromMerchantList($merchantList);
 
         $valuesFormExport = array();
         $valuesFormExport[] = new \Oara\Curl\Parameter('authl', $this->_credentials["user"]);
         $valuesFormExport[] = new \Oara\Curl\Parameter('authv', $this->_credentials["apiPassword"]);
         $valuesFormExport[] = new \Oara\Curl\Parameter('champs', 'idprogramme,date,etat,argann,montant,taux,monnaie,idsite');
-
-        $valuesFormExport[] = new \Oara\Curl\Parameter('debut', $dStartDate->format!("yyyy-MM-dd"));
-        $valuesFormExport[] = new \Oara\Curl\Parameter('fin', $dEndDate->format!("yyyy-MM-dd"));
+        $valuesFormExport[] = new \Oara\Curl\Parameter('debut', $dStartDate->format("Y-m-d"));
+        $valuesFormExport[] = new \Oara\Curl\Parameter('fin', $dEndDate->format("Y-m-d"));
         $urls = array();
         $urls[] = new \Oara\Curl\Request('https://stat.netaffiliation.com/requete.php?', $valuesFormExport);
         $exportReport = $this->_client->get($urls);
@@ -199,28 +190,28 @@ class NetAffiliation extends \Oara\Network
         $num = count($exportData);
         for ($i = 1; $i < $num; $i++) {
             $transactionExportArray = str_getcsv($exportData[$i], ";");
-            if (change_it_for_isset!($transactionExportArray[0], $merchantList)) {
+            if (isset($merchantIdList[$transactionExportArray[0]])) {
                 $transaction = Array();
                 $transaction['merchantId'] = $transactionExportArray[0];
-                $transactionDate = new \DateTime($transactionExportArray[1], "dd/MM/yyyy HH:mm:ss");
-                $transaction['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
+                $transactionDate = \DateTime::createFromFormat("d/m/Y H:i:s", $transactionExportArray[1]);
+                $transaction['date'] = $transactionDate->format("Y-m-d H:i:s");
 
                 if ($transactionExportArray[3] != null) {
                     $transaction['custom_id'] = $transactionExportArray[3];
                 }
 
-                if (strstr($transactionExportArray[2], 'v')) {
+                if (\strstr($transactionExportArray[2], 'v')) {
                     $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
                 } else
-                    if (strstr($transactionExportArray[2], 'r')) {
+                    if (\strstr($transactionExportArray[2], 'r')) {
                         $transaction['status'] = \Oara\Utilities::STATUS_DECLINED;
-                    } else if (strstr($transactionExportArray[2], 'a')) {
+                    } else if (\strstr($transactionExportArray[2], 'a')) {
                         $transaction['status'] = \Oara\Utilities::STATUS_PENDING;
                     } else {
-                        throw new Exception ("Status not found");
+                        throw new \Exception ("Status not found");
                     }
-                $transaction['amount'] = $transactionExportArray[4];
-                $transaction['commission'] = round(($transactionExportArray[4] * $transactionExportArray[5]) / 100, 2);
+                $transaction['amount'] = \Oara\Utilities::parseDouble($transactionExportArray[4]);
+                $transaction['commission'] =\Oara\Utilities::parseDouble(($transactionExportArray[4] * $transactionExportArray[5]) / 100);
                 $totalTransactions[] = $transaction;
             }
         }
