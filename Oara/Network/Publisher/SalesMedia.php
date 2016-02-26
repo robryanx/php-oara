@@ -28,6 +28,6 @@ namespace Oara\Network\Publisher;
  * @version Release: 01.00
  *
  */
-class SalesMedia extends HasOffers
+class SalesMedia extends \Oara\Network\Publisher\HasOffers
 {
 }

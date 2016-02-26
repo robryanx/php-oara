@@ -30,109 +30,26 @@ namespace Oara\Network\Publisher;
  */
 class PayMode extends \Oara\Network
 {
-    /**
-     * Export Transaction Parameters
-     * @var array
-     */
-    private $_exportTransactionParameters = null;
-    /**
-     * Export Payment Parameters
-     * @var array
-     */
-    private $_exportPaymentParameters = null;
-    /**
-     *
-     * Payment Transactions Parameters
-     * @var unknown_type
-     */
-    private $_exportPaymentTransactionParameters = null;
-
-    /**
-     * Client
-     * @var unknown_type
-     */
     private $_client = null;
 
     /**
-     * AgentNumber
-     * @var unknown_type
-     */
-    private $_agent = null;
-
-    /**
-     * Constructor and Login
      * @param $credentials
-     * @return Daisycon
      */
     public function login($credentials)
     {
         $user = $credentials['user'];
         $password = $credentials['password'];
+        $this->_client = new \Oara\Curl\Access($credentials);
+
         $valuesLogin = array(
             new \Oara\Curl\Parameter('username', $user),
             new \Oara\Curl\Parameter('password', $password),
             new \Oara\Curl\Parameter('Enter', 'Enter')
         );
-
         $loginUrl = 'https://secure.paymode.com/paymode/do-login.jsp?';
-        $this->_client = new \Oara\Curl\Access($credentials);
-
-        $this->_exportTransactionParameters = array(new \Oara\Curl\Parameter('isDetailReport', 'true'),
-            new \Oara\Curl\Parameter('method', 'ALL'),
-            new \Oara\Curl\Parameter('currency', 'ALL_CURRENCIES'),
-            new \Oara\Curl\Parameter('amount', ''),
-            new \Oara\Curl\Parameter('disburserName', ''),
-            new \Oara\Curl\Parameter('remitType', 'CAR'),
-            new \Oara\Curl\Parameter('CAR_customerName', ''),
-            new \Oara\Curl\Parameter('CAR_confirmationNumber', ''),
-            new \Oara\Curl\Parameter('CAR_franchiseNumber', ''),
-            new \Oara\Curl\Parameter('CAR_remitStartDate', ''),
-            new \Oara\Curl\Parameter('CAR_remitEndDate', ''),
-            new \Oara\Curl\Parameter('CAR_rentalLocation', ''),
-            new \Oara\Curl\Parameter('CAR_agreementNumber', ''),
-            new \Oara\Curl\Parameter('CAR_commissionAmount', ''),
-            new \Oara\Curl\Parameter('CAR_sortBy', 'CUSTOMER_NAME'),
-            new \Oara\Curl\Parameter('submit1', 'Submit'),
-            new \Oara\Curl\Parameter('AIR_customerName', ''),
-            new \Oara\Curl\Parameter('AIR_confirmationNumber', ''),
-            new \Oara\Curl\Parameter('AIR_agreementNumber', ''),
-            new \Oara\Curl\Parameter('AIR_issueDate', ''),
-            new \Oara\Curl\Parameter('AIR_sortBy', 'CUSTOMER_NAME'),
-
-            new \Oara\Curl\Parameter('CRUISE_vesselName', ''),
-            new \Oara\Curl\Parameter('CRUISE_customerName', ''),
-            new \Oara\Curl\Parameter('CRUISE_confirmationNumber', ''),
-            new \Oara\Curl\Parameter('CRUISE_remitStartDate', ''),
-            new \Oara\Curl\Parameter('CRUISE_duration', ''),
-            new \Oara\Curl\Parameter('CRUISE_commissionAmount', ''),
-            new \Oara\Curl\Parameter('CRUISE_sortBy', 'FACILITY_NAME'),
-
-            new \Oara\Curl\Parameter('HOTEL_hotelName', ''),
-            new \Oara\Curl\Parameter('HOTEL_customerName', ''),
-            new \Oara\Curl\Parameter('HOTEL_confirmationNumber', ''),
-            new \Oara\Curl\Parameter('HOTEL_remitStartDate', ''),
-            new \Oara\Curl\Parameter('HOTEL_duration', ''),
-            new \Oara\Curl\Parameter('HOTEL_commissionAmount', ''),
-            new \Oara\Curl\Parameter('HOTEL_sortBy', 'FACILITY_NAME')
-        );
-
-        $this->_exportPaymentParameters = array(
-            new \Oara\Curl\Parameter('isDetailReport', 'false'),
-            new \Oara\Curl\Parameter('method', 'ALL'),
-            new \Oara\Curl\Parameter('currency', 'ALL_CURRENCIES'),
-            new \Oara\Curl\Parameter('amount', ''),
-            new \Oara\Curl\Parameter('disburserName', ''),
-            new \Oara\Curl\Parameter('submit1', 'Submit')
-        );
-
-        $this->_exportPaymentTransactionParameters = array(
-            new \Oara\Curl\Parameter('fromNonMigrated', 'false'),
-            new \Oara\Curl\Parameter('returnPage', ''),
-            new \Oara\Curl\Parameter('mode', ''),
-            new \Oara\Curl\Parameter('siteid', ''),
-            new \Oara\Curl\Parameter('ssid', '')
-        );
-
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request($loginUrl, $valuesLogin);
+        $this->_client->post($urls);
     }
 
     /**
@@ -156,7 +73,7 @@ class PayMode extends \Oara\Network
     }
 
     /**
-     * Check the connection
+     * @return bool
      */
     public function checkConnection()
     {
@@ -166,13 +83,15 @@ class PayMode extends \Oara\Network
         $urls[] = new \Oara\Curl\Request('https://secure.paymode.com/paymode/home.jsp?', array());
         $exportReport = $this->_client->get($urls);
 
-        if (preg_match('/class="logout"/', $exportReport[0], $matches)) {
+        if (\preg_match('/class="logout"/', $exportReport[0], $matches)) {
 
             $urls = array();
             $urls[] = new \Oara\Curl\Request('https://secure.paymode.com/paymode/reports-pre_commission_history.jsp?', array());
             $exportReport = $this->_client->get($urls);
-            $dom = new Zend_Dom_Query($exportReport[0]);
-            $results = $dom->query('input[type="checkbox"]');
+            $doc = new \DOMDocument();
+            @$doc->loadHTML($exportReport[0]);
+            $xpath = new \DOMXPath($doc);
+            $results = $xpath->query('//input[@type="checkbox"]');
             $agentNumber = array();
             foreach ($results as $result) {
                 $agentNumber[] = $result->getAttribute("id");
@@ -184,8 +103,7 @@ class PayMode extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getMerchantList()
+     * @return array
      */
     public function getMerchantList()
     {
@@ -200,21 +118,24 @@ class PayMode extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
+     * @param null $merchantList
+     * @param \DateTime|null $dStartDate
+     * @param \DateTime|null $dEndDate
+     * @return array
      */
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
 
         $totalTransactions = array();
-        $filter = new Zend_Filter_LocalizedToNormalized(array('precision' => 2));
 
         $valuesFromExport = array();
         $urls = array();
         $urls[] = new \Oara\Curl\Request('https://secure.paymode.com/paymode/reports-baiv2.jsp?', array());
         $exportReport = $this->_client->get($urls);
-        $dom = new Zend_Dom_Query($exportReport[0]);
-        $results = $dom->query('input[type="hidden"]');
+        $doc = new \DOMDocument();
+        @$doc->loadHTML($exportReport[0]);
+        $xpath = new \DOMXPath($doc);
+        $results = $xpath->query('//input[@type="hidden"]');
         foreach ($results as $hidden) {
             $name = $hidden->getAttribute("name");
             $value = $hidden->getAttribute("value");
@@ -232,12 +153,13 @@ class PayMode extends \Oara\Network
         $valuesFromExport[] = new \Oara\Curl\Parameter('tooManyRowsCheck', 'true');
 
         $urls = array();
-        $dateList = \Oara\Utilities::daysOfDifference($dStartDate, $dEndDate);
-        foreach ($dateList as $date) {
+        $amountDays = $dStartDate->diff($dEndDate)->days;
+        $auxDate = clone $dStartDate;
+        for ($j = 0; $j < $amountDays; $j++) {
             $valuesFromExportTemp = \Oara\Utilities::cloneArray($valuesFromExport);
-            $valuesFromExportTemp[] = new \Oara\Curl\Parameter('date', $date->format!("MM/dd/yyyy"));
-
+            $valuesFromExportTemp[] = new \Oara\Curl\Parameter('date', $auxDate->format("m/d/Y"));
             $urls[] = new \Oara\Curl\Request('https://secure.paymode.com/paymode/reports-do_csv.jsp?closeJQS=true?', $valuesFromExportTemp);
+            $auxDate->add(new \DateInterval('P1D'));
         }
 
         $exportReport = $this->_client->get($urls);
@@ -246,18 +168,15 @@ class PayMode extends \Oara\Network
         $commissionCounter = 0;
         $j = 0;
         foreach ($exportReport as $report) {
-            $reportParameters = $urls[$j]->getParameters();
-            $reportDate = $reportParameters[count($reportParameters) - 1]->getValue();
-            $transactionDate = new \DateTime($reportDate, 'MM/dd/yyyy', 'en');
-            if (!preg_match("/logout.jsp/", $report)) {
-                $exportReportData = str_getcsv($report, "\n");
-                $num = count($exportReportData);
+            if (!\preg_match("/logout.jsp/", $report)) {
+                $exportReportData = \str_getcsv($report, "\n");
+                $num = \count($exportReportData);
                 for ($i = 1; $i < $num; $i++) {
-                    $transactionArray = str_getcsv($exportReportData[$i], ",");
-                    if (count($transactionArray) == 30 && $transactionArray[0] == 'D' && $transactionArray[1] == null) {
+                    $transactionArray = \str_getcsv($exportReportData[$i], ",");
+                    if (\count($transactionArray) == 30 && $transactionArray[0] == 'D' && $transactionArray[1] == null) {
                         $transactionCounter++;
-                        $valueCounter += $filter->filter($transactionArray[24]);
-                        $commissionCounter += $filter->filter($transactionArray[28]);
+                        $valueCounter += \Oara\Utilities::parseDouble($transactionArray[24]);
+                        $commissionCounter += \Oara\Utilities::parseDouble($transactionArray[28]);
                     }
                 }
             }
@@ -265,19 +184,16 @@ class PayMode extends \Oara\Network
         }
 
         if ($transactionCounter > 0) {
-
-            for ($i = 0; $i < count($dateList); $i++) {
-
+            $auxDate = clone $dStartDate;
+            for ($i = 0; $i < $amountDays; $i++) {
                 $transaction = array();
                 $transaction['merchantId'] = 1;
                 $transaction['status'] = \Oara\Utilities::STATUS_PAID;
-
-                $transaction['date'] = $dateList[$i]->format!("yyyy-MM-dd HH:mm:ss");
-
-                $transaction['amount'] = $valueCounter / count($dateList);
-                $transaction['commission'] = $commissionCounter / count($dateList);
-
+                $transaction['date'] = $auxDate->format("Y-m-d H:i:s");
+                $transaction['amount'] = \Oara\Utilities::parseDouble($valueCounter / $amountDays);
+                $transaction['commission'] = \Oara\Utilities::parseDouble($commissionCounter / $amountDays);
                 $totalTransactions[] = $transaction;
+                $auxDate->add(new \DateInterval('P1D'));
             }
 
         }
@@ -285,36 +201,30 @@ class PayMode extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see Oara/Network/Base#getPaymentHistory()
+     * @return array
      */
     public function getPaymentHistory()
     {
-
         $paymentHistory = array();
 
-        $filter = new Zend_Filter_LocalizedToNormalized(array('precision' => 2));
-        $startDate = new \DateTime("01-01-2012", "dd-MM-yyyy");
+        $startDate = new \DateTime("2012-01-01");
         $endDate = new \DateTime();
 
-        $dateList = \Oara\Utilities::monthsOfDifference($startDate, $endDate);
-        foreach ($dateList as $date) {
-            $monthStartDate = clone $date;
+        $amountMonths = $startDate->diff($endDate)->months;
+        $auxDate = clone $startDate;
+
+        for ($j = 0; $j < $amountMonths; $j++) {
+            $monthStartDate = clone $auxDate;
             $monthEndDate = null;
 
-            $monthEndDate = clone $date;
-            $monthEndDate->setDay(1);
-            $monthEndDate->addMonth(1);
-            $monthEndDate->subDay(1);
-
-            $monthEndDate->setHour(23);
-            $monthEndDate->setMinute(59);
-            $monthEndDate->setSecond(59);
+            $monthEndDate = clone $auxDate;
+            $monthEndDate->add(new \DateInterval('P1M'));
+            $monthEndDate->sub(new \DateInterval('P1D'));
+            $monthEndDate->setTime(23,59,59);
 
             $valuesFromExport = array();
-            $valuesFromExport[] = new \Oara\Curl\Parameter('Begin_Date', $monthStartDate->format!("MM/dd/yyyy"));
-            $valuesFromExport[] = new \Oara\Curl\Parameter('End_Date', $monthEndDate->format!("MM/dd/yyyy"));
-
+            $valuesFromExport[] = new \Oara\Curl\Parameter('Begin_Date', $monthStartDate->format("m/d/Y"));
+            $valuesFromExport[] = new \Oara\Curl\Parameter('End_Date', $monthEndDate->format("m/d/Y"));
             $valuesFromExport[] = new \Oara\Curl\Parameter('cd', "c");
             $valuesFromExport[] = new \Oara\Curl\Parameter('disb', "false");
             $valuesFromExport[] = new \Oara\Curl\Parameter('coll', "true");
@@ -323,7 +233,6 @@ class PayMode extends \Oara\Network
             $valuesFromExport[] = new \Oara\Curl\Parameter('Begin_DateCN', "");
             $valuesFromExport[] = new \Oara\Curl\Parameter('End_DatePN', "");
             $valuesFromExport[] = new \Oara\Curl\Parameter('End_DateCN', "");
-
             $valuesFromExport[] = new \Oara\Curl\Parameter('disbAcctIDRef', "");
             $valuesFromExport[] = new \Oara\Curl\Parameter('checkNumberID', "");
             $valuesFromExport[] = new \Oara\Curl\Parameter('paymentNum', "");
@@ -334,7 +243,6 @@ class PayMode extends \Oara\Network
             $valuesFromExport[] = new \Oara\Curl\Parameter('disbSiteIDManual', "");
             $valuesFromExport[] = new \Oara\Curl\Parameter('collSiteIDManual', "");
             $valuesFromExport[] = new \Oara\Curl\Parameter('agencyid', "");
-
             $valuesFromExport[] = new \Oara\Curl\Parameter('collbankAccount', "");
             $valuesFromExport[] = new \Oara\Curl\Parameter('remitInvoice', "");
             $valuesFromExport[] = new \Oara\Curl\Parameter('remitAccount', "");
@@ -348,54 +256,50 @@ class PayMode extends \Oara\Network
             $exportReport = $this->_client->post($urls);
 
 
-            if (!preg_match("/No payments were found/", $exportReport[0])) {
-                $dom = new Zend_Dom_Query($exportReport[0]);
-                $results = $dom->query('form[name="transform"] table');
-                if (count($results) > 0) {
-                    $tableCsv = \Oara\Utilities::htmlToCsv(\Oara\Utilities::DOMinnerHTML($results->current()));
+            if (!\preg_match("/No payments were found/", $exportReport[0])) {
+
+                $doc = new \DOMDocument();
+                @$doc->loadHTML($exportReport[0]);
+                $xpath = new \DOMXPath($doc);
+                $results = $xpath->query('//form[@name="transform"] table');
+                if (\count($results) > 0) {
+                    $tableCsv = \Oara\Utilities::htmlToCsv(\Oara\Utilities::DOMinnerHTML($results->item(0)));
                     $payment = Array();
-                    $paymentArray = str_getcsv($tableCsv[4], ";");
+                    $paymentArray = \str_getcsv($tableCsv[4], ";");
                     $payment['pid'] = $paymentArray[1];
 
-                    $dateResult = $dom->query('form[name="collForm"] table');
-                    if (count($dateResult) > 0) {
-                        $dateCsv = \Oara\Utilities::htmlToCsv(\Oara\Utilities::DOMinnerHTML($dateResult->current()));
-                        $dateArray = str_getcsv($dateCsv[2], ";");
-
-                        $paymentDate = new \DateTime($dateArray[1], 'dd-MMM-yyyy', 'en');
-                        $payment['date'] = $paymentDate->format!("yyyy-MM-dd HH:mm:ss");
-
-                        $paymentArray = str_getcsv($tableCsv[3], ";");
-                        $payment['value'] = \Oara\Utilities::parseDouble(preg_replace('/[^0-9\.,]/', "", $paymentArray[3]));
+                    $dateResult = $xpath->query('//form[@name="collForm"] table');
+                    if (\count($dateResult) > 0) {
+                        $dateCsv = \Oara\Utilities::htmlToCsv(\Oara\Utilities::DOMinnerHTML($dateResult->item(0)));
+                        $dateArray = \str_getcsv($dateCsv[2], ";");
+                        $paymentDate = \DateTime::createFromFormat("d-M-Y", $dateArray [1]);
+                        $payment['date'] = $paymentDate->format("Y-m-d H:i:s");
+                        $paymentArray = \str_getcsv($tableCsv[3], ";");
+                        $payment['value'] = \Oara\Utilities::parseDouble($paymentArray[3]);
                         $payment['method'] = "BACS";
                         $paymentHistory[] = $payment;
                     }
 
                 } else {
-                    $results = $dom->query('table[cellpadding="2"]');
+                    $results = $xpath->query('//table[@cellpadding="2"]');
                     foreach ($results as $table) {
 
                         $tableCsv = \Oara\Utilities::htmlToCsv(\Oara\Utilities::DOMinnerHTML($table));
-                        $num = count($tableCsv);
+                        $num = \count($tableCsv);
                         for ($i = 1; $i < $num; $i++) {
                             $payment = Array();
-                            $paymentArray = str_getcsv($tableCsv[$i], ";");
+                            $paymentArray = \str_getcsv($tableCsv[$i], ";");
                             $payment['pid'] = $paymentArray[0];
-                            $paymentDate = new \DateTime($paymentArray[3], 'MM/dd/yyyy', 'en');
-                            $payment['date'] = $paymentDate->format!("yyyy-MM-dd HH:mm:ss");
+                            $paymentDate = \DateTime::createFromFormat("m/d/Y", $paymentArray [3]);
+                            $payment['date'] = $paymentDate->format("Y-m-d H:i:s");
                             $payment['value'] = \Oara\Utilities::parseDouble($paymentArray[9]);
                             $payment['method'] = "BACS";
                             $paymentHistory[] = $payment;
-
                         }
                     }
-
                 }
-
-
             }
-
-
+            $auxDate->add(new \DateInterval('P1M'));
         }
         return $paymentHistory;
     }

@@ -31,23 +31,14 @@ namespace Oara\Network\Publisher;
 class PostAffiliatePro extends \Oara\Network
 {
     public $_credentials = null;
-    /**
-     * Client
-     *
-     * @var unknown_type
-     */
     public $_session = null;
 
     /**
-     * Constructor and Login
-     *
-     * @param
-     *            $credentials
-     * @return PureVPN
+     * @param $credentials
      */
     public function login($credentials)
     {
-        include realpath(dirname(__FILE__)) . "/PostAffiliatePro/PapApi.class.php";
+        include \realpath(\dirname(__FILE__)) . "/PostAffiliatePro/PapApi.class.php";
         $this->_credentials = $credentials;
     }
 
@@ -72,14 +63,14 @@ class PostAffiliatePro extends \Oara\Network
     }
 
     /**
-     * Check the connection
+     * @return bool
      */
     public function checkConnection()
     {
         // If not login properly the construct launch an exception
         $connection = true;
-        $session = new Gpf_Api_Session("http://" . $this->_credentials["domain"] . "/scripts/server.php");
-        if (!@$session->login($this->_credentials ["user"], $this->_credentials ["password"], Gpf_Api_Session::AFFILIATE)) {
+        $session = new \Gpf_Api_Session("http://" . $this->_credentials["domain"] . "/scripts/server.php");
+        if (!@$session->login($this->_credentials ["user"], $this->_credentials ["password"], \Gpf_Api_Session::AFFILIATE)) {
             $connection = false;
         }
         $this->_session = $session;
@@ -88,9 +79,7 @@ class PostAffiliatePro extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     *
-     * @see library/Oara/Network/Interface#getMerchantList()
+     * @return array
      */
     public function getMerchantList()
     {
@@ -105,9 +94,10 @@ class PostAffiliatePro extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     *
-     * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
+     * @param null $merchantList
+     * @param \DateTime|null $dStartDate
+     * @param \DateTime|null $dEndDate
+     * @return array
      */
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
@@ -116,10 +106,10 @@ class PostAffiliatePro extends \Oara\Network
 
         //----------------------------------------------
         // get recordset of list of transactions
-        $request = new Pap_Api_TransactionsGrid($this->_session);
+        $request = new \Pap_Api_TransactionsGrid($this->_session);
         // set filter
-        $request->addFilter('dateinserted', 'D>=', $dStartDate->format!("yyyy-MM-dd"));
-        $request->addFilter('dateinserted', 'D<=', $dEndDate->format!("yyyy-MM-dd"));
+        $request->addFilter('dateinserted', 'D>=', $dStartDate->format("Y-m-d"));
+        $request->addFilter('dateinserted', 'D<=', $dEndDate->format("Y-m-d"));
         $request->setLimit(0, 100);
         $request->setSorting('orderid', false);
         $request->sendNow();
@@ -130,11 +120,8 @@ class PostAffiliatePro extends \Oara\Network
             $transaction = Array();
             $transaction ['merchantId'] = 1;
             $transaction ['uniqueId'] = $rec->get('orderid');
-            $transactionDate = new \DateTime ($rec->get('dateinserted'), 'yyyy-MM-dd HH:mm:ss', 'en');
-            $transaction ['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
-            unset ($transactionDate);
+            $transaction ['date'] = $rec->get('dateinserted');
             $transaction ['status'] = \Oara\Utilities::STATUS_CONFIRMED;
-
             $transaction ['amount'] = \Oara\Utilities::parseDouble($rec->get('totalcost'));
             $transaction ['commission'] = \Oara\Utilities::parseDouble($rec->get('commission'));
             $totalTransactions [] = $transaction;
@@ -146,7 +133,7 @@ class PostAffiliatePro extends \Oara\Network
         $totalRecords = $grid->getTotalCount();
         $maxRecords = $recordset->getSize();
         if ($maxRecords > 0) {
-            $cycles = ceil($totalRecords / $maxRecords);
+            $cycles = \ceil($totalRecords / $maxRecords);
             for ($i = 1; $i < $cycles; $i++) {
                 // now get next 30 records
                 $request->setLimit($i * $maxRecords, $maxRecords);
@@ -157,11 +144,7 @@ class PostAffiliatePro extends \Oara\Network
                     $transaction = Array();
                     $transaction ['merchantId'] = 1;
                     $transaction ['uniqueId'] = $rec->get('orderid');
-                    $transactionDate = new \DateTime ($rec->get('dateinserted'), 'yyyy-MM-dd HH:mm:ss', 'en');
-                    $transaction ['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
-                    unset ($transactionDate);
-
-
+                    $transaction ['date'] = $rec->get('orderid');
                     if ($rec->get('rstatus') == 'D') {
                         $transaction ['status'] = \Oara\Utilities::STATUS_DECLINED;
                     } else if ($rec->get('rstatus') == 'P') {
@@ -169,7 +152,6 @@ class PostAffiliatePro extends \Oara\Network
                     } else if ($rec->get('rstatus') == 'A') {
                         $transaction ['status'] = \Oara\Utilities::STATUS_CONFIRMED;
                     }
-
                     $transaction ['amount'] = \Oara\Utilities::parseDouble($rec->get('totalcost'));
                     $transaction ['commission'] = \Oara\Utilities::parseDouble($rec->get('commission'));
                     $totalTransactions [] = $transaction;
@@ -177,17 +159,5 @@ class PostAffiliatePro extends \Oara\Network
             }
         }
         return $totalTransactions;
-    }
-
-    /**
-     * (non-PHPdoc)
-     *
-     * @see Oara/Network/Base#getPaymentHistory()
-     */
-    public function getPaymentHistory()
-    {
-        $paymentHistory = array();
-
-        return $paymentHistory;
     }
 }

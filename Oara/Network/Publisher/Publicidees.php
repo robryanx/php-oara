@@ -31,36 +31,37 @@ namespace Oara\Network\Publisher;
  */
 class Publicidees extends \Oara\Network
 {
-    /**
-     * Client
-     * @var unknown_type
-     */
     private $_client = null;
 
     /**
-     * Constructor and Login
      * @param $credentials
-     * @return Effiliation
      */
     public function login($credentials)
     {
 
         $user = $credentials['user'];
         $password = $credentials['password'];
+        $this->_client = new \Oara\Curl\Access($credentials);
+
         $loginUrl = 'http://es.publicideas.com/logmein.php';
         $valuesLogin = array(new \Oara\Curl\Parameter('loginAff', $user),
             new \Oara\Curl\Parameter('passAff', $password),
             new \Oara\Curl\Parameter('userType', 'aff')
         );
-        $this->_client = new \Oara\Curl\Access($credentials);
-        $result = json_decode($this->_client->getConstructResult());
+
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request($loginUrl, $valuesLogin);
+        $exportReport = $this->_client->post($urls);
+        $result = \json_decode($exportReport[0]);
         $loginUrl = 'http://publisher.publicideas.com/entree_affilies.php';
         $valuesLogin = array(new \Oara\Curl\Parameter('login', $result->login),
             new \Oara\Curl\Parameter('pass', $result->pass),
             new \Oara\Curl\Parameter('submit', 'Ok'),
             new \Oara\Curl\Parameter('h', $result->h)
         );
-        $this->_client = new \Oara\Curl\Access($credentials);
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request($loginUrl, $valuesLogin);
+        $this->_client->post($urls);
 
     }
 
@@ -85,7 +86,7 @@ class Publicidees extends \Oara\Network
     }
 
     /**
-     * Check the connection
+     * @return bool
      */
     public function checkConnection()
     {
@@ -94,15 +95,14 @@ class Publicidees extends \Oara\Network
         $urls = array();
         $urls[] = new \Oara\Curl\Request('http://publisher.publicideas.com/', array());
         $exportReport = $this->_client->get($urls);
-        if (preg_match('/deconnexion\.php/', $exportReport[0], $matches)) {
+        if (\preg_match('/deconnexion\.php/', $exportReport[0], $matches)) {
             $connection = true;
         }
         return $connection;
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getMerchantList()
+     * @return array
      */
     public function getMerchantList()
     {
@@ -116,25 +116,26 @@ class Publicidees extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate)
+     * @param null $merchantList
+     * @param \DateTime|null $dStartDate
+     * @param \DateTime|null $dEndDate
+     * @return array
      */
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
         $totalTransactions = array();
-        $filter = new Zend_Filter_LocalizedToNormalized(array('precision' => 2, 'locale' => 'fr'));
-        $dateArray = \Oara\Utilities::daysOfDifference($dStartDate, $dEndDate);
-        $dateArraySize = sizeof($dateArray);
 
-        for ($i = 0; $i < $dateArraySize; $i++) {
+        $amountDays = $dStartDate->diff($dEndDate)->days;
+        $auxDate = clone $dStartDate;
+
+        for ($i = 0; $i < $amountDays; $i++) {
 
             $valuesFromExport = array();
             $valuesFromExport[] = new \Oara\Curl\Parameter('action', "myresume");
             $valuesFromExport[] = new \Oara\Curl\Parameter('monthDisplay', 0);
-            //$valuesFromExport[] = new \Oara\Curl\Parameter('currency', 'EUR');
             $valuesFromExport[] = new \Oara\Curl\Parameter('tout', 1);
-            $valuesFromExport[] = new \Oara\Curl\Parameter('dD', $dateArray[$i]->format!("dd/MM/yyyy"));
-            $valuesFromExport[] = new \Oara\Curl\Parameter('dF', $dateArray[$i]->format!("dd/MM/yyyy"));
+            $valuesFromExport[] = new \Oara\Curl\Parameter('dD', $auxDate->format("d/m/Y"));
+            $valuesFromExport[] = new \Oara\Curl\Parameter('dF', $auxDate->format("d/m/Y"));
             $valuesFromExport[] = new \Oara\Curl\Parameter('periode', "0");
             $valuesFromExport[] = new \Oara\Curl\Parameter('expAct', "1");
             $valuesFromExport[] = new \Oara\Curl\Parameter('tabid', "0");
@@ -147,27 +148,25 @@ class Publicidees extends \Oara\Network
                 continue;
             }
 
-            $exportData = str_getcsv(utf8_decode($exportReport[0]), "\n");
-            $num = count($exportData);
-
-            $headerArray = str_getcsv($exportData[0], ";");
+            $exportData = \str_getcsv(\utf8_decode($exportReport[0]), "\n");
+            $num = \count($exportData);
+            $headerArray = \str_getcsv($exportData[0], ";");
             $headerMap = array();
-            if (count($headerArray) > 1) {
+            if (\count($headerArray) > 1) {
 
-                for ($j = 0; $j < count($headerArray); $j++) {
+                for ($j = 0; $j < \count($headerArray); $j++) {
                     if ($headerArray[$j] == "" && $headerArray[$j - 1] == "Ventes") {
                         $headerMap["pendingVentes"] = $j;
-                    } else
-                        if ($headerArray[$j] == "" && $headerArray[$j - 1] == "CA") {
-                            $headerMap["pendingCA"] = $j;
-                        } else {
-                            $headerMap[$headerArray[$j]] = $j;
-                        }
+                    } else if ($headerArray[$j] == "" && $headerArray[$j - 1] == "CA") {
+                        $headerMap["pendingCA"] = $j;
+                    } else {
+                        $headerMap[$headerArray[$j]] = $j;
+                    }
                 }
             }
 
             for ($j = 1; $j < $num; $j++) {
-                $transactionExportArray = str_getcsv($exportData[$j], ";");
+                $transactionExportArray = \str_getcsv($exportData[$j], ";");
                 if (isset($headerMap["Ventes"]) && isset($headerMap["pendingVentes"])) {
                     $confirmedTransactions = (int)$transactionExportArray[$headerMap["Ventes"]];
                     $pendingTransactions = (int)$transactionExportArray[$headerMap["pendingVentes"]];
@@ -175,9 +174,9 @@ class Publicidees extends \Oara\Network
                     for ($z = 0; $z < $confirmedTransactions; $z++) {
                         $transaction = Array();
                         $transaction['merchantId'] = 1;
-                        $transaction['date'] = $dateArray[$i]->format!("yyyy-MM-dd HH:mm:ss");
-                        $transaction['amount'] = ((double)$filter->filter(substr($transactionExportArray[$headerMap["CA"]], 0, -2)) / $confirmedTransactions);
-                        $transaction['commission'] = ((double)$filter->filter(substr($transactionExportArray[$headerMap["CA"]], 0, -2)) / $confirmedTransactions);
+                        $transaction['date'] = $auxDate->format("Y-m-d H:i:s");
+                        $transaction['amount'] = \Oara\Utilities::parseDouble(\substr($transactionExportArray[$headerMap["CA"]], 0, -2) / $confirmedTransactions);
+                        $transaction['commission'] = \Oara\Utilities::parseDouble(\substr($transactionExportArray[$headerMap["CA"]], 0, -2) / $confirmedTransactions);
                         $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
                         $totalTransactions[] = $transaction;
                     }
@@ -185,15 +184,15 @@ class Publicidees extends \Oara\Network
                     for ($z = 0; $z < $pendingTransactions; $z++) {
                         $transaction = Array();
                         $transaction['merchantId'] = 1;
-                        $transaction['date'] = $dateArray[$i]->format!("yyyy-MM-dd HH:mm:ss");
-                        $transaction['amount'] = (double)$transactionExportArray[$headerMap["pendingCA"]] / $pendingTransactions;
-                        $transaction['commission'] = (double)$transactionExportArray[$headerMap["pendingCA"]] / $pendingTransactions;
+                        $transaction['date'] = $auxDate->format("Y-m-d H:i:s");
+                        $transaction['amount'] = \Oara\Utilities::parseDouble($transactionExportArray[$headerMap["pendingCA"]] / $pendingTransactions);
+                        $transaction['commission'] = \Oara\Utilities::parseDouble($transactionExportArray[$headerMap["pendingCA"]] / $pendingTransactions);
                         $transaction['status'] = \Oara\Utilities::STATUS_PENDING;
                         $totalTransactions[] = $transaction;
                     }
-
                 }
             }
+            $auxDate->add(new \DateInterval('P1D'));
         }
         return $totalTransactions;
     }

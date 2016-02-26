@@ -31,63 +31,33 @@ namespace Oara\Network\Publisher;
  */
 class PrivateInternetAccess extends \Oara\Network
 {
-    /**
-     * Client
-     * @var unknown_type
-     */
+
     private $_client = null;
 
     /**
-     * Constructor and Login
      * @param $credentials
-     * @return Daisycon
+     * @throws Exception
      */
     public function login($credentials)
     {
         $user = $credentials['user'];
         $password = $credentials['password'];
+        $this->_client = new \Oara\Curl\Access($credentials);
+
 
         $url = "https://www.privateinternetaccess.com/affiliates/sign_in";
-
         $valuesLogin = array(
             new \Oara\Curl\Parameter('affiliate[email]', $user),
             new \Oara\Curl\Parameter('affiliate[password]', $password),
         );
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request($url, $valuesLogin);
+        $exportReport = $this->_client->post($urls);
 
-        $this->_client = new \Oara\Curl\Access($url, $valuesLogin, $credentials);
-
-
-        $dir = COOKIES_BASE_DIR . DIRECTORY_SEPARATOR . $credentials['cookiesDir'] . DIRECTORY_SEPARATOR . $credentials['cookiesSubDir'] . DIRECTORY_SEPARATOR;
-
-        $cookieName = $credentials["cookieName"];
-        $cookies = $dir . $cookieName . '_cookies.txt';
-
-        $defaultOptions = array(
-            CURLOPT_USERAGENT => "Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:22.0) Gecko/20100101 Firefox/22.0",
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_FAILONERROR => true,
-            CURLOPT_COOKIEJAR => $cookies,
-            CURLOPT_COOKIEFILE => $cookies,
-            CURLOPT_AUTOREFERER => true,
-            CURLOPT_SSL_VERIFYPEER => false,
-            CURLOPT_SSL_VERIFYHOST => false,
-            CURLOPT_HEADER => false,
-        );
-
-        //Init curl
-        $ch = curl_init();
-        $options = $defaultOptions;
-        $options[CURLOPT_URL] = $url;
-        $options[CURLOPT_FOLLOWLOCATION] = true;
-        curl_setopt_array($ch, $options);
-        $result = curl_exec($ch);
-        $err = curl_errno($ch);
-        $errmsg = curl_error($ch);
-        $info = curl_getinfo($ch);
-
-
-        $dom = new Zend_Dom_Query($result);
-        $results = $dom->query('input[type="hidden"]');
+        $doc = new \DOMDocument();
+        @$doc->loadHTML($exportReport[0]);
+        $xpath = new \DOMXPath($doc);
+        $results = $xpath->query('//input[@type="hidden"]');
         $hiddenValue = null;
         foreach ($results as $result) {
             $name = $result->attributes->getNamedItem("name")->nodeValue;
@@ -96,7 +66,7 @@ class PrivateInternetAccess extends \Oara\Network
             }
         }
         if ($hiddenValue == null) {
-            throw new Exception("hidden value not found");
+            throw new \Exception("hidden value not found");
         }
 
         $valuesLogin = array(
@@ -108,23 +78,9 @@ class PrivateInternetAccess extends \Oara\Network
             new \Oara\Curl\Parameter('affiliate[remember_me]', '0'),
         );
 
-        // Login form fields
-        $return = array();
-        foreach ($valuesLogin as $parameter) {
-            $return[] = $parameter->getKey() . '=' . urlencode($parameter->getValue());
-        }
-        $arg = implode('&', $return);
-
-        //Init curl
-        $ch = curl_init();
-        $options = $defaultOptions;
-        $options[CURLOPT_URL] = $url;
-        $options[CURLOPT_FOLLOWLOCATION] = true;
-        $options[CURLOPT_POSTFIELDS] = $arg;
-        $options[CURLOPT_POST] = true;
-        curl_setopt_array($ch, $options);
-
-        $result = curl_exec($ch);
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request($url, $valuesLogin);
+        $this->_client->post($urls);
 
     }
 
@@ -149,7 +105,7 @@ class PrivateInternetAccess extends \Oara\Network
     }
 
     /**
-     * Check the connection
+     * @return bool
      */
     public function checkConnection()
     {
@@ -159,18 +115,20 @@ class PrivateInternetAccess extends \Oara\Network
         $urls = array();
         $urls[] = new \Oara\Curl\Request('https://www.privateinternetaccess.com/affiliates/affiliate_dashboard', $valuesFormExport);
         $exportReport = $this->_client->get($urls);
-        $dom = new Zend_Dom_Query($exportReport[0]);
-        $results = $dom->query('.login');
 
-        if (count($results) > 0) {
+        $doc = new \DOMDocument();
+        @$doc->loadHTML($exportReport[0]);
+        $xpath = new \DOMXPath($doc);
+        $results = $xpath->query('//*[contains(concat(" ", normalize-space(@class), " "), " login ")]');
+
+        if ($results->length > 0) {
             $connection = false;
         }
         return $connection;
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getMerchantList()
+     * @return array
      */
     public function getMerchantList()
     {
@@ -186,39 +144,43 @@ class PrivateInternetAccess extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
+     * @param null $merchantList
+     * @param \DateTime|null $dStartDate
+     * @param \DateTime|null $dEndDate
+     * @return array
      */
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
         $totalTransactions = array();
-        $dateArray = \Oara\Utilities::daysOfDifference($dStartDate, $dEndDate);
-        $dateArraySize = sizeof($dateArray);
+        $amountDays = $dStartDate->diff($dEndDate)->days;
+        $auxDate = clone $dStartDate;
+        for ($j = 0; $j < $amountDays; $j++) {
 
-
-        for ($j = 0; $j < $dateArraySize; $j++) {
             $valuesFormExport = array();
-            $valuesFormExport[] = new \Oara\Curl\Parameter('date', $dateArray[$j]->format!("yyyy-MM-dd"));
+            $valuesFormExport[] = new \Oara\Curl\Parameter('date', $auxDate->format("Y-m-d"));
             $valuesFormExport[] = new \Oara\Curl\Parameter('period', 'day');
 
             $urls = array();
             $urls[] = new \Oara\Curl\Request('https://www.privateinternetaccess.com/affiliates/affiliate_dashboard?', $valuesFormExport);
             $exportReport = $this->_client->get($urls);
-            $dom = new Zend_Dom_Query($exportReport[0]);
-            $results = $dom->query('.coupon_code table');
-            if (count($results) > 0) {
-                $exportData = \Oara\Utilities::htmlToCsv(\Oara\Utilities::DOMinnerHTML($results->current()));
 
-                for ($z = 1; $z < count($exportData) - 4; $z++) {
-                    $transactionLineArray = str_getcsv($exportData[$z], ";");
+            $doc = new \DOMDocument();
+            @$doc->loadHTML($exportReport[0]);
+            $xpath = new \DOMXPath($doc);
+            $results = $xpath->query('//*[contains(concat(" ", normalize-space(@class), " "), " coupon_code ")] table');
+            if ($results->length > 0) {
+                $exportData = \Oara\Utilities::htmlToCsv(\Oara\Utilities::DOMinnerHTML($results->item(0)));
+
+                for ($z = 1; $z < \count($exportData) - 4; $z++) {
+                    $transactionLineArray = \str_getcsv($exportData[$z], ";");
                     $numberTransactions = (int)$transactionLineArray[1];
                     if ($numberTransactions > 0) {
-                        $commission = preg_replace('/[^0-9\.,]/', "", $transactionLineArray[2]);
+                        $commission = \Oara\Utilities::parseDouble($transactionLineArray[2]);
                         $commission = ((double)$commission) / $numberTransactions;
                         for ($y = 0; $y < $numberTransactions; $y++) {
                             $transaction = Array();
                             $transaction['merchantId'] = "1";
-                            $transaction['date'] = $dateArray[$j]->format!("yyyy-MM-dd HH:mm:ss");
+                            $transaction['date'] = $auxDate->format("Y-m-d H:i:s");
                             $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
                             $transaction['amount'] = $commission;
                             $transaction['commission'] = $commission;
@@ -227,10 +189,8 @@ class PrivateInternetAccess extends \Oara\Network
                     }
                 }
             }
-
-
+            $auxDate->add(new \DateInterval('P1D'));
         }
-
         return $totalTransactions;
     }
 

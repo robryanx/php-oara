@@ -63,14 +63,11 @@ class ShareASale extends \Oara\Network
      */
     public function login($credentials)
     {
-
-        $this->_affiliateId = preg_replace("/[^0-9]/", "", $credentials['affiliateId']);
+        $this->_affiliateId = \preg_replace("/[^0-9]/", "", $credentials['affiliateId']);
         $this->_apiToken = $credentials['apiToken'];
         $this->_apiSecret = $credentials['apiSecret'];
-
         $this->_apiVersion = 1.8;
         $this->_apiServer = "http://shareasale.com/x.cfm?";
-
     }
 
     /**
@@ -81,20 +78,25 @@ class ShareASale extends \Oara\Network
         $credentials = array();
 
         $parameter = array();
-        $parameter["user"]["description"] = "User Log in";
-        $parameter["user"]["required"] = true;
+        $parameter["affiliateId"]["description"] = "Affiliate ID";
+        $parameter["affiliateId"]["required"] = true;
         $credentials[] = $parameter;
 
         $parameter = array();
-        $parameter["password"]["description"] = "Password to Log in";
-        $parameter["password"]["required"] = true;
+        $parameter["apiToken"]["description"] = "API token";
+        $parameter["apiToken"]["required"] = true;
+        $credentials[] = $parameter;
+
+        $parameter = array();
+        $parameter["apiSecret"]["description"] = "API secret";
+        $parameter["apiSecret"]["required"] = true;
         $credentials[] = $parameter;
 
         return $credentials;
     }
 
     /**
-     * Check the connection
+     * @return bool
      */
     public function checkConnection()
     {
@@ -103,7 +105,7 @@ class ShareASale extends \Oara\Network
         $returnResult = self::makeCall("apitokencount");
         if ($returnResult) {
             //parse HTTP Body to determine result of request
-            if (stripos($returnResult, "Error Code ")) { // error occurred
+            if (\stripos($returnResult, "Error Code ")) { // error occurred
                 $connection = false;
             }
         } else { // connection error
@@ -114,8 +116,7 @@ class ShareASale extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getMerchantList()
+     * @return array
      */
     public function getMerchantList()
     {
@@ -123,11 +124,11 @@ class ShareASale extends \Oara\Network
         $merchants = array();
 
         $returnResult = self::makeCall("merchantStatus");
-        $exportData = str_getcsv($returnResult, "\r\n");
-        $num = count($exportData);
+        $exportData = \str_getcsv($returnResult, "\r\n");
+        $num = \count($exportData);
         for ($i = 1; $i < $num; $i++) {
-            $merchantArray = str_getcsv($exportData[$i], "|");
-            if (count($merchantArray) > 1) {
+            $merchantArray = \str_getcsv($exportData[$i], "|");
+            if (\count($merchantArray) > 1) {
                 $obj = Array();
                 $obj['cid'] = (int)$merchantArray[0];
                 $obj['name'] = $merchantArray[1];
@@ -139,23 +140,26 @@ class ShareASale extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getTransactionList($idMerchant, $dStartDate, $dEndDate)
+     * @param null $merchantList
+     * @param \DateTime|null $dStartDate
+     * @param \DateTime|null $dEndDate
+     * @return array
      */
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
         $totalTransactions = array();
-        $returnResult = self::makeCall("activity", "&dateStart=" . $dStartDate->format!("MM/dd/yyyy") . "&dateEnd=" . $dEndDate->format!("MM/dd/yyyy"));
-        $exportData = str_getcsv($returnResult, "\r\n");
-        $num = count($exportData);
+        $mechantIdList = \Oara\Utilities::getMerchantIdMapFromMerchantList($merchantList);
+        $returnResult = self::makeCall("activity", "&dateStart=" . $dStartDate->format("m/d/Y") . "&dateEnd=" . $dEndDate->format("m/d/Y"));
+        $exportData = \str_getcsv($returnResult, "\r\n");
+        $num = \count($exportData);
         for ($i = 1; $i < $num; $i++) {
-            $transactionExportArray = str_getcsv($exportData[$i], "|");
-            if (count($transactionExportArray) > 1 && change_it_for_isset!((int)$transactionExportArray[2], $merchantList)) {
+            $transactionExportArray = \str_getcsv($exportData[$i], "|");
+            if (\count($transactionExportArray) > 1 && isset($mechantIdList[(int)$transactionExportArray[2]])) {
                 $transaction = Array();
                 $merchantId = (int)$transactionExportArray[2];
                 $transaction['merchantId'] = $merchantId;
-                $transactionDate = new \DateTime($transactionExportArray[3], 'MM-dd-yyyy HH:mm:ss');
-                $transaction['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
+                $transactionDate = \DateTime::createFromFormat("M-d-Y H:i:s", $transactionExportArray[3]);
+                $transaction['date'] = $transactionDate->format("yyyy-MM-dd HH:mm:ss");
                 $transaction['unique_id'] = (int)$transactionExportArray[0];
 
                 if ($transactionExportArray[1] != null) {
@@ -182,36 +186,25 @@ class ShareASale extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see Oara/Network/Base#getPaymentHistory()
-     */
-    public function getPaymentHistory()
-    {
-        $paymentHistory = array();
-
-        return $paymentHistory;
-    }
-
-    /**
-     *
-     * Make the call for this API
-     * @param string $actionVerb
+     * @param $actionVerb
+     * @param string $params
+     * @return mixed
      */
     private function makeCall($actionVerb, $params = "")
     {
 
-        $myTimeStamp = gmdate(DATE_RFC1123);
+        $myTimeStamp = \gmdate(DATE_RFC1123);
         $sig = $this->_apiToken . ':' . $myTimeStamp . ':' . $actionVerb . ':' . $this->_apiSecret;
 
-        $sigHash = hash("sha256", $sig);
+        $sigHash = \hash("sha256", $sig);
         $myHeaders = array("x-ShareASale-Date: $myTimeStamp", "x-ShareASale-Authentication: $sigHash");
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $this->_apiServer . "affiliateId=" . $this->_affiliateId . "&token=" . $this->_apiToken . "&version=" . $this->_apiVersion . "&action=" . $actionVerb . $params);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $myHeaders);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-        curl_setopt($ch, CURLOPT_HEADER, 0);
-        $returnResult = curl_exec($ch);
-        curl_close($ch);
+        $ch = \curl_init();
+        \curl_setopt($ch, CURLOPT_URL, $this->_apiServer . "affiliateId=" . $this->_affiliateId . "&token=" . $this->_apiToken . "&version=" . $this->_apiVersion . "&action=" . $actionVerb . $params);
+        \curl_setopt($ch, CURLOPT_HTTPHEADER, $myHeaders);
+        \curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+        \curl_setopt($ch, CURLOPT_HEADER, 0);
+        $returnResult = \curl_exec($ch);
+        \curl_close($ch);
         return $returnResult;
     }
 }
