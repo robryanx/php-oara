@@ -33,24 +33,29 @@ class SkyParkSecure extends \Oara\Network
 {
 
     private $_credentials = null;
-    /**
-     * Client
-     * @var unknown_type
-     */
     private $_client = null;
-
     private $_apiKey = null;
     private $_agent = null;
 
     /**
-     * Constructor and Login
      * @param $credentials
-     * @return SkyScanner
      */
     public function login($credentials)
     {
         $this->_credentials = $credentials;
-        self::logIn();
+        $this->_client = new \Oara\Curl\Access($credentials);
+
+        $valuesLogin = array(
+            new \Oara\Curl\Parameter('username', $this->_credentials['user']),
+            new \Oara\Curl\Parameter('password', $this->_credentials['password']),
+            new \Oara\Curl\Parameter('remember_me', "0"),
+            new \Oara\Curl\Parameter('submit', "")
+        );
+        $loginUrl = 'http://agents.skyparksecure.com/auth/login';
+
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request($loginUrl, $valuesLogin);
+        $this->_client->post($urls);
 
     }
 
@@ -74,23 +79,8 @@ class SkyParkSecure extends \Oara\Network
         return $credentials;
     }
 
-    private function logIn()
-    {
-
-        $valuesLogin = array(
-            new \Oara\Curl\Parameter('username', $this->_credentials['user']),
-            new \Oara\Curl\Parameter('password', $this->_credentials['password']),
-            new \Oara\Curl\Parameter('remember_me', "0"),
-            new \Oara\Curl\Parameter('submit', "")
-        );
-
-        $loginUrl = 'http://agents.skyparksecure.com/auth/login';
-        $this->_client = new \Oara\Curl\Access($loginUrl, $valuesLogin, $this->_credentials);
-
-    }
-
     /**
-     * Check the connection
+     * @return bool
      */
     public function checkConnection()
     {
@@ -99,12 +89,12 @@ class SkyParkSecure extends \Oara\Network
         $urls = array();
         $urls[] = new \Oara\Curl\Request('http://agents.skyparksecure.com/bookings', array());
         $exportReport = $this->_client->get($urls);
-        if (!preg_match("/Logout/", $exportReport[0], $match)) {
+        if (!\preg_match("/Logout/", $exportReport[0], $match)) {
             $connection = false;
         }
         //Getting APIKEY
         if ($connection) {
-            if (!preg_match("/self.api_key\s*=\s*'(.*)?';/", $exportReport[0], $match)) {
+            if (!\preg_match("/self.api_key\s*=\s*'(.*)?';/", $exportReport[0], $match)) {
                 $connection = false;
             } else {
                 $this->_apiKey = $match[1];
@@ -112,8 +102,8 @@ class SkyParkSecure extends \Oara\Network
         }
 
         if ($connection) {
-            if (!preg_match("/self.agent\s*=\s*'(.*)?';self.date1/", $exportReport[0], $match)) {
-                if (!preg_match("/self.agent\s*=\s*'(.*)?';/", $exportReport[0], $match)) {
+            if (!\preg_match("/self.agent\s*=\s*'(.*)?';self.date1/", $exportReport[0], $match)) {
+                if (!\preg_match("/self.agent\s*=\s*'(.*)?';/", $exportReport[0], $match)) {
                     $connection = false;
                 } else {
                     $this->_agent = $match[1];
@@ -127,8 +117,7 @@ class SkyParkSecure extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getMerchantList()
+     * @return array
      */
     public function getMerchantList()
     {
@@ -144,8 +133,11 @@ class SkyParkSecure extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
+     * @param null $merchantList
+     * @param \DateTime|null $dStartDate
+     * @param \DateTime|null $dEndDate
+     * @return array
+     * @throws Exception
      */
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
@@ -153,21 +145,19 @@ class SkyParkSecure extends \Oara\Network
         $totalTransactions = array();
 
         $today = new \DateTime();
-        $today->setHour(0);
-        $today->setMinute(0);
-
+        $today->setTime(0,0);
         $urls = array();
         $exportParams = array(
             new \Oara\Curl\Parameter('data[query][agent]', $this->_agent),
-            new \Oara\Curl\Parameter('data[query][date1]', $dStartDate->format!("yyyy-MM-dd")),
-            new \Oara\Curl\Parameter('data[query][date2]', $dEndDate->format!("yyyy-MM-dd")),
+            new \Oara\Curl\Parameter('data[query][date1]', $dStartDate->format("Y-m-d")),
+            new \Oara\Curl\Parameter('data[query][date2]', $dEndDate->format("Y-m-d")),
             new \Oara\Curl\Parameter('data[query][api_key]', $this->_apiKey)
         );
         $urls[] = new \Oara\Curl\Request('http://www.skyparksecure.com/api/v4/jsonp/getSales?', $exportParams);
         $exportReport = $this->_client->get($urls);
 
-        $report = substr($exportReport[0], 1, strlen($exportReport[0]) - 3);
-        $exportData = json_decode($report);
+        $report = \substr($exportReport[0], 1, \strlen($exportReport[0]) - 3);
+        $exportData = \json_decode($report);
         foreach ($exportData->result as $booking) {
 
             $transaction = Array();
@@ -175,9 +165,9 @@ class SkyParkSecure extends \Oara\Network
             $transaction['unique_id'] = $booking->booking_ref;
             $transaction['metadata'] = $booking->product_name;
             $transaction['custom_id'] = $booking->custom_id;
-            $transactionDate = new \DateTime($booking->booking_date, 'yyyy.MMM.dd HH:mm:00', 'en');
-            $pickupDate = new \DateTime($booking->dateA, 'yyyy.MMM.dd HH:mm:00', 'en');
-            $transaction['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
+            $transactionDate = \DateTime::createFromFormat("Y.M.d H:i:s", $booking->booking_date."00");
+            $pickupDate = \DateTime::createFromFormat("Y.M.d H:i:s", $booking->dateA."00");
+            $transaction['date'] = $transactionDate->format("Y-m-d H:i:s");
             $transaction['metadata'] = $booking->product_id;
             if ($booking->booking_mode == "Booked" || $booking->booking_mode == "Amended") {
                 $transaction['status'] = \Oara\Utilities::STATUS_PENDING;
@@ -187,28 +177,16 @@ class SkyParkSecure extends \Oara\Network
             } else if ($booking->booking_mode == "Cancelled") {
                 $transaction['status'] = \Oara\Utilities::STATUS_DECLINED;
             } else {
-                throw new Exception("New status found");
+                throw new \Exception("New status found");
             }
 
-            $transaction['amount'] = \Oara\Utilities::parseDouble(preg_replace('/[^0-9\.,]/', "", $booking->sale_price)) / 1.2;
-            $transaction['commission'] = \Oara\Utilities::parseDouble(preg_replace('/[^0-9\.,]/', "", $booking->commission_affiliate)) / 1.2;
+            $transaction['amount'] = \Oara\Utilities::parseDouble($booking->sale_price) / 1.2;
+            $transaction['commission'] = \Oara\Utilities::parseDouble($booking->commission_affiliate) / 1.2;
 
             $totalTransactions[] = $transaction;
 
         }
 
         return $totalTransactions;
-    }
-
-    /**
-     * (non-PHPdoc)
-     * @see Oara/Network/Base#getPaymentHistory()
-     */
-    public function getPaymentHistory()
-    {
-        $paymentHistory = array();
-
-
-        return $paymentHistory;
     }
 }

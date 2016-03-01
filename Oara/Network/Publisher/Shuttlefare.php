@@ -45,16 +45,9 @@ class Shuttlefare extends \Oara\Network
 
         $user = $credentials ['user'];
         $password = $credentials ['password'];
+        $this->_client = new \Oara\Curl\Access ($this->_credentials);
 
         $loginUrl = 'http://affiliates.shuttlefare.com/users/sign_in';
-
-        $dir = COOKIES_BASE_DIR . DIRECTORY_SEPARATOR . $credentials ['cookiesDir'] . DIRECTORY_SEPARATOR . $credentials ['cookiesSubDir'] . DIRECTORY_SEPARATOR;
-
-        if (!\Oara\Utilities::mkdir_recursive($dir, 0777)) {
-            throw new Exception ('Problem creating folder in Access');
-        }
-        $cookies = $dir . $credentials["cookieName"] . '_cookies.txt';
-        unlink($cookies);
 
         $valuesLogin = array(
             new \Oara\Curl\Parameter ('user[email]', $user),
@@ -62,49 +55,20 @@ class Shuttlefare extends \Oara\Network
             new \Oara\Curl\Parameter ('user[remember_me]', '0'),
             new \Oara\Curl\Parameter ('commit', 'Sign in')
         );
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request($loginUrl, $valuesLogin);
+        $exportReport = $this->_client->post($urls);
 
-        $this->_options = array(
-            CURLOPT_USERAGENT => "Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:26.0) Gecko/20100101 Firefox/26.0",
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_FAILONERROR => true,
-            CURLOPT_COOKIEJAR => $cookies,
-            CURLOPT_COOKIEFILE => $cookies,
-            CURLOPT_HTTPAUTH => CURLAUTH_ANY,
-            CURLOPT_AUTOREFERER => true,
-            CURLOPT_SSL_VERIFYPEER => false,
-            CURLOPT_SSL_VERIFYHOST => false,
-            CURLOPT_HEADER => false,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_HTTPHEADER => array('Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', 'Accept-Language: es,en-us;q=0.7,en;q=0.3', 'Accept-Encoding: gzip, deflate', 'Connection: keep-alive', 'Cache-Control: max-age=0'),
-            CURLOPT_ENCODING => "gzip",
-            CURLOPT_VERBOSE => false
-        );
-        $rch = curl_init();
-        $options = $this->_options;
-        curl_setopt($rch, CURLOPT_URL, "http://affiliates.shuttlefare.com/users/sign_in");
-        curl_setopt_array($rch, $options);
-        $html = curl_exec($rch);
-        curl_close($rch);
-
-        $dom = new Zend_Dom_Query($html);
-        $hidden = $dom->query('input[type="hidden"]');
-
-        foreach ($hidden as $values) {
-            $valuesLogin[] = new \Oara\Curl\Parameter($values->getAttribute("name"), $values->getAttribute("value"));
+        $doc = new \DOMDocument();
+        @$doc->loadHTML($exportReport[0]);
+        $xpath = new \DOMXPath($doc);
+        $results = $xpath->query('//input[@type="hidden"]');
+        $hiddenValue = null;
+        foreach ($results as $result) {
+            $valuesLogin[] = new \Oara\Curl\Parameter ($result->attributes->getNamedItem("name")->nodeValue,$result->attributes->getNamedItem("value")->nodeValue);
         }
-        $rch = curl_init();
-        $options = $this->_options;
-        curl_setopt($rch, CURLOPT_URL, "http://affiliates.shuttlefare.com/users/sign_in");
-        $options [CURLOPT_POST] = true;
-        $arg = array();
-        foreach ($valuesLogin as $parameter) {
-            $arg [] = urlencode($parameter->getKey()) . '=' . urlencode($parameter->getValue());
-        }
-        $options [CURLOPT_POSTFIELDS] = implode('&', $arg);
-        curl_setopt_array($rch, $options);
-        $html = curl_exec($rch);
+        $this->_client->post($urls);
 
-        curl_close($rch);
 
     }
 
@@ -135,14 +99,10 @@ class Shuttlefare extends \Oara\Network
     {
         $connection = false;
 
-        $rch = curl_init();
-        $options = $this->_options;
-        curl_setopt($rch, CURLOPT_URL, 'http://affiliates.shuttlefare.com/partners');
-        curl_setopt_array($rch, $options);
-        $html = curl_exec($rch);
-        curl_close($rch);
-
-        if (preg_match("/logout/", $html, $matches)) {
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request( 'http://affiliates.shuttlefare.com/partners', array());
+        $exportReport = $this->_client->get($urls);
+        if (\preg_match("/logout/", $exportReport[0], $matches)) {
             $connection = true;
         }
 
@@ -175,65 +135,31 @@ class Shuttlefare extends \Oara\Network
         $totalTransactions = array();
 
         $valuesFromExport = array(
-            new \Oara\Curl\Parameter('payment[from]', $dStartDate->format!("MM/dd/yyyy")),
-            new \Oara\Curl\Parameter('payment[to]', $dEndDate->format!("MM/dd/yyyy")),
+            new \Oara\Curl\Parameter('payment[from]', $dStartDate->format("m/d/Y")),
+            new \Oara\Curl\Parameter('payment[to]', $dEndDate->format("m/d/Y")),
         );
 
-        $rch = curl_init();
-        $options = $this->_options;
-        $arg = array();
-        foreach ($valuesFromExport as $parameter) {
-            $arg [] = $parameter->getKey() . '=' . urlencode($parameter->getValue());
-        }
-        $url = 'http://affiliates.shuttlefare.com/partners/payments/report.csv?' . implode('&', $arg);
-        curl_setopt($rch, CURLOPT_URL, $url);
-        curl_setopt_array($rch, $options);
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request( 'http://affiliates.shuttlefare.com/partners/payments/report.csv?', $valuesFromExport);
+        $exportReport = $this->_client->get($urls);
 
-        $html = curl_exec($rch);
-        curl_close($rch);
-
-        if (!preg_match("/No transaction in given date range/", $html) && $html) {
-            $exportData = explode("\n", $html);
-            $num = count($exportData);
+        if (!\preg_match("/No transaction in given date range/", $exportReport[0]) && $exportReport[0]) {
+            $exportData = \explode("\n", $exportReport[0]);
+            $num = \count($exportData);
             for ($i = 0; $i < $num - 1; $i++) {
-                $transactionExportArray = explode(",", $exportData [$i]);
+                $transactionExportArray = \explode(",", $exportData [$i]);
                 $transaction = Array();
                 $transaction ['merchantId'] = 1;
                 $transaction ['unique_id'] = $transactionExportArray [0];
-                $transactionDate = new \DateTime ($transactionExportArray [7], 'MM/dd/yyyy');
-                $transaction ['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
+                $transactionDate = \DateTime::createFromFormat("m/d/Y H:i:s", $transactionExportArray [7]." 00:00:00");
+                $transaction ['date'] = $transactionDate->format("Y-m-d H:i:s");
                 $transaction ['status'] = \Oara\Utilities::STATUS_CONFIRMED;
-                $transaction ['amount'] = \Oara\Utilities::parseDouble(preg_replace('/[^0-9\.,]/', "", $transactionExportArray [2]));
-                $transaction ['commission'] = \Oara\Utilities::parseDouble(preg_replace('/[^0-9\.,]/', "", $transactionExportArray [3]));
-
+                $transaction ['amount'] = \Oara\Utilities::parseDouble($transactionExportArray [2]);
+                $transaction ['commission'] = \Oara\Utilities::parseDouble($transactionExportArray [3]);
                 $totalTransactions [] = $transaction;
-
             }
         }
 
         return $totalTransactions;
-    }
-
-    /**
-     * @return array
-     */
-    public function getPaymentHistory()
-    {
-        $paymentHistory = array();
-
-        return $paymentHistory;
-    }
-
-    /**
-     * @param string $paymentId
-     * @param $merchantList
-     * @param $startDate
-     * @return array
-     */
-    public function paymentTransactions($paymentId, $merchantList, $startDate)
-    {
-        $transactionList = array();
-
-        return $transactionList;
     }
 }

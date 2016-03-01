@@ -45,32 +45,7 @@ class Simpl extends \Oara\Network
     public function login($credentials)
     {
         $this->_credentials = $credentials;
-
-        $dir = COOKIES_BASE_DIR . DIRECTORY_SEPARATOR . $credentials ['cookiesDir'] . DIRECTORY_SEPARATOR . $credentials ['cookiesSubDir'] . DIRECTORY_SEPARATOR;
-
-        if (!\Oara\Utilities::mkdir_recursive($dir, 0777)) {
-            throw new Exception ('Problem creating folder in Access');
-        }
-
-        $cookies = $dir . $credentials["cookieName"] . '_cookies.txt';
-        unlink($cookies);
-
-        $this->_options = array(
-            CURLOPT_USERAGENT => "Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:26.0) Gecko/20100101 Firefox/26.0",
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_FAILONERROR => true,
-            CURLOPT_COOKIEJAR => $cookies,
-            CURLOPT_COOKIEFILE => $cookies,
-            CURLOPT_HTTPAUTH => CURLAUTH_ANY,
-            CURLOPT_AUTOREFERER => true,
-            CURLOPT_SSL_VERIFYPEER => false,
-            CURLOPT_SSL_VERIFYHOST => false,
-            CURLOPT_HEADER => false,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_HTTPHEADER => array('Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', 'Accept-Language: es,en-us;q=0.7,en;q=0.3', 'Accept-Encoding: gzip, deflate', 'Connection: keep-alive', 'Cache-Control: max-age=0'),
-            CURLOPT_ENCODING => "gzip",
-            CURLOPT_VERBOSE => false
-        );
+        $this->_client = new \Oara\Curl\Access($credentials);
 
     }
 
@@ -95,7 +70,7 @@ class Simpl extends \Oara\Network
     }
 
     /**
-     * Check the connection
+     * @return bool
      */
     public function checkConnection()
     {
@@ -104,7 +79,7 @@ class Simpl extends \Oara\Network
         try {
             self::getMerchantList();
             $connection = true;
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
 
         }
 
@@ -112,22 +87,18 @@ class Simpl extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getMerchantList()
+     * @return array
      */
     public function getMerchantList()
     {
 
         $merchants = Array();
-        $url = "https://export.net.simpl.ie/{$this->_credentials['apiPassword']}/mlist_12807.xml?";
-        $rch = curl_init();
-        $options = $this->_options;
-        curl_setopt($rch, CURLOPT_URL, $url);
-        curl_setopt_array($rch, $options);
-        $xmlMerchants = curl_exec($rch);
-        curl_close($rch);
 
-        $merchantArray = json_decode(json_encode((array)simplexml_load_string($xmlMerchants)), 1);
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request("https://export.net.simpl.ie/{$this->_credentials['apiPassword']}/mlist_12807.xml?", array());
+        $exportReport = $this->_client->get($urls);
+
+        $merchantArray = \json_decode(\json_encode((array)\simplexml_load_string($exportReport[0])), 1);
         foreach ($merchantArray["merchant"] as $merchant) {
             $obj = Array();
             $obj['cid'] = $merchant["mid"];
@@ -140,8 +111,11 @@ class Simpl extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
+     * @param null $merchantList
+     * @param \DateTime|null $dStartDate
+     * @param \DateTime|null $dEndDate
+     * @return array
+     * @throws Exception
      */
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
@@ -150,29 +124,21 @@ class Simpl extends \Oara\Network
 
         $valuesFromExport = array(
             new \Oara\Curl\Parameter('filter[zeitraumAuswahl]', "absolute"),
-            new \Oara\Curl\Parameter('filter[zeitraumvon]', $dStartDate->format!("dd.MM.yyyy")),
-            new \Oara\Curl\Parameter('filter[zeitraumbis]', $dEndDate->format!("dd.MM.yyyy")),
+            new \Oara\Curl\Parameter('filter[zeitraumvon]', $dStartDate->format("d.m.Y")),
+            new \Oara\Curl\Parameter('filter[zeitraumbis]', $dEndDate->format("d.m.Y")),
             new \Oara\Curl\Parameter('filter[currencycode]', 'EUR')
         );
 
-        $rch = curl_init();
-        $options = $this->_options;
-        $arg = array();
-        foreach ($valuesFromExport as $parameter) {
-            $arg [] = $parameter->getKey() . '=' . urlencode($parameter->getValue());
-        }
-        $url = "https://export.net.simpl.ie/{$this->_credentials['apiPassword']}/statstransaction_12807.xml?" . implode('&', $arg);
-        curl_setopt($rch, CURLOPT_URL, $url);
-        curl_setopt_array($rch, $options);
-        $xml = curl_exec($rch);
-        curl_close($rch);
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request( "https://export.net.simpl.ie/{$this->_credentials['apiPassword']}/statstransaction_12807.xml?", $valuesFromExport);
+        $exportReport = $this->_client->get($urls);
 
-        $transactionArray = json_decode(json_encode((array)simplexml_load_string($xml)), 1);
+        $transactionArray = \json_decode(\json_encode((array)\simplexml_load_string($exportReport[0])), 1);
         foreach ($transactionArray["transaction"] as $trans) {
             $transaction = Array();
             $transaction['merchantId'] = $trans["merchant_id"];
             $transaction['unique_id'] = $trans["conversionid"];
-            $transaction['date'] = substr($trans["trackingtime"], 0, 19);
+            $transaction['date'] = \substr($trans["trackingtime"], 0, 19);
             $transaction['amount'] = (double)$trans["revenue"];
             $transaction['commission'] = (double)$trans["commissionvalue"];
             if ($trans["subid"] != null) {
@@ -189,25 +155,12 @@ class Simpl extends \Oara\Network
             } else if ($transactionStatus == "confirmed") {
                 $transaction ['status'] = \Oara\Utilities::STATUS_CONFIRMED;
             } else {
-                throw new Exception ("New status found {$transactionStatus}");
+                throw new \Exception ("New status found {$transactionStatus}");
             }
             $totalTransactions[] = $transaction;
 
         }
-
-
         return $totalTransactions;
-    }
-
-    /**
-     * (non-PHPdoc)
-     * @see Oara/Network/Base#getPaymentHistory()
-     */
-    public function getPaymentHistory()
-    {
-        $paymentHistory = array();
-
-        return $paymentHistory;
     }
 
 }

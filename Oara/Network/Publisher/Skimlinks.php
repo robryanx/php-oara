@@ -42,41 +42,13 @@ class Skimlinks extends \Oara\Network
     private $_privateapikey = null;
 
     /**
-     * Constructor and Login
      * @param $credentials
-     * @return Daisycon
      */
     public function login($credentials)
     {
-
-        $dir = COOKIES_BASE_DIR . DIRECTORY_SEPARATOR . $credentials ['cookiesDir'] . DIRECTORY_SEPARATOR . $credentials ['cookiesSubDir'] . DIRECTORY_SEPARATOR;
-
-        if (!\Oara\Utilities::mkdir_recursive($dir, 0777)) {
-            throw new Exception ('Problem creating folder in Access');
-        }
-
-        $cookies = $dir . $credentials["cookieName"] . '_cookies.txt';
-        @unlink($cookies);
-        $this->_options = array(
-            CURLOPT_USERAGENT => "Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:26.0) Gecko/20100101 Firefox/26.0",
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_FAILONERROR => true,
-            CURLOPT_COOKIEJAR => $cookies,
-            CURLOPT_COOKIEFILE => $cookies,
-            CURLOPT_HTTPAUTH => CURLAUTH_ANY,
-            CURLOPT_AUTOREFERER => true,
-            CURLOPT_SSL_VERIFYPEER => false,
-            CURLOPT_SSL_VERIFYHOST => false,
-            CURLOPT_HEADER => false,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_HTTPHEADER => array('Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', 'Accept-Language: es,en-us;q=0.7,en;q=0.3', 'Accept-Encoding: gzip, deflate', 'Connection: keep-alive', 'Cache-Control: max-age=0'),
-            CURLOPT_ENCODING => "gzip",
-            CURLOPT_VERBOSE => false
-        );
-
+        $this->_client = new \Oara\Curl\Access($credentials);
         $this->_publicapikey = $credentials['user'];
         $this->_privateapikey = $credentials['apiPassword'];
-
     }
 
     /**
@@ -92,15 +64,15 @@ class Skimlinks extends \Oara\Network
         $credentials[] = $parameter;
 
         $parameter = array();
-        $parameter["password"]["description"] = "Password to Log in";
-        $parameter["password"]["required"] = true;
+        $parameter["apiPassword"]["description"] = "API Password";
+        $parameter["apiPassword"]["required"] = true;
         $credentials[] = $parameter;
 
         return $credentials;
     }
 
     /**
-     * Check the connection
+     * @return bool
      */
     public function checkConnection()
     {
@@ -109,7 +81,7 @@ class Skimlinks extends \Oara\Network
         try {
             self::getMerchantList();
             $connection = true;
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
 
         }
 
@@ -117,18 +89,16 @@ class Skimlinks extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getMerchantList()
+     * @return array
      */
     public function getMerchantList()
     {
-
         $publicapikey = $this->_publicapikey;
         $privateapikey = $this->_privateapikey;
 
-        $date = new DateTime();
+        $date = new \DateTime();
         $timestamp = $date->getTimestamp();
-        $authtoken = md5($timestamp . $privateapikey);
+        $authtoken = \md5($timestamp . $privateapikey);
         $date = \DateTime::now();
 
         $merchants = Array();
@@ -139,63 +109,40 @@ class Skimlinks extends \Oara\Network
             new \Oara\Curl\Parameter('apikey', $publicapikey),
             new \Oara\Curl\Parameter('authtoken', $authtoken),
             new \Oara\Curl\Parameter('startdate', '2009-01-01'), //minimum date
-            new \Oara\Curl\Parameter('enddate', $date->format!("yyyy-MM-dd")),
+            new \Oara\Curl\Parameter('enddate', $date->format("Y-m-d")),
             new \Oara\Curl\Parameter('format', 'json')
         );
 
-        $rch = curl_init();
-        $options = $this->_options;
-        $arg = array();
-        foreach ($valuesFromExport as $parameter) {
-            $arg [] = $parameter->getKey() . '=' . urlencode($parameter->getValue());
-        }
-        curl_setopt($rch, CURLOPT_URL, 'https://api-reports.skimlinks.com/publisher/reportmerchants?' . implode('&', $arg));
-
-        curl_setopt_array($rch, $options);
-        $json = curl_exec($rch);
-        curl_close($rch);
-
-        $jsonArray = json_decode($json, true);
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request("https://api-reports.skimlinks.com/publisher/reportmerchants?", $valuesFromExport);
+        $exportReport = $this->_client->get($urls);
+        $jsonArray = json_decode($exportReport[0], true);
 
         $iteration = 0;
-        while (count($jsonArray["skimlinksAccount"]["merchants"]) != 0) {
-
+        while (\count($jsonArray["skimlinksAccount"]["merchants"]) != 0) {
             foreach ($jsonArray["skimlinksAccount"]["merchants"] as $i) {
                 $obj = Array();
                 $obj['cid'] = $i["merchantID"];
                 $obj['name'] = $i["merchantName"];
                 $merchants[] = $obj;
             }
-
             $iteration++;
-
             $valuesFromExport = array(
                 new \Oara\Curl\Parameter('version', '0.5'),
                 new \Oara\Curl\Parameter('timestamp', $timestamp),
                 new \Oara\Curl\Parameter('apikey', $publicapikey),
                 new \Oara\Curl\Parameter('authtoken', $authtoken),
                 new \Oara\Curl\Parameter('startdate', '2009-01-01'), //minimum date
-                new \Oara\Curl\Parameter('enddate', $date->format!("yyyy-MM-dd")),
+                new \Oara\Curl\Parameter('enddate', $date->format("Y-m-d")),
                 new \Oara\Curl\Parameter('format', 'json'),
                 new \Oara\Curl\Parameter('responseFrom', $iteration * 100),
 
             );
 
-            $rch = curl_init();
-            $options = $this->_options;
-            $arg = array();
-            foreach ($valuesFromExport as $parameter) {
-                $arg [] = $parameter->getKey() . '=' . urlencode($parameter->getValue());
-            }
-            curl_setopt($rch, CURLOPT_URL, 'https://api-reports.skimlinks.com/publisher/reportmerchants?' . implode('&', $arg));
-
-            curl_setopt_array($rch, $options);
-            $json = curl_exec($rch);
-            curl_close($rch);
-
-            $jsonArray = json_decode($json, true);
-
-
+            $urls = array();
+            $urls[] = new \Oara\Curl\Request("https://api-reports.skimlinks.com/publisher/reportmerchants?", $valuesFromExport);
+            $exportReport = $this->_client->get($urls);
+            $jsonArray = json_decode($exportReport[0], true);
         }
 
 
@@ -203,8 +150,11 @@ class Skimlinks extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
+     * @param null $merchantList
+     * @param \DateTime|null $dStartDate
+     * @param \DateTime|null $dEndDate
+     * @return array
+     * @throws Exception
      */
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
@@ -217,39 +167,28 @@ class Skimlinks extends \Oara\Network
         $date = new DateTime();
         $timestamp = $date->getTimestamp();
         $authtoken = md5($timestamp . $privateapikey);
-        $date = \DateTime::now();
 
         $valuesFromExport = array(
             new \Oara\Curl\Parameter('version', '0.5'),
             new \Oara\Curl\Parameter('timestamp', $timestamp),
             new \Oara\Curl\Parameter('apikey', $publicapikey),
             new \Oara\Curl\Parameter('authtoken', $authtoken),
-            new \Oara\Curl\Parameter('startDate', $dStartDate->format!("yyyy-MM-dd")),
-            new \Oara\Curl\Parameter('endDate', $dEndDate->format!("yyyy-MM-dd")),
+            new \Oara\Curl\Parameter('startDate', $dStartDate->format("Y-m-d")),
+            new \Oara\Curl\Parameter('endDate', $dEndDate->format("Y-m-d")),
             new \Oara\Curl\Parameter('format', 'json')
         );
 
-        $rch = curl_init();
-        $options = $this->_options;
-        $arg = array();
-        foreach ($valuesFromExport as $parameter) {
-            $arg [] = $parameter->getKey() . '=' . urlencode($parameter->getValue());
-        }
-        curl_setopt($rch, CURLOPT_URL, 'https://api-report.skimlinks.com/publisher/reportcommissions?' . implode('&', $arg));
-
-        curl_setopt_array($rch, $options);
-        $json = curl_exec($rch);
-        curl_close($rch);
-
-        $jsonArray = json_decode($json, true);
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request("https://api-reports.skimlinks.com/publisher/reportcommissions?", $valuesFromExport);
+        $exportReport = $this->_client->get($urls);
+        $jsonArray = \json_decode($exportReport[0], true);
 
         foreach ($jsonArray["skimlinksAccount"]["commissions"] as $i) {
             $transaction = Array();
 
             $transaction['merchantId'] = $i["merchantID"];
             $transaction['unique_id'] = $i["commissionID"];
-            $transactionDate = new \DateTime($i["date"], 'YYYY-MM-DD', 'en');
-            $transaction['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
+            $transaction['date'] =  $i["date"]. " 00:00:00";
             $transaction['amount'] = (double)$i["orderValue"] / 100;
             $transaction['commission'] = (double)$i["commissionValue"] / 100;
             $transactionStatus = $i["status"];
@@ -258,7 +197,7 @@ class Skimlinks extends \Oara\Network
             } else if ($transactionStatus == "cancelled") {
                 $transaction ['status'] = \Oara\Utilities::STATUS_DECLINED;
             } else {
-                throw new Exception ("New status found {$transactionStatus}");
+                throw new \Exception ("New status found {$transactionStatus}");
             }
             if ($i["customID"] != null) {
                 $transaction['custom_id'] = $i["customID"];
@@ -268,17 +207,6 @@ class Skimlinks extends \Oara\Network
         }
 
         return $totalTransactions;
-    }
-
-    /**
-     * (non-PHPdoc)
-     * @see Oara/Network/Base#getPaymentHistory()
-     */
-    public function getPaymentHistory()
-    {
-        $paymentHistory = array();
-
-        return $paymentHistory;
     }
 
 }

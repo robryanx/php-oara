@@ -31,39 +31,36 @@ namespace Oara\Network\Publisher;
 class TerraVision extends \Oara\Network
 {
     /**
-     * Export client.
-     * @var \Oara\Curl\Access
+     * @var null
      */
     private $_client = null;
 
     /**
-     * Constructor and Login
-     * @param $cartrawler
-     * @return Tv_Export
+     * @param $credentials
+     * @throws \Exception
+     * @throws \Oara\Curl\Exception
      */
     public function login($credentials)
     {
 
+        $this->_client = new \Oara\Curl\Access($credentials);
+
         $user = $credentials['user'];
         $password = $credentials['password'];
-        $loginUrl = 'https://book.terravision.eu/login_check?';
 
-        $valuesLogin = array(new \Oara\Curl\Parameter('_username', $user),
-            new \Oara\Curl\Parameter('_password', $password),
-            new \Oara\Curl\Parameter('_submit', 'Login')
-        );
-
-        $this->_client = new \Oara\Curl\Access($credentials);
 
         $urls = array();
         $urls[] = new \Oara\Curl\Request('https://book.terravision.eu/login', array());
         $exportReport = $this->_client->get($urls);
-        $dom = new Zend_Dom_Query($exportReport[0]);
-        $results = $dom->query('input[name="_csrf_token"]');
+        $doc = new \DOMDocument();
+        @$doc->loadHTML($exportReport[0]);
+        $xpath = new \DOMXPath($doc);
+        $results = $xpath->query('//input[@name="_csrf_token"]');
         $token = null;
         foreach ($results as $result) {
             $token = $result->getAttribute("value");
         }
+
 
         $valuesLogin = array(new \Oara\Curl\Parameter('_username', $user),
             new \Oara\Curl\Parameter('_password', $password),
@@ -72,12 +69,12 @@ class TerraVision extends \Oara\Network
         );
         $urls = array();
         $urls[] = new \Oara\Curl\Request($loginUrl, $valuesLogin);
-        $exportReport = $this->_client->post($urls);
+        $this->_client->post($urls);
 
     }
 
     /**
-     * Check the connection
+     * @return bool
      */
     public function checkConnection()
     {
@@ -86,7 +83,7 @@ class TerraVision extends \Oara\Network
         $urls = array();
         $urls[] = new \Oara\Curl\Request('https://book.terravision.eu/partner/my/', array());
         $exportReport = $this->_client->get($urls);
-        if (preg_match("/logout/", $exportReport[0], $matches)) {
+        if (\preg_match("/logout/", $exportReport[0], $matches)) {
             $connection = true;
         }
         return $connection;
@@ -113,8 +110,7 @@ class TerraVision extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Base#getMerchantList()
+     * @return array
      */
     public function getMerchantList()
     {
@@ -129,37 +125,38 @@ class TerraVision extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Base#getTransactionList($merchantId, $dStartDate, $dEndDate)
+     * @param null $merchantList
+     * @param \DateTime|null $dStartDate
+     * @param \DateTime|null $dEndDate
+     * @return array
      */
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
         $totalTransactions = Array();
 
-        $stringToFind = $dStartDate->format!("MMMM yyyy");
+        $stringToFind = $dStartDate->format("F Y");
 
         $urls = array();
         $urls[] = new \Oara\Curl\Request('https://book.terravision.eu/partner/my/payments', array());
         $exportReport = $this->_client->get($urls);
-        /*** load the html into the object ***/
-        $dom = new Zend_Dom_Query($exportReport[0]);
-        $results = $dom->query('#navigation > table');
-        $exportData = \Oara\Utilities::htmlToCsv(\Oara\Utilities::DOMinnerHTML($results->current()));
-        $num = count($exportData);
 
+        $doc = new \DOMDocument();
+        @$doc->loadHTML($exportReport[0]);
+        $xpath = new \DOMXPath($doc);
+        $results = $xpath->query('//table');
+        $exportData = \Oara\Utilities::htmlToCsv(\Oara\Utilities::DOMinnerHTML($results->item(0)));
+        $num = \count($exportData);
 
         for ($i = 1; $i < $num - 1; $i++) {
-            $transactionArray = str_getcsv($exportData[$i], ";");
+            $transactionArray = \str_getcsv($exportData[$i], ";");
             if ($transactionArray[0] == $stringToFind) {
 
                 $transaction = array();
                 $transaction['merchantId'] = 1;
                 $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
-
-                $transaction['date'] = $dEndDate->format!("yyyy-MM-dd HH:mm:ss");
-
-                $transaction['amount'] = \Oara\Utilities::parseDouble(preg_replace('/[^0-9\.,]/', "", $transactionArray [2]));
-                $transaction['commission'] = \Oara\Utilities::parseDouble(preg_replace('/[^0-9\.,]/', "", $transactionArray [2]));
+                $transaction['date'] = $dEndDate->format("Y-m-d H:i:s");
+                $transaction['amount'] = \Oara\Utilities::parseDouble($transactionArray [2]);
+                $transaction['commission'] = \Oara\Utilities::parseDouble($transactionArray [2]);
 
                 $totalTransactions[] = $transaction;
             }

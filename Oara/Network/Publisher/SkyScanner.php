@@ -32,23 +32,27 @@ class SkyScanner extends \Oara\Network
 {
 
     private $_credentials = null;
-    /**
-     * Client
-     * @var unknown_type
-     */
     private $_client = null;
-
     private $_apiKey = null;
 
     /**
-     * Constructor and Login
      * @param $credentials
-     * @return SkyScanner
      */
     public function login($credentials)
     {
         $this->_credentials = $credentials;
-        self::logIn();
+        $this->_client = new \Oara\Curl\Access($credentials);
+
+        $valuesLogin = array(
+            new \Oara\Curl\Parameter('RememberMe', "false"),
+            new \Oara\Curl\Parameter('ApiKey', $this->_credentials['user']),
+            new \Oara\Curl\Parameter('PortalKey', $this->_credentials['password']),
+        );
+
+        $loginUrl = 'http://business.skyscanner.net/portal/en-GB/SignIn';
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request($loginUrl, $valuesLogin);
+        $this->_client->post($urls);
 
     }
 
@@ -72,22 +76,8 @@ class SkyScanner extends \Oara\Network
         return $credentials;
     }
 
-    private function logIn()
-    {
-
-        $valuesLogin = array(
-            new \Oara\Curl\Parameter('RememberMe', "false"),
-            new \Oara\Curl\Parameter('ApiKey', $this->_credentials['user']),
-            new \Oara\Curl\Parameter('PortalKey', $this->_credentials['password']),
-        );
-
-        $loginUrl = 'http://business.skyscanner.net/portal/en-GB/SignIn';
-        $this->_client = new \Oara\Curl\Access($loginUrl, $valuesLogin, $this->_credentials);
-
-    }
-
     /**
-     * Check the connection
+     * @return bool
      */
     public function checkConnection()
     {
@@ -96,7 +86,7 @@ class SkyScanner extends \Oara\Network
         $urls = array();
         $urls[] = new \Oara\Curl\Request('http://business.skyscanner.net/portal/en-GB/UK/Report/Show', array());
         $exportReport = $this->_client->get($urls);
-        if (!preg_match("/encrypedApiKey: \"(.*)?\",/", $exportReport[0], $match)) {
+        if (!\preg_match("/encrypedApiKey: \"(.*)?\",/", $exportReport[0], $match)) {
             $connection = false;
         } else {
             $this->_apiKey = $match[1];
@@ -105,8 +95,7 @@ class SkyScanner extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getMerchantList()
+     * @return array
      */
     public function getMerchantList()
     {
@@ -122,8 +111,10 @@ class SkyScanner extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
+     * @param null $merchantList
+     * @param \DateTime|null $dStartDate
+     * @param \DateTime|null $dEndDate
+     * @return array
      */
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
@@ -132,26 +123,26 @@ class SkyScanner extends \Oara\Network
 
         $urls = array();
 
-        $url = 'http://business.skyscanner.net/apiservices/reporting/v1.0/reportdata/' . $dStartDate->format!("yyyy-MM-dd") . '/' . $dEndDate->format!("yyyy-MM-dd") . '?encryptedApiKey=' . $this->_apiKey . "&type=csv";
+        $url = 'http://business.skyscanner.net/apiservices/reporting/v1.0/reportdata/' . $dStartDate->format("Y-m-d") . '/' . $dEndDate->format("Y-m-d") . '?encryptedApiKey=' . $this->_apiKey . "&type=csv";
         $urls[] = new \Oara\Curl\Request($url, array());
 
-        $exportReport = array();
+
         $exportReport = $this->_client->get($urls);
-        $dump = var_export($exportReport[0], true);
-        $dump = preg_replace('/ \. /', "", $dump);
-        $dump = preg_replace("/\"\\\\0\"/", "", $dump);
-        $dump = preg_replace("/'/", "", $dump);
+        $dump = \var_export($exportReport[0], true);
+        $dump = \preg_replace('/ \. /', "", $dump);
+        $dump = \preg_replace("/\"\\\\0\"/", "", $dump);
+        $dump = \preg_replace("/'/", "", $dump);
 
-        $exportData = str_getcsv($dump, "\n");
+        $exportData = \str_getcsv($dump, "\n");
 
-        $num = count($exportData);
+        $num = \count($exportData);
         for ($i = 1; $i < $num; $i++) {
 
-            $transactionExportArray = str_getcsv($exportData[$i], ",");
+            $transactionExportArray = \str_getcsv($exportData[$i], ",");
             $transaction = Array();
             $transaction['merchantId'] = 1;
-            $transactionDate = new \DateTime($transactionExportArray[0], 'dd/MM/yyyy HH:mm:ss', 'en');
-            $transaction['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
+            $transactionDate = \DateTime::createFromFormat("d/m/Y H:i:s", $transactionExportArray[0]);
+            $transaction['date'] = $transactionDate->format("Y-m-d H:i:s");
             //unset($transactionDate);
             $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
             $transaction['amount'] = (double)$transactionExportArray[9];
@@ -164,19 +155,6 @@ class SkyScanner extends \Oara\Network
         }
 
         return $totalTransactions;
-    }
-
-
-    /**
-     * (non-PHPdoc)
-     * @see Oara/Network/Base#getPaymentHistory()
-     */
-    public function getPaymentHistory()
-    {
-        $paymentHistory = array();
-
-
-        return $paymentHistory;
     }
 
 }

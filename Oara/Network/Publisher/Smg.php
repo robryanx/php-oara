@@ -31,38 +31,22 @@ namespace Oara\Network\Publisher;
  */
 class Smg extends \Oara\Network
 {
-    /**
-     * Export client.
-     * @var \Oara\Curl\Access
-     */
     private $_newClient = null;
-
-    /**
-     * Access to the website?
-     * @var \Oara\Curl\Access
-     */
-    private $_newAccess = false;
-
-    /**
-     * Date Format, it's different in some accounts
-     * @var string
-     */
-    private $_dateFormat = null;
-
     private $_credentials = null;
-
     private $_accountSid = null;
     private $_authToken = null;
 
     /**
-     * Constructor and Login
-     * @param $tradeDoubler
-     * @return Td_Export
+     * @param $credentials
+     * @throws Exception
+     * @throws \Exception
+     * @throws \Oara\Curl\Exception
      */
     public function login($credentials)
     {
 
         $this->_credentials = $credentials;
+        $this->_client = new \Oara\Curl\Access($credentials);
 
         $user = $this->_credentials['user'];
         $password = $this->_credentials['password'];
@@ -72,37 +56,40 @@ class Smg extends \Oara\Network
             new \Oara\Curl\Parameter('j_password', $password)
         );
 
-        $credentials = $this->_credentials;
-        $this->_newClient = new \Oara\Curl\Access($credentials);
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request($loginUrl, $valuesLogin);
+        $this->_client->post($urls);
+
 
         $urls = array();
         $urls[] = new \Oara\Curl\Request('https://member.impactradius.co.uk/secure/mediapartner/accountSettings/mp-wsapi-flow.ihtml?', array());
         $exportReport = $this->_newClient->get($urls);
-        $dom = new Zend_Dom_Query($exportReport[0]);
+        $dom = new \Zend_Dom_Query($exportReport[0]);
         $results = $dom->query('div .uitkFields');
-        $count = count($results);
+        $count = \count($results);
         if ($count == 0) {
 
             $activeAPI = array(new \Oara\Curl\Parameter('_eventId', "activate"));
             $urls = array();
             $urls[] = new \Oara\Curl\Request('https://member.impactradius.co.uk/secure/mediapartner/accountSettings/mp-wsapi-flow.ihtml?', $activeAPI);
-            $exportReport = $this->_newClient->post($urls);
+            $this->_newClient->post($urls);
+
             $urls = array();
             $urls[] = new \Oara\Curl\Request('https://member.impactradius.co.uk/secure/mediapartner/accountSettings/mp-wsapi-flow.ihtml?', array());
             $exportReport = $this->_newClient->get($urls);
-            $dom = new Zend_Dom_Query($exportReport[0]);
+            $dom = new \Zend_Dom_Query($exportReport[0]);
             $results = $dom->query('div .uitkFields');
-            $count = count($results); // get number of matches: 4
+            $count = \count($results); // get number of matches: 4
             if ($count == 0) {
-                throw new Exception ("No API credentials");
+                throw new \Exception ("No API credentials");
             }
         }
         $i = 0;
         foreach ($results as $result) {
             if ($i == 0) {
-                $this->_accountSid = str_replace(array("\n", "\t", " "), "", $result->nodeValue);
+                $this->_accountSid = \str_replace(array("\n", "\t", " "), "", $result->nodeValue);
             } else if ($i == 1) {
-                $this->_authToken = str_replace(array("\n", "\t", " "), "", $result->nodeValue);
+                $this->_authToken = \str_replace(array("\n", "\t", " "), "", $result->nodeValue);
             }
             $i++;
         }
@@ -130,7 +117,7 @@ class Smg extends \Oara\Network
     }
 
     /**
-     * Check the connection
+     * @return bool
      */
     public function checkConnection()
     {
@@ -141,7 +128,7 @@ class Smg extends \Oara\Network
         $urls[] = new \Oara\Curl\Request('https://member.impactradius.co.uk/secure/mediapartner/home/pview.ihtml', array());
         $exportReport = $this->_newClient->get($urls);
         $newCheck = false;
-        if (preg_match('/\/logOut\.user/', $exportReport[0], $match)) {
+        if (\preg_match('/\/logOut\.user/', $exportReport[0], $match)) {
             $newCheck = true;
         }
 
@@ -149,7 +136,7 @@ class Smg extends \Oara\Network
         if ($newCheck && $this->_authToken != null && $this->_accountSid != null) {
             //Checking API connection from Impact Radius
             $uri = "https://" . $this->_accountSid . ":" . $this->_authToken . "@api.impactradius.com/2010-09-01/Mediapartners/" . $this->_accountSid . "/Campaigns.xml";
-            $res = simplexml_load_file($uri);
+            $res = \simplexml_load_file($uri);
             if (isset($res->Campaigns)) {
                 $newApi = true;
             }
@@ -164,8 +151,7 @@ class Smg extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Base#getMerchantList()
+     * @return array
      */
     public function getMerchantList()
     {
@@ -188,7 +174,7 @@ class Smg extends \Oara\Network
     private function getMerchantReportList()
     {
         $uri = "https://" . $this->_accountSid . ":" . $this->_authToken . "@api.impactradius.com/2010-09-01/Mediapartners/" . $this->_accountSid . "/Campaigns.xml";
-        $res = simplexml_load_file($uri);
+        $res = \simplexml_load_file($uri);
         $currentPage = (int)$res->Campaigns->attributes()->page;
         $pageNumber = (int)$res->Campaigns->attributes()->numpages;
         while ($currentPage <= $pageNumber) {
@@ -202,26 +188,26 @@ class Smg extends \Oara\Network
             $currentPage++;
             $nextPageUri = (string)$res->Campaigns->attributes()->nextpageuri;
             if ($nextPageUri != null) {
-                $res = simplexml_load_file("https://" . $this->_accountSid . ":" . $this->_authToken . "@api.impactradius.com" . $nextPageUri);
+                $res = \simplexml_load_file("https://" . $this->_accountSid . ":" . $this->_authToken . "@api.impactradius.com" . $nextPageUri);
             }
         }
         return $merchantReportList;
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Base#getTransactionList($merchantId, $dStartDate, $dEndDate)
+     * @param null $merchantList
+     * @param \DateTime|null $dStartDate
+     * @param \DateTime|null $dEndDate
+     * @return array
      */
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
         $totalTransactions = Array();
-        $filter = new Zend_Filter_LocalizedToNormalized(array('precision' => 2));
 
         //New Interface
-        $uri = "https://" . $this->_accountSid . ":" . $this->_authToken . "@api.impactradius.com/2010-09-01/Mediapartners/" . $this->_accountSid . "/Actions?ActionDateStart=" . $dStartDate->format!('yyyy-MM-ddTHH:mm:ss') . "-00:00&ActionDateEnd=" . $dEndDate->format!('yyyy-MM-ddTHH:mm:ss') . "-00:00";
-        $res = simplexml_load_file($uri);
+        $uri = "https://" . $this->_accountSid . ":" . $this->_authToken . "@api.impactradius.com/2010-09-01/Mediapartners/" . $this->_accountSid . "/Actions?ActionDateStart=" . $dStartDate->format('Y-m-dTH:i:s') . "-00:00&ActionDateEnd=" . $dEndDate->format('Y-m-dTH:i:s') . "-00:00";
+        $res = \simplexml_load_file($uri);
         if ($res) {
-
 
             $currentPage = (int)$res->Actions->attributes()->page;
             $pageNumber = (int)$res->Actions->attributes()->numpages;
@@ -231,8 +217,7 @@ class Smg extends \Oara\Network
                     $transaction = Array();
                     $transaction['merchantId'] = (int)$action->CampaignId;
 
-                    $transactionDate = new \DateTime((string)$action->EventDate, "yyyy-MM-dd HH:mm:ss");
-                    $transaction['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
+                    $transaction['date'] = (string)$action->EventDate;
 
                     $transaction['unique_id'] = (string)$action->Id;
                     if ((string)$action->SharedId != '') {
@@ -261,7 +246,7 @@ class Smg extends \Oara\Network
                 $currentPage++;
                 $nextPageUri = (string)$res->Actions->attributes()->nextpageuri;
                 if ($nextPageUri != null) {
-                    $res = simplexml_load_file("https://" . $this->_accountSid . ":" . $this->_authToken . "@api.impactradius.com" . $nextPageUri);
+                    $res = \simplexml_load_file("https://" . $this->_accountSid . ":" . $this->_authToken . "@api.impactradius.com" . $nextPageUri);
                 }
             }
         }
@@ -270,36 +255,27 @@ class Smg extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see Oara/Network/Base#getPaymentHistory()
+     * @return array
+     * @throws Exception
      */
     public function getPaymentHistory()
     {
         $paymentHistory = array();
-        $filter = new Zend_Filter_LocalizedToNormalized(array('precision' => 2));
-
 
         $urls = array();
         $urls[] = new \Oara\Curl\Request('https://member.impactradius.co.uk/secure/nositemesh/accounting/getPayStubParamsCSV.csv', array());
         $exportReport = $this->_newClient->get($urls);
-        $exportData = str_getcsv($exportReport[0], "\n");
+        $exportData = \str_getcsv($exportReport[0], "\n");
 
-        $num = count($exportData);
+        $num = \count($exportData);
         for ($i = 1; $i < $num; $i++) {
-            $paymentExportArray = str_getcsv($exportData[$i], ",");
-
+            $paymentExportArray = \str_getcsv($exportData[$i], ",");
             $obj = array();
-
-            $date = new \DateTime($paymentExportArray[1], "dd MMM, yyyy");
-
-            $obj['date'] = $date->format!("yyyy-MM-dd HH:mm:ss");
+            $date = \DateTime::createFromFormat("d M, Y", $paymentExportArray[1]);
+            $obj['date'] = $date->format("y-m-d H:i:s");
             $obj['pid'] = $paymentExportArray[0];
             $obj['method'] = 'BACS';
-            if (preg_match('/[-+]?[0-9]*,?[0-9]*\.?[0-9]+/', $paymentExportArray[6], $matches)) {
-                $obj['value'] = $filter->filter($matches[0]);
-            } else {
-                throw new Exception("Problem reading payments");
-            }
+            $obj['value'] = \Oara\Utilities::parseDouble($paymentExportArray[6]);
             $paymentHistory[] = $obj;
         }
         return $paymentHistory;
