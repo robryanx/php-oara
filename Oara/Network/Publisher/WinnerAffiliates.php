@@ -32,26 +32,16 @@ class WinnerAffiliates extends \Oara\Network
 {
 
     private $_credentials = null;
-    /**
-     * Client
-     * @var unknown_type
-     */
     private $_client = null;
 
     /**
-     * Constructor and Login
      * @param $credentials
-     * @return PureVPN
+     * @throws \Exception
      */
     public function login($credentials)
     {
         $this->_credentials = $credentials;
-        self::logIn();
-
-    }
-
-    private function logIn()
-    {
+        $this->_client = new \Oara\Curl\Access($credentials);
 
         $valuesLogin = array(
             new \Oara\Curl\Parameter('fromUrl', 'https://www.winneraffiliates.com/'),
@@ -60,7 +50,9 @@ class WinnerAffiliates extends \Oara\Network
         );
 
         $loginUrl = 'https://www.winneraffiliates.com/login/submit';
-        $this->_client = new \Oara\Curl\Access($loginUrl, $valuesLogin, $this->_credentials);
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request($loginUrl, $valuesLogin);
+        $this->_client->post($urls);
 
     }
 
@@ -85,7 +77,7 @@ class WinnerAffiliates extends \Oara\Network
     }
 
     /**
-     * Check the connection
+     * @return bool
      */
     public function checkConnection()
     {
@@ -93,21 +85,20 @@ class WinnerAffiliates extends \Oara\Network
         $connection = true;
         $urls = array();
         $urls[] = new \Oara\Curl\Request('https://www.winneraffiliates.com/', array());
-
         $exportReport = $this->_client->get($urls);
 
-        $dom = new Zend_Dom_Query($exportReport[0]);
-        $results = $dom->query('#lgUsername');
-
-        if (count($results) > 0) {
+        $doc = new \DOMDocument();
+        @$doc->loadHTML($exportReport[0]);
+        $xpath = new \DOMXPath($doc);
+        $results = $xpath->query('//[@id="lgUsername"]');
+        if ($results->length > 0) {
             $connection = false;
         }
         return $connection;
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getMerchantList()
+     * @return array
      */
     public function getMerchantList()
     {
@@ -123,20 +114,21 @@ class WinnerAffiliates extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
+     * @param null $merchantList
+     * @param \DateTime|null $dStartDate
+     * @param \DateTime|null $dEndDate
+     * @return array
      */
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
 
         $totalTransactions = array();
-        $valuesFormExport = array();
-
+        $valuesFromExport = array();
         $valuesFromExport[] = new \Oara\Curl\Parameter('periods', 'custom');
         $valuesFromExport[] = new \Oara\Curl\Parameter('minDate', '{"year":"2009","month":"05","day":"01"}');
         $valuesFromExport[] = new \Oara\Curl\Parameter('show_periods', '1');
-        $valuesFromExport[] = new \Oara\Curl\Parameter('fromPeriod', $dStartDate->format!('yyyy-MM-dd'));
-        $valuesFromExport[] = new \Oara\Curl\Parameter('toPeriod', $dEndDate->format!('yyyy-MM-dd'));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('fromPeriod', $dStartDate->format('Y-m-d'));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('toPeriod', $dEndDate->format('Y-m-d'));
         $valuesFromExport[] = new \Oara\Curl\Parameter('product', '');
         $valuesFromExport[] = new \Oara\Curl\Parameter('profile', '');
         $valuesFromExport[] = new \Oara\Curl\Parameter('campaign', '16800');
@@ -151,24 +143,20 @@ class WinnerAffiliates extends \Oara\Network
 
         $urls = array();
         $urls[] = new \Oara\Curl\Request('https://www.winneraffiliates.com/traffic-stats/advertiser', $valuesFromExport);
-
-        $exportReport = array();
         $exportReport = $this->_client->post($urls);
-        $exportData = str_getcsv($exportReport[0], "\n");
+        $exportData = \str_getcsv($exportReport[0], "\n");
 
-        $num = count($exportData);
+        $num = \count($exportData);
         for ($i = 1; $i < $num; $i++) {
 
-            $transactionExportArray = str_getcsv($exportData[$i], ",");
+            $transactionExportArray = \str_getcsv($exportData[$i], ",");
             $transaction = Array();
             $transaction['merchantId'] = 1;
-            $transactionDate = new \DateTime($transactionExportArray[0], 'yyyy-MM-dd HH:mm:ss', 'en');
-            $transaction['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
-            //unset($transactionDate);
+            $transaction['date'] = $transactionExportArray[0];
             $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
-            $amount = str_replace('$', '', $transactionExportArray[1]);
+            $amount = \str_replace('$', '', $transactionExportArray[1]);
             $transaction['amount'] = (double)$amount;
-            $commission = str_replace('$', '', $transactionExportArray[2]);
+            $commission = \str_replace('$', '', $transactionExportArray[2]);
             $transaction['commission'] = (double)$commission;
 
             if ($transaction['amount'] != 0 && $transaction['commission'] != 0) {
@@ -178,18 +166,6 @@ class WinnerAffiliates extends \Oara\Network
         }
 
         return $totalTransactions;
-    }
-
-    /**
-     * (non-PHPdoc)
-     * @see Oara/Network/Base#getPaymentHistory()
-     */
-    public function getPaymentHistory()
-    {
-        $paymentHistory = array();
-
-
-        return $paymentHistory;
     }
 
 }

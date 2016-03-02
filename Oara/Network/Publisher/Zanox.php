@@ -33,34 +33,20 @@ require "Zanox/Zapi/ApiClient.php";
 
 class Zanox extends \Oara\Network
 {
-    /**
-     * Soap client.
-     */
-    private $_apiClient = null;
 
-    /**
-     * page Size.
-     */
+    private $_apiClient = null;
     private $_pageSize = 50;
 
     /**
-     * Constructor.
-     * @param $affiliateWindow
-     * @return Zn_Api
+     * @param $credentials
      */
     public function login($credentials)
     {
-
-        $api = ApiClient::factory(PROTOCOL_SOAP, VERSION_2011_03_01);
-
+        $api = \ApiClient::factory(PROTOCOL_SOAP, VERSION_2011_03_01);
         $connectId = $credentials['connectId'];
         $secretKey = $credentials['secretKey'];
-        //$publicKey = $credentials['publicKey'];
-
         $api->setConnectId($connectId);
         $api->setSecretKey($secretKey);
-        //$api->setPublicKey($publicKey);
-
         $this->_apiClient = $api;
 
     }
@@ -73,27 +59,27 @@ class Zanox extends \Oara\Network
         $credentials = array();
 
         $parameter = array();
-        $parameter["user"]["description"] = "User Log in";
-        $parameter["user"]["required"] = true;
+        $parameter["connectId"]["description"] = "Connect Id";
+        $parameter["connectId"]["required"] = true;
         $credentials[] = $parameter;
 
         $parameter = array();
-        $parameter["password"]["description"] = "Password to Log in";
-        $parameter["password"]["required"] = true;
+        $parameter["secretKey"]["description"] = "Secret Key";
+        $parameter["secretKey"]["required"] = true;
         $credentials[] = $parameter;
 
         return $credentials;
     }
 
     /**
-     * Check the connection
+     * @return bool
      */
     public function checkConnection()
     {
         $connection = true;
         try {
             $profile = $this->_apiClient->getProfile();
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $connection = false;
         }
 
@@ -101,8 +87,7 @@ class Zanox extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Base#getMerchantList()
+     * @return array
      */
     public function getMerchantList()
     {
@@ -122,64 +107,72 @@ class Zanox extends \Oara\Network
                         $merchantList[$programApplication->program->id] = $obj;
                     }
                 }
-
             }
         }
         return $merchantList;
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Base#getTransactionList($merchantId,$dStartDate,$dEndDate)
+     * @param $rowAvailable
+     * @param $rowsReturned
+     * @return int
+     */
+    private function calculeIterationNumber($rowAvailable, $rowsReturned)
+    {
+        $iterationDouble = (double)($rowAvailable / $rowsReturned);
+        $iterationInt = (int)($rowAvailable / $rowsReturned);
+        if ($iterationDouble > $iterationInt) {
+            $iterationInt++;
+        }
+        return $iterationInt;
+    }
+
+    /**
+     * @param null $merchantList
+     * @param \DateTime|null $dStartDate
+     * @param \DateTime|null $dEndDate
+     * @return array
      */
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
         $totalTransactions = array();
+        $diff = $dStartDate->diff($dEndDate)->days;
 
-        $dStartDate = clone $dStartDate;
-        $dStartDate->setHour("00");
-        $dStartDate->setMinute("00");
-        $dStartDate->setSecond("00");
-        $dEndDate = clone $dEndDate;
-        $dEndDate->setHour("23");
-        $dEndDate->setMinute("59");
-        $dEndDate->setSecond("59");
+        $merchantIdList = \Oara\Utilities::getMerchantIdMapFromMerchantList($merchantList);
 
-        $dateArray = \Oara\Utilities::daysOfDifference($dStartDate, $dEndDate);
-        foreach ($dateArray as $date) {
+        $auxDate = clone $dStartDate;
+        for ($i = 0; $i < $diff; $i++) {
             $totalAuxTransactions = array();
-            $transactionList = $this->getSales($date->format!("yyyy-MM-dd"), 0, $this->_pageSize);
+            $transactionList = $this->getSales($auxDate->format("Y-m-d"), 0, $this->_pageSize);
 
             if ($transactionList->total > 0) {
                 $iteration = self::calculeIterationNumber($transactionList->total, $this->_pageSize);
-                $totalAuxTransactions = array_merge($totalAuxTransactions, $transactionList->saleItems->saleItem);
+                $totalAuxTransactions = \array_merge($totalAuxTransactions, $transactionList->saleItems->saleItem);
                 for ($i = 1; $i < $iteration; $i++) {
-                    $transactionList = $this->getSales($date->format!("yyyy-MM-dd"), $i, $this->_pageSize);
-                    $totalAuxTransactions = array_merge($totalAuxTransactions, $transactionList->saleItems->saleItem);
+                    $transactionList = $this->getSales($auxDate->format("Y-m-d"), $i, $this->_pageSize);
+                    $totalAuxTransactions = \array_merge($totalAuxTransactions, $transactionList->saleItems->saleItem);
                     unset($transactionList);
-                    gc_collect_cycles();
+                    \gc_collect_cycles();
                 }
 
             }
-            $leadList = $this->_apiClient->getLeads($date->format!("yyyy-MM-dd"), 'trackingDate', null, null, null, 0, $this->_pageSize);
+            $leadList = $this->_apiClient->getLeads($auxDate->format("Y-m-d"), 'trackingDate', null, null, null, 0, $this->_pageSize);
             if ($leadList->total > 0) {
                 $iteration = self::calculeIterationNumber($leadList->total, $this->_pageSize);
-                $totalAuxTransactions = array_merge($totalAuxTransactions, $leadList->leadItems->leadItem);
+                $totalAuxTransactions = \array_merge($totalAuxTransactions, $leadList->leadItems->leadItem);
                 for ($i = 1; $i < $iteration; $i++) {
-                    $leadList = $this->_apiClient->getLeads($date->format!("yyyy-MM-dd"), 'trackingDate', null, null, null, $i, $this->_pageSize);
-                    $totalAuxTransactions = array_merge($totalAuxTransactions, $leadList->leadItems->leadItem);
+                    $leadList = $this->_apiClient->getLeads($auxDate->format("Y-m-d"), 'trackingDate', null, null, null, $i, $this->_pageSize);
+                    $totalAuxTransactions = \array_merge($totalAuxTransactions, $leadList->leadItems->leadItem);
                     unset($leadList);
-                    gc_collect_cycles();
+                    \gc_collect_cycles();
                 }
             }
 
             foreach ($totalAuxTransactions as $transaction) {
 
-                if ($merchantList == null || change_it_for_isset!($transaction->program->id, $merchantList)) {
+                if ($merchantList == null || isset($merchantIdList[$transaction->program->id])) {
                     $obj = array();
-
                     $obj['currency'] = $transaction->currency;
-
                     if ($transaction->reviewState == 'confirmed') {
                         $obj['status'] = \Oara\Utilities::STATUS_CONFIRMED;
                     } else
@@ -198,8 +191,8 @@ class Zanox extends \Oara\Network
                     if (isset($transaction->gpps) && $transaction->gpps != null) {
                         foreach ($transaction->gpps->gpp as $gpp) {
                             if ($gpp->id == "zpar0") {
-                                if (strlen($gpp->_) > 150) {
-                                    $gpp->_ = substr($gpp->_, 0, 150);
+                                if (\strlen($gpp->_) > 150) {
+                                    $gpp->_ = \substr($gpp->_, 0, 150);
                                 }
                                 $obj['custom_id'] = $gpp->_;
                             }
@@ -212,8 +205,7 @@ class Zanox extends \Oara\Network
 
                     $obj['unique_id'] = $transaction->id;
                     $obj['commission'] = $transaction->commission;
-                    $transactionDate = new \DateTime($transaction->trackingDate, "yyyy-MM-dd HH:mm:ss");
-                    $obj['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
+                    $obj['date'] = $transaction->trackingDate;
                     $obj['merchantId'] = $transaction->program->id;
                     $obj['approved'] = $transaction->reviewState == 'approved' ? true : false;
                     $totalTransactions[] = $obj;
@@ -221,41 +213,12 @@ class Zanox extends \Oara\Network
 
             }
             unset($totalAuxTransactions);
-            gc_collect_cycles();
+            \gc_collect_cycles();
+
+            $interval = new \DateInterval('P1D');
+            $auxDate->add($interval);
         }
         return $totalTransactions;
-    }
-
-    /**
-     * (non-PHPdoc)
-     * @see Oara/Network/Base#getPaymentHistory()
-     */
-
-    public function getPaymentHistory()
-    {
-        $paymentHistory = array();
-        /*
-        $paymentList = $this->_apiClient->getPayments(0, $this->_pageSize);
-
-        if ($paymentList->total > 0) {
-            $iteration = self::calculeIterationNumber($paymentList->total, $this->_pageSize);
-            for ($j = 0; $j < $iteration; $j++) {
-                $paymentList = $this->_apiClient->getPayments($j, $this->_pageSize);
-                foreach ($paymentList->paymentItems->paymentItem as $payment) {
-                    $obj = array();
-                    $paymentDate = new \DateTime($payment->createDate, "yyyy-MM-ddTHH:mm:ss");
-                    $obj['method'] = 'BACS';
-                    $obj['pid'] = $paymentDate->format!("yyyyMMddHHmmss");
-                    $obj['value'] = $payment->amount;
-
-                    $obj['date'] = $paymentDate->format!("yyyy-MM-dd HH:mm:ss");
-
-                    $paymentHistory[] = $obj;
-                }
-            }
-        }
-        */
-        return $paymentHistory;
     }
 
     private function getSales($date, $page, $pageSize, $iteration = 0)
@@ -263,7 +226,7 @@ class Zanox extends \Oara\Network
         $transactionList = array();
         try {
             $transactionList = $this->_apiClient->getSales($date, 'trackingDate', null, null, null, $page, $pageSize, $iteration);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             $iteration++;
             if ($iteration < 5) {
                 $transactionList = self::getSales($date, $page, $pageSize, $iteration);
@@ -272,20 +235,5 @@ class Zanox extends \Oara\Network
         }
         return $transactionList;
 
-    }
-
-    /**
-     * Calculate the number of iterations needed
-     * @param $rowAvailable
-     * @param $rowsReturned
-     */
-    private function calculeIterationNumber($rowAvailable, $rowsReturned)
-    {
-        $iterationDouble = (double)($rowAvailable / $rowsReturned);
-        $iterationInt = (int)($rowAvailable / $rowsReturned);
-        if ($iterationDouble > $iterationInt) {
-            $iterationInt++;
-        }
-        return $iterationInt;
     }
 }

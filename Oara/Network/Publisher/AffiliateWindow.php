@@ -348,11 +348,9 @@ class AffiliateWindow extends \Oara\Network
 
     /**
      * @param $paymentId
-     * @param $merchantList
-     * @param $startDate
      * @return array
      */
-    public function paymentTransactions($paymentId, $merchantList, $startDate)
+    public function paymentTransactions($paymentId)
     {
         $transactionList = array();
         $urls = array();

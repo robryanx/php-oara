@@ -30,41 +30,20 @@ namespace Oara\Network\Publisher;
  */
 class WowTrk extends \Oara\Network
 {
-    /**
-     * Soap client.
-     */
-    private $_apiClient = null;
-    /**
-     * Export client.
-     */
+
     private $_exportClient = null;
-
-    /**
-     * Credentials Export Parameters
-     * @var array
-     */
-    private $_credentialsParameters = array();
-
-    /**
-     * Api key.
-     */
     private $_apiPassword = null;
 
     /**
-     * page Size.
-     */
-    private $_pageSize = 200;
-
-    /**
-     * Constructor.
-     * @param $wow
-     * @return Aw_Api
+     * @param $credentials
      */
     public function login($credentials)
     {
         $user = $credentials['user'];
         $password = $credentials['password'];
         $this->_apiPassword = $credentials['apiPassword'];
+        $this->_client = new \Oara\Curl\Access($credentials);
+
 
         //login through wow website
         $loginUrl = 'http://p.wowtrk.com/';
@@ -73,7 +52,9 @@ class WowTrk extends \Oara\Network
             new \Oara\Curl\Parameter('_method', 'POST')
         );
 
-        $this->_exportClient = new \Oara\Curl\Access($credentials);
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request($loginUrl, $valuesLogin);
+        $this->_client->post($urls);
     }
 
     /**
@@ -93,26 +74,30 @@ class WowTrk extends \Oara\Network
         $parameter["password"]["required"] = true;
         $credentials[] = $parameter;
 
+        $parameter = array();
+        $parameter["apiPassword"]["description"] = "API Password ";
+        $parameter["apiPassword"]["required"] = true;
+        $credentials[] = $parameter;
+
         return $credentials;
     }
 
     /**
-     * Check the connection
+     * @return bool
      */
     public function checkConnection()
     {
         $connection = false;
         try {
             $connection = true;
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
 
         }
         return $connection;
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Base#getMerchantList()
+     * @return array
      */
     public function getMerchantList()
     {
@@ -140,29 +125,33 @@ class WowTrk extends \Oara\Network
     }
 
     /**
-     * Convert the string in xml object.
-     * @param $exportReport
-     * @return xml
+     * @param null $exportReport
+     * @return \SimpleXMLElement
      */
     private function loadXml($exportReport = null)
     {
-        $xml = simplexml_load_string($exportReport, null, LIBXML_NOERROR | LIBXML_NOWARNING);
+        $xml = \simplexml_load_string($exportReport, null, LIBXML_NOERROR | LIBXML_NOWARNING);
         return $xml;
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Base#getTransactionList($merchantId,$dStartDate,$dEndDate)
+     * @param null $merchantList
+     * @param \DateTime|null $dStartDate
+     * @param \DateTime|null $dEndDate
+     * @return array
      */
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
         $totalTransactions = array();
 
+        $merchantIdList = \Oara\Utilities::getMerchantIdMapFromMerchantList($merchantList);
+        $merchantMap = \Oara\Utilities::getMerchantNameMapFromMerchantList($merchantList);
+
         $valuesFromExport = array();
         $valuesFromExport[] = new \Oara\Curl\Parameter('api_key', $this->_apiPassword);
-        $valuesFromExport[] = new \Oara\Curl\Parameter('start_date', $dStartDate->format!("yyyy-MM-dd"));
-        $valuesFromExport[] = new \Oara\Curl\Parameter('end_date', $dEndDate->format!("yyyy-MM-dd"));
-        $valuesFromExport[] = new \Oara\Curl\Parameter('filter[Stat.offer_id]', implode(",", $merchantList));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('start_date', $dStartDate->format("Y-m-d"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('end_date', $dEndDate->format("Y-m-d"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('filter[Stat.offer_id]', \implode(",", $merchantIdList));
 
         $urls = array();
         $urls[] = new \Oara\Curl\Request('http://p.wowtrk.com/stats/lead_report.xml?', $valuesFromExport);
@@ -171,11 +160,10 @@ class WowTrk extends \Oara\Network
         $exportData = self::loadXml($exportReport[0]);
 
         foreach ($exportData->stats->stat as $transaction) {
-            if (isset($merchantMap![(string)$transaction->offer])) {
+            if (isset($merchantMap[(string)$transaction->offer])) {
                 $obj = array();
-                $obj['merchantId'] = $merchantMap![(string)$transaction->offer];
-                $date = new \DateTime((string)$transaction->date_time, "yyyy-MM-dd HH:mm:ss");
-                $obj['date'] = $date->format!("yyyy-MM-dd HH:mm:ss");
+                $obj['merchantId'] = $merchantMap[(string)$transaction->offer];
+                $obj['date'] = (string)$transaction->date_time;
                 $obj['status'] = \Oara\Utilities::STATUS_CONFIRMED;
                 $obj['customId'] = (string)$transaction->sub_id;
                 $obj['amount'] = \Oara\Utilities::parseDouble((string)$transaction->payout);
@@ -188,16 +176,4 @@ class WowTrk extends \Oara\Network
         }
         return $totalTransactions;
     }
-
-    /**
-     * (non-PHPdoc)
-     * @see Oara/Network/Base#getPaymentHistory()
-     */
-    public function getPaymentHistory()
-    {
-        $paymentHistory = array();
-
-        return $paymentHistory;
-    }
-
 }

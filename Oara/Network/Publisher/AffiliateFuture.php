@@ -50,7 +50,7 @@ class AffiliateFuture extends \Oara\Network
 
         $urls = array();
         $urls[] = new \Oara\Curl\Request('http://affiliates.affiliatefuture.com/login.aspx?', $valuesLogin);
-        $this->_client->get($urls);
+        $this->_client->post($urls);
 
         $this->_credentials = $credentials;
 

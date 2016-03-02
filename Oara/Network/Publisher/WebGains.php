@@ -30,75 +30,26 @@ namespace Oara\Network\Publisher;
  */
 class WebGains extends \Oara\Network
 {
-    /**
-     * Soap client.
-     */
-    private $_soapClient = null;
-    /**
-     * Web client.
-     */
-    private $_webClient = null;
 
-    /**
-     * Server.
-     */
+    private $_soapClient = null;
+    private $_webClient = null;
     private $_server = null;
-    /**
-     * Export Merchant Parameters
-     * @var array
-     */
-    private $_exportMerchantParameters = null;
-    /**
-     * Export Transaction Parameters
-     * @var array
-     */
-    private $_exportTransactionParameters = null;
-    /**
-     * Export Overview Parameters
-     * @var array
-     */
-    private $_exportOverviewParameters = null;
-    /**
-     * Converter configuration for the merchants.
-     * @var array
-     */
-    private $_merchantConverterConfiguration = Array('programID' => 'cid',
-        'programName' => 'name',
-        'programURL' => 'url',
-        'programDescription' => 'description'
-    );
-    /**
-     * Converter configuration for the transactions.
-     * @var array
-     */
-    private $_transactionConverterConfiguration = Array('status' => 'status',
-        'saleValue' => 'amount',
-        'commission' => 'commission',
-        'date' => 'date',
-        'merchantId' => 'merchantId',
-        'custom_id' => 'clickRef',
-    );
-    /**
-     * Array with the id from the campaigns
-     * @var array
-     */
     private $_campaignMap = array();
 
     /**
-     * Constructor.
-     * @param $webgains
-     * @return Wg_Api
+     * @param $credentials
      */
     public function login($credentials)
     {
-        $user = $credentials['user'];
-        $password = $credentials['password'];
+        $this->_user = $credentials['user'];
+        $this->_password = $credentials['password'];
+        $this->_webClient = new \Oara\Curl\Access($credentials);
 
         $wsdlUrl = 'http://ws.webgains.com/aws.php';
         //Setting the client.
-        $this->_soapClient = new Zend_Soap_Client($wsdlUrl, array('login' => $user,
+        $this->_soapClient = new \SoapClient($wsdlUrl, array('login' => $this->_user,
             'encoding' => 'UTF-8',
-            'password' => $password,
+            'password' => $this->_password,
             'compression' => SOAP_COMPRESSION_ACCEPT | SOAP_COMPRESSION_GZIP | SOAP_COMPRESSION_DEFLATE,
             'soap_version' => SOAP_1_1));
 
@@ -130,30 +81,44 @@ class WebGains extends \Oara\Network
 
         $valuesLogin = array(
             new \Oara\Curl\Parameter('user_type', 'affiliateuser'),
-            new \Oara\Curl\Parameter('username', $user),
-            new \Oara\Curl\Parameter('password', $password)
+            new \Oara\Curl\Parameter('username', $this->_user),
+            new \Oara\Curl\Parameter('password', $this->_password)
         );
 
         foreach ($loginUrlArray as $country => $url) {
-            $this->_webClient = new \Oara\Curl\Access($url, $valuesLogin, $credentials);
-            if (preg_match("/logout.html/", $this->_webClient->getConstructResult())) {
+
+            $urls = array();
+            $urls[] = new \Oara\Curl\Request($url, $valuesLogin);
+            $exportReport = $this->_client->post($urls);
+            if (\preg_match("/logout.html/", $exportReport[0])) {
                 $this->_server = $serverArray[$country];
-                $this->_campaignMap = self::getCampaignMap($this->_webClient->getConstructResult());
+                $this->_campaignMap = self::getCampaignMap($exportReport[0]);
                 break;
             }
         }
 
+    }
 
-        $this->_exportMerchantParameters = array('username' => $user,
-            'password' => $password
-        );
-        $this->_exportTransactionParameters = array('username' => $user,
-            'password' => $password
-        );
-        $this->_exportOverviewParameters = array('username' => $user,
-            'password' => $password
-        );
+    /**
+     * @param $html
+     * @return array
+     */
+    private function getCampaignMap($html)
+    {
+        $campaingMap = array();
 
+        $doc = new \DOMDocument();
+        @$doc->loadHTML($html);
+        $xpath = new \DOMXPath($doc);
+        $results = $xpath->query('//select[@name="campaignswitchid"]');
+        $merchantLines = $results->item(0)->childNodes;
+        for ($i = 0; $i < $merchantLines->length; $i++) {
+            $cid = $merchantLines->item($i)->attributes->getNamedItem("value")->nodeValue;
+            if (\is_numeric($cid)) {
+                $campaingMap[$cid] = $merchantLines->item($i)->nodeValue;
+            }
+        }
+        return $campaingMap;
     }
 
     /**
@@ -177,7 +142,7 @@ class WebGains extends \Oara\Network
     }
 
     /**
-     * Check the connection
+     * @return bool
      */
     public function checkConnection()
     {
@@ -189,69 +154,60 @@ class WebGains extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Base#getMerchantList()
+     * @return array
      */
     public function getMerchantList()
     {
         $merchantList = Array();
         foreach ($this->_campaignMap as $campaignKey => $campaignValue) {
-            $merchants = $this->_soapClient->getProgramsWithMembershipStatus($this->_exportMerchantParameters['username'], $this->_exportMerchantParameters['password'], $campaignKey);
+            $merchants = $this->_soapClient->getProgramsWithMembershipStatus($this->_user, $this->_password, $campaignKey);
             foreach ($merchants as $merchant) {
                 if ($merchant->programMembershipStatusName == 'Live' || $merchant->programMembershipStatusName == 'Joined') {
-                    $merchantList[$merchant->programID] = $merchant;
+                    $merchantList[$merchant->programID]["cid"] = $merchant->programID;
+                    $merchantList[$merchant->programID]["name"] = $merchant->programName;
                 }
 
             }
         }
-        $merchantList = \Oara\Utilities::soapConverter($merchantList, $this->_merchantConverterConfiguration);
-
         return $merchantList;
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Base#getTransactionList($merchantId,$dStartDate,$dEndDate)
+     * @param null $merchantList
+     * @param \DateTime|null $dStartDate
+     * @param \DateTime|null $dEndDate
+     * @return array
+     * @throws Exception
      */
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
         $totalTransactions = Array();
 
-        $dStartDate = clone $dStartDate;
-        $dStartDate->setHour("00");
-        $dStartDate->setMinute("00");
-        $dStartDate->setSecond("00");
-        $dEndDate = clone $dEndDate;
-        $dEndDate->setHour("23");
-        $dEndDate->setMinute("59");
-        $dEndDate->setSecond("59");
-
+        $merchantListIdList = \Oara\Utilities::getMerchantIdMapFromMerchantList($merchantList);
 
         foreach ($this->_campaignMap as $campaignKey => $campaignValue) {
             try {
-                $transactionList = $this->_soapClient->getFullEarningsWithCurrency($dStartDate->getIso(), $dEndDate->getIso(), $campaignKey, $this->_exportTransactionParameters['username'], $this->_exportTransactionParameters['password']);
-            } catch (Exception $e) {
-                if (preg_match("/60 requests/", $e->getMessage())) {
-                    sleep(60);
-                    $transactionList = $this->_soapClient->getFullEarningsWithCurrency($dStartDate->getIso(), $dEndDate->getIso(), $campaignKey, $this->_exportTransactionParameters['username'], $this->_exportTransactionParameters['password']);
+                $transactionList = $this->_soapClient->getFullEarningsWithCurrency($dStartDate->getIso(), $dEndDate->getIso(), $campaignKey, $this->_user, $this->_password);
+            } catch (\Exception $e) {
+                if (\preg_match("/60 requests/", $e->getMessage())) {
+                    \sleep(60);
+                    $transactionList = $this->_soapClient->getFullEarningsWithCurrency($dStartDate->getIso(), $dEndDate->getIso(), $campaignKey, $this->_user, $this->_password);
                 }
             }
             foreach ($transactionList as $transactionObject) {
-                if (change_it_for_isset!($transactionObject->programID, $merchantList)) {
+                if (isset($merchantListIdList[$transactionObject->programID])) {
 
                     $transaction = array();
                     $transaction['merchantId'] = $transactionObject->programID;
-                    $transactionDate = new \DateTime($transactionObject->date, "yyyy-MM-ddTHH:mm:ss");
-                    $transaction["date"] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
+                    $transactionDate = \DateTime::createFromFormat("Y/m/d\TH:i:s", $transactionObject->date);
+                    $transaction["date"] = $transactionDate->format("Y-m-d H:i:s");
                     $transaction['unique_id'] = $transactionObject->transactionID;
                     if ($transactionObject->clickRef != null) {
                         $transaction['custom_id'] = $transactionObject->clickRef;
                     }
-
                     $transaction['status'] = null;
                     $transaction['amount'] = $transactionObject->saleValue;
                     $transaction['commission'] = $transactionObject->commission;
-
                     if ($transactionObject->paymentStatus == 'cleared' || $transactionObject->paymentStatus == 'paid') {
                         $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
                     } else
@@ -261,98 +217,13 @@ class WebGains extends \Oara\Network
                             if ($transactionObject->paymentStatus == 'cancelled') {
                                 $transaction['status'] = \Oara\Utilities::STATUS_DECLINED;
                             } else {
-                                throw new Exception('Error in the transaction status ' . $transactionObject->paymentStatus);
+                                throw new \Exception('Error in the transaction status ' . $transactionObject->paymentStatus);
                             }
                     $transaction['currency'] = $transactionObject->currency;
-
                     $totalTransactions[] = $transaction;
                 }
             }
-
         }
         return $totalTransactions;
-    }
-
-    /**
-     * Get the campaings identifiers and returns it in an array.
-     * @return array
-     */
-    private function getCampaignMap($html)
-    {
-        $campaingMap = array();
-
-        $dom = new Zend_Dom_Query($html);
-        $results = $dom->query('select[name="campaignswitchid"]');
-        $merchantLines = $results->current()->childNodes;
-        for ($i = 0; $i < $merchantLines->length; $i++) {
-            $cid = $merchantLines->item($i)->attributes->getNamedItem("value")->nodeValue;
-            if (is_numeric($cid)) {
-                $campaingMap[$cid] = $merchantLines->item($i)->nodeValue;
-            }
-
-
-        }
-        return $campaingMap;
-    }
-
-    /**
-     * (non-PHPdoc)
-     * @see Oara/Network/Base#getPaymentHistory()
-     */
-    public function getPaymentHistory()
-    {
-        $paymentHistory = array();
-        /*
-        $urls = array();
-
-        $urls[] = new \Oara\Curl\Request("https://{$this->_server}/affiliates/payment.html", array());
-        $exportReport = $this->_webClient->get($urls);
-
-        $doc = new DOMDocument();
-        libxml_use_internal_errors(true);
-        $doc->validateOnParse = true;
-        $doc->loadHTML($exportReport[0]);
-        $tableList = $doc->getElementsByTagName('table');
-        $i = 0;
-        $enc = false;
-        while ($i < $tableList->length && !$enc) {
-
-            $registerTable = $tableList->item($i);
-            if ($registerTable->getAttribute('class') == 'withgrid') {
-                $enc = true;
-            }
-            $i++;
-        }
-        if (!$enc) {
-            throw new Exception('Fail getting the payment History');
-        }
-
-        $registerLines = $registerTable->childNodes;
-        for ($i = 2; $i < $registerLines->length ; $i++) {
-
-            $obj = array();
-
-            $linkList = $registerLines->item($i)->getElementsByTagName('a');
-            $url = $linkList->item(1)->attributes->getNamedItem("href")->nodeValue;
-            $parseUrl = parse_url(trim($url));
-            $parameters = explode('&', $parseUrl['query']);
-            foreach ($parameters as $parameter) {
-                $parameterValue = explode('=', $parameter);
-                if ($parameterValue[0] == 'payment' || $parameterValue[0] == 'creditnoteid') {
-                    $obj['pid'] = $parameterValue[1];
-                }
-            }
-
-            $registerLine = $registerLines->item($i)->childNodes;
-            $date = new \DateTime($registerLine->item(0)->nodeValue, "dd/MM/yy");
-            $obj['date'] = $date->format!("yyyy-MM-dd HH:mm:ss");
-            $value = $registerLine->item(2)->nodeValue;
-            preg_match('/[0-9]+(,[0-9]{3})*(\.[0-9]{2})?$/', $value, $matches);
-            $obj['value'] = \Oara\Utilities::parseDouble($matches[0]);
-            $obj['method'] = $registerLine->item(6)->nodeValue;
-            $paymentHistory[] = $obj;
-        }
-        */
-        return $paymentHistory;
     }
 }

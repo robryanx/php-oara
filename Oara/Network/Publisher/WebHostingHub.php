@@ -32,25 +32,22 @@ class WebHostingHub extends PostAffiliatePro
 {
 
     /**
-     * Check the connection
+     * @return bool
      */
     public function checkConnection()
     {
         // If not login properly the construct launch an exception
         $connection = true;
-        $session = new Gpf_Api_Session("http://ref.webhostinghub.com/scripts/server.php");
-        if (!@$session->login($this->_credentials ["user"], $this->_credentials ["password"], Gpf_Api_Session::AFFILIATE)) {
+        $session = new \Gpf_Api_Session("http://ref.webhostinghub.com/scripts/server.php");
+        if (!@$session->login($this->_credentials ["user"], $this->_credentials ["password"], \Gpf_Api_Session::AFFILIATE)) {
             $connection = false;
         }
         $this->_session = $session;
-
         return $connection;
     }
 
     /**
-     * (non-PHPdoc)
-     *
-     * @see library/Oara/Network/Interface#getMerchantList()
+     * @return array
      */
     public function getMerchantList()
     {

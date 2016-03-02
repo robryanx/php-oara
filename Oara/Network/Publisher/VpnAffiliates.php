@@ -32,14 +32,14 @@ class VpnAffiliates extends PostAffiliatePro
 {
 
     /**
-     * Check the connection
+     * @return bool
      */
     public function checkConnection()
     {
         // If not login properly the construct launch an exception
         $connection = true;
-        $session = new Gpf_Api_Session("https://vpnaffiliates.com/affiliates/scripts/server.php");
-        if (!@$session->login($this->_credentials ["user"], $this->_credentials ["password"], Gpf_Api_Session::AFFILIATE)) {
+        $session = new \Gpf_Api_Session("https://vpnaffiliates.com/affiliates/scripts/server.php");
+        if (!@$session->login($this->_credentials ["user"], $this->_credentials ["password"], \Gpf_Api_Session::AFFILIATE)) {
             $connection = false;
         }
         $this->_session = $session;
@@ -48,9 +48,7 @@ class VpnAffiliates extends PostAffiliatePro
     }
 
     /**
-     * (non-PHPdoc)
-     *
-     * @see library/Oara/Network/Interface#getMerchantList()
+     * @return array
      */
     public function getMerchantList()
     {

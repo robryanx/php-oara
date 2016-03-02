@@ -3,8 +3,8 @@ include_once (dirname(__FILE__) . '/../settings.php');
 
 $network = new \Oara\Network\Publisher\LinkShare\UK();
 $credentials = $network->getNeededCredentials();
-$credentials["user"] = "fubraltd";
-$credentials["password"] = "Hj94rew6";
+$credentials["user"] = "";
+$credentials["password"] = "";
 $network->login($credentials);
 if ($network->checkConnection()){
     //$network->getPaymentHistory();

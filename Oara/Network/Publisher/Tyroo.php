@@ -30,55 +30,25 @@ namespace Oara\Network\Publisher;
  */
 class Tyroo extends \Oara\Network
 {
-
-    /**
-     * username
-     * @var string
-     */
     private $_username = null;
-
-    /**
-     * password
-     * @var string
-     */
     private $_password = null;
-
-    /**
-     * sessionID
-     * @var string
-     */
     private $_sessionID = null;
-
-    /**
-     * publisherID
-     * @var string
-     */
     private $_publisherID = null;
-
-    /**
-     * windowid
-     * @var string
-     */
     private $_windowid = null;
-
-    /**
-     * sessionIDCurl
-     * @var string
-     */
     private $_sessionIDCurl = null;
 
     /**
-     * Constructor and Login
      * @param $credentials
-     * @return ShareASale
+     * @throws Exception
      */
     public function login($credentials)
     {
 
         $this->_username = $credentials['user'];
         $this->_password = $credentials['password'];
+        $this->_client = new \Oara\Curl\Access($credentials);
 
-        $postdata = http_build_query(
+        $postdata = \http_build_query(
             array('class' => 'Logon',
                 'method' => 'logon',
                 'val1' => $this->_username,
@@ -87,12 +57,9 @@ class Tyroo extends \Oara\Network
         $opts = array('http' => array('method' => 'POST',
             'header' => 'Content-type: application/x-www-form-urlencoded',
             'content' => $postdata));
-        $context = stream_context_create($opts);
-        $result = unserialize(file_get_contents('http://www.tyroocentral.com/www/api/v2/xmlrpc/APICall.php', false, $context));
-        $json = json_encode($result);
-        //var_dump($json);
-
-        //$this->_sessionID = substr($json, 2, 29);
+        $context = \stream_context_create($opts);
+        $result = \unserialize(file_get_contents('http://www.tyroocentral.com/www/api/v2/xmlrpc/APICall.php', false, $context));
+        \json_encode($result);
         $this->_sessionID = $result[0];
 
         $user = $credentials['user'];
@@ -106,65 +73,33 @@ class Tyroo extends \Oara\Network
             new \Oara\Curl\Parameter('login', 'Login')
         );
 
-        $dir = COOKIES_BASE_DIR . DIRECTORY_SEPARATOR . $credentials ['cookiesDir'] . DIRECTORY_SEPARATOR . $credentials ['cookiesSubDir'] . DIRECTORY_SEPARATOR;
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request("http://www.tyroocentral.com/www/admin/index.php", $valuesLogin);
+        $exportReport = $this->_client->post($urls);
 
-        if (!\Oara\Utilities::mkdir_recursive($dir, 0777)) {
-            throw new Exception ('Problem creating folder in Access');
-        }
-
-        $cookies = $dir . $credentials["cookieName"] . '_cookies.txt';
-        unlink($cookies);
-        $this->_options = array(
-            CURLOPT_USERAGENT => "Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:26.0) Gecko/20100101 Firefox/26.0",
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_FAILONERROR => true,
-            CURLOPT_COOKIEJAR => $cookies,
-            CURLOPT_COOKIEFILE => $cookies,
-            CURLOPT_HTTPAUTH => CURLAUTH_ANY,
-            CURLOPT_AUTOREFERER => true,
-            CURLOPT_SSL_VERIFYPEER => false,
-            CURLOPT_SSL_VERIFYHOST => false,
-            CURLOPT_HEADER => false,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_HTTPHEADER => array('Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', 'Accept-Language: es,en-us;q=0.7,en;q=0.3', 'Accept-Encoding: gzip, deflate', 'Connection: keep-alive', 'Cache-Control: max-age=0'),
-            CURLOPT_ENCODING => "gzip",
-            CURLOPT_VERBOSE => false
-        );
-        $rch = curl_init();
-        $options = $this->_options;
-        curl_setopt($rch, CURLOPT_URL, "http://www.tyroocentral.com/www/admin/index.php");
-        curl_setopt_array($rch, $options);
-        $html = curl_exec($rch);
-        curl_close($rch);
-
-        $dom = new Zend_Dom_Query($html);
-        $hidden = $dom->query('input[type="hidden"]');
-
+        $doc = new \DOMDocument();
+        @$doc->loadHTML($exportReport[0]);
+        $xpath = new \DOMXPath($doc);
+        $hidden = $xpath->query('//input[@type="hidden"]');
         foreach ($hidden as $values) {
             $valuesLogin[] = new \Oara\Curl\Parameter($values->getAttribute("name"), $values->getAttribute("value"));
         }
 
-        $rch = curl_init();
-        $options = $this->_options;
-        curl_setopt($rch, CURLOPT_URL, "http://www.tyroocentral.com/www/admin/index.php");
-        $options [CURLOPT_POST] = true;
-        $arg = array();
-        foreach ($valuesLogin as $parameter) {
-            $arg [] = $parameter->getKey() . '=' . urlencode($parameter->getValue());
-        }
-        $options [CURLOPT_POSTFIELDS] = implode('&', $arg);
-        curl_setopt_array($rch, $options);
-        $html = curl_exec($rch);
-        $dom = new Zend_Dom_Query($html);
-        $hidden = $dom->query('input[type="hidden"]');
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request("http://www.tyroocentral.com/www/admin/index.php", $valuesLogin);
+        $exportReport = $this->_client->post($urls);
 
+        $doc = new \DOMDocument();
+        @$doc->loadHTML($exportReport[0]);
+        $xpath = new \DOMXPath($doc);
+        $hidden = $xpath->query('//input[@type="hidden"]');
         foreach ($hidden as $values) {
             if ($values->getAttribute("name") == 'affiliateid') {
                 $this->_publisherID = $values->getAttribute("value");
             }
         }
 
-        $results = $dom->query('#oaNavigationTabs li div div');
+        $results = $xpath->query('//*[contains(concat(" ", normalize-space(@id), " "), " oaNavigationTabs ")]');
         $finished = false;
         foreach ($results as $result) {
             $linkList = $result->getElementsByTagName('a');
@@ -173,9 +108,9 @@ class Tyroo extends \Oara\Network
 
                 foreach ($attrs as $attrName => $attrNode) {
                     if (!$finished && $attrName = 'href') {
-                        $parseUrl = trim($attrNode->nodeValue);
-                        $parts = parse_url($parseUrl);
-                        parse_str($parts['query'], $query);
+                        $parseUrl = \trim($attrNode->nodeValue);
+                        $parts = \parse_url($parseUrl);
+                        \parse_str($parts['query'], $query);
                         $this->_windowid = $query['windowid'];
                         $this->_sessionIDCurl = $query['sessId'];
                         $finished = true;
@@ -183,7 +118,6 @@ class Tyroo extends \Oara\Network
                 }
             }
         }
-        curl_close($rch);
 
     }
 
@@ -208,11 +142,11 @@ class Tyroo extends \Oara\Network
     }
 
     /**
-     * Check the connection
+     * @return mixed
      */
     public function checkConnection()
     {
-        $postdata = http_build_query(
+        $postdata = \http_build_query(
             array('class' => 'Publisher',
                 'method' => 'getPublisher',
                 'val1' => $this->_sessionID,
@@ -221,16 +155,15 @@ class Tyroo extends \Oara\Network
         $opts = array('http' => array('method' => 'POST',
             'header' => 'Content-type: application/x-www-form-urlencoded',
             'content' => $postdata));
-        $context = stream_context_create($opts);
-        $result = unserialize(file_get_contents('http://www.tyroocentral.com/www/api/v2/xmlrpc/APICall.php', false, $context));
+        $context = \stream_context_create($opts);
+        $result = \unserialize(\file_get_contents('http://www.tyroocentral.com/www/api/v2/xmlrpc/APICall.php', false, $context));
         $connection = $result[0];
 
         return $connection;
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getMerchantList()
+     * @return array
      */
     public function getMerchantList()
     {
@@ -243,60 +176,34 @@ class Tyroo extends \Oara\Network
         $merchants[] = $obj;
 
         return $merchants;
-        /*
-            $date = \DateTime::now();
-
-            $postdata = http_build_query(
-                    array('class' => 'Publisher',
-                            'method' => 'getPublisherCampaignStatistics',
-                            'val1' => $this->_sessionID,
-                            'val2' => $this->_publisherID,
-                            'val3' => "1900-01-01",
-                            'val4' => $date->format!("yyyy-MM-dd"),
-                            'val5' => '',
-                            'val6' => ''));
-            $opts = array('http' =>array('method'  => 'POST',
-                    'header'  => 'Content-type: application/x-www-form-urlencoded',
-                    'content' => $postdata));
-            $context  = stream_context_create($opts);
-            $result = unserialize(file_get_contents('http://www.tyroocentral.com/www/api/v2/xmlrpc/APICall.php', false, $context));
-            $json = json_encode($result);
-
-            $jsonArray = json_decode($json, true);
-
-            for ($i=0; $i < count($jsonArray[1]);$i++){
-                $obj = Array();
-                $obj['cid']  = $jsonArray[1][$i]["campaignid"];
-                $obj['name'] = $jsonArray[1][$i]["campaignname"];
-                $merchants[] = $obj;
-            }
-    */
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getTransactionList($idMerchant, $dStartDate, $dEndDate)
+     * @param null $merchantList
+     * @param \DateTime|null $dStartDate
+     * @param \DateTime|null $dEndDate
+     * @return array
      */
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
         $totalTransactions = array();
 
-        $postdata = http_build_query(
+        $postdata = \http_build_query(
             array('class' => 'Publisher',
                 'method' => 'getPublisherDailyStatistics',
                 'val1' => $this->_sessionIDCurl,
                 'val2' => $this->_publisherID,
-                'val3' => $dStartDate->format!("yyyy-MM-dd", 'en_US'),
-                'val4' => $dEndDate->format!("yyyy-MM-dd", 'en_US'),
+                'val3' => $dStartDate->format("Y-m-d"),
+                'val4' => $dEndDate->format("Y-m-d"),
                 'val5' => 'Asia/Calcutta',
                 'val6' => ''));
         $opts = array('http' => array('method' => 'POST',
             'header' => 'Content-type: application/x-www-form-urlencoded',
             'content' => $postdata));
-        $context = stream_context_create($opts);
-        $result = unserialize(file_get_contents('http://www.tyroocentral.com/www/api/v2/xmlrpc/APICall.php', false, $context));
-        $json = json_encode($result);
-        $transactionsList = json_decode($json, true);
+        $context = \stream_context_create($opts);
+        $result = \unserialize(\file_get_contents('http://www.tyroocentral.com/www/api/v2/xmlrpc/APICall.php', false, $context));
+        $json = \json_encode($result);
+        $transactionsList = \json_decode($json, true);
         foreach ($transactionsList[1] as $transactionJson) {
             if ($transactionJson["revenue"] != 0) {
                 $transaction = Array();
@@ -313,26 +220,4 @@ class Tyroo extends \Oara\Network
         return $totalTransactions;
     }
 
-    /**
-     * (non-PHPdoc)
-     * @see Oara/Network/Base#getPaymentHistory()
-     */
-    public function getPaymentHistory()
-    {
-        $paymentHistory = array();
-
-        return $paymentHistory;
-    }
-
-    /**
-     *
-     * Make the call for this API
-     * @param string $actionVerb
-     */
-    private function makeCall($actionVerb, $params = "")
-    {
-
-
-        return $returnResult;
-    }
 }

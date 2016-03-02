@@ -334,7 +334,7 @@ class CommissionJunction extends \Oara\Network
      * @param null $startDate
      * @return array
      */
-    public function paymentTransactions($pid, $merchantList = null, $startDate = null)
+    public function paymentTransactions($pid)
     {
         $transactionList = array();
         $invoices = $this->getPaymentHistory();
@@ -344,7 +344,7 @@ class CommissionJunction extends \Oara\Network
                 if (isset($invoices[$i + 1])) {
                     $startDate = $invoices[$i + 1]['date'];
                 } else {
-                    $startDate = \date("Y-m-d", strtotime($invoices[i]['date']) - (90 * 60 * 60 * 24));
+                    $startDate = \date("Y-m-d", \strtotime($invoices[i]['date']) - (90 * 60 * 60 * 24));
                 }
                 break;
             }

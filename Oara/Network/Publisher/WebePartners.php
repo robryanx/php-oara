@@ -30,76 +30,30 @@ namespace Oara\Network\Publisher;
  */
 class WebePartners extends \Oara\Network
 {
-    /**
-     * Client
-     * @var unknown_type
-     */
     private $_client = null;
-    /**
-     * User
-     * @var unknown_type
-     */
     private $_user = null;
-    /**
-     * Pass
-     * @var unknown_type
-     */
     private $_pass = null;
 
     /**
-     * Constructor and Login
      * @param $credentials
-     * @return Daisycon
+     * @throws Exception
      */
     public function login($credentials)
     {
         $user = $credentials['user'];
         $password = $credentials['password'];
 
+        $this->_client = new \Oara\Curl\Access($credentials);
+
         $url = "http://panel.webepartners.pl/Account/Login";
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request($url, array());
+        $result = $this->_client->get($urls);
 
-        $dir = COOKIES_BASE_DIR . DIRECTORY_SEPARATOR . $credentials['cookiesDir'] . DIRECTORY_SEPARATOR . $credentials['cookiesSubDir'] . DIRECTORY_SEPARATOR;
-
-        $cookieName = $credentials["cookieName"];
-        $cookies = $dir . $cookieName . '_cookies.txt';
-
-        if ($handle = opendir($dir)) {
-            while (false !== ($file = readdir($handle))) {
-                if ($credentials['cookieName'] == strstr($file, '_', true)) {
-                    unlink($dir . $file);
-                    break;
-                }
-            }
-            closedir($handle);
-        }
-
-        $this->_client = array(
-            CURLOPT_USERAGENT => "Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:22.0) Gecko/20100101 Firefox/22.0",
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_FAILONERROR => true,
-            CURLOPT_COOKIEJAR => $cookies,
-            CURLOPT_COOKIEFILE => $cookies,
-            CURLOPT_AUTOREFERER => true,
-            CURLOPT_SSL_VERIFYPEER => false,
-            CURLOPT_SSL_VERIFYHOST => false,
-            CURLOPT_HEADER => false,
-        );
-
-        //Init curl
-        $ch = curl_init();
-        $options = $this->_client;
-        $options[CURLOPT_URL] = $url;
-        $options[CURLOPT_FOLLOWLOCATION] = true;
-        curl_setopt_array($ch, $options);
-        $result = curl_exec($ch);
-        $err = curl_errno($ch);
-        $errmsg = curl_error($ch);
-        $info = curl_getinfo($ch);
-
-
-        $dom = new Zend_Dom_Query($result);
-        $results = $dom->query('input[type="hidden"]');
-        $hiddenValue = null;
+        $doc = new \DOMDocument();
+        @$doc->loadHTML($result[0]);
+        $xpath = new \DOMXPath($doc);
+        $results = $xpath->query('//input[@type="hidden"]');
         foreach ($results as $result) {
             $name = $result->attributes->getNamedItem("name")->nodeValue;
             if ($name == "__RequestVerificationToken") {
@@ -107,7 +61,7 @@ class WebePartners extends \Oara\Network
             }
         }
         if ($hiddenValue == null) {
-            throw new Exception("hidden value not found");
+            throw new \Exception("hidden value not found");
         }
 
         $valuesLogin = array(
@@ -116,58 +70,28 @@ class WebePartners extends \Oara\Network
             new \Oara\Curl\Parameter('Password', $password),
         );
 
-
-        // Login form fields
-        $return = array();
-        foreach ($valuesLogin as $parameter) {
-            $return[] = $parameter->getKey() . '=' . urlencode($parameter->getValue());
-        }
-        $arg = implode('&', $return);
-
-        //Init curl
-        $ch = curl_init();
-        $options = $this->_client;
-        $options[CURLOPT_URL] = $url;
-        $options[CURLOPT_FOLLOWLOCATION] = true;
-        $options[CURLOPT_POSTFIELDS] = $arg;
-        $options[CURLOPT_POST] = true;
-        curl_setopt_array($ch, $options);
-
-        $result = curl_exec($ch);
-        $err = curl_errno($ch);
-        $errmsg = curl_error($ch);
-        $info = curl_getinfo($ch);
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request($url, $valuesLogin);
+        $this->_client->post($urls);
 
 
-        //Init curl
-        $ch = curl_init();
-        $options = $this->_client;
-        $options[CURLOPT_URL] = "http://panel.webepartners.pl/AffiliateTools/Api";
-        $options[CURLOPT_FOLLOWLOCATION] = true;
-        $options[CURLOPT_POSTFIELDS] = $arg;
-        $options[CURLOPT_POST] = true;
-        curl_setopt_array($ch, $options);
 
-        $result = curl_exec($ch);
-        $err = curl_errno($ch);
-        $errmsg = curl_error($ch);
-        $info = curl_getinfo($ch);
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request("http://panel.webepartners.pl/AffiliateTools/Api", $valuesLogin);
+        $result = $this->_client->post($urls);
+        $doc = new \DOMDocument();
+        @$doc->loadHTML($result[0]);
+        $xpath = new \DOMXPath($doc);
+        $results = $xpath->query('//a[@href*="Authorize"]');
 
-        $this->_user = urlencode($user);
-
-        $dom = new Zend_Dom_Query($result);
-        $apiPass = null;
-        $results = $dom->query('a [href*="Authorize"]');
-        if (count($results) > 0) {
-            $item = $results->current();
+        if ($results->length > 0) {
+            $item = $results->item(0);
             $url = $item->attributes->getNamedItem("href")->nodeValue;
-            $parsedUrl = parse_url($url);
-            parse_str($parsedUrl["query"], $parameters);
+            $parsedUrl = \parse_url($url);
+            \parse_str($parsedUrl["query"], $parameters);
             $apiPass = $parameters["password"];
+            $this->_pass = $apiPass;
         }
-
-        $this->_pass = $apiPass;
-
 
     }
 
@@ -192,19 +116,19 @@ class WebePartners extends \Oara\Network
     }
 
     /**
-     * Check the connection
+     * @return bool
      */
     public function checkConnection()
     {
         $connection = false;
         $loginUrl = "http://api.webepartners.pl/wydawca/Authorize?login={$this->_user}&password={$this->_pass}";
 
-        $context = stream_context_create(array(
+        $context = \stream_context_create(array(
             'http' => array(
-                'header' => "Authorization: Basic " . base64_encode("{$this->_user}:{$this->_pass}")
+                'header' => "Authorization: Basic " . \base64_encode("{$this->_user}:{$this->_pass}")
             )
         ));
-        $data = file_get_contents($loginUrl, false, $context);
+        $data = \file_get_contents($loginUrl, false, $context);
         if ($data == true) {
             $connection = true;
         }
@@ -212,21 +136,20 @@ class WebePartners extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getMerchantList()
+     * @return array
      */
     public function getMerchantList()
     {
         $merchants = array();
 
-        $context = stream_context_create(array(
+        $context = \stream_context_create(array(
             'http' => array(
-                'header' => "Authorization: Basic " . base64_encode("{$this->_user}:{$this->_pass}")
+                'header' => "Authorization: Basic " . \base64_encode("{$this->_user}:{$this->_pass}")
             )
         ));
 
-        $data = file_get_contents("http://api.webepartners.pl/wydawca/Programs", false, $context);
-        $dataArray = json_decode($data, true);
+        $data = \file_get_contents("http://api.webepartners.pl/wydawca/Programs", false, $context);
+        $dataArray = \json_decode($data, true);
         foreach ($dataArray as $merchantObject) {
             $obj = array();
             $obj['cid'] = $merchantObject["ProgramId"];
@@ -237,25 +160,28 @@ class WebePartners extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate, $sTransactionStatus)
+     * @param null $merchantList
+     * @param \DateTime|null $dStartDate
+     * @param \DateTime|null $dEndDate
+     * @return array
      */
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
+        $merchantIdList = \Oara\Utilities::getMerchantIdMapFromMerchantList($merchantList);
 
-        $context = stream_context_create(array(
+        $context = \stream_context_create(array(
             'http' => array(
-                'header' => "Authorization: Basic " . base64_encode("{$this->_user}:{$this->_pass}")
+                'header' => "Authorization: Basic " . \base64_encode("{$this->_user}:{$this->_pass}")
             )
         ));
 
-        $from = urlencode($dStartDate->format!("yyyy-MM-dd HH:mm:ss"));
+        $from = \urlencode($dStartDate->format("Y-m-d H:i:s"));
 
-        $data = file_get_contents("http://api.webepartners.pl/wydawca/Auctions?from=$from", false, $context);
-        $dataArray = json_decode($data, true);
+        $data = \file_get_contents("http://api.webepartners.pl/wydawca/Auctions?from=$from", false, $context);
+        $dataArray = \json_decode($data, true);
         foreach ($dataArray as $transactionObject) {
 
-            if (change_it_for_isset!($transactionObject["ProgramId"], $merchantList)) {
+            if (isset($merchantIdList[$transactionObject["ProgramId"]])) {
                 $transaction = Array();
                 $transaction['merchantId'] = $transactionObject["ProgramId"];
                 $transaction['date'] = $transactionObject["AuctionDate"];
@@ -280,23 +206,11 @@ class WebePartners extends \Oara\Network
                             }
 
                 $transaction['amount'] = \Oara\Utilities::parseDouble($transactionObject["OrderCost"]);
-
                 $transaction['commission'] = \Oara\Utilities::parseDouble($transactionObject["Commission"]);
                 $totalTransactions[] = $transaction;
             }
         }
         return $totalTransactions;
-    }
-
-    /**
-     * (non-PHPdoc)
-     * @see Oara/Network/Base#getPaymentHistory()
-     */
-    public function getPaymentHistory()
-    {
-        $paymentHistory = array();
-
-        return $paymentHistory;
     }
 
 

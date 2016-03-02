@@ -30,16 +30,8 @@ namespace Oara\Network\Publisher;
  */
 class TradeTracker extends \Oara\Network
 {
-    /**
-     * Soap client.
-     */
     private $_apiClient = null;
 
-    /**
-     * Constructor.
-     * @param $affiliateWindow
-     * @return Aw_Api
-     */
     public function login($credentials)
     {
         $user = $credentials['user'];
@@ -47,7 +39,7 @@ class TradeTracker extends \Oara\Network
 
         $wsdlUrl = 'http://ws.tradetracker.com/soap/affiliate?wsdl';
         //Setting the client.
-        $this->_apiClient = new Oara_Import_Soap_Client($wsdlUrl, array('encoding' => 'UTF-8',
+        $this->_apiClient = new \SoapClient($wsdlUrl, array('encoding' => 'UTF-8',
             'compression' => SOAP_COMPRESSION_ACCEPT | SOAP_COMPRESSION_GZIP | SOAP_COMPRESSION_DEFLATE,
             'soap_version' => SOAP_1_1));
 
@@ -75,7 +67,7 @@ class TradeTracker extends \Oara\Network
     }
 
     /**
-     * Check the connection
+     * @return bool
      */
     public function checkConnection()
     {
@@ -84,8 +76,7 @@ class TradeTracker extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Base#getMerchantList()
+     * @return array
      */
     public function getMerchantList()
     {
@@ -114,28 +105,32 @@ class TradeTracker extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     * @see library/Oara/Network/Base#getTransactionList($merchantId,$dStartDate,$dEndDate)
+     * @param null $merchantList
+     * @param \DateTime|null $dStartDate
+     * @param \DateTime|null $dEndDate
+     * @return array
      */
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
         $totalTransactions = array();
+        $merchantIdList = \Oara\Utilities::getMerchantIdMapFromMerchantList($merchantList);
 
         $options = array(
-            'registrationDateFrom' => $dStartDate->format!('yyyy-MM-dd'),
-            'registrationDateTo' => $dEndDate->addDay(1)->format!('yyyy-MM-dd'),
+            'registrationDateFrom' => $dStartDate->format('Y-m-d'),
+            'registrationDateTo' => $dEndDate->addDay(1)->format('Y-m-d'),
         );
         $affiliateSitesList = $this->_apiClient->getAffiliateSites();
         foreach ($affiliateSitesList as $affiliateSite) {
             foreach ($this->_apiClient->getConversionTransactions($affiliateSite->ID, $options) as $transaction) {
-                if ($merchantList == null || change_it_for_isset!((int)$transaction->campaign->ID, $merchantList)) {
+                if ($merchantList == null || isset($merchantIdList[(int)$transaction->campaign->ID])) {
                     $object = array();
 
                     $object['unique_id'] = $transaction->ID;
 
                     $object['merchantId'] = $transaction->campaign->ID;
-                    $transactionDate = new \DateTime($transaction->registrationDate, "dd/MM/YY HH:mm:ss");
-                    $object['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
+
+                    $transactionDate = \DateTime::createFromFormat("d/m/Y H:i:s", $transaction->registrationDate);
+                    $object['date'] = $transactionDate->format("Y-m-d H:i:s");
 
                     if ($transaction->reference != null) {
                         $object['custom_id'] = $transaction->reference;
@@ -169,15 +164,12 @@ class TradeTracker extends \Oara\Network
     {
         $paymentHistory = array();
         $options = array();
-        //$options = array('billDateFrom' => '2009-01-01',
-        //				   'billDateTo' => '2009-02-01',
-        //				  );
 
         foreach ($this->_apiClient->getPayments($options) as $payment) {
             $obj = array();
             $date = new \DateTime($payment->billDate, "dd/MM/yy");
-            $obj['date'] = $date->format!("yyyy-MM-dd HH:mm:ss");
-            $obj['pid'] = $date->format!("yyyyMMdd");
+            $obj['date'] = $date->format("Y-m-d H:i:s");
+            $obj['pid'] = $date->format("Ymd");
             $obj['method'] = 'BACS';
             $obj['value'] = \Oara\Utilities::parseDouble($payment->endTotal);
             $paymentHistory[] = $obj;

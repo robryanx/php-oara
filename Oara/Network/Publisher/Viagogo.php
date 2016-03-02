@@ -31,76 +31,42 @@ namespace Oara\Network\Publisher;
 class Viagogo extends \Oara\Network
 {
 
-    /**
-     * Client
-     *
-     * @var unknown_type
-     */
     private $_client = null;
 
     /**
-     * Constructor and Login
      * @param $credentials
-     * @return Viagogo
+     * @throws Exception
      */
     public function login($credentials)
     {
         $user = $credentials ['user'];
         $password = $credentials ['password'];
+        $this->_client = new \Oara\Curl\Access($credentials);
+
+
         $loginUrl = 'https://www.viagogo.co.uk/secure/loginregister/login';
 
-        $dir = COOKIES_BASE_DIR . DIRECTORY_SEPARATOR . $credentials ['cookiesDir'] . DIRECTORY_SEPARATOR . $credentials ['cookiesSubDir'] . DIRECTORY_SEPARATOR;
-
-        if (!\Oara\Utilities::mkdir_recursive($dir, 0777)) {
-            throw new Exception ('Problem creating folder in Access');
-        }
-
-        $cookies = $dir . $credentials["cookieName"] . '_cookies.txt';
-        unlink($cookies);
         $valuesLogin = array(
             new \Oara\Curl\Parameter ('Login.UserName', $user),
             new \Oara\Curl\Parameter ('Login.Password', $password),
             new \Oara\Curl\Parameter ('ReturnUrl', $loginUrl)
         );
-        $this->_options = array(
-            CURLOPT_USERAGENT => "Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:26.0) Gecko/20100101 Firefox/26.0",
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_FAILONERROR => true,
-            CURLOPT_COOKIEJAR => $cookies,
-            CURLOPT_COOKIEFILE => $cookies,
-            CURLOPT_HTTPAUTH => CURLAUTH_ANY,
-            CURLOPT_AUTOREFERER => true,
-            CURLOPT_SSL_VERIFYPEER => false,
-            CURLOPT_SSL_VERIFYHOST => false,
-            CURLOPT_HEADER => false,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_HTTPHEADER => array('Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', 'Accept-Language: es,en-us;q=0.7,en;q=0.3', 'Accept-Encoding: gzip, deflate', 'Connection: keep-alive', 'Cache-Control: max-age=0'),
-            CURLOPT_ENCODING => "gzip",
-            CURLOPT_VERBOSE => false
-        );
-        $rch = curl_init();
-        $options = $this->_options;
-        curl_setopt($rch, CURLOPT_URL, "https://www.viagogo.co.uk/secure/loginregister/login");
-        curl_setopt_array($rch, $options);
-        $html = curl_exec($rch);
-        curl_close($rch);
-        $dom = new Zend_Dom_Query($html);
-        $hidden = $dom->query('input[type="hidden"]');
+
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request($loginUrl, $valuesLogin);
+        $exportReport = $this->_client->post($urls);
+
+        $doc = new \DOMDocument();
+        @$doc->loadHTML($exportReport[0]);
+        $xpath = new \DOMXPath($doc);
+        $hidden = $xpath->query('//input[@type="hidden"]');
         foreach ($hidden as $values) {
             $valuesLogin[] = new \Oara\Curl\Parameter($values->getAttribute("name"), $values->getAttribute("value"));
         }
-        $rch = curl_init();
-        $options = $this->_options;
-        curl_setopt($rch, CURLOPT_URL, "https://www.viagogo.co.uk/secure/loginregister/login");
-        $options [CURLOPT_POST] = true;
-        $arg = array();
-        foreach ($valuesLogin as $parameter) {
-            $arg [] = $parameter->getKey() . '=' . urlencode($parameter->getValue());
-        }
-        $options [CURLOPT_POSTFIELDS] = implode('&', $arg);
-        curl_setopt_array($rch, $options);
-        $html = curl_exec($rch);
-        curl_close($rch);
+
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request($loginUrl, $valuesLogin);
+        $this->_client->post($urls);
 
     }
 
@@ -125,20 +91,17 @@ class Viagogo extends \Oara\Network
     }
 
     /**
-     * Check the connection
+     * @return bool
      */
     public function checkConnection()
     {
         $connection = false;
 
-        $rch = curl_init();
-        $options = $this->_options;
-        curl_setopt($rch, CURLOPT_URL, 'https://www.viagogo.co.uk/secure/AffiliateReports');
-        curl_setopt_array($rch, $options);
-        $html = curl_exec($rch);
-        curl_close($rch);
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request('https://www.viagogo.co.uk/secure/AffiliateReports', "");
+        $exportReport = $this->_client->get($urls);
 
-        if (preg_match("/secure\/loginregister\/logout/", $html, $matches)) {
+        if (\preg_match("/secure\/loginregister\/logout/", $exportReport[0], $matches)) {
             $connection = true;
         }
 
@@ -146,9 +109,7 @@ class Viagogo extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     *
-     * @see library/Oara/Network/Interface#getMerchantList()
+     * @return array
      */
     public function getMerchantList()
     {
@@ -163,9 +124,11 @@ class Viagogo extends \Oara\Network
     }
 
     /**
-     * (non-PHPdoc)
-     *
-     * @see library/Oara/Network/Interface#getTransactionList($aMerchantIds, $dStartDate, $dEndDate)
+     * @param null $merchantList
+     * @param \DateTime|null $dStartDate
+     * @param \DateTime|null $dEndDate
+     * @return array
+     * @throws Exception
      */
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
@@ -176,53 +139,36 @@ class Viagogo extends \Oara\Network
             new \Oara\Curl\Parameter('Parameters[0].Name', 'ReportPeriod'),
             new \Oara\Curl\Parameter('Parameters[0].Values', 'True'),
             new \Oara\Curl\Parameter('Parameters[1].Name', 'DateFrom'),
-            new \Oara\Curl\Parameter('Parameters[1].Values', $dStartDate->format!("dd/MM/yyyy")),
+            new \Oara\Curl\Parameter('Parameters[1].Values', $dStartDate->format("d/m/Y")),
             new \Oara\Curl\Parameter('Parameters[2].Name', 'DateTo'),
-            new \Oara\Curl\Parameter('Parameters[2].Values', $dEndDate->format!("dd/MM/yyyy")),
+            new \Oara\Curl\Parameter('Parameters[2].Values', $dEndDate->format("d/m/Y")),
             new \Oara\Curl\Parameter('Parameters[3].Name', 'CurrencyCode'),
             new \Oara\Curl\Parameter('Parameters[3].Values', 'GBP'),
             new \Oara\Curl\Parameter('RenderType', 'CSV')
         );
 
-        $rch = curl_init();
-        $options = $this->_options;
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request("https://www.viagogo.co.uk/secure/AffiliateReports/RenderReport", $valuesFromExport);
+        $exportReport = $this->_client->post($urls);
 
-        curl_setopt($rch, CURLOPT_URL, "https://www.viagogo.co.uk/secure/AffiliateReports/RenderReport");
-        $options [CURLOPT_POST] = true;
-        $arg = array();
-        foreach ($valuesFromExport as $parameter) {
-            $arg [] = urlencode($parameter->getKey()) . '=' . urlencode($parameter->getValue());
-        }
-        $options [CURLOPT_POSTFIELDS] = implode('&', $arg);
-        curl_setopt_array($rch, $options);
-
-        $csv = curl_exec($rch);
-        curl_close($rch);
-
-        $exportData = str_getcsv($csv, "\n");
-        $num = count($exportData);
+        $exportData = \str_getcsv($exportReport[0], "\n");
+        $num = \count($exportData);
         for ($i = 4; $i < $num - 1; $i++) {
-
-            $transactionExportArray = str_getcsv($exportData[$i], ",");
-
+            $transactionExportArray = \str_getcsv($exportData[$i], ",");
             if (!isset($transactionExportArray[0])) {
-                throw new Exception('Problem getting transaction\n\n');
+                throw new \Exception('Problem getting transaction\n\n');
             }
-
-
             $transaction = Array();
             $transaction['unique_id'] = $transactionExportArray[0];
             if ($transaction['unique_id'] != null) {
                 $transaction['merchantId'] = "1";
-                $transactionDate = new \DateTime($transactionExportArray[1], "dd/MM/yyyy");
-                $transaction['date'] = $transactionDate->format!("yyyy-MM-dd HH:mm:ss");
+                $transactionDate = \DateTime::createFromFormat("d/m/Y H:i:s", $transactionExportArray[1]. " 00:00:00");
+                $transaction['date'] = $transactionDate->format("Y-m-d H:i:s");
                 $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
                 $transaction['amount'] = \Oara\Utilities::parseDouble($transactionExportArray[4]);
                 $transaction['commission'] = \Oara\Utilities::parseDouble($transactionExportArray[6]);
                 $totalTransactions[] = $transaction;
-
             }
-
         }
         return $totalTransactions;
     }
