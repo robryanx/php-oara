@@ -241,7 +241,7 @@ class AffiliateWindow extends \Oara\Network
                     if (isset($transactionObject->sClickref) && $transactionObject->sClickref != null) {
                         $transaction['custom_id'] = $transactionObject->sClickref;
                     }
-
+                    $transaction['type'] = $transactionObject->sType;
                     $transaction['status'] = $transactionObject->sStatus;
                     $transaction['amount'] = $transactionObject->mSaleAmount->dAmount;
                     $transaction['commission'] = $transactionObject->mCommissionAmount->dAmount;
