@@ -122,6 +122,18 @@ class CommissionJunction extends \Oara\Network
         return $connection;
     }
 
+    private function apiCall($url)
+    {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_POST, FALSE);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, array("Authorization: " . $this->_apiPassword));
+        $curl_results = curl_exec($ch);
+        curl_close($ch);
+        return $curl_results;
+    }
+
     /**
      * @return array
      */
@@ -262,8 +274,9 @@ class CommissionJunction extends \Oara\Network
                 if (isset($merchantIdList[(int)self::findAttribute($singleTransaction, 'cid')])) {
 
                     $transaction = Array();
+                    $transaction ['action'] = self::findAttribute($singleTransaction, 'action-type');
                     $transaction['merchantId'] = self::findAttribute($singleTransaction, 'cid');
-                    $transactionDate = \DateTime::createFromFormat("Y-m-d\TH:i:s", \substr(self::findAttribute($singleTransaction, 'event-date'),0,19));
+                    $transactionDate = \DateTime::createFromFormat("Y-m-d\TH:i:s", \substr(self::findAttribute($singleTransaction, 'event-date'), 0, 19));
                     $transaction['date'] = $transactionDate->format("Y-m-d H:i:s");
 
                     if (self::findAttribute($singleTransaction, 'sid') != null) {
@@ -396,9 +409,9 @@ class CommissionJunction extends \Oara\Network
             for ($j = 1; $j < $num; $j++) {
                 $paymentData = \str_getcsv($exportData[$j], ",");
                 $obj = array();
-                $date = \DateTime::createFromFormat("d-M-Y H:i \P\S\T",$paymentData[0]);
-                if (!$date){
-                    $date = \DateTime::createFromFormat("d-M-Y H:i \P\D\T",$paymentData[0]);
+                $date = \DateTime::createFromFormat("d-M-Y H:i \P\S\T", $paymentData[0]);
+                if (!$date) {
+                    $date = \DateTime::createFromFormat("d-M-Y H:i \P\D\T", $paymentData[0]);
                 }
                 $obj['date'] = $date->format("Y-m-d H:i:s");
                 $obj['value'] = \Oara\Utilities::parseDouble($paymentData[1]);
@@ -408,17 +421,5 @@ class CommissionJunction extends \Oara\Network
             }
         }
         return $paymentHistory;
-    }
-
-    private function apiCall($url)
-    {
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_POST, FALSE);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array("Authorization: " . $this->_apiPassword));
-        $curl_results = curl_exec($ch);
-        curl_close($ch);
-        return $curl_results;
     }
 }
