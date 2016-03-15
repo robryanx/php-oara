@@ -30,6 +30,7 @@ namespace Oara\Network\Publisher;
  */
 class Skimlinks extends \Oara\Network
 {
+    protected $_sitesAllowed = array();
     /**
      * Public API Key
      * @var string
@@ -168,16 +169,40 @@ class Skimlinks extends \Oara\Network
         $timestamp = $date->getTimestamp();
         $authtoken = md5($timestamp . $privateapikey);
 
-        $valuesFromExport = array(
-            new \Oara\Curl\Parameter('version', '0.5'),
-            new \Oara\Curl\Parameter('timestamp', $timestamp),
-            new \Oara\Curl\Parameter('apikey', $publicapikey),
-            new \Oara\Curl\Parameter('authtoken', $authtoken),
-            new \Oara\Curl\Parameter('startDate', $dStartDate->format("Y-m-d")),
-            new \Oara\Curl\Parameter('endDate', $dEndDate->format("Y-m-d")),
-            new \Oara\Curl\Parameter('format', 'json')
-        );
+        if (\count($this->_sitesAllowed) == 0) {
+            $valuesFromExport = array(
+                new \Oara\Curl\Parameter('version', '0.5'),
+                new \Oara\Curl\Parameter('timestamp', $timestamp),
+                new \Oara\Curl\Parameter('apikey', $publicapikey),
+                new \Oara\Curl\Parameter('authtoken', $authtoken),
+                new \Oara\Curl\Parameter('startDate', $dStartDate->format("Y-m-d")),
+                new \Oara\Curl\Parameter('endDate', $dEndDate->format("Y-m-d")),
+                new \Oara\Curl\Parameter('format', 'json')
+            );
+            $totalTransactions = $this->processTransactions($valuesFromExport);
+        } else {
+            foreach ($this->_sitesAllowed as $site) {
 
+                $valuesFromExport = array(
+                    new \Oara\Curl\Parameter('version', '0.5'),
+                    new \Oara\Curl\Parameter('timestamp', $timestamp),
+                    new \Oara\Curl\Parameter('apikey', $publicapikey),
+                    new \Oara\Curl\Parameter('authtoken', $authtoken),
+                    new \Oara\Curl\Parameter('startDate', $dStartDate->format("Y-m-d")),
+                    new \Oara\Curl\Parameter('endDate', $dEndDate->format("Y-m-d")),
+                    new \Oara\Curl\Parameter('format', 'json'),
+                    new \Oara\Curl\Parameter('domainID', $site)
+                );
+                $totalTransactions = $this->processTransactions($valuesFromExport);
+            }
+        }
+
+        return $totalTransactions;
+    }
+
+    private function processTransactions($valuesFromExport)
+    {
+        $totalTransactions = array();
         $urls = array();
         $urls[] = new \Oara\Curl\Request("https://api-reports.skimlinks.com/publisher/reportcommissions?", $valuesFromExport);
         $exportReport = $this->_client->get($urls);
@@ -188,7 +213,7 @@ class Skimlinks extends \Oara\Network
 
             $transaction['merchantId'] = $i["merchantID"];
             $transaction['unique_id'] = $i["commissionID"];
-            $transaction['date'] =  $i["date"]. " 00:00:00";
+            $transaction['date'] = $i["date"] . " 00:00:00";
             $transaction['amount'] = (double)$i["orderValue"] / 100;
             $transaction['commission'] = (double)$i["commissionValue"] / 100;
             $transactionStatus = $i["status"];
@@ -205,7 +230,6 @@ class Skimlinks extends \Oara\Network
 
             $totalTransactions[] = $transaction;
         }
-
         return $totalTransactions;
     }
 

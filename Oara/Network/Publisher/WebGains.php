@@ -35,6 +35,7 @@ class WebGains extends \Oara\Network
     private $_webClient = null;
     private $_server = null;
     private $_campaignMap = array();
+    protected $_sitesAllowed = array();
 
     /**
      * @param $credentials
@@ -114,8 +115,11 @@ class WebGains extends \Oara\Network
         $merchantLines = $results->item(0)->childNodes;
         for ($i = 0; $i < $merchantLines->length; $i++) {
             $cid = $merchantLines->item($i)->attributes->getNamedItem("value")->nodeValue;
-            if (\is_numeric($cid)) {
-                $campaingMap[$cid] = $merchantLines->item($i)->nodeValue;
+            $name = $merchantLines->item($i)->nodeValue;
+            if (\count($this->_sitesAllowed) == 0 || \in_array($name, $this->_sitesAllowed)) {
+                if (\is_numeric($cid)) {
+                    $campaingMap[$cid] = $merchantLines->item($i)->nodeValue;
+                }
             }
         }
         return $campaingMap;
@@ -171,6 +175,7 @@ class WebGains extends \Oara\Network
         }
         return $merchantList;
     }
+
 
     /**
      * @param null $merchantList

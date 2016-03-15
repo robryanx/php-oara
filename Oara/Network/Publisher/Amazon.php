@@ -34,6 +34,7 @@ class Amazon extends \Oara\Network
     private $_idBox = null;
     private $_client = null;
     protected $_networkServer = null;
+    protected $_sitesAllowed = array ();
 
     /**
      * @param $credentials
@@ -225,21 +226,22 @@ class Amazon extends \Oara\Network
             if (!isset($transactionExportArray[5])) {
                 throw new \Exception("Request failed");
             }
-
-            $transactionDate = \DateTime::createFromFormat("F d, Y", $transactionExportArray[5]);
-            $transaction = Array();
-            $transaction['merchantId'] = 1;
-            $transaction['date'] = $transactionDate->format("Y-m-d H:i:s");
-            if ($transactionExportArray[4] != null) {
-                $transaction['custom_id'] = $transactionExportArray[4];
+            if (\count($this->_sitesAllowed) == 0 || \in_array($transactionExportArray[4], $this->_sitesAllowed)) {
+                $transactionDate = \DateTime::createFromFormat("F d, Y", $transactionExportArray[5]);
+                $transaction = Array();
+                $transaction['merchantId'] = 1;
+                $transaction['date'] = $transactionDate->format("Y-m-d H:i:s");
+                if ($transactionExportArray[4] != null) {
+                    $transaction['custom_id'] = $transactionExportArray[4];
+                }
+                $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
+                $transaction['amount'] = \Oara\Utilities::parseDouble($transactionExportArray[9]);
+                $transaction['commission'] = \Oara\Utilities::parseDouble($transactionExportArray[10]);
+                $transaction['device_type'] = $transactionExportArray[11];
+                $transaction['skew'] = $transactionExportArray[2];
+                $transaction['title'] = $transactionExportArray[1];
+                $totalTransactions[] = $transaction;
             }
-            $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
-            $transaction['amount'] = \Oara\Utilities::parseDouble($transactionExportArray[9]);
-            $transaction['commission'] = \Oara\Utilities::parseDouble($transactionExportArray[10]);
-            $transaction['device_type'] = $transactionExportArray[11];
-            $transaction['skew'] = $transactionExportArray[2];
-            $transaction['title'] = $transactionExportArray[1];
-            $totalTransactions[] = $transaction;
         }
         return $totalTransactions;
     }

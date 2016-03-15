@@ -24,7 +24,7 @@ namespace Oara;
  * Implementation Class
  *
  * @author     Carlos Morillo Merino
- * @category   Oara_Factory
+ * @category   \Oara\Factory
  * @copyright  Fubra Limited
  * @version    Release: 01.00
  *

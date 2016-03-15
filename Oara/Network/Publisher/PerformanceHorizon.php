@@ -31,8 +31,8 @@ namespace Oara\Network\Publisher;
 class PerformanceHorizon extends \Oara\Network
 {
 
+    protected $_sitesAllowed = array();
     private $_pass = null;
-
     private $_publisherList = null;
 
     /**
@@ -141,28 +141,31 @@ class PerformanceHorizon extends \Oara\Network
                     $conversion = $conversion["conversion_data"];
                     $conversion["campaign_id"] = \str_replace("l", "", $conversion["campaign_id"]);
                     if (isset($merchantIdList[$conversion["campaign_id"]])) {
-                        $transaction = Array();
-                        $transaction['unique_id'] = $conversion["conversion_id"];
-                        $transaction['merchantId'] = $conversion["campaign_id"];
-                        $transaction['date'] = $conversion["conversion_time"];
-                        if ($conversion["publisher_reference"] != null) {
-                            $transaction['custom_id'] = $conversion["publisher_reference"];
-                        }
-                        if ($conversion["conversion_value"]["conversion_status"] == 'approved') {
-                            $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
-                        } else
-                            if ($conversion["conversion_value"]["conversion_status"] == 'pending' || $conversion["conversion_value"]["conversion_status"] == 'mixed') {
-                                $transaction['status'] = \Oara\Utilities::STATUS_PENDING;
+
+                        if (\count($this->_sitesAllowed) == 0 || \in_array($conversion["campaign_id"], $this->_sitesAllowed)){
+                            $transaction = array();
+                            $transaction['unique_id'] = $conversion["conversion_id"];
+                            $transaction['merchantId'] = $conversion["campaign_id"];
+                            $transaction['date'] = $conversion["conversion_time"];
+                            if ($conversion["publisher_reference"] != null) {
+                                $transaction['custom_id'] = $conversion["publisher_reference"];
+                            }
+                            if ($conversion["conversion_value"]["conversion_status"] == 'approved') {
+                                $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
                             } else
-                                if ($conversion["conversion_value"]["conversion_status"] == 'rejected') {
-                                    $transaction['status'] = \Oara\Utilities::STATUS_DECLINED;
-                                }
+                                if ($conversion["conversion_value"]["conversion_status"] == 'pending' || $conversion["conversion_value"]["conversion_status"] == 'mixed') {
+                                    $transaction['status'] = \Oara\Utilities::STATUS_PENDING;
+                                } else
+                                    if ($conversion["conversion_value"]["conversion_status"] == 'rejected') {
+                                        $transaction['status'] = \Oara\Utilities::STATUS_DECLINED;
+                                    }
 
-                        $transaction['amount'] = $conversion["conversion_value"]["value"];
-                        $transaction['currency'] = $conversion["currency"];
+                            $transaction['amount'] = $conversion["conversion_value"]["value"];
+                            $transaction['currency'] = $conversion["currency"];
 
-                        $transaction['commission'] = $conversion["conversion_value"]["publisher_commission"];
-                        $transactions[] = $transaction;
+                            $transaction['commission'] = $conversion["conversion_value"]["publisher_commission"];
+                            $transactions[] = $transaction;
+                        }
                     }
                 }
 

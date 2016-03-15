@@ -38,6 +38,7 @@ class AffiliateWindow extends \Oara\Network
     private $_pageSize = 100;
     private $_currency = null;
     private $_userId = null;
+    public $_sitesAllowed = array();
 
     /**
      * @param $credentials
@@ -133,9 +134,10 @@ class AffiliateWindow extends \Oara\Network
         $credentials = array();
 
         $parameter = array();
-        $parameter["user"]["description"] = "User Log in";
-        $parameter["user"]["required"] = true;
-        $credentials[] = $parameter;
+        $parameter["description"] = "User Log in";
+        $parameter["required"] = true;
+        $parameter["name"] = "User";
+        $credentials["user"] = $parameter;
 
         $parameter = array();
         $parameter["password"]["description"] = "User Password";
@@ -184,11 +186,13 @@ class AffiliateWindow extends \Oara\Network
         $params['sRelationship'] = 'joined';
         $merchants = $this->_apiClient->getMerchantList($params)->getMerchantListReturn;
         foreach ($merchants as $merchant) {
-            $merchantArray = array();
-            $merchantArray["cid"] = $merchant->iId;
-            $merchantArray["name"] = $merchant->sName;
-            $merchantArray["url"] = $merchant->sDisplayUrl;
-            $merchantList[] = $merchantArray;
+            if (count($this->_sitesAllowed) == 0  ||\in_array($merchant->oPrimaryRegion->sCountryCode, $this->_sitesAllowed)) {
+                $merchantArray = array();
+                $merchantArray["cid"] = $merchant->iId;
+                $merchantArray["name"] = $merchant->sName;
+                $merchantArray["url"] = $merchant->sDisplayUrl;
+                $merchantList[] = $merchantArray;
+            }
         }
         return $merchantList;
     }

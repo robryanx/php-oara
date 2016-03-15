@@ -34,6 +34,7 @@ class CommissionJunction extends \Oara\Network
     private $_memberId = null;
     private $_accountId = null;
     private $_apiPassword = null;
+    protected $_sitesAllowed = array ();
 
     /**
      * @param $credentials
@@ -271,40 +272,43 @@ class CommissionJunction extends \Oara\Network
         if (isset($xml->commissions->commission)) {
             foreach ($xml->commissions->commission as $singleTransaction) {
 
-                if (isset($merchantIdList[(int)self::findAttribute($singleTransaction, 'cid')])) {
+                if (\count($this->_sitesAllowed) == 0 || \in_array ( ( int ) self::findAttribute ( $singleTransaction, 'website-id' ), $this->_sitesAllowed )) {
 
-                    $transaction = Array();
-                    $transaction ['action'] = self::findAttribute($singleTransaction, 'action-type');
-                    $transaction['merchantId'] = self::findAttribute($singleTransaction, 'cid');
-                    $transactionDate = \DateTime::createFromFormat("Y-m-d\TH:i:s", \substr(self::findAttribute($singleTransaction, 'event-date'), 0, 19));
-                    $transaction['date'] = $transactionDate->format("Y-m-d H:i:s");
+                    if (isset($merchantIdList[(int)self::findAttribute($singleTransaction, 'cid')])) {
 
-                    if (self::findAttribute($singleTransaction, 'sid') != null) {
-                        $transaction['custom_id'] = self::findAttribute($singleTransaction, 'sid');
+                        $transaction = Array();
+                        $transaction ['action'] = self::findAttribute($singleTransaction, 'action-type');
+                        $transaction['merchantId'] = self::findAttribute($singleTransaction, 'cid');
+                        $transactionDate = \DateTime::createFromFormat("Y-m-d\TH:i:s", \substr(self::findAttribute($singleTransaction, 'event-date'), 0, 19));
+                        $transaction['date'] = $transactionDate->format("Y-m-d H:i:s");
+
+                        if (self::findAttribute($singleTransaction, 'sid') != null) {
+                            $transaction['custom_id'] = self::findAttribute($singleTransaction, 'sid');
+                        }
+
+                        //$transaction['unique_id'] = self::findAttribute($singleTransaction, 'commission-id');
+                        $transaction ['amount'] = \Oara\Utilities::parseDouble(self::findAttribute($singleTransaction, 'sale-amount'));
+                        $transaction ['commission'] = \Oara\Utilities::parseDouble(self::findAttribute($singleTransaction, 'commission-amount'));
+
+                        if (self::findAttribute($singleTransaction, 'action-status') == 'locked' || self::findAttribute($singleTransaction, 'action-status') == 'closed') {
+                            $transaction ['status'] = \Oara\Utilities::STATUS_CONFIRMED;
+                        } else if (self::findAttribute($singleTransaction, 'action-status') == 'extended' || self::findAttribute($singleTransaction, 'action-status') == 'new') {
+                            $transaction ['status'] = \Oara\Utilities::STATUS_PENDING;
+                        } else if (self::findAttribute($singleTransaction, 'action-status') == 'corrected') {
+                            $transaction ['status'] = \Oara\Utilities::STATUS_DECLINED;
+                        }
+
+                        if ($transaction ['commission'] == 0) {
+                            $transaction ['status'] = \Oara\Utilities::STATUS_PENDING;
+                        }
+
+                        if ($transaction ['amount'] < 0 || $transaction ['commission'] < 0) {
+                            $transaction ['status'] = \Oara\Utilities::STATUS_DECLINED;
+                            $transaction ['amount'] = \abs($transaction ['amount']);
+                            $transaction ['commission'] = \abs($transaction ['commission']);
+                        }
+                        $totalTransactions[] = $transaction;
                     }
-
-                    //$transaction['unique_id'] = self::findAttribute($singleTransaction, 'commission-id');
-                    $transaction ['amount'] = \Oara\Utilities::parseDouble(self::findAttribute($singleTransaction, 'sale-amount'));
-                    $transaction ['commission'] = \Oara\Utilities::parseDouble(self::findAttribute($singleTransaction, 'commission-amount'));
-
-                    if (self::findAttribute($singleTransaction, 'action-status') == 'locked' || self::findAttribute($singleTransaction, 'action-status') == 'closed') {
-                        $transaction ['status'] = \Oara\Utilities::STATUS_CONFIRMED;
-                    } else if (self::findAttribute($singleTransaction, 'action-status') == 'extended' || self::findAttribute($singleTransaction, 'action-status') == 'new') {
-                        $transaction ['status'] = \Oara\Utilities::STATUS_PENDING;
-                    } else if (self::findAttribute($singleTransaction, 'action-status') == 'corrected') {
-                        $transaction ['status'] = \Oara\Utilities::STATUS_DECLINED;
-                    }
-
-                    if ($transaction ['commission'] == 0) {
-                        $transaction ['status'] = \Oara\Utilities::STATUS_PENDING;
-                    }
-
-                    if ($transaction ['amount'] < 0 || $transaction ['commission'] < 0) {
-                        $transaction ['status'] = \Oara\Utilities::STATUS_DECLINED;
-                        $transaction ['amount'] = \abs($transaction ['amount']);
-                        $transaction ['commission'] = \abs($transaction ['commission']);
-                    }
-                    $totalTransactions[] = $transaction;
                 }
             }
         }

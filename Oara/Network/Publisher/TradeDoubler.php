@@ -31,6 +31,7 @@ namespace Oara\Network\Publisher;
 class TradeDoubler extends \Oara\Network
 {
 
+    protected $_sitesAllowed = array();
     private $_client = null;
     private $_dateFormat = null;
 
@@ -419,45 +420,48 @@ class TradeDoubler extends \Oara\Network
             if (!isset($transactionExportArray[2])) {
                 throw new \Exception('Problem getting transaction\n\n');
             }
-
-            if ($transactionExportArray[0] !== '' && isset($merchantIdList[(int)$transactionExportArray[2]])) {
-
-                $transaction = Array();
-                $transaction['merchantId'] = $transactionExportArray[2];
-                $transactionDate = self::toDate($transactionExportArray[4]);
-                $transaction['date'] = $transactionDate->format("Y-m-d H:i:s");
-                if ($transactionExportArray[8] != '') {
-                    $transaction['unique_id'] = \substr($transactionExportArray[8], 0, 200);
-                } else
-                    if ($transactionExportArray[7] != '') {
-                        $transaction['unique_id'] = \substr($transactionExportArray[7], 0, 200);
-                    } else {
-                        throw new \Exception("No Identifier");
-                    }
+            if (\count($this->_sitesAllowed) == 0 || \in_array($transactionExportArray[13], $this->_sitesAllowed)) {
 
 
-                if ($transactionExportArray[9] != '') {
-                    $transaction['custom_id'] = $transactionExportArray[9];
-                }
+                if ($transactionExportArray[0] !== '' && isset($merchantIdList[(int)$transactionExportArray[2]])) {
 
-                if ($transactionExportArray[11] == 'A') {
-                    $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
-                } else
-                    if ($transactionExportArray[11] == 'P') {
-                        $transaction['status'] = \Oara\Utilities::STATUS_PENDING;
+                    $transaction = Array();
+                    $transaction['merchantId'] = $transactionExportArray[2];
+                    $transactionDate = self::toDate($transactionExportArray[4]);
+                    $transaction['date'] = $transactionDate->format("Y-m-d H:i:s");
+                    if ($transactionExportArray[8] != '') {
+                        $transaction['unique_id'] = \substr($transactionExportArray[8], 0, 200);
                     } else
-                        if ($transactionExportArray[11] == 'D') {
-                            $transaction['status'] = \Oara\Utilities::STATUS_DECLINED;
+                        if ($transactionExportArray[7] != '') {
+                            $transaction['unique_id'] = \substr($transactionExportArray[7], 0, 200);
+                        } else {
+                            throw new \Exception("No Identifier");
                         }
 
-                if ($transactionExportArray[19] != '') {
-                    $transaction['amount'] = \Oara\Utilities::parseDouble($transactionExportArray[19]);
-                } else {
-                    $transaction['amount'] = \Oara\Utilities::parseDouble($transactionExportArray[20]);
-                }
 
-                $transaction['commission'] = \Oara\Utilities::parseDouble($transactionExportArray[20]);
-                $totalTransactions[] = $transaction;
+                    if ($transactionExportArray[9] != '') {
+                        $transaction['custom_id'] = $transactionExportArray[9];
+                    }
+
+                    if ($transactionExportArray[11] == 'A') {
+                        $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
+                    } else
+                        if ($transactionExportArray[11] == 'P') {
+                            $transaction['status'] = \Oara\Utilities::STATUS_PENDING;
+                        } else
+                            if ($transactionExportArray[11] == 'D') {
+                                $transaction['status'] = \Oara\Utilities::STATUS_DECLINED;
+                            }
+
+                    if ($transactionExportArray[19] != '') {
+                        $transaction['amount'] = \Oara\Utilities::parseDouble($transactionExportArray[19]);
+                    } else {
+                        $transaction['amount'] = \Oara\Utilities::parseDouble($transactionExportArray[20]);
+                    }
+
+                    $transaction['commission'] = \Oara\Utilities::parseDouble($transactionExportArray[20]);
+                    $totalTransactions[] = $transaction;
+                }
             }
         }
         return $totalTransactions;

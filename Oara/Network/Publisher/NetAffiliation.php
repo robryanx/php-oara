@@ -30,6 +30,7 @@ namespace Oara\Network\Publisher;
  */
 class NetAffiliation extends \Oara\Network
 {
+    protected $_sitesAllowed = array();
     private $_serverNumber = null;
     private $_credentials = null;
     private $_client = null;
@@ -190,29 +191,31 @@ class NetAffiliation extends \Oara\Network
         $num = count($exportData);
         for ($i = 1; $i < $num; $i++) {
             $transactionExportArray = str_getcsv($exportData[$i], ";");
-            if (isset($merchantIdList[$transactionExportArray[0]])) {
-                $transaction = Array();
-                $transaction['merchantId'] = $transactionExportArray[0];
-                $transactionDate = \DateTime::createFromFormat("d/m/Y H:i:s", $transactionExportArray[1]);
-                $transaction['date'] = $transactionDate->format("Y-m-d H:i:s");
+            if (\count($this->_sitesAllowed) == 0 || \in_array($transactionExportArray[7], $this->_sitesAllowed)) {
+                if (isset($merchantIdList[$transactionExportArray[0]])) {
+                    $transaction = Array();
+                    $transaction['merchantId'] = $transactionExportArray[0];
+                    $transactionDate = \DateTime::createFromFormat("d/m/Y H:i:s", $transactionExportArray[1]);
+                    $transaction['date'] = $transactionDate->format("Y-m-d H:i:s");
 
-                if ($transactionExportArray[3] != null) {
-                    $transaction['custom_id'] = $transactionExportArray[3];
-                }
-
-                if (\strstr($transactionExportArray[2], 'v')) {
-                    $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
-                } else
-                    if (\strstr($transactionExportArray[2], 'r')) {
-                        $transaction['status'] = \Oara\Utilities::STATUS_DECLINED;
-                    } else if (\strstr($transactionExportArray[2], 'a')) {
-                        $transaction['status'] = \Oara\Utilities::STATUS_PENDING;
-                    } else {
-                        throw new \Exception ("Status not found");
+                    if ($transactionExportArray[3] != null) {
+                        $transaction['custom_id'] = $transactionExportArray[3];
                     }
-                $transaction['amount'] = \Oara\Utilities::parseDouble($transactionExportArray[4]);
-                $transaction['commission'] =\Oara\Utilities::parseDouble(($transactionExportArray[4] * $transactionExportArray[5]) / 100);
-                $totalTransactions[] = $transaction;
+
+                    if (\strstr($transactionExportArray[2], 'v')) {
+                        $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
+                    } else
+                        if (\strstr($transactionExportArray[2], 'r')) {
+                            $transaction['status'] = \Oara\Utilities::STATUS_DECLINED;
+                        } else if (\strstr($transactionExportArray[2], 'a')) {
+                            $transaction['status'] = \Oara\Utilities::STATUS_PENDING;
+                        } else {
+                            throw new \Exception ("Status not found");
+                        }
+                    $transaction['amount'] = \Oara\Utilities::parseDouble($transactionExportArray[4]);
+                    $transaction['commission'] = \Oara\Utilities::parseDouble(($transactionExportArray[4] * $transactionExportArray[5]) / 100);
+                    $totalTransactions[] = $transaction;
+                }
             }
         }
         return $totalTransactions;
