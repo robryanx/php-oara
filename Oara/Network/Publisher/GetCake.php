@@ -57,19 +57,22 @@ class GetCake extends \Oara\Network
         $credentials = array();
 
         $parameter = array();
-        $parameter["apiPassword"]["description"] = "API password";
-        $parameter["apiPassword"]["required"] = true;
-        $credentials[] = $parameter;
+        $parameter["description"] = "API password";
+        $parameter["required"] = true;
+        $parameter["name"] = "API";
+        $credentials["apipassword"] = $parameter;
 
         $parameter = array();
-        $parameter["user"]["description"] = "User Log in";
-        $parameter["user"]["required"] = true;
-        $credentials[] = $parameter;
+        $parameter["description"] = "User Log in";
+        $parameter["required"] = true;
+        $parameter["name"] = "User";
+        $credentials["user"] = $parameter;
 
         $parameter = array();
-        $parameter["domain"]["description"] = "Domain of the website";
-        $parameter["domain"]["required"] = true;
-        $credentials[] = $parameter;
+        $parameter["description"] = "Domain of the website";
+        $parameter["required"] = true;
+        $parameter["name"] = "Domain";
+        $credentials["domain"] = $parameter;
 
         return $credentials;
     }

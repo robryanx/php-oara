@@ -2,7 +2,8 @@
 include_once (dirname(__FILE__) . '/../settings.php');
 
 $network = new \Oara\Network\Publisher\LinkShare\UK();
-$credentials = $network->getNeededCredentials();
+$credentialsNeeded = $network->getNeededCredentials();
+$credentials = array();
 $credentials["user"] = "";
 $credentials["password"] = "";
 $network->login($credentials);

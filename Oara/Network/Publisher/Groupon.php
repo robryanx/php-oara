@@ -66,9 +66,10 @@ class Groupon extends \Oara\Network
         $credentials = array();
 
         $parameter = array();
-        $parameter["apiPassword"]["description"] = "API password";
-        $parameter["apiPassword"]["required"] = true;
-        $credentials[] = $parameter;
+        $parameter["description"] = "API password";
+        $parameter["required"] = true;
+        $parameter["name"] = "API";
+        $credentials["apipassword"] = $parameter;
 
         return $credentials;
     }

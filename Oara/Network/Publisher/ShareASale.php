@@ -78,19 +78,22 @@ class ShareASale extends \Oara\Network
         $credentials = array();
 
         $parameter = array();
-        $parameter["affiliateId"]["description"] = "Affiliate ID";
-        $parameter["affiliateId"]["required"] = true;
-        $credentials[] = $parameter;
+        $parameter["description"] = "Affiliate ID";
+        $parameter["required"] = true;
+        $parameter["name"] = "Affiliate ID";
+        $credentials["affiliateid"] = $parameter;
 
         $parameter = array();
-        $parameter["apiToken"]["description"] = "API token";
-        $parameter["apiToken"]["required"] = true;
-        $credentials[] = $parameter;
+        $parameter["description"] = "API token";
+        $parameter["required"] = true;
+        $parameter["name"] = "API token";
+        $credentials["apitoken"] = $parameter;
 
         $parameter = array();
-        $parameter["apiSecret"]["description"] = "API secret";
-        $parameter["apiSecret"]["required"] = true;
-        $credentials[] = $parameter;
+        $parameter["description"] = "API secret";
+        $parameter["required"] = true;
+        $parameter["name"] = "API secret";
+        $credentials["apisecret"] = $parameter;
 
         return $credentials;
     }

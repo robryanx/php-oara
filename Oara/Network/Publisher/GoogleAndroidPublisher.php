@@ -53,14 +53,16 @@ class GoogleAndroidPublisher extends \Oara\Network
         $credentials = array();
 
         $parameter = array();
-        $parameter["user"]["description"] = "Bucket";
-        $parameter["user"]["required"] = true;
-        $credentials[] = $parameter;
+        $parameter["description"] = "Bucket";
+        $parameter["required"] = true;
+        $parameter["name"] = "Bucket";
+        $credentials["bucket"] = $parameter;
 
         $parameter = array();
-        $parameter["httpLogin"]["description"] = "Password for the bucket";
-        $parameter["httpLogin"]["required"] = true;
-        $credentials[] = $parameter;
+        $parameter["description"] = "Password for the bucket";
+        $parameter["required"] = true;
+        $parameter["name"] = "Password";
+        $credentials["password"] = $parameter;
 
         return $credentials;
     }

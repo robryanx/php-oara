@@ -59,14 +59,16 @@ class Zanox extends \Oara\Network
         $credentials = array();
 
         $parameter = array();
-        $parameter["connectId"]["description"] = "Connect Id";
-        $parameter["connectId"]["required"] = true;
-        $credentials[] = $parameter;
+        $parameter["description"] = "Connect Id";
+        $parameter["required"] = true;
+        $parameter["name"] = "Connect Id";
+        $credentials["connectId"] = $parameter;
 
         $parameter = array();
-        $parameter["secretKey"]["description"] = "Secret Key";
-        $parameter["secretKey"]["required"] = true;
-        $credentials[] = $parameter;
+        $parameter["description"] = "Secret Key";
+        $parameter["required"] = true;
+        $parameter["name"] = "Secret Key";
+        $credentials["secretKey"] = $parameter;
 
         return $credentials;
     }

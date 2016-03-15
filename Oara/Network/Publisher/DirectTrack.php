@@ -55,29 +55,34 @@ class DirectTrack extends \Oara\Network
         $credentials = array();
 
         $parameter = array();
-        $parameter["domain"]["description"] = "Domain for the networks Ex:www.myweb.com";
-        $parameter["domain"]["required"] = true;
-        $credentials[] = $parameter;
+        $parameter["description"] = "Domain for the networks Ex:www.myweb.com";
+        $parameter["required"] = true;
+        $parameter["name"] = "Domain";
+        $credentials["domain"] = $parameter;
 
         $parameter = array();
-        $parameter["client"]["description"] = "Id for the client";
-        $parameter["client"]["required"] = true;
-        $credentials[] = $parameter;
+        $parameter["description"] = "Id for the client";
+        $parameter["required"] = true;
+        $parameter["name"] = "Client";
+        $credentials["client"] = $parameter;
 
         $parameter = array();
-        $parameter["access"]["description"] = "Access ID";
-        $parameter["access"]["required"] = true;
-        $credentials[] = $parameter;
+        $parameter["description"] = "Access ID";
+        $parameter["required"] = true;
+        $parameter["name"] = "Access";
+        $credentials["access"] = $parameter;
 
         $parameter = array();
-        $parameter["user"]["description"] = "User Log in";
-        $parameter["user"]["required"] = true;
-        $credentials[] = $parameter;
+        $parameter["description"] = "User Log in";
+        $parameter["required"] = true;
+        $parameter["name"] = "User";
+        $credentials["user"] = $parameter;
 
         $parameter = array();
-        $parameter["password"]["description"] = "Password to Log in";
-        $parameter["password"]["required"] = true;
-        $credentials[] = $parameter;
+        $parameter["description"] = "Password to Log in";
+        $parameter["required"] = true;
+        $parameter["password"] = "Password";
+        $credentials["password"] = $parameter;
 
         return $credentials;
     }
