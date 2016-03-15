@@ -68,7 +68,7 @@ class TerraVision extends \Oara\Network
             new \Oara\Curl\Parameter('_csrf_token', $token)
         );
         $urls = array();
-        $urls[] = new \Oara\Curl\Request($loginUrl, $valuesLogin);
+        $urls[] = new \Oara\Curl\Request('https://book.terravision.eu/login', $valuesLogin);
         $this->_client->post($urls);
 
     }
@@ -97,14 +97,16 @@ class TerraVision extends \Oara\Network
         $credentials = array();
 
         $parameter = array();
-        $parameter["user"]["description"] = "User Log in";
-        $parameter["user"]["required"] = true;
-        $credentials[] = $parameter;
+        $parameter["description"] = "User Log in";
+        $parameter["required"] = true;
+        $parameter["name"] = "User";
+        $credentials["user"] = $parameter;
 
         $parameter = array();
-        $parameter["password"]["description"] = "Password to Log in";
-        $parameter["password"]["required"] = true;
-        $credentials[] = $parameter;
+        $parameter["description"] = "Password to Log in";
+        $parameter["required"] = true;
+        $parameter["name"] = "Password";
+        $credentials["password"] = $parameter;
 
         return $credentials;
     }

@@ -74,14 +74,16 @@ class Belboon extends \Oara\Network
         $credentials = array();
 
         $parameter = array();
-        $parameter["user"]["description"] = "User Log in";
-        $parameter["user"]["required"] = true;
-        $credentials[] = $parameter;
+        $parameter["description"] = "User Log in";
+        $parameter["required"] = true;
+        $parameter["name"] = "User";
+        $credentials["user"] = $parameter;
 
         $parameter = array();
-        $parameter["apiPassword"]["description"] = "Api Password for Belboon";
-        $parameter["apiPassword"]["required"] = true;
-        $credentials[] = $parameter;
+        $parameter["description"] = "Api Password for Belboon";
+        $parameter["required"] = true;
+        $parameter["name"] = "Api Password";
+        $credentials["password"] = $parameter;
 
         return $credentials;
     }

@@ -140,19 +140,22 @@ class AffiliateWindow extends \Oara\Network
         $credentials["user"] = $parameter;
 
         $parameter = array();
-        $parameter["password"]["description"] = "User Password";
-        $parameter["password"]["required"] = true;
-        $credentials[] = $parameter;
+        $parameter["description"] = "User Password";
+        $parameter["required"] = true;
+        $parameter["name"] = "Password";
+        $credentials["password"] = $parameter;
 
         $parameter = array();
-        $parameter["apiPassword"]["description"] = "PublisherService API password";
-        $parameter["apiPassword"]["required"] = true;
-        $credentials[] = $parameter;
+        $parameter["description"] = "PublisherService API password";
+        $parameter["required"] = true;
+        $parameter["name"] = "API password";
+        $credentials["apipassword"] = $parameter;
 
         $parameter = array();
-        $parameter["currency"]["description"] = "Currency code for reporting";
-        $parameter["currency"]["required"] = false;
-        $credentials[] = $parameter;
+        $parameter["description"] = "Currency code for reporting";
+        $parameter["required"] = false;
+        $parameter["name"] = "Currency";
+        $credentials["currency"] = $parameter;
 
         return $credentials;
     }

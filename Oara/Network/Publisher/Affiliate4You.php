@@ -53,14 +53,16 @@ class Affiliate4You extends \Oara\Network
         $credentials = array();
 
         $parameter = array();
-        $parameter["user"]["description"] = "User Log in";
-        $parameter["user"]["required"] = true;
-        $credentials[] = $parameter;
+        $parameter["description"] = "User Log in";
+        $parameter["required"] = true;
+        $parameter["name"] = "User";
+        $credentials["user"] = $parameter;
 
         $parameter = array();
-        $parameter["apiPassword"]["description"] = "API password";
-        $parameter["apiPassword"]["required"] = true;
-        $credentials[] = $parameter;
+        $parameter["description"] = "API password";
+        $parameter["required"] = true;
+        $parameter["name"] = "API password";
+        $credentials["apiPassword"] = $parameter;
 
         return $credentials;
     }

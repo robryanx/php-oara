@@ -51,9 +51,10 @@ class Effiliation extends \Oara\Network
         $credentials = array();
 
         $parameter = array();
-        $parameter["apiPassword"]["description"] = "API Password";
-        $parameter["apiPassword"]["required"] = true;
-        $credentials[] = $parameter;
+        $parameter["description"] = "API Password";
+        $parameter["required"] = true;
+        $parameter["name"] = "API";
+        $credentials["apipassword"] = $parameter;
 
         return $credentials;
     }

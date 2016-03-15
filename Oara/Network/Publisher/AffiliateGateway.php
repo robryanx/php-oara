@@ -62,19 +62,16 @@ class AffiliateGateway extends \Oara\Network
         $credentials = array();
 
         $parameter = array();
-        $parameter["user"]["description"] = "User Log in";
-        $parameter["user"]["required"] = true;
-        $credentials[] = $parameter;
+        $parameter["description"] = "User Log in";
+        $parameter["required"] = true;
+        $parameter["name"] = "User";
+        $credentials["user"] = $parameter;
 
         $parameter = array();
-        $parameter["password"]["description"] = "Password to Log in";
-        $parameter["password"]["required"] = true;
-        $credentials[] = $parameter;
-
-        $parameter = array();
-        $parameter["network"]["description"] = "Which Network to be used ['uk','au']";
-        $parameter["password"]["required"] = true;
-        $credentials[] = $parameter;
+        $parameter["description"] = "Password to Log in";
+        $parameter["required"] = true;
+        $parameter["name"] = "Password";
+        $credentials["password"] = $parameter;
 
         return $credentials;
     }
