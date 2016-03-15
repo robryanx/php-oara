@@ -49,7 +49,7 @@ class AffiliateWindow extends \Oara\Network
     {
         ini_set('default_socket_timeout', '120');
         $user = $credentials['user'];
-        $password = $credentials['apiPassword'];
+        $password = $credentials['apipassword'];
         $passwordExport = $credentials['password'];
         $this->_currency = $credentials['currency'];
 

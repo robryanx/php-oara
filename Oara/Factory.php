@@ -36,15 +36,14 @@ class Factory
      * @return null
      * @throws \Exception
      */
-    public static function createInstance($credentials)
+    public static function createInstance($networkClassName)
     {
 
         $affiliate = null;
         try {
-            $networkClassName = "\\Oara\\Network\\" . $credentials["type"] . "\\" . $credentials["networkName"];
-            $affiliate = new $networkClassName($credentials);
+            $affiliate = new $networkClassName();
         } catch (\Exception $e) {
-            throw new \Exception('Error creating instance ' . $credentials["networkName"] . ' - ' . $e->getMessage());
+            throw new \Exception('Error creating instance ' . $networkClassName . ' - ' . $e->getMessage());
         }
         return $affiliate;
 
