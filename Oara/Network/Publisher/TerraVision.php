@@ -68,7 +68,7 @@ class TerraVision extends \Oara\Network
             new \Oara\Curl\Parameter('_csrf_token', $token)
         );
         $urls = array();
-        $urls[] = new \Oara\Curl\Request('https://book.terravision.eu/login', $valuesLogin);
+        $urls[] = new \Oara\Curl\Request('https://book.terravision.eu/login_check', $valuesLogin);
         $this->_client->post($urls);
 
     }
@@ -149,7 +149,7 @@ class TerraVision extends \Oara\Network
         $exportData = \Oara\Utilities::htmlToCsv(\Oara\Utilities::DOMinnerHTML($results->item(0)));
         $num = \count($exportData);
 
-        for ($i = 1; $i < $num - 1; $i++) {
+        for ($i = 1; $i < $num ; $i++) {
             $transactionArray = \str_getcsv($exportData[$i], ";");
             if ($transactionArray[0] == $stringToFind) {
 
@@ -157,8 +157,8 @@ class TerraVision extends \Oara\Network
                 $transaction['merchantId'] = 1;
                 $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
                 $transaction['date'] = $dEndDate->format("Y-m-d H:i:s");
-                $transaction['amount'] = \Oara\Utilities::parseDouble($transactionArray [2]);
-                $transaction['commission'] = \Oara\Utilities::parseDouble($transactionArray [2]);
+                $transaction['amount'] = \Oara\Utilities::parseDouble($transactionArray [1]);
+                $transaction['commission'] = \Oara\Utilities::parseDouble($transactionArray [1]);
 
                 $totalTransactions[] = $transaction;
             }

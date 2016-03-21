@@ -193,11 +193,11 @@ class WebGains extends \Oara\Network
 
         foreach ($this->_campaignMap as $campaignKey => $campaignValue) {
             try {
-                $transactionList = $this->_soapClient->getFullEarningsWithCurrency($dStartDate->getIso(), $dEndDate->getIso(), $campaignKey, $this->_user, $this->_password);
+                $transactionList = $this->_soapClient->getFullEarningsWithCurrency($dStartDate->format("Y-m-d\TH:i:s"), $dEndDate->format("Y-m-d\TH:i:s"), $campaignKey, $this->_user, $this->_password);
             } catch (\Exception $e) {
                 if (\preg_match("/60 requests/", $e->getMessage())) {
                     \sleep(60);
-                    $transactionList = $this->_soapClient->getFullEarningsWithCurrency($dStartDate->getIso(), $dEndDate->getIso(), $campaignKey, $this->_user, $this->_password);
+                    $transactionList = $this->_soapClient->getFullEarningsWithCurrency($dStartDate->format("Y-m-d\TH:i:s"), $dEndDate->format("Y-m-d\TH:i:s"), $campaignKey, $this->_user, $this->_password);
                 }
             }
             foreach ($transactionList as $transactionObject) {
@@ -205,7 +205,7 @@ class WebGains extends \Oara\Network
 
                     $transaction = array();
                     $transaction['merchantId'] = $transactionObject->programID;
-                    $transactionDate = \DateTime::createFromFormat("Y/m/d\TH:i:s", $transactionObject->date);
+                    $transactionDate = \DateTime::createFromFormat("Y-m-d\TH:i:s", $transactionObject->date);
                     $transaction["date"] = $transactionDate->format("Y-m-d H:i:s");
                     $transaction['unique_id'] = $transactionObject->transactionID;
                     if ($transactionObject->clickRef != null) {

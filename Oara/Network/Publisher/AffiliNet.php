@@ -39,7 +39,7 @@ class AffiliNet extends \Oara\Network
     public function login($credentials)
     {
         $user = $credentials['user'];
-        $password = $credentials['password'];
+        $password = $credentials['apiPassword'];
 
         //Setting the client.
         $this->_client = new \SoapClient('https://api.affili.net/V2.0/Logon.svc?wsdl', array('compression' => SOAP_COMPRESSION_ACCEPT | SOAP_COMPRESSION_GZIP | SOAP_COMPRESSION_DEFLATE, 'soap_version' => SOAP_1_1));
@@ -48,6 +48,7 @@ class AffiliNet extends \Oara\Network
             'Password' => $password,
             'WebServiceType' => 'Publisher'
         ));
+        $this->_user = $user;
     }
 
     /**
@@ -78,7 +79,6 @@ class AffiliNet extends \Oara\Network
     public function checkConnection()
     {
         $connection = true;
-        self::login();
         return $connection;
     }
 
@@ -131,12 +131,14 @@ class AffiliNet extends \Oara\Network
     {
         $totalTransactions = array();
 
+        $merchantIdList = \Oara\Utilities::getMerchantIdMapFromMerchantList($merchantList);
+
         $publisherStatisticsServiceUrl = 'https://api.affili.net/V2.0/PublisherStatistics.svc?wsdl';
         $publisherStatisticsService = new \SoapClient($publisherStatisticsServiceUrl, array('compression' => SOAP_COMPRESSION_ACCEPT | SOAP_COMPRESSION_GZIP | SOAP_COMPRESSION_DEFLATE, 'soap_version' => SOAP_1_1));
-        $iterationNumber = self::calculeIterationNumber(\count($merchantList), 100);
+        $iterationNumber = self::calculeIterationNumber(\count($merchantIdList), 100);
 
         for ($currentIteration = 0; $currentIteration < $iterationNumber; $currentIteration++) {
-            $merchantListSlice = \array_slice($merchantList, 100 * $currentIteration, 100);
+            $merchantListSlice = \array_slice(\array_keys($merchantIdList), 100 * $currentIteration, 100);
             $merchantListAux = array();
             foreach ($merchantListSlice as $merchant) {
                 $merchantListAux[] = (string)$merchant;

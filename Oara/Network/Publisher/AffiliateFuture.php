@@ -43,11 +43,22 @@ class AffiliateFuture extends \Oara\Network
         $this->_client = new \Oara\Curl\Access($credentials);
 
         $valuesLogin = array(
-            new \Oara\Curl\Parameter('username', $user),
-            new \Oara\Curl\Parameter('password', $password),
-            new \Oara\Curl\Parameter('Submit', 'Login Now')
+            new \Oara\Curl\Parameter('txtUsername', $user),
+            new \Oara\Curl\Parameter('txtPassword', $password),
+            new \Oara\Curl\Parameter('btnLogin', 'Login')
         );
 
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request('http://affiliates.affiliatefuture.com/login.aspx?', $valuesLogin);
+        $exportReport =  $this->_client->post($urls);
+
+        $objDOM = new \DOMDocument();
+        @$objDOM->loadHTML($exportReport[0]);
+        $objXPath = new \DOMXPath($objDOM);
+        $objInputs = $objXPath->query("//input[@type='hidden']");
+        foreach ($objInputs as $objInput) {
+            $valuesLogin[] = new \Oara\Curl\Parameter($objInput->getAttribute('name'), $objInput->getAttribute('value'));
+        }
         $urls = array();
         $urls[] = new \Oara\Curl\Request('http://affiliates.affiliatefuture.com/login.aspx?', $valuesLogin);
         $this->_client->post($urls);
@@ -223,7 +234,7 @@ class AffiliateFuture extends \Oara\Network
         $urls[] = new \Oara\Curl\Request('http://ws-external.afnt.co.uk/apiv1/AFFILIATES/affiliatefuture.asmx/GetTransactionListbyDate?', $valuesFromExport);
         $urls[] = new \Oara\Curl\Request('http://ws-external.afnt.co.uk/apiv1/AFFILIATES/affiliatefuture.asmx/GetCancelledTransactionListbyDate?', $valuesFromExport);
         $exportReport = $this->_client->get($urls);
-        for ($i = 0; $i < count($urls); $i++) {
+        for ($i = 0; $i < \count($urls); $i++) {
             $xml = self::loadXml($exportReport[$i]);
             if (isset($xml->error)) {
                 throw new \Exception('Error connecting with the server');
