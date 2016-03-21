@@ -287,7 +287,7 @@ class AffiliateFuture extends \Oara\Network
      */
     private function loadXml($exportReport = null)
     {
-        $xml = simplexml_load_string($exportReport, null, LIBXML_NOERROR | LIBXML_NOWARNING);
+        $xml = \simplexml_load_string($exportReport, null, LIBXML_NOERROR | LIBXML_NOWARNING);
         return $xml;
     }
 
