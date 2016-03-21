@@ -32,7 +32,6 @@ class WebGains extends \Oara\Network
 {
 
     private $_soapClient = null;
-    private $_webClient = null;
     private $_server = null;
     private $_campaignMap = array();
     protected $_sitesAllowed = array();
@@ -44,7 +43,7 @@ class WebGains extends \Oara\Network
     {
         $this->_user = $credentials['user'];
         $this->_password = $credentials['password'];
-        $this->_webClient = new \Oara\Curl\Access($credentials);
+        $this->_client = new \Oara\Curl\Access($credentials);
 
         $wsdlUrl = 'http://ws.webgains.com/aws.php';
         //Setting the client.

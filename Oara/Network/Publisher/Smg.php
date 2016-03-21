@@ -31,7 +31,6 @@ namespace Oara\Network\Publisher;
  */
 class Smg extends \Oara\Network
 {
-    private $_newClient = null;
     private $_credentials = null;
     private $_accountSid = null;
     private $_authToken = null;
@@ -63,7 +62,7 @@ class Smg extends \Oara\Network
 
         $urls = array();
         $urls[] = new \Oara\Curl\Request('https://member.impactradius.co.uk/secure/mediapartner/accountSettings/mp-wsapi-flow.ihtml?', array());
-        $exportReport = $this->_newClient->get($urls);
+        $exportReport = $this->_client->get($urls);
         $dom = new \Zend_Dom_Query($exportReport[0]);
         $results = $dom->query('div .uitkFields');
         $count = \count($results);
@@ -72,11 +71,11 @@ class Smg extends \Oara\Network
             $activeAPI = array(new \Oara\Curl\Parameter('_eventId', "activate"));
             $urls = array();
             $urls[] = new \Oara\Curl\Request('https://member.impactradius.co.uk/secure/mediapartner/accountSettings/mp-wsapi-flow.ihtml?', $activeAPI);
-            $this->_newClient->post($urls);
+            $this->_client->post($urls);
 
             $urls = array();
             $urls[] = new \Oara\Curl\Request('https://member.impactradius.co.uk/secure/mediapartner/accountSettings/mp-wsapi-flow.ihtml?', array());
-            $exportReport = $this->_newClient->get($urls);
+            $exportReport = $this->_client->get($urls);
             $dom = new \Zend_Dom_Query($exportReport[0]);
             $results = $dom->query('div .uitkFields');
             $count = \count($results); // get number of matches: 4
@@ -128,7 +127,7 @@ class Smg extends \Oara\Network
         //Checking connection for the impact Radius website
         $urls = array();
         $urls[] = new \Oara\Curl\Request('https://member.impactradius.co.uk/secure/mediapartner/home/pview.ihtml', array());
-        $exportReport = $this->_newClient->get($urls);
+        $exportReport = $this->_client->get($urls);
         $newCheck = false;
         if (\preg_match('/\/logOut\.user/', $exportReport[0], $match)) {
             $newCheck = true;
@@ -207,7 +206,7 @@ class Smg extends \Oara\Network
         $totalTransactions = Array();
 
         //New Interface
-        $uri = "https://" . $this->_accountSid . ":" . $this->_authToken . "@api.impactradius.com/2010-09-01/Mediapartners/" . $this->_accountSid . "/Actions?ActionDateStart=" . $dStartDate->format('Y-m-dTH:i:s') . "-00:00&ActionDateEnd=" . $dEndDate->format('Y-m-dTH:i:s') . "-00:00";
+        $uri = "https://" . $this->_accountSid . ":" . $this->_authToken . "@api.impactradius.com/2010-09-01/Mediapartners/" . $this->_accountSid . "/Actions?ActionDateStart=" . $dStartDate->format('Y-m-d\TH:i:s') . "-00:00&ActionDateEnd=" . $dEndDate->format('Y-m-d\TH:i:s') . "-00:00";
         $res = \simplexml_load_file($uri);
         if ($res) {
 
@@ -219,7 +218,8 @@ class Smg extends \Oara\Network
                     $transaction = Array();
                     $transaction['merchantId'] = (int)$action->CampaignId;
 
-                    $transaction['date'] = (string)$action->EventDate;
+                    $transactionDate = \DateTime::createFromFormat("Y-m-d\TH:i:s", \substr((string)$action->EventDate,0,19));
+                    $transaction['date'] = $transactionDate->format("Y-m-d H:i:s");
 
                     $transaction['unique_id'] = (string)$action->Id;
                     if ((string)$action->SharedId != '') {
@@ -266,7 +266,7 @@ class Smg extends \Oara\Network
 
         $urls = array();
         $urls[] = new \Oara\Curl\Request('https://member.impactradius.co.uk/secure/nositemesh/accounting/getPayStubParamsCSV.csv', array());
-        $exportReport = $this->_newClient->get($urls);
+        $exportReport = $this->_client->get($urls);
         $exportData = \str_getcsv($exportReport[0], "\n");
 
         $num = \count($exportData);

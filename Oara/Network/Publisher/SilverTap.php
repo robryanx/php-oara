@@ -45,7 +45,7 @@ class SilverTap extends \Oara\Network
         $password = $credentials['password'];
 
         $this->_serverUrl = "https://mats.silvertap.com/";
-        $this->_client = new \Oara\Curl\Access ($this->_credentials);
+        $this->_client = new \Oara\Curl\Access ($credentials);
 
         $loginUrl = $this->_serverUrl . 'Login.aspx?ReturnUrl=/';
         $valuesLogin = array(new \Oara\Curl\Parameter('txtUsername', $user),
@@ -209,7 +209,7 @@ class SilverTap extends \Oara\Network
                 $transaction['unique_id'] = \preg_replace('/\D/', '', $transactionExportArray[0]);
                 $transaction['merchantId'] = $transactionExportArray[4];
 
-                $transactionDate = \DateTime::createFromFormat("d/m/YY H:i:s", $transactionExportArray[2]);
+                $transactionDate = \DateTime::createFromFormat("d/m/Y H:i:s", $transactionExportArray[2]);
                 $transaction['date'] = $transactionDate->format("Y-m-d H:i:s");
 
                 if ($transactionExportArray[7] != null) {

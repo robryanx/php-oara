@@ -429,7 +429,7 @@ class TradeDoubler extends \Oara\Network
 
                     $transaction = Array();
                     $transaction['merchantId'] = $transactionExportArray[2];
-                    $transactionDate = self::toDate($transactionExportArray[4]);
+                    $transactionDate = self::toDate(\substr($transactionExportArray[4], 0, -6));
                     $transaction['date'] = $transactionDate->format("Y-m-d H:i:s");
                     if ($transactionExportArray[8] != '') {
                         $transaction['unique_id'] = \substr($transactionExportArray[8], 0, 200);
@@ -572,7 +572,7 @@ class TradeDoubler extends \Oara\Network
         $urls[] = new \Oara\Curl\Request('http://publisher.tradedoubler.com/pan/reportSelection/Payment?', array());
         $exportReport = $this->_client->get($urls);
         /*** load the html into the object ***/
-        $doc = new DOMDocument();
+        $doc = new \DOMDocument();
         \libxml_use_internal_errors(true);
         $doc->validateOnParse = true;
         $doc->loadHTML($exportReport[0]);
@@ -599,7 +599,8 @@ class TradeDoubler extends \Oara\Network
                         $paymentLine = $paymentLines->item($i)->nodeValue;
                         $value = \preg_replace('/[^0-9\.,]/', "", \substr($paymentLine, 10));
 
-                        $date = self::toDate(\substr($paymentLine, 0, 10));
+                        $paymentParts = \explode(" ",$paymentLine);
+                        $date = self::toDate($paymentParts[0]." 00:00:00");
 
                         $obj['date'] = $date->format("Y-m-d H:i:s");
                         $obj['pid'] = $pid;
