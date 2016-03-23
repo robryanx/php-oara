@@ -218,7 +218,8 @@ class AffiliateWindow extends \Oara\Network
         $params = array();
         $params['sDateType'] = 'transaction';
         if ($merchantList != null) {
-            $params['aMerchantIds'] = $merchantList;
+            $merchantIdList = \Oara\Utilities::getMerchantIdMapFromMerchantList($merchantList);
+            $params['aMerchantIds'] =  \array_keys($merchantIdList);
         }
         if ($dStartDate != null) {
             $params['dStartDate'] = $dStartDate->format("Y-m-d\TH:i:s");
@@ -254,7 +255,7 @@ class AffiliateWindow extends \Oara\Network
                     $transaction['commission'] = $transactionObject->mCommissionAmount->dAmount;
 
                     if (isset($transactionObject->aTransactionParts)) {
-                        $transactionPart = current($transactionObject->aTransactionParts);
+                        $transactionPart = \current($transactionObject->aTransactionParts);
                         if ($transactionPart->mCommissionAmount->sCurrency != $this->_currency) {
                             $transaction['currency'] = $transactionPart->mCommissionAmount->sCurrency;
                         }
@@ -263,7 +264,7 @@ class AffiliateWindow extends \Oara\Network
                 }
 
                 unset($transactionList);
-                gc_collect_cycles();
+                \gc_collect_cycles();
             }
 
         }
@@ -314,8 +315,8 @@ class AffiliateWindow extends \Oara\Network
                     $attrs = $linkList->item(0)->attributes;
                     foreach ($attrs as $attrName => $attrNode) {
                         if ($attrName = 'href') {
-                            $parseUrl = trim($attrNode->nodeValue);
-                            if (preg_match("/\/paymentId\/(.+)/", $parseUrl, $matches)) {
+                            $parseUrl = \trim($attrNode->nodeValue);
+                            if (\preg_match("/\/paymentId\/(.+)/", $parseUrl, $matches)) {
                                 $obj['pid'] = $matches[1];
                             }
                         }

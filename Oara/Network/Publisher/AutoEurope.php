@@ -156,55 +156,85 @@ class AutoEurope extends \Oara\Network
         return $totalTransactions;
     }
 
+
     /**
-     * @param $htmlReport
-     * @return array
-     * @throws Exception
+     * Read the html table in the report
+     *
+     * @param string $htmlReport
+     * @param Zend_Date $startDate
+     * @param Zend_Date $endDate
+     * @param int $iteration
+     * @return array:
      */
     public function readTransactions($htmlReport)
     {
-        $doc = new \DOMDocument();
-        @$doc->loadHTML($htmlReport);
-        $xpath = new \DOMXPath($doc);
-        $results = $xpath->query('//a');
-
+        $pdfContent = '';
+        $dom = new \Zend_Dom_Query ($htmlReport);
+        $links = $dom->query('.text a');
         $pdfUrl = null;
-        foreach ($results as $link) {
+        foreach ($links as $link) {
             $pdfUrl = $link->getAttribute('href');
         }
-
         $urls = array();
         $urls [] = new \Oara\Curl\Request ($pdfUrl, array());
         $exportReport = $this->_client->get($urls);
-        $exportReportUrl = explode('/', $pdfUrl);
-        $exportReportUrl = $exportReportUrl [count($exportReportUrl) - 1];
-        $dir = realpath(dirname(COOKIES_BASE_DIR)) . '/pdf/'.$exportReportUrl;
-        $fh = fopen($dir , 'w');
-        fwrite($fh, $exportReport [0]);
-        fclose($fh);
-
-        $pdf = new \Gufy\PdfToHtml\Pdf($dir);
-        $pdfContent = $pdf->html();
-        unlink($dir);
-
+        // writing temp pdf
+        $exportReportUrl = \explode('/', $pdfUrl);
+        $exportReportUrl = $exportReportUrl [\count($exportReportUrl) - 1];
+        $dir = \realpath(\dirname(COOKIES_BASE_DIR)) . '/pdf/';
+        $fh = \fopen($dir . $exportReportUrl, 'w');
+        \fwrite($fh, $exportReport [0]);
+        \fclose($fh);
+        // parsing the pdf
+        $pipes = null;
+        $descriptorspec = array(
+            0 => array(
+                'pipe',
+                'r'
+            ),
+            1 => array(
+                'pipe',
+                'w'
+            ),
+            2 => array(
+                'pipe',
+                'w'
+            )
+        );
+        $pdfReader = \proc_open("pdftohtml -xml -stdout " . $dir . $exportReportUrl, $descriptorspec, $pipes, null, null);
+        if (\is_resource($pdfReader)) {
+            $pdfContent = '';
+            $error = '';
+            $stdin = $pipes [0];
+            $stdout = $pipes [1];
+            $stderr = $pipes [2];
+            while (!\feof($stdout)) {
+                $pdfContent .= \fgets($stdout);
+            }
+            while (!\feof($stderr)) {
+                $error .= \fgets($stderr);
+            }
+            \fclose($stdin);
+            \fclose($stdout);
+            \fclose($stderr);
+            \proc_close($pdfReader);
+        }
+        \unlink($dir . $exportReportUrl);
         $xml = new \SimpleXMLElement ($pdfContent);
-
         $list = $xml->xpath("page");
-        $numberPages = \count($list);
+        $numberPages = count($list);
         $transationList = array();
         for ($page = 1; $page <= $numberPages; $page++) {
-
             $topHeader = null;
             $top = null;
             $list = $xml->xpath("page[@number=$page]/text[@font=0 and b = \"Agent\"]");
-            if (count($list) > 0) {
-                $header = current($list);
+            if (\count($list) > 0) {
+                $header = \current($list);
                 $attributes = $header->attributes();
                 $top = ( int )$attributes ['top'];
             } else {
                 throw new \Exception ("No Header Found");
             }
-
             if ($top == null) {
                 throw new \Exception ("No Top Found");
             }
@@ -221,7 +251,7 @@ class AutoEurope extends \Oara\Network
                 foreach ($header->children() as $child) {
                     $xmlHeader->name = ( string )$child;
                 }
-                if (strpos($xmlHeader->name, "commission") === false) {
+                if (\strpos($xmlHeader->name, "commission") === false) {
                     $headerList [(int)$xmlHeader->left] = $xmlHeader;
                 } else {
                     $xmlHeaderCommissionValue = new \stdClass ();
@@ -229,17 +259,14 @@ class AutoEurope extends \Oara\Network
                     $xmlHeaderCommissionValue->left = $xmlHeader->left;
                     $xmlHeaderCommissionValue->width = 100;
                     $xmlHeaderCommissionValue->name = ( string )"commissionValue";
-
                     $xmlHeaderCommission = new \stdClass ();
                     $xmlHeaderCommission->top = $xmlHeader->top;
                     $xmlHeaderCommission->left = $xmlHeader->left + $xmlHeaderCommissionValue->width;
                     $xmlHeaderCommission->width = 150;
                     $xmlHeaderCommission->name = ( string )"commission";
-
                     $headerList [(int)$xmlHeaderCommissionValue->left] = $xmlHeaderCommissionValue;
                     $headerList [(int)$xmlHeaderCommission->left] = $xmlHeaderCommission;
                 }
-
             }
             \ksort($headerList);
             $list = $xml->xpath("page[@number=$page]/text[@font=2]");
@@ -251,27 +278,20 @@ class AutoEurope extends \Oara\Network
                     $rowList [] = $top;
                 }
             }
-
-
             foreach ($rowList as $top) {
                 $transaction = array();
                 $list = $xml->xpath("page[@number=$page]/text[@top=$top and @font=2]");
-
                 foreach ($list as $value) {
                     $attributes = $value->attributes();
                     $fromLeft = ( int )$attributes ['left'];
                     $toLeft = ( int )($attributes ['left'] + $attributes ['width']);
-
                     foreach ($headerList as $header) {
                         $headerFromLeft = $header->left;
                         $headerToLeft = $header->left + $header->width;
-
                         $between1 = self::between((int)$headerFromLeft, (int)$headerToLeft, (int)$fromLeft);
                         $between2 = self::between((int)$headerFromLeft, (int)$headerToLeft, (int)$toLeft);
-
                         $between3 = self::between((int)$fromLeft, (int)$toLeft, (int)$headerFromLeft);
                         $between4 = self::between((int)$fromLeft, (int)$toLeft, (int)$headerToLeft);
-
                         if ($between1 || $between2 || $between3 || $between4) {
                             $transaction [$header->name] = ( string )$value;
                             break;
