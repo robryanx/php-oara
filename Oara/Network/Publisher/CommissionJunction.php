@@ -151,7 +151,7 @@ class Oara_Network_Publisher_CommissionJunction extends Oara_Network {
 		for($i = 4 ; $i < count($cookieArray); $i++){
 			$cookieValue = explode("\t", $cookieArray[$i]);
 			if (count($cookieValue) == 7){
-				$cookieMap[$cookieValue[count($cookieValue)-2]] = $cookieValue[count($cookieValue)-1];
+				$cookieMap[$cookieValue[count($cookieValue)-2]] = trim($cookieValue[count($cookieValue)-1]);
 			}
 			
 		}
