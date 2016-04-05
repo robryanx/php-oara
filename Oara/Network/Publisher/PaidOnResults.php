@@ -71,7 +71,7 @@ class Oara_Network_Publisher_PaidOnResults extends Oara_Network {
 		$password = $credentials['password'];
 		$this->_apiPassword = $credentials['apiPassword'];
 		
-		$loginUrl = 'https://secure.paidonresults.com/cgi-bin/affiliate/login/login.pl';
+		$loginUrl = 'https://www.paidonresults.com/login/';
 
 		$valuesLogin = array(new Oara_Curl_Parameter('username', $user),
 			new Oara_Curl_Parameter('password', $password)
@@ -86,10 +86,6 @@ class Oara_Network_Publisher_PaidOnResults extends Oara_Network {
 		$urls = array();
 		$urls[] = new Oara_Curl_Request($loginUrl, $valuesFormExport);
 		$exportReport = $this->_client->post($urls);
-		if (!preg_match("/session=(.*)\"/", $exportReport[0], $matches)) {
-			throw new Exception("No session found");
-		}
-		$this->_sessionId = $matches[1];
 		if (preg_match("/URL=(.*)\"/", $exportReport[0], $matches)) {
 			$urls = array();
 			$urls[] = new Oara_Curl_Request($matches[1], array());
@@ -212,8 +208,6 @@ class Oara_Network_Publisher_PaidOnResults extends Oara_Network {
 		$paymentHistory = array();
 
 		$paymentExport = array();
-		$paymentExport[] = new Oara_Curl_Parameter('session', $this->_sessionId);
-
 		$urls = array();
 		$urls[] = new Oara_Curl_Request('http://affiliate.paidonresults.com/cgi-bin/invoice-status.pl?', $paymentExport);
 		$exportReport = $this->_client->get($urls);
