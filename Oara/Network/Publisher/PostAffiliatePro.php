@@ -94,7 +94,7 @@ class Oara_Network_Publisher_PostAffiliatePro extends Oara_Network {
 		$request->addFilter('dateinserted', 'D>=', $dStartDate->toString("yyyy-MM-dd"));
 		$request->addFilter('dateinserted', 'D<=', $dEndDate->toString("yyyy-MM-dd"));
 		$request->setLimit(0, 100);
-		$request->setSorting('orderid', false);
+		$request->setSorting('t_orderid', false);
 		$request->sendNow();
 		$grid = $request->getGrid();
 		$recordset = $grid->getRecordset();
@@ -102,7 +102,7 @@ class Oara_Network_Publisher_PostAffiliatePro extends Oara_Network {
 		foreach($recordset as $rec) {
 			$transaction = Array ();
 			$transaction ['merchantId'] = 1;
-			$transaction ['uniqueId'] = $rec->get('orderid');
+			$transaction ['uniqueId'] = $rec->get('t_orderid');
 			$transactionDate = new Zend_Date ( $rec->get('dateinserted'), 'yyyy-MM-dd HH:mm:ss', 'en' );
 			$transaction ['date'] = $transactionDate->toString ( "yyyy-MM-dd HH:mm:ss" );
 			unset ( $transactionDate );
@@ -129,7 +129,7 @@ class Oara_Network_Publisher_PostAffiliatePro extends Oara_Network {
 				foreach($recordset as $rec) {
 					$transaction = Array ();
 					$transaction ['merchantId'] = 1;
-					$transaction ['uniqueId'] = $rec->get('orderid');
+					$transaction ['uniqueId'] = $rec->get('t_orderid');
 					$transactionDate = new Zend_Date ( $rec->get('dateinserted'), 'yyyy-MM-dd HH:mm:ss', 'en' );
 					$transaction ['date'] = $transactionDate->toString ( "yyyy-MM-dd HH:mm:ss" );
 					unset ( $transactionDate );
