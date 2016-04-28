@@ -236,7 +236,7 @@ class AffiliateGateway extends \Oara\Network
                 $obj = array();
                 $date = \DateTime::createFromFormat("d/m/Y", $paymentExportArray[1]);
                 $obj['date'] = $date->format("Y-m-d H:i:s");
-                $obj['pid'] = $paymentExportArray[0];
+                $obj['pid'] = \preg_replace('/[^0-9]/', "",$paymentExportArray[0]);
                 $obj['method'] = 'BACS';
                 $obj['value'] = \Oara\Utilities::parseDouble($paymentExportArray[4]);
                 $paymentHistory[] = $obj;

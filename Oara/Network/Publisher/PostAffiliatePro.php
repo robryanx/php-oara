@@ -113,7 +113,7 @@ class PostAffiliatePro extends \Oara\Network
         $request->addFilter('dateinserted', 'D>=', $dStartDate->format("Y-m-d"));
         $request->addFilter('dateinserted', 'D<=', $dEndDate->format("Y-m-d"));
         $request->setLimit(0, 100);
-        $request->setSorting('orderid', false);
+        $request->setSorting('t_orderid', false);
         $request->sendNow();
         $grid = $request->getGrid();
         $recordset = $grid->getRecordset();
@@ -121,7 +121,7 @@ class PostAffiliatePro extends \Oara\Network
         foreach ($recordset as $rec) {
             $transaction = Array();
             $transaction ['merchantId'] = 1;
-            $transaction ['uniqueId'] = $rec->get('orderid');
+            $transaction ['uniqueId'] = $rec->get('t_orderid');
             $transaction ['date'] = $rec->get('dateinserted');
             $transaction ['status'] = \Oara\Utilities::STATUS_CONFIRMED;
             $transaction ['amount'] = \Oara\Utilities::parseDouble($rec->get('totalcost'));
@@ -145,8 +145,8 @@ class PostAffiliatePro extends \Oara\Network
                 foreach ($recordset as $rec) {
                     $transaction = Array();
                     $transaction ['merchantId'] = 1;
-                    $transaction ['uniqueId'] = $rec->get('orderid');
-                    $transaction ['date'] = $rec->get('orderid');
+                    $transaction ['uniqueId'] = $rec->get('t_orderid');
+                    $transaction ['date'] = $rec->get('dateinserted');
                     if ($rec->get('rstatus') == 'D') {
                         $transaction ['status'] = \Oara\Utilities::STATUS_DECLINED;
                     } else if ($rec->get('rstatus') == 'P') {

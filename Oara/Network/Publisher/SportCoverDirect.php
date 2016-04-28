@@ -47,7 +47,6 @@ class SportCoverDirect extends \Oara\Network
         $user = $credentials['user'];
         $password = $credentials['password'];
 
-
         $loginUrl = "https://www.sportscoverdirect.com/promoters/account/login";
         $valuesLogin = array(
             new \Oara\Curl\Parameter('Username', $user),

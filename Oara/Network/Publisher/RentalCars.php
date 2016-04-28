@@ -178,9 +178,9 @@ class RentalCars extends \Oara\Network
             $transaction ['merchantId'] = "1";
             $transaction ['unique_id'] = $transactionDetails["Res. Number"];
             if (isset($transactionDetails["Payment Date"]) && $transactionDetails["Payment Date"] != null) {
-                $date = \DateTime::createFromFormat("d M Y H:i", $transactionDetails["Payment Date"]);
+                $date = \DateTime::createFromFormat("d M Y - H:i", $transactionDetails["Payment Date"]);
             } else {
-                $date = \DateTime::createFromFormat("d M Y H:i", $transactionDetails["Payment Date"]);
+                $date = \DateTime::createFromFormat("d M Y - H:i", $transactionDetails["Book Date"]);
             }
 
 
@@ -189,7 +189,7 @@ class RentalCars extends \Oara\Network
             }
 
 
-            $transaction ['date'] = $date->format("Y-m-d H:mi:00");
+            $transaction ['date'] = $date->format("Y-m-d H:i:00");
             if (isset($transactionDetails["Payment Date"]) && $transactionDetails["Payment Date"] != null) {
                 $transaction ['status'] = \Oara\Utilities::STATUS_CONFIRMED;
             } else {

@@ -45,7 +45,7 @@ class Shuttlefare extends \Oara\Network
 
         $user = $credentials ['user'];
         $password = $credentials ['password'];
-        $this->_client = new \Oara\Curl\Access ($this->_credentials);
+        $this->_client = new \Oara\Curl\Access ($credentials);
 
         $loginUrl = 'http://affiliates.shuttlefare.com/users/sign_in';
 

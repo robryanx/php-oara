@@ -147,7 +147,7 @@ class SkyScanner extends \Oara\Network
             $transaction['date'] = $transactionDate->format("Y-m-d H:i:s");
             //unset($transactionDate);
             $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
-            $transaction['amount'] = (double)$transactionExportArray[9];
+            $transaction['amount'] = (double)$transactionExportArray[7];
             $transaction['commission'] = (double)$transaction['amount'] * 0.6;
 
             if ($transaction['amount'] != 0) {

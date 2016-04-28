@@ -276,7 +276,7 @@ class Access
                 \sleep(1);
             }
             if ($mcRes != CURLM_OK) {
-                throw new Exception ('Fail in CURL access in GET, multiexec');
+                throw new \Exception ('Fail in CURL access in GET, multiexec');
             }
             while ($done = \curl_multi_info_read($mcurl)) {
                 $ch = $done ['handle'];
@@ -348,7 +348,7 @@ class Access
      */
     public function getCookies()
     {
-        return \file_get_contents($this->_cookiePath);
+        return @\file_get_contents($this->_cookiePath);
     }
 
     /**
@@ -356,6 +356,6 @@ class Access
      */
     public function setCookies($data)
     {
-        return \file_put_contents($this->_cookiePath, $data);
+        return @\file_put_contents($this->_cookiePath, $data);
     }
 }
