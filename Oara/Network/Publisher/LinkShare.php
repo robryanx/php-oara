@@ -299,10 +299,10 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network
                         $transactionDate = new Zend_Date ($transactionData [1] . " " . $transactionData [2], "MM/dd/yy HH:mm:ss");
                         $transaction ['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 
-                        if ($transactionData [5] != '<none>') {
-                            $transaction ['custom_id'] = $transactionData [5];
+                        if ($transactionData [10] != '<none>') {
+                            $transaction ['custom_id'] = $transactionData [10];
                         }
-                        $transaction ['unique_id'] = $transactionData [0] . "_" . $transactionData [10];
+                        $transaction ['unique_id'] = $transactionData [0] . "_" . $transactionData [5];
 
                         $sales = $filter->filter($transactionData [7]);
 
