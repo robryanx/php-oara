@@ -283,8 +283,7 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network
         foreach ($this->_siteList as $site) {
             if (empty($this->_sitesAllowed) || in_array($site->id, $this->_sitesAllowed)) {
                 echo "getting Transactions for site " . $site->id . "\n\n";
-
-                $url = "https://ran-reporting.rakutenmarketing.com/en/reports/individual-item-report/filters?start_date=" . $dStartDate->toString("yyyy-MM-dd") . "&end_date=" . $dEndDate->toString("yyyy-MM-dd") . "&include_summary=N&tz=GMT&date_type=transaction&&token=" . $site->token . "&network=" . $this->_nid;
+                $url = "https://ran-reporting.rakutenmarketing.com/en/reports/individual-item-report/filters?start_date=" . $dStartDate->toString("yyyy-MM-dd") . "&end_date=" . $dEndDate->toString("yyyy-MM-dd") . "&include_summary=N&tz=GMT&date_type=transaction&&token=" . urlencode($site->token) . "&network=" . $this->_nid;
                 $result = file_get_contents($url);
                 if (preg_match("/You cannot request/", $result)) {
                     throw new Exception ("Reached the limit");
