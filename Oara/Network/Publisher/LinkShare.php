@@ -155,74 +155,14 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network
                 $result = $this->_client->get($urls);
 
                 $urls = array();
-                $urls [] = new Oara_Curl_Request ('http://cli.linksynergy.com/cli/publisher/links/webServices.php', array());
+                $urls [] = new Oara_Curl_Request ('https://cli.linksynergy.com/cli/publisher/reports/reporting.php', array());
                 $result = $this->_client->get($urls);
 
-                // Getting the API Token
-                $dom = new Zend_Dom_Query ($result [0]);
-                $results = $dom->query('.commonBoxContentArea .commonBoxInnerArea .contentPaddedRow');
-                $count = count($results);
-                foreach ($results as $result) {
-                    if (preg_match("/[a-fA-F0-9]{64}/", $result->nodeValue, $match)) {
-                        $token = $match [0];
-                        $dom = new Zend_Dom_Query ($result->ownerDocument->saveXML($result));
-                        $image = $dom->query('#sidIcon');
-                        if (count($image) == 1) {
-                            $site->secureToken = $token;
-                        } else {
-                            $site->token = $token;
-                        }
-                    }
+
+                if (preg_match("/\"token_one\": \"(.+)\"/", $result [0], $match)) {
+                    $site->token = $match [1];
                 }
 
-                // Requesting Token if not available
-                if (!isset ($site->token)) {
-                    $urls = array();
-                    $urlParams = array();
-                    $urlParams [] = new Oara_Curl_Parameter ('analyticchannel', '');
-                    $urlParams [] = new Oara_Curl_Parameter ('analyticpage', '');
-                    $urlParams [] = new Oara_Curl_Parameter ('doUpdateToken', 'Y');
-                    $urls [] = new Oara_Curl_Request ('http://cli.linksynergy.com/cli/publisher/links/webServices.php?', $urlParams);
-                    $result = $this->_client->post($urls);
-                    // Getting the API Token
-                    $dom = new Zend_Dom_Query ($result [0]);
-                    $results = $dom->query('.commonBoxContentArea .commonBoxInnerArea .contentPaddedRow');
-                    $count = count($results);
-                    foreach ($results as $result) {
-                        if (preg_match("/[a-fA-F0-9]{64}/", $result->nodeValue, $match)) {
-                            $token = $match [0];
-                            $dom = new Zend_Dom_Query ($result->ownerDocument->saveXML($result));
-                            $image = $dom->query('#sidIcon');
-                            if (count($image) == 0) {
-                                $site->token = $token;
-                            }
-                        }
-                    }
-                }
-
-                if (!isset ($site->secureToken)) {
-                    $urls = array();
-                    $urlParams = array();
-                    $urlParams [] = new Oara_Curl_Parameter ('analyticchannel', '');
-                    $urlParams [] = new Oara_Curl_Parameter ('analyticpage', '');
-                    $urlParams [] = new Oara_Curl_Parameter ('doUpdateSecureToken', 'Y');
-                    $urls [] = new Oara_Curl_Request ('http://cli.linksynergy.com/cli/publisher/links/webServices.php?', $urlParams);
-                    $result = $this->_client->post($urls);
-                    // Getting the API Token
-                    $dom = new Zend_Dom_Query ($result [0]);
-                    $results = $dom->query('.commonBoxContentArea .commonBoxInnerArea .contentPaddedRow');
-                    $count = count($results);
-                    foreach ($results as $result) {
-                        if (preg_match("/[a-fA-F0-9]{64}/", $result->nodeValue, $match)) {
-                            $token = $match [0];
-                            $dom = new Zend_Dom_Query ($result->ownerDocument->saveXML($result));
-                            $image = $dom->query('#sidIcon');
-                            if (count($image) == 1) {
-                                $site->secureToken = $token;
-                            }
-                        }
-                    }
-                }
                 $siteList [] = $site;
             }
             $connection = true;
@@ -344,7 +284,7 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network
             if (empty($this->_sitesAllowed) || in_array($site->id, $this->_sitesAllowed)) {
                 echo "getting Transactions for site " . $site->id . "\n\n";
 
-                $url = "https://reportws.linksynergy.com/downloadreport.php?bdate=" . $dStartDate->toString("yyyyMMdd") . "&edate=" . $dEndDate->toString("yyyyMMdd") . "&token=" . $site->secureToken . "&nid=" . $this->_nid . "&reportid=12";
+                $url = "https://ran-reporting.rakutenmarketing.com/en/reports/individual-item-report/filters?start_date=" . $dStartDate->toString("yyyy-MM-dd") . "&end_date=" . $dEndDate->toString("yyyy-MM-dd") . "&include_summary=N&tz=GMT&date_type=transaction&&token=" . $site->token . "&network=" . $this->_nid;
                 $result = file_get_contents($url);
                 if (preg_match("/You cannot request/", $result)) {
                     throw new Exception ("Reached the limit");
@@ -354,16 +294,16 @@ class Oara_Network_Publisher_LinkShare extends Oara_Network
                 for ($j = 1; $j < $num; $j++) {
                     $transactionData = str_getcsv($exportData [$j], ",");
 
-                    if (in_array(( int )$transactionData [1], $merchantList)) {
+                    if (in_array(( int )$transactionData [3], $merchantList)) {
                         $transaction = Array();
-                        $transaction ['merchantId'] = ( int )$transactionData [1];
-                        $transactionDate = new Zend_Date ($transactionData [10] . " " . $transactionData [11], "MM/dd/yyyy HH:mm:ss");
+                        $transaction ['merchantId'] = ( int )$transactionData [3];
+                        $transactionDate = new Zend_Date ($transactionData [1] . " " . $transactionData [2], "MM/dd/yy HH:mm:ss");
                         $transaction ['date'] = $transactionDate->toString("yyyy-MM-dd HH:mm:ss");
 
-                        if ($transactionData [0] != '<none>') {
-                            $transaction ['custom_id'] = $transactionData [0];
+                        if ($transactionData [5] != '<none>') {
+                            $transaction ['custom_id'] = $transactionData [5];
                         }
-                        $transaction ['unique_id'] = $transactionData [3] . "_" . $transactionData [6];
+                        $transaction ['unique_id'] = $transactionData [0] . "_" . $transactionData [10];
 
                         $sales = $filter->filter($transactionData [7]);
 
