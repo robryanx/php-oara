@@ -69,7 +69,7 @@ class LinkShare extends \Oara\Network
         $xpath = new \DOMXPath($doc);
         $formList = $xpath->query('//form');
         foreach ($formList as $form) {
-            $loginUrl = "https://login.linkshare.com".$form->getAttribute("action");
+            $loginUrl = "https://login.linkshare.com" . $form->getAttribute("action");
         }
         $urls = array();
         $urls [] = new \Oara\Curl\Request ($loginUrl, $valuesLogin);
@@ -161,89 +161,18 @@ class LinkShare extends \Oara\Network
                 $urls [] = new \Oara\Curl\Request ('http://cli.linksynergy.com/cli/publisher/links/webServices.php', array());
                 $result = $this->_client->get($urls);
 
-                $doc = new \DOMDocument();
-                @$doc->loadHTML($result[0]);
-                $xpath = new \DOMXPath($doc);
-                $results = $xpath->query('//*[contains(concat(" ", normalize-space(@class), " "), " contentPaddedRow ")]');
-
-                foreach ($results as $result) {
-                    if (\preg_match("/[a-fA-F0-9]{64}/", $result->nodeValue, $match)) {
-                        $token = $match [0];
-                        $doc = new \DOMDocument();
-                        @$doc->loadHTML($result->ownerDocument->saveXML($result));
-                        $xpath = new \DOMXPath($doc);
-                        $image = $xpath->query('//*[contains(concat(" ", normalize-space(@id), " "), " sidIcon ")]');
-                        if ($image->length == 1) {
-                            $site->secureToken = $token;
-                        } else {
-                            $site->token = $token;
-                        }
-                    }
+                if (preg_match("/\"token_one\": \"(.+)\"/", $result [0], $match)) {
+                    $site->token = $match [1];
                 }
 
-                // Requesting Token if not available
-                if (!isset ($site->token)) {
-                    $urls = array();
-                    $urlParams = array();
-                    $urlParams [] = new \Oara\Curl\Parameter ('analyticchannel', '');
-                    $urlParams [] = new \Oara\Curl\Parameter ('analyticpage', '');
-                    $urlParams [] = new \Oara\Curl\Parameter ('doUpdateToken', 'Y');
-                    $urls [] = new \Oara\Curl\Request ('http://cli.linksynergy.com/cli/publisher/links/webServices.php?', $urlParams);
-                    $result = $this->_client->post($urls);
-                    // Getting the API Token
-                    $doc = new \DOMDocument();
-                    @$doc->loadHTML($result[0]);
-                    $xpath = new \DOMXPath($doc);
-                    $results = $xpath->query('//*[contains(concat(" ", normalize-space(@class), " "), " contentPaddedRow ")]');
-
-                    foreach ($results as $result) {
-                        if (\preg_match("/[a-fA-F0-9]{64}/", $result->nodeValue, $match)) {
-                            $token = $match [0];
-                            $doc = new \DOMDocument();
-                            @$doc->loadHTML($result->ownerDocument->saveXML($result));
-                            $xpath = new \DOMXPath($doc);
-                            $image = $xpath->query('//*[contains(concat(" ", normalize-space(@id), " "), " sidIcon ")]');
-                            if ($image->length == 0) {
-                                $site->token = $token;
-                            }
-                        }
-                    }
-                }
-
-                if (!isset ($site->secureToken)) {
-                    $urls = array();
-                    $urlParams = array();
-                    $urlParams [] = new \Oara\Curl\Parameter ('analyticchannel', '');
-                    $urlParams [] = new \Oara\Curl\Parameter ('analyticpage', '');
-                    $urlParams [] = new \Oara\Curl\Parameter ('doUpdateSecureToken', 'Y');
-                    $urls [] = new \Oara\Curl\Request ('http://cli.linksynergy.com/cli/publisher/links/webServices.php?', $urlParams);
-                    $result = $this->_client->post($urls);
-                    // Getting the API Token
-                    $doc = new \DOMDocument();
-                    @$doc->loadHTML($result[0]);
-                    $xpath = new \DOMXPath($doc);
-                    $results = $xpath->query('//*[contains(concat(" ", normalize-space(@class), " "), " contentPaddedRow ")]');
-                    foreach ($results as $result) {
-                        if (\preg_match("/[a-fA-F0-9]{64}/", $result->nodeValue, $match)) {
-                            $token = $match [0];
-                            $doc = new \DOMDocument();
-                            @$doc->loadHTML($result->ownerDocument->saveXML($result));
-                            $xpath = new \DOMXPath($doc);
-                            $image = $xpath->query('//*[contains(concat(" ", normalize-space(@id), " "), " sidIcon ")]');
-                            if ($image->length == 1) {
-                                $site->secureToken = $token;
-                            }
-                        }
-                    }
-                }
                 $siteList [] = $site;
+
             }
             $connection = true;
             $this->_siteList = $siteList;
         }
         return $connection;
     }
-
 
     /**
      * @return array
@@ -285,6 +214,7 @@ class LinkShare extends \Oara\Network
         return $merchants;
     }
 
+
     /**
      * @param null $merchantList
      * @param \DateTime|null $dStartDate
@@ -301,8 +231,8 @@ class LinkShare extends \Oara\Network
             if (empty($this->_sitesAllowed) || in_array($site->id, $this->_sitesAllowed)) {
                 echo "getting Transactions for site " . $site->id . "\n\n";
 
-                $url = "https://reportws.linksynergy.com/downloadreport.php?bdate=" . $dStartDate->format("Ymd") . "&edate=" . $dEndDate->format("Ymd") . "&token=" . $site->secureToken . "&nid=" . $this->_nid . "&reportid=12";
-                $result = \file_get_contents($url);
+                $url = "https://ran-reporting.rakutenmarketing.com/en/reports/individual-item-report/filters?start_date=" . $dStartDate->format("Y-m-d") . "&end_date=" . $dEndDate->format("Y-m-d") . "&include_summary=N&tz=GMT&date_type=transaction&&token=" . urlencode($site->token) . "&network=" . $this->_nid;
+                $result = file_get_contents($url);
                 if (\preg_match("/You cannot request/", $result)) {
                     throw new \Exception ("Reached the limit");
                 }
@@ -313,28 +243,33 @@ class LinkShare extends \Oara\Network
 
                     if (isset($merchantIdList[$transactionData [1]])) {
                         $transaction = Array();
-                        $transaction ['merchantId'] = ( int )$transactionData [1];
-                        $date = $transactionData [10] . " " . $transactionData [11].":00";
-                        $transactionDate = \DateTime::createFromFormat("m/d/Y H:i:s", $date);
+                        $transaction ['merchantId'] = ( int )$transactionData [3];
+                        $transactionDate = \DateTime::createFromFormat("m/d/y H:i:s", $transactionData [1] . " " . $transactionData [2]);
                         $transaction ['date'] = $transactionDate->format("Y-m-d H:i:s");
-                        if ($transactionData [0] != '<none>') {
-                            $transaction ['custom_id'] = $transactionData [0];
+
+                        if ($transactionData [10] != '<none>') {
+                            $transaction ['custom_id'] = $transactionData [10];
                         }
-                        $transaction ['unique_id'] = $transactionData [3] . "_" . $transactionData [6];
-                        $sales = \Oara\Utilities::parseDouble($transactionData [7]);
+                        $transaction ['unique_id'] = $transactionData [0] . "_" . $transactionData [5];
+
+                        $sales = $filter->filter($transactionData [7]);
 
                         if ($sales != 0) {
-                            $transaction ['status'] = \Oara\Utilities::STATUS_CONFIRMED;
+                            $transaction ['status'] = Oara_Utilities::STATUS_CONFIRMED;
                         } else if ($sales == 0) {
-                            $transaction ['status'] = \Oara\Utilities::STATUS_PENDING;
+                            $transaction ['status'] = Oara_Utilities::STATUS_PENDING;
                         }
-                        $transaction ['amount'] = $sales;
+
+                        $transaction ['amount'] = \Oara\Utilities::parseDouble($transactionData [7]);
+
                         $transaction ['commission'] = \Oara\Utilities::parseDouble($transactionData [9]);
+
                         if ($transaction ['commission'] < 0) {
                             $transaction ['amount'] = 0;
                             $transaction ['commission'] = 0;
-                            $transaction ['status'] = \Oara\Utilities::STATUS_DECLINED;
+                            $transaction ['status'] = Oara_Utilities::STATUS_DECLINED;
                         }
+
                         $totalTransactions [] = $transaction;
                     }
                 }
@@ -343,6 +278,7 @@ class LinkShare extends \Oara\Network
 
         return $totalTransactions;
     }
+
 
     /**
      * @return array
@@ -357,10 +293,10 @@ class LinkShare extends \Oara\Network
         foreach ($this->_siteList as $site) {
 
             $interval = $past->diff($now);
-            $numberYears = (int)$interval->format('%y')+1;
+            $numberYears = (int)$interval->format('%y') + 1;
             $auxStartDate = clone $past;
 
-            for ($i = 0; $i < $numberYears; $i++){
+            for ($i = 0; $i < $numberYears; $i++) {
 
                 $auxEndData = clone $auxStartDate;
                 $auxEndData = $auxEndData->add(new \DateInterval('P1Y'));
