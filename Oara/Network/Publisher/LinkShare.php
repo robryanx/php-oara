@@ -233,24 +233,35 @@ class LinkShare extends \Oara\Network
 
                 $url = "https://ran-reporting.rakutenmarketing.com/en/reports/individual-item-report/filters?start_date=" . $dStartDate->format("Y-m-d") . "&end_date=" . $dEndDate->format("Y-m-d") . "&include_summary=N&tz=GMT&date_type=transaction&&token=" . urlencode($site->token) . "&network=" . $this->_nid;
                 $result = file_get_contents($url);
-                if (\preg_match("/You cannot request/", $result)) {
-                    throw new \Exception ("Reached the limit");
+
+
+                $url = "https://ran-reporting.rakutenmarketing.com/en/reports/signature-orders-report/filters?start_date=" . $dStartDate->toString("yyyy-MM-dd") . "&end_date=" . $dEndDate->toString("yyyy-MM-dd") . "&include_summary=N&tz=GMT&date_type=transaction&token=" . urlencode($site->token) . "&network=" . $this->_nid;
+                $resultSignature = file_get_contents($url);
+                $signatureMap = array();
+                $exportData = str_getcsv($resultSignature, "\n");
+                $num = count($exportData);
+                for ($j = 1; $j < $num; $j++) {
+                    $signatureData = str_getcsv($exportData [$j], ",");
+                    $signatureMap[$signatureData[3]] = $signatureData[0];
                 }
+
+
                 $exportData = \str_getcsv($result, "\n");
                 $num = \count($exportData);
                 for ($j = 1; $j < $num; $j++) {
                     $transactionData = \str_getcsv($exportData [$j], ",");
 
-                    if (isset($merchantIdList[$transactionData [1]])) {
+                    if (isset($merchantIdList[$transactionData [1]]) && count($transactionData) == 11) {
                         $transaction = Array();
                         $transaction ['merchantId'] = ( int )$transactionData [3];
                         $transactionDate = \DateTime::createFromFormat("m/d/y H:i:s", $transactionData [1] . " " . $transactionData [2]);
                         $transaction ['date'] = $transactionDate->format("Y-m-d H:i:s");
 
-                        if ($transactionData [10] != '<none>') {
-                            $transaction ['custom_id'] = $transactionData [10];
+
+                        if (isset($signatureMap[$transactionData [0]])) {
+                            $transaction ['custom_id'] = $signatureMap[$transactionData [0]];
                         }
-                        $transaction ['unique_id'] = $transactionData [0] . "_" . $transactionData [5];
+                        $transaction ['unique_id'] = $transactionData [10];
 
                         $sales = $filter->filter($transactionData [7]);
 
