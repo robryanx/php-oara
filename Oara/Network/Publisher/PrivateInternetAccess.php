@@ -159,8 +159,9 @@ class PrivateInternetAccess extends \Oara\Network
         for ($j = 0; $j < $amountDays; $j++) {
 
             $valuesFormExport = array();
-            $valuesFormExport[] = new \Oara\Curl\Parameter('date', $auxDate->format("Y-m-d"));
-            $valuesFormExport[] = new \Oara\Curl\Parameter('period', 'day');
+            $valuesFormExport[] = new \Oara\Curl\Parameter('utf', '✓');
+            $valuesFormExport[] = new \Oara\Curl\Parameter('start_date', $auxDate->format("d M Y"));
+            $valuesFormExport[] = new \Oara\Curl\Parameter('end_date', $auxDate->format("d M Y"));
 
             $urls = array();
             $urls[] = new \Oara\Curl\Request('https://www.privateinternetaccess.com/affiliates/affiliate_dashboard?', $valuesFormExport);
@@ -169,27 +170,19 @@ class PrivateInternetAccess extends \Oara\Network
             $doc = new \DOMDocument();
             @$doc->loadHTML($exportReport[0]);
             $xpath = new \DOMXPath($doc);
-            $results = $xpath->query('//*[contains(concat(" ", normalize-space(@class), " "), " coupon_code ")] table');
+            $results = $xpath->query('//h4[contains(., " Grand total")]/following-sibling::table/tbody/tr/td');
             if ($results->length > 0) {
-                $exportData = \Oara\Utilities::htmlToCsv(\Oara\Utilities::DOMinnerHTML($results->item(0)));
 
-                for ($z = 1; $z < \count($exportData) - 4; $z++) {
-                    $transactionLineArray = \str_getcsv($exportData[$z], ";");
-                    $numberTransactions = (int)$transactionLineArray[1];
-                    if ($numberTransactions > 0) {
-                        $commission = \Oara\Utilities::parseDouble($transactionLineArray[2]);
-                        $commission = ((double)$commission) / $numberTransactions;
-                        for ($y = 0; $y < $numberTransactions; $y++) {
-                            $transaction = Array();
-                            $transaction['merchantId'] = "1";
-                            $transaction['date'] = $auxDate->format("Y-m-d H:i:s");
-                            $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
-                            $transaction['amount'] = $commission;
-                            $transaction['commission'] = $commission;
-                            $totalTransactions[] = $transaction;
-                        }
-                    }
-                }
+                $exportData = $results->item(1);
+                $commission = \Oara\Utilities::parseDouble(substr($exportData->nodeValue, 1));
+
+                $transaction = Array();
+                $transaction['merchantId'] = "1";
+                $transaction['date'] = $auxDate->format("Y-m-d H:i:s");
+                $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
+                $transaction['amount'] = $commission;
+                $transaction['commission'] = $commission;
+                $totalTransactions[] = $transaction;
             }
             $auxDate->add(new \DateInterval('P1D'));
         }

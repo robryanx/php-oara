@@ -43,11 +43,26 @@ class HideMyAss extends \Oara\Network
         $this->_credentials = $credentials;
         $this->_client = new \Oara\Curl\Access($this->_credentials);
 
+        $loginUrl = 'https://affiliate.hidemyass.com/users/login';
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request($loginUrl, array());
+        $exportReport = $this->_client->get($urls);
+        $doc = new \DOMDocument();
+        @$doc->loadHTML($exportReport[0]);
+        $xpath = new \DOMXPath($doc);
+        $hidden = $xpath->query('//input[@type="hidden"]');
         $valuesLogin = array(
             new \Oara\Curl\Parameter('_method', 'POST'),
             new \Oara\Curl\Parameter('data[User][username]', $this->_credentials['user']),
             new \Oara\Curl\Parameter('data[User][password]', $this->_credentials['password']),
         );
+        $hiddenValuesAux = array('_method' => 'POST');
+        foreach ($hidden as $values) {
+            if (!isset($hiddenValuesAux[$values->getAttribute("name")])) {
+                $hiddenValuesAux[$values->getAttribute("name")] = $values->getAttribute("value");
+                $valuesLogin[] = new \Oara\Curl\Parameter($values->getAttribute("name"), $values->getAttribute("value"));
+            }
+        }
 
         $loginUrl = 'https://affiliate.hidemyass.com/users/login';
         $urls = array();

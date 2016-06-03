@@ -37,6 +37,7 @@ class BTGuard extends \Oara\Network
      */
     public function login($credentials)
     {
+        $this->_credentials = $credentials;
         $this->_client = new \Oara\Curl\Access($credentials);
 
         $valuesLogin = array(
