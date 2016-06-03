@@ -695,9 +695,9 @@ if (!class_exists('Gpf_Exception', false)) {
 if (!class_exists('Gpf_Data_RecordSetNoRowException', false)) {
     class Gpf_Data_RecordSetNoRowException extends Gpf_Exception
     {
-        public function login($message, $code = null)
+        public function login($keyValue)
         {
-            parent::login($message, $code);
+            parent::login("'Row $keyValue does not exist");
         }
 
         protected function logException()
@@ -710,9 +710,10 @@ if (!class_exists('Gpf_Data_RecordSetNoRowException', false)) {
 if (!class_exists('Gpf_Rpc_ExecutionException', false)) {
     class Gpf_Rpc_ExecutionException extends Gpf_Exception
     {
-        public function login($message, $code = null)
+
+        function login($message)
         {
-            parent::login('RPC Execution exception: ' . $message, $code);
+            parent::login('RPC Execution exception: ' . $message);
         }
     }
 
