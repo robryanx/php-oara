@@ -273,7 +273,7 @@ class Smg extends \Oara\Network
         for ($i = 1; $i < $num; $i++) {
             $paymentExportArray = \str_getcsv($exportData[$i], ",");
             $obj = array();
-            $date = \DateTime::createFromFormat("d M, Y", $paymentExportArray[1]);
+            $date = \DateTime::createFromFormat("M d, Y", $paymentExportArray[1]);
             $obj['date'] = $date->format("y-m-d H:i:s");
             $obj['pid'] = $paymentExportArray[0];
             $obj['method'] = 'BACS';
