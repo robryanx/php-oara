@@ -143,25 +143,26 @@ class NetAffiliation extends \Oara\Network
 
         $valuesFormExport = array();
         $urls = array();
-        $urls[] = new \Oara\Curl\Request('http://www' . $this->_serverNumber . '.netaffiliation.com/index.php/affiliate/statistics', $valuesFormExport);
-        $exportReport = $this->_client->post($urls);
+        $urls[] = new \Oara\Curl\Request('http://www'.$this->_serverNumber.'.netaffiliation.com/affiliate/webservice', $valuesFormExport);
 
-        $doc = new \DOMDocument();
-        @$doc->loadHTML($exportReport[0]);
-        $xpath = new \DOMXPath($doc);
-        $results = $xpath->query('//optgroup[contains(concat(" ", normalize-space(@id), " "), " statistiquesGenerales_liste_programme ")]');
-        foreach ($results as $result) {
-            $merchantLines = $result->childNodes;
-            for ($i = 0; $i < $merchantLines->length; $i++) {
-                $cid = $merchantLines->item($i)->attributes->getNamedItem("value")->nodeValue;
-                $cid = \str_replace("p", "", $cid);
-                $name = $merchantLines->item($i)->nodeValue;
-                $obj = array();
-                $obj['cid'] = $cid;
-                $obj['name'] = $name;
-                $merchants[] = $obj;
+        $exportReport = $this->_client->get($urls);
+
+        if (\preg_match ("/function genereCodeLogin\(\) { return '(.+)?'; }/", $exportReport[0], $match)){
+            $content = \file_get_contents("http://flux.netaffiliation.com/flux_prog.php?taff=".$match[1]);
+            $xml = @\simplexml_load_string($content, "SimpleXMLElement", \LIBXML_NOCDATA);
+            $json = \json_encode($xml);
+            $merchantArray = \json_decode($json,TRUE);
+            foreach($merchantArray["prog"] as $merchant){
+                if (isset($merchant["@attributes"]) && $merchant["@attributes"]["etat"] == 'on'){
+                    $obj = array();
+                    $obj['cid'] =  $merchant["@attributes"]["id"];
+                    $obj['name'] = $merchant["title"];
+                    $merchants[] = $obj;
+                }
+
             }
         }
+
         return $merchants;
     }
 
