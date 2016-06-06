@@ -125,23 +125,23 @@ class Oara_Network_Publisher_NetAffiliation extends Oara_Network {
 
 		$valuesFormExport = array();
 		$urls = array();
-		$urls[] = new Oara_Curl_Request('http://www'.$this->_serverNumber.'.netaffiliation.com/index.php/affiliate/statistics', $valuesFormExport);
+		$urls[] = new Oara_Curl_Request('http://www'.$this->_serverNumber.'.netaffiliation.com/affiliate/webservice', $valuesFormExport);
 
-		$exportReport = $this->_client->post($urls);
-		$dom = new Zend_Dom_Query($exportReport[0]);
+		$exportReport = $this->_client->get($urls);
 
-		$results = $dom->query('#statistiquesGenerales_liste_programme optgroup');
-		foreach ($results as $result){
-			$merchantLines = $result->childNodes;
-			for ($i = 0; $i < $merchantLines->length; $i++) {
-				$cid = $merchantLines->item($i)->attributes->getNamedItem("value")->nodeValue;
-				$cid = str_replace("p", "", $cid);
-				$obj = array();
-				$name = $merchantLines->item($i)->nodeValue;
-				$obj = array();
-				$obj['cid'] = $cid;
-				$obj['name'] = $name;
-				$merchants[] = $obj;
+		if (\preg_match ("/function genereCodeLogin\(\) { return '(.+)?'; }/", $exportReport[0], $match)){
+			$content = file_get_contents("http://flux.netaffiliation.com/flux_prog.php?taff=".$match[1]);
+			$xml = @\simplexml_load_string($content, "SimpleXMLElement", \LIBXML_NOCDATA);
+			$json = \json_encode($xml);
+			$merchantArray = \json_decode($json,TRUE);
+			foreach($merchantArray["prog"] as $merchant){
+				if (isset($merchant["@attributes"]) && $merchant["@attributes"]["etat"] == 'on'){
+					$obj = array();
+					$obj['cid'] =  $merchant["@attributes"]["id"];
+					$obj['name'] = $merchant["title"];
+					$merchants[] = $obj;
+				}
+
 			}
 		}
 
