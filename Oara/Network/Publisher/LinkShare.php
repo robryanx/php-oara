@@ -161,8 +161,8 @@ class LinkShare extends \Oara\Network
                 $urls [] = new \Oara\Curl\Request ('http://cli.linksynergy.com/cli/publisher/links/webServices.php', array());
                 $result = $this->_client->get($urls);
 
-                if (preg_match("/\"token_one\": \"(.+)\"/", $result [0], $match)) {
-                    $site->token = $match [1];
+                if (preg_match_all('/<div class="token">(.+)<\/div>/', $result[0], $match)) {
+                    $site->token = $match[1][0];
                 }
 
                 $siteList [] = $site;
@@ -235,7 +235,7 @@ class LinkShare extends \Oara\Network
                 $result = file_get_contents($url);
 
 
-                $url = "https://ran-reporting.rakutenmarketing.com/en/reports/signature-orders-report/filters?start_date=" . $dStartDate->toString("yyyy-MM-dd") . "&end_date=" . $dEndDate->toString("yyyy-MM-dd") . "&include_summary=N&tz=GMT&date_type=transaction&token=" . urlencode($site->token) . "&network=" . $this->_nid;
+                $url = "https://ran-reporting.rakutenmarketing.com/en/reports/signature-orders-report/filters?start_date=" . $dStartDate->format("yyyy-MM-dd") . "&end_date=" . $dEndDate->format("yyyy-MM-dd") . "&include_summary=N&tz=GMT&date_type=transaction&token=" . urlencode($site->token) . "&network=" . $this->_nid;
                 $resultSignature = file_get_contents($url);
                 $signatureMap = array();
                 $exportData = str_getcsv($resultSignature, "\n");

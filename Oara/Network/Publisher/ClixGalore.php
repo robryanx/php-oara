@@ -53,9 +53,11 @@ class ClixGalore extends \Oara\Network
             new \Oara\Curl\Parameter('cmd_login.y', '8')
         );
 
-        $html = \file_get_contents("https://www.clixgalore.co.uk/Memberlogin.aspx");
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request($loginUrl, array());
+        $exportReport = $this->_client->get($urls);
         $doc = new \DOMDocument();
-        @$doc->loadHTML($html);
+        @$doc->loadHTML($exportReport[0]);
         $xpath = new \DOMXPath($doc);
         $hidden = $xpath->query('//input[@type="hidden"]');
         foreach ($hidden as $values) {

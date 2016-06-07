@@ -127,12 +127,12 @@ class FoxTransfer extends \Oara\Network
         $exportReport = $this->_client->get($urls);
         $exportReport = \str_replace("<?xml version=\"1.0\" encoding=\"UTF-8\"?>", "", $exportReport[0]);
         $doc = new \DOMDocument();
-        @$doc->loadHTML($exportReport[0]);
+        @$doc->loadHTML($exportReport);
         $xpath = new \DOMXPath($doc);
         $tableList = $xpath->query('//*[contains(concat(" ", normalize-space(@id), " "), " tartalom-hatter ")]');
         $exportData = \Oara\Utilities::htmlToCsv(\Oara\Utilities::DOMinnerHTML($tableList->item(0)));
         $num = \count($exportData);
-        for ($i = 3; $i < $num; $i++) {
+        for ($i = 11; $i < $num - 8; $i++) {
 
             $transactionExportArray = \str_getcsv($exportData[$i], ";");
             $transaction = Array();
