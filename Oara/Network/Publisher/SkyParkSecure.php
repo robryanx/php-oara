@@ -167,9 +167,8 @@ class SkyParkSecure extends \Oara\Network
             $transaction['unique_id'] = $booking->booking_ref;
             $transaction['metadata'] = $booking->product_name;
             $transaction['custom_id'] = $booking->custom_id;
-            $transactionDate = \DateTime::createFromFormat("Y.M.d H:i:s", $booking->booking_date."00");
-            $pickupDate = \DateTime::createFromFormat("Y.M.d H:i:s", $booking->dateA."00");
-            $transaction['date'] = $transactionDate->format("Y-m-d H:i:s");
+            $pickupDate = new \DateTime($booking->dateA);
+            $transaction['date'] = new \DateTime($booking->booking_date);
             $transaction['metadata'] = $booking->product_id;
             if ($booking->booking_mode == "Booked" || $booking->booking_mode == "Amended") {
                 $transaction['status'] = \Oara\Utilities::STATUS_PENDING;
