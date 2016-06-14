@@ -132,14 +132,5 @@ class Oara_Network_Publisher_Amazon extends Oara_Network {
 	}
 
 
-	/**
-	 * (non-PHPdoc)
-	 * @see Oara/Network/Oara_Network_Publisher_Base#getPaymentHistory()
-	 */
-	public function getPaymentHistory() {
-		$paymentHistory = array();
-
-		return $paymentHistory;
-	}
 
 }
