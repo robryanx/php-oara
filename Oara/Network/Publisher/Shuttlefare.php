@@ -140,7 +140,11 @@ class Shuttlefare extends \Oara\Network
 
         $urls = array();
         $urls[] = new \Oara\Curl\Request( 'http://affiliates.shuttlefare.com/partners/payments/report.csv?', $valuesFromExport);
-        $exportReport = $this->_client->get($urls);
+        try {
+            $exportReport = $this->_client->get($urls);
+        } catch (\Exception $e) {
+            return $totalTransactions;
+        }
 
         if (!\preg_match("/No transaction in given date range/", $exportReport[0]) && $exportReport[0]) {
             $exportData = \explode("\n", $exportReport[0]);
