@@ -158,11 +158,17 @@ class LinkShare extends \Oara\Network
                 $this->_client->get($urls);
 
                 $urls = array();
+                $urls [] = new \Oara\Curl\Request ('https://cli.linksynergy.com/cli/publisher/reports/reporting.php', array());
+                $result = $this->_client->get($urls);
+                if (preg_match_all('/\"token_one\"\: \"(.+)\"/', $result[0], $match)) {
+                    $site->token = $match[1][0];
+                }
+
+                $urls = array();
                 $urls [] = new \Oara\Curl\Request ('http://cli.linksynergy.com/cli/publisher/links/webServices.php', array());
                 $result = $this->_client->get($urls);
-
                 if (preg_match_all('/<div class="token">(.+)<\/div>/', $result[0], $match)) {
-                    $site->token = $match[1][0];
+                    $site->secureToken = $match[1][1];
                 }
 
                 $siteList [] = $site;
@@ -231,12 +237,38 @@ class LinkShare extends \Oara\Network
             if (empty($this->_sitesAllowed) || in_array($site->id, $this->_sitesAllowed)) {
                 echo "getting Transactions for site " . $site->id . "\n\n";
 
-                $url = "https://ran-reporting.rakutenmarketing.com/en/reports/individual-item-report/filters?start_date=" . $dStartDate->format("Y-m-d") . "&end_date=" . $dEndDate->format("Y-m-d") . "&include_summary=N&tz=GMT&date_type=transaction&&token=" . urlencode($site->token) . "&network=" . $this->_nid;
-                $result = file_get_contents($url);
+                $url = "https://ran-reporting.rakutenmarketing.com/en/reports/individual-item-report/filters?start_date=" . $dStartDate->format("Y-m-d") . "&end_date=" . $dEndDate->format("Y-m-d") . "&include_summary=N" . "&network=" . $this->_nid . "&tz=GMT&date_type=transaction&token=" . urlencode($site->token);
+                $ch = curl_init();
+                curl_setopt($ch, CURLOPT_URL, $url);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+                curl_setopt($ch, CURLOPT_TIMEOUT, 50);
+                curl_exec($ch);
+                $info = curl_getinfo($ch);
+                if ($info['http_code'] != 200) {
+                    return $totalTransactions;
+                } else {
+                    $result = file_get_contents($url);
+                }
+                curl_close($ch);
+                
+                $url = "https://ran-reporting.rakutenmarketing.com/en/reports/signature-orders-report/filters?start_date=" . $dStartDate->format("Y-m-d") . "&end_date=" . $dEndDate->format("Y-m-d") . "&include_summary=N" . "&network=" . $this->_nid . "&tz=GMT&date_type=transaction&token=" . urlencode($site->token);
+                $ch = curl_init();
+                curl_setopt($ch, CURLOPT_URL, $url);
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+                curl_setopt($ch, CURLOPT_TIMEOUT, 50);
+                curl_exec($ch);
+                $info = curl_getinfo($ch);
+                if ($info['http_code'] != 200) {
+                    return $totalTransactions;
+                } else {
+                    $resultSignature = file_get_contents($url);
+                }
+                curl_close($ch);
 
-
-                $url = "https://ran-reporting.rakutenmarketing.com/en/reports/signature-orders-report/filters?start_date=" . $dStartDate->format("yyyy-MM-dd") . "&end_date=" . $dEndDate->format("yyyy-MM-dd") . "&include_summary=N&tz=GMT&date_type=transaction&token=" . urlencode($site->token) . "&network=" . $this->_nid;
-                $resultSignature = file_get_contents($url);
                 $signatureMap = array();
                 $exportData = str_getcsv($resultSignature, "\n");
                 $num = count($exportData);

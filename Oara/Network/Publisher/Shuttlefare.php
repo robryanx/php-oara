@@ -46,30 +46,27 @@ class Shuttlefare extends \Oara\Network
         $user = $credentials ['user'];
         $password = $credentials ['password'];
         $this->_client = new \Oara\Curl\Access ($credentials);
-
+        
         $loginUrl = 'http://affiliates.shuttlefare.com/users/sign_in';
-
+        $urls = array();
+        $urls [] = new \Oara\Curl\Request ($loginUrl, array());
+        $exportReport = $this->_client->get($urls);
+        $doc = new \DOMDocument();
+        @$doc->loadHTML($exportReport[0]);
+        $xpath = new \DOMXPath($doc);
+        $results = $xpath->query('//input[@type="hidden"]');
         $valuesLogin = array(
             new \Oara\Curl\Parameter ('user[email]', $user),
             new \Oara\Curl\Parameter ('user[password]', $password),
             new \Oara\Curl\Parameter ('user[remember_me]', '0'),
             new \Oara\Curl\Parameter ('commit', 'Sign in')
         );
+        foreach ($results as $values) {
+            $valuesLogin[] = new \Oara\Curl\Parameter($values->getAttribute("name"), $values->getAttribute("value"));
+        }
         $urls = array();
         $urls[] = new \Oara\Curl\Request($loginUrl, $valuesLogin);
-        $exportReport = $this->_client->post($urls);
-
-        $doc = new \DOMDocument();
-        @$doc->loadHTML($exportReport[0]);
-        $xpath = new \DOMXPath($doc);
-        $results = $xpath->query('//input[@type="hidden"]');
-        $hiddenValue = null;
-        foreach ($results as $result) {
-            $valuesLogin[] = new \Oara\Curl\Parameter ($result->attributes->getNamedItem("name")->nodeValue,$result->attributes->getNamedItem("value")->nodeValue);
-        }
         $this->_client->post($urls);
-
-
     }
 
     /**

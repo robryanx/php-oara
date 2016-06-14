@@ -49,16 +49,23 @@ class Globelink extends \Oara\Network
 
         $loginUrl = "http://affiliate.globelink.co.uk/form/CMSFormsUsersSignin?param=";
 
-        $valuesLogin = array(new \Oara\Curl\Parameter('user_login', $user),
+        $urls = array();
+        $urls [] = new \Oara\Curl\Request ($loginUrl, array());
+        $exportReport = $this->_client->get($urls);
+        $doc = new \DOMDocument();
+        @$doc->loadHTML($exportReport[0]);
+        $xpath = new \DOMXPath($doc);
+        $results = $xpath->query('//input[@type="hidden"]');
+        $valuesLogin = array(
+            new \Oara\Curl\Parameter('user_login', $user),
             new \Oara\Curl\Parameter('user_password', $password),
-            new \Oara\Curl\Parameter('form-submit', true),
-            new \Oara\Curl\Parameter('form-submit-button', true),
         );
-
+        foreach ($results as $values) {
+            $valuesLogin[] = new \Oara\Curl\Parameter($values->getAttribute("name"), $values->getAttribute("value"));
+        }
         $urls = array();
         $urls[] = new \Oara\Curl\Request($loginUrl, $valuesLogin);
         $this->_client->post($urls);
-
     }
 
     /**
@@ -156,9 +163,7 @@ class Globelink extends \Oara\Network
                 foreach ($line->childNodes as $attribute) {
                     $value = \trim((string)$attribute->nodeValue);
                     if (\strlen($value) > 0) {
-                        if ($value != "n/a") {
-                            $auxTransaction[] = $value;
-                        }
+                        $auxTransaction[] = ($value != "n/a") ? $value : '';
                     }
                 }
                 $auxTransactionList[] = $auxTransaction;
@@ -179,16 +184,16 @@ class Globelink extends \Oara\Network
                 $transaction['date'] = $auxTransaction[0];
                 $transaction['unique_id'] = $auxTransaction[1];
 
-
-                if (strstr($auxTransaction[5], 'No')) {
+                if (strstr($auxTransaction[6], 'No')) {
                     $transaction['status'] = \Oara\Utilities::STATUS_PENDING;
-                } else
-                    if (strstr($auxTransaction[5], 'Yes')) {
+                } else {
+                    if (strstr($auxTransaction[6], 'Yes')) {
                         $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
                     }
+                }
 
-                $transaction['amount'] = $auxTransaction[2];
-                $transaction['commission'] = $auxTransaction[3];
+                $transaction['amount'] = $auxTransaction[3];
+                $transaction['commission'] = $auxTransaction[4];
                 $totalTransactions[] = $transaction;
             }
         }

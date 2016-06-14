@@ -48,21 +48,19 @@ class SportCoverDirect extends \Oara\Network
         $password = $credentials['password'];
 
         $loginUrl = "https://www.sportscoverdirect.com/promoters/account/login";
+
+        $urls = array();
+        $urls [] = new \Oara\Curl\Request ($loginUrl, array());
+        $exportReport = $this->_client->get($urls);
+        $doc = new \DOMDocument();
+        @$doc->loadHTML($exportReport[0]);
+        $xpath = new \DOMXPath($doc);
+        $results = $xpath->query('//input[@type="hidden"]');
         $valuesLogin = array(
             new \Oara\Curl\Parameter('Username', $user),
             new \Oara\Curl\Parameter('Password', $password),
         );
-        $urls = array();
-        $urls[] = new \Oara\Curl\Request($loginUrl, $valuesLogin);
-        $exportReport = $this->_client->post($urls);
-
-
-        $doc = new \DOMDocument();
-        @$doc->loadHTML($exportReport[0]);
-        $xpath = new \DOMXPath($doc);
-        $hidden = $xpath->query('//input[@type="hidden"]');
-
-        foreach ($hidden as $values) {
+        foreach ($results as $values) {
             $valuesLogin[] = new \Oara\Curl\Parameter($values->getAttribute("name"), $values->getAttribute("value"));
         }
         $urls = array();
