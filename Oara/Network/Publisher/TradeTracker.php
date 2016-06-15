@@ -35,7 +35,7 @@ class TradeTracker extends \Oara\Network
     public function login($credentials)
     {
         $user = $credentials['user'];
-        $password = $credentials['password'];
+        $password = $credentials['apipassword'];
 
         $wsdlUrl = 'http://ws.tradetracker.com/soap/affiliate?wsdl';
         //Setting the client.
@@ -119,7 +119,7 @@ class TradeTracker extends \Oara\Network
 
         $options = array(
             'registrationDateFrom' => $dStartDate->format('Y-m-d'),
-            'registrationDateTo' => $dEndDate->addDay(1)->format('Y-m-d'),
+            'registrationDateTo' => $dEndDate->add(new \DateInterval('P1D'))->format('Y-m-d'),
         );
         $affiliateSitesList = $this->_apiClient->getAffiliateSites();
         foreach ($affiliateSitesList as $affiliateSite) {
@@ -131,7 +131,7 @@ class TradeTracker extends \Oara\Network
 
                     $object['merchantId'] = $transaction->campaign->ID;
 
-                    $transactionDate = \DateTime::createFromFormat("d/m/Y H:i:s", $transaction->registrationDate);
+                    $transactionDate = new \DateTime($transaction->registrationDate);
                     $object['date'] = $transactionDate->format("Y-m-d H:i:s");
 
                     if ($transaction->reference != null) {
@@ -169,7 +169,7 @@ class TradeTracker extends \Oara\Network
 
         foreach ($this->_apiClient->getPayments($options) as $payment) {
             $obj = array();
-            $date = new \DateTime($payment->billDate, "dd/MM/yy");
+            $date = new \DateTime($payment->billDate);
             $obj['date'] = $date->format("Y-m-d H:i:s");
             $obj['pid'] = $date->format("Ymd");
             $obj['method'] = 'BACS';
