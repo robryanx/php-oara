@@ -49,7 +49,7 @@ class AffiliateWindow extends \Oara\Network
     {
         ini_set('default_socket_timeout', '120');
         $user = $credentials['user'];
-        $password = $credentials['apiPassword'];
+        $password = $credentials['apipassword'];
         $passwordExport = $credentials['password'];
         $this->_currency = $credentials['currency'];
 
@@ -71,7 +71,7 @@ class AffiliateWindow extends \Oara\Network
             $urls = array();
             $urls[] = new \Oara\Curl\Request('https://darwin.affiliatewindow.com/user/', array());
             $exportReport = $this->_exportClient->get($urls);
-            if (\preg_match_all("/id=\"goDarwin(.*)\"/", $exportReport[0], $matches)) {
+            if (\preg_match_all('/href=\"\/awin\/affiliate\/.*\".*id=\"goDarwin(.*)\"/', $exportReport[0], $matches)) {
 
                 foreach ($matches[1] as $user) {
                     $urls = array();
@@ -119,8 +119,8 @@ class AffiliateWindow extends \Oara\Network
         $nameSpace = 'http://api.affiliatewindow.com/';
         $wsdlUrl = 'http://api.affiliatewindow.com/v4/AffiliateService?wsdl';
         //Setting the client.
-        $this->_apiClient = new \SoapClient($wsdlUrl, array('login' => $user, 'encoding' => 'UTF-8', 'password' => $password, 'compression' => SOAP_COMPRESSION_ACCEPT | SOAP_COMPRESSION_GZIP | SOAP_COMPRESSION_DEFLATE, 'soap_version' => SOAP_1_1));
-        $soapHeader1 = new \SoapHeader($nameSpace, 'UserAuthentication', array('iId' => $user, 'sPassword' => $password, 'sType' => 'affiliate'), true, $nameSpace);
+        $this->_apiClient = new \SoapClient($wsdlUrl, array('login' => $this->_userId, 'encoding' => 'UTF-8', 'password' => $password, 'compression' => SOAP_COMPRESSION_ACCEPT | SOAP_COMPRESSION_GZIP | SOAP_COMPRESSION_DEFLATE, 'soap_version' => SOAP_1_1));
+        $soapHeader1 = new \SoapHeader($nameSpace, 'UserAuthentication', array('iId' => $this->_userId, 'sPassword' => $password, 'sType' => 'affiliate'), true, $nameSpace);
         $soapHeader2 = new \SoapHeader($nameSpace, 'getQuota', true, true, $nameSpace);
         $this->_apiClient->__setSoapHeaders(array($soapHeader1, $soapHeader2));
 
