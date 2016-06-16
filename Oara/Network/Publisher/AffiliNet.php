@@ -39,7 +39,7 @@ class AffiliNet extends \Oara\Network
     public function login($credentials)
     {
         $user = $credentials['user'];
-        $password = $credentials['apiPassword'];
+        $password = $credentials['apipassword'];
 
         //Setting the client.
         $this->_client = new \SoapClient('https://api.affili.net/V2.0/Logon.svc?wsdl', array('compression' => SOAP_COMPRESSION_ACCEPT | SOAP_COMPRESSION_GZIP | SOAP_COMPRESSION_DEFLATE, 'soap_version' => SOAP_1_1));
