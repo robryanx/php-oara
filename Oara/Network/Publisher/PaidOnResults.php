@@ -44,21 +44,26 @@ class PaidOnResults extends \Oara\Network
     {
         $this->_user = $credentials['user'];
         $password = $credentials['password'];
-        $this->_apiPassword = $credentials['apiPassword'];
+        $this->_apiPassword = $credentials['apipassword'];
         $this->_client = new \Oara\Curl\Access ($credentials);
 
-        $loginUrl = 'https://secure.paidonresults.com/cgi-bin/affiliate/login/login.pl';
-        $valuesLogin = array(new \Oara\Curl\Parameter('username', $this->_user),
+        $loginUrl = 'https://www.paidonresults.com/login/';
+        $valuesLogin = array(
+            new \Oara\Curl\Parameter('username', $this->_user),
             new \Oara\Curl\Parameter('password', $password)
         );
 
         $urls = array();
         $urls[] = new \Oara\Curl\Request($loginUrl, $valuesLogin);
+        $this->_client->post($urls);
+
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request('http://affiliate.paidonresults.com/cgi-bin/home.pl', array());
         $exportReport = $this->_client->post($urls);
-        if (!\preg_match("/session=(.*)\"/", $exportReport[0], $matches)) {
-            throw new \Exception("No session found");
+        if (!\preg_match('/http\:\/\/affiliate\.paidonresults\.com\/cgi\-bin\/logout\.pl/', $exportReport[0], $matches)) {
+            throw new \Exception("Error on login");
         }
-        $this->_sessionId = $matches[1];
+
         if (\preg_match("/URL=(.*)\"/", $exportReport[0], $matches)) {
             $urls = array();
             $urls[] = new \Oara\Curl\Request($matches[1], array());
