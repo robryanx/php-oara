@@ -47,11 +47,21 @@ class AffiliatesUnited extends \Oara\Network
 
         $this->_client = new \Oara\Curl\Access($credentials);
 
+        $loginUrl = 'https://affiliates.affutd.com/affiliates/Account/Login?aspxerrorpath=/affiliates/login.aspx#';
+        $urls = array();
+        $urls [] = new \Oara\Curl\Request ($loginUrl, array());
+        $exportReport = $this->_client->get($urls);
+        $doc = new \DOMDocument();
+        @$doc->loadHTML($exportReport[0]);
+        $xpath = new \DOMXPath($doc);
+        $results = $xpath->query('//form[@action="/affiliates/Account/Login"]/child::input[@type="hidden"]');
         $valuesLogin = array(
-            new \Oara\Curl\Parameter('us', $user),
-            new \Oara\Curl\Parameter('pa', $password)
+            new \Oara\Curl\Parameter('UserName', $user),
+            new \Oara\Curl\Parameter('Password', $password)
         );
-        $loginUrl = 'https://affiliates.affutd.com/affiliates/Login.aspx';
+        foreach ($results as $values) {
+            $valuesLogin[] = new \Oara\Curl\Parameter($values->getAttribute("name"), $values->getAttribute("value"));
+        }
         $urls = array();
         $urls[] = new \Oara\Curl\Request($loginUrl, $valuesLogin);
         $this->_client->post($urls);
@@ -86,8 +96,8 @@ class AffiliatesUnited extends \Oara\Network
     {
         $connection = false;
         $urls = array();
-        $urls[] = new \Oara\Curl\Request('https://affiliates.affutd.com/affiliates/Dashboard.aspx', array());
-        $exportReport = $this->_client->get($urls);
+        $urls[] = new \Oara\Curl\Request('https://affiliates.affutd.com/affiliatesv1/Dashboard.aspx', array());
+        $exportReport = $this->_client->post($urls);
 
         $doc = new \DOMDocument();
         @$doc->loadHTML($exportReport[0]);
@@ -128,11 +138,11 @@ class AffiliatesUnited extends \Oara\Network
         $valuesFromExport[] = new \Oara\Curl\Parameter('ctl00$cphPage$reportTo', $dEndDate->format("Y-m-d"));
 
         $urls = array();
-        $urls[] = new \Oara\Curl\Request('https://affiliates.affutd.com/affiliates/DataServiceWrapper/DataService.svc/Export/CSV/Affiliates_Reports_GeneralStats_DailyFigures', $valuesFromExport);
+        $urls[] = new \Oara\Curl\Request('https://affiliates.affutd.com/affiliatesv1/DataServiceWrapper/DataService.svc/Export/CSV/Affiliates_Reports_GeneralStats_DailyFigures', $valuesFromExport);
         $exportReport = $this->_client->post($urls);
         $exportData = \str_getcsv($exportReport[0], "\n");
         $num = \count($exportData);
-        for ($i = 2; $i < $num; $i++) {
+        for ($i = 2; $i < $num-1; $i++) {
             $transactionExportArray = \str_getcsv($exportData[$i], ",");
 
             $transaction = Array();
@@ -141,8 +151,8 @@ class AffiliatesUnited extends \Oara\Network
             $date->setTime(0, 0);
             $transaction['date'] = $date->format("Y-m-d H:i:s");
             $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
-            $transaction['amount'] = \Oara\Utilities::parseDouble($transactionExportArray[12]);
-            $transaction['commission'] = \Oara\Utilities::parseDouble($transactionExportArray[13]);
+            $transaction['amount'] = \Oara\Utilities::parseDouble($transactionExportArray[16]);
+            $transaction['commission'] = \Oara\Utilities::parseDouble($transactionExportArray[16]);
             $totalTransactions[] = $transaction;
         }
 
