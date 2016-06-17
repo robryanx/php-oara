@@ -122,7 +122,7 @@ class Ebay extends \Oara\Network
     {
         $totalTransactions = array();
         $urls = array();
-        $urls[] = new \Oara\Curl\Request("https://publisher.ebaypartnernetwork.com/PublisherReportsTx?pt=2&start_date={$dStartDate->format("n/j/Y")}&end_date={$dEndDate->toSTring("n/j/Y")}&user_name={$this->_credentials['user']}&user_password={$this->_credentials['password']}&advIdProgIdCombo=&tx_fmt=3&submit_tx=Download", array());
+        $urls[] = new \Oara\Curl\Request("https://publisher.ebaypartnernetwork.com/PublisherReportsTx?pt=2&start_date={$dStartDate->format("n/j/Y")}&end_date={$dEndDate->format("n/j/Y")}&user_name={$this->_credentials['user']}&user_password={$this->_credentials['password']}&advIdProgIdCombo=&tx_fmt=3&submit_tx=Download", array());
         $exportData = array();
         try {
             $exportReport = $this->_client->get($urls, 'content', 5);
