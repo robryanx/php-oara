@@ -181,7 +181,7 @@ class NetAffiliation extends \Oara\Network
         $valuesFormExport = array();
         $valuesFormExport[] = new \Oara\Curl\Parameter('authl', $this->_credentials["user"]);
         $valuesFormExport[] = new \Oara\Curl\Parameter('authv', $this->_credentials["apiPassword"]);
-        $valuesFormExport[] = new \Oara\Curl\Parameter('champs', 'idprogramme,date,etat,argann,montant,taux,monnaie,idsite');
+        $valuesFormExport[] = new \Oara\Curl\Parameter('champs', 'idprogramme,date,etat,argann,montant,gains,monnaie,idsite');
         $valuesFormExport[] = new \Oara\Curl\Parameter('debut', $dStartDate->format("Y-m-d"));
         $valuesFormExport[] = new \Oara\Curl\Parameter('fin', $dEndDate->format("Y-m-d"));
         $urls = array();
@@ -215,8 +215,8 @@ class NetAffiliation extends \Oara\Network
                         } else {
                             throw new \Exception ("Status not found");
                         }
-                    $transaction['amount'] = \Oara\Utilities::parseDouble($transactionExportArray[4]);
-                    $transaction['commission'] = \Oara\Utilities::parseDouble(($transactionExportArray[4] * $transactionExportArray[5]) / 100);
+                    $transaction['amount'] = \Oara\Utilities::parseDouble($transactionExportArray[5]);
+                    $transaction['commission'] = \Oara\Utilities::parseDouble($transactionExportArray[5]);
                     $totalTransactions[] = $transaction;
                 }
             }
