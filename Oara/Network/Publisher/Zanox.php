@@ -43,8 +43,8 @@ class Zanox extends \Oara\Network
     public function login($credentials)
     {
         $api = \ApiClient::factory(PROTOCOL_SOAP, VERSION_2011_03_01);
-        $connectId = $credentials['connectId'];
-        $secretKey = $credentials['secretKey'];
+        $connectId = $credentials['connectid'];
+        $secretKey = $credentials['secretkey'];
         $api->setConnectId($connectId);
         $api->setSecretKey($secretKey);
         $this->_apiClient = $api;
