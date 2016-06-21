@@ -45,7 +45,7 @@ class GetCake extends \Oara\Network
 
         $this->_domain = $credentials["domain"];
         $this->_user = $credentials["user"];
-        $this->_apiPassword = $credentials["apiPassword"];
+        $this->_apiPassword = $credentials["apipassword"];
 
     }
 
@@ -137,7 +137,7 @@ class GetCake extends \Oara\Network
 
                     if (isset($merchantIdList[$merchantId])) {
                         $transaction['merchantId'] = $merchantId;
-                        $transactionDate = \DateTime::createFromFormat("Y-m-d\TH:i:s", $transactionApi["conversion_date"]);
+                        $transactionDate = new \DateTime($transactionApi["conversion_date"]);
                         $transaction['date'] = $transactionDate->format("Y-m-d H:i:s");
                         if (!isset($transactionApi["order_id"])) {
                             $transaction ['uniqueId'] = $transactionApi["conversion_id"];
@@ -145,7 +145,7 @@ class GetCake extends \Oara\Network
                             $transaction ['uniqueId'] = $transactionApi["order_id"];
                         }
                         if (\count($transactionApi["subid_1"]) > 0) {
-                            $transaction['custom_id'] = \implode(",", $transactionApi["subid_1"]);
+                            $transaction['custom_id'] = $transactionApi["subid_1"];
                         }
 
                         if ($transactionApi["disposition"] == "Approved") {
