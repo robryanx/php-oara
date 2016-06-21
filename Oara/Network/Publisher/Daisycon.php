@@ -194,7 +194,7 @@ class Daisycon extends \Oara\Network
                         $transactionArray = Array();
                         $transactionArray['unique_id'] = $transaction['affiliatemarketing_id'];
                         $transactionArray['merchantId'] = $merchantId;
-                        $transactionDate = \DateTime::createFromFormat("d-m-Y\TH:i:s", $transaction['date']);
+                        $transactionDate = new \DateTime($transaction['date']);
                         $transactionArray['date'] = $transactionDate->format("Y-m-d H:i:s");
                         $parts = \current($transaction['parts']);
                         if ($parts['subid'] != null) {
