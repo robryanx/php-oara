@@ -161,6 +161,7 @@ final class ApiClient
     private static $instance = array();
 
 
+
     /**
      * Make the constructor private to prevent the class being instantiated
      * directly.
@@ -168,9 +169,8 @@ final class ApiClient
      * @return void
      * @access privat
      */
-    private function login()
-    {
-    }
+    private function __construct() { }
+
 
 
     /**
@@ -196,8 +196,8 @@ final class ApiClient
      *
      * ---
      *
-     * @param   string $protocol api protocol type (XML,JSON or SOAP)
-     * @param   string $version api version is optional
+     * @param   string      $protocol       api protocol type (XML,JSON or SOAP)
+     * @param   string      $version        api version is optional
      *
      * @return  mixed                       object on successful instantiation
      *                                      or false
@@ -205,16 +205,20 @@ final class ApiClient
      * @static
      * @access  public
      */
-    public static function factory($protocol = PROTOCOL_DEFAULT, $version = VERSION_DEFAULT)
+    public static function factory ( $protocol = PROTOCOL_DEFAULT, $version = VERSION_DEFAULT )
     {
         $protocol = strtolower($protocol);
 
-        if (empty(self::$instance[$version][$protocol])) {
+        if ( empty(self::$instance[$version][$protocol]) )
+        {
             $class = self::getInterface($version, $protocol);
 
-            if ($class) {
+            if ( $class )
+            {
                 self::$instance[$version][$protocol] = new $class($protocol, $version);
-            } else {
+            }
+            else
+            {
                 throw new ApiClientException(CLI_ERROR_PROTOCOL_VERSION);
             }
         }
@@ -223,43 +227,58 @@ final class ApiClient
     }
 
 
+
     /**
      * Automatically includes the required ApiClient protocol class.
      *
-     * @param   string $version api version
-     * @param   string $protocol api protocol
+     * @param   string      $version        api version
+     * @param   string      $protocol       api protocol
      *
      * @return  mixed                       class name or false
      *
      * @access  private
      */
-    private static function getInterface($version, $protocol)
+    private static function getInterface ( $version, $protocol )
     {
         $path = DIR . '/version/' . $version . '/';
 
-        if (is_dir($path)) {
-            if ($protocol == PROTOCOL_SOAP) {
+        if ( is_dir($path) )
+        {
+            if ( $protocol == PROTOCOL_SOAP )
+            {
                 $class = SOAP_INTERFACE;
                 $classfile = $path . $class . '.php';
-            } else if ($protocol == PROTOCOL_XML || $protocol == PROTOCOL_JSON) {
+            }
+            else if ( $protocol == PROTOCOL_XML || $protocol == PROTOCOL_JSON )
+            {
                 $class = RESTFUL_INTERFACE;
                 $classfile = $path . $class . '.php';
-            } else {
+            }
+            else
+            {
                 throw new ApiClientException(CLI_ERROR_PROTOCOL);
             }
 
-            if (is_file($classfile)) {
+            if ( is_file($classfile) )
+            {
                 require_once $classfile;
 
-                if (class_exists($class)) {
-                    return $class;
-                } else {
+                if ( class_exists($class) )
+                {
+                  return $class;
+                }
+                else
+                {
                     throw new ApiClientException(CLI_ERROR_PROTOCOL_CLASS);
                 }
-            } else {
+            }
+            else
+            {
                 throw new ApiClientException(CLI_ERROR_PROTOCOL_CLASSFILE);
             }
-        } else {
+        }
+        else
+        {
             throw new ApiClientException(CLI_ERROR_VERSION);
         }
     }

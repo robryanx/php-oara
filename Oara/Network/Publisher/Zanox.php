@@ -150,8 +150,8 @@ class Zanox extends \Oara\Network
             if ($transactionList->total > 0) {
                 $iteration = self::calculeIterationNumber($transactionList->total, $this->_pageSize);
                 $totalAuxTransactions = \array_merge($totalAuxTransactions, $transactionList->saleItems->saleItem);
-                for ($i = 1; $i < $iteration; $i++) {
-                    $transactionList = $this->getSales($auxDate->format("Y-m-d"), $i, $this->_pageSize);
+                for ($j = 1; $j < $iteration; $j++) {
+                    $transactionList = $this->getSales($auxDate->format("Y-m-d"), $j, $this->_pageSize);
                     $totalAuxTransactions = \array_merge($totalAuxTransactions, $transactionList->saleItems->saleItem);
                     unset($transactionList);
                     \gc_collect_cycles();
@@ -162,8 +162,8 @@ class Zanox extends \Oara\Network
             if ($leadList->total > 0) {
                 $iteration = self::calculeIterationNumber($leadList->total, $this->_pageSize);
                 $totalAuxTransactions = \array_merge($totalAuxTransactions, $leadList->leadItems->leadItem);
-                for ($i = 1; $i < $iteration; $i++) {
-                    $leadList = $this->_apiClient->getLeads($auxDate->format("Y-m-d"), 'trackingDate', null, null, null, $i, $this->_pageSize);
+                for ($j = 1; $j < $iteration; $j++) {
+                    $leadList = $this->_apiClient->getLeads($auxDate->format("Y-m-d"), 'trackingDate', null, null, null, $j, $this->_pageSize);
                     $totalAuxTransactions = \array_merge($totalAuxTransactions, $leadList->leadItems->leadItem);
                     unset($leadList);
                     \gc_collect_cycles();

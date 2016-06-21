@@ -27,11 +27,12 @@ interface IAuthorization
      *
      * @access     public
      *
-     * @param      string $timestamp time stamp
+     * @param      string      $timestamp      time stamp
      *
      * @return     void
      */
-    public function setTimestamp($timestamp);
+    public function setTimestamp( $timestamp );
+
 
 
     /**
@@ -48,16 +49,18 @@ interface IAuthorization
     public function getTimestamp();
 
 
+
     /**
      * Set connectId
      *
      * @access     public
      *
-     * @param      string $connectId zanox connectId
+     * @param      string      $connectId      zanox connectId
      *
      * @return     void
      */
-    public function setConnectId($connectId);
+    public function setConnectId( $connectId );
+
 
 
     /**
@@ -70,16 +73,18 @@ interface IAuthorization
     public function getConnectId();
 
 
+
     /**
      * Sets the public key.
      *
      * @access     public
      *
-     * @param      string $publicKey public key
+     * @param      string      $publicKey      public key
      *
      * @return     void
      */
-    public function setPublicKey($publicKey);
+    public function setPublicKey( $publicKey );
+
 
 
     /**
@@ -92,28 +97,31 @@ interface IAuthorization
     public function getPublicKey();
 
 
+
     /**
      * Set SecretKey
      *
      * @access     public
      *
-     * @param      string $secretKey zanox secret key
+     * @param      string      $secretKey      zanox secret key
      *
      * @return     void
      */
-    public function setSecretKey($secretKey);
+    public function setSecretKey( $secretKey );
+
 
 
     /**
      * Sets the API version to use.
      *
-     * @param      string $version API version
+     * @param      string      $version        API version
      *
      * @return     void
      *
      * @access     public
      */
-    public function setVersion($version);
+    public function setVersion( $version );
+
 
 
     /**
@@ -126,7 +134,8 @@ interface IAuthorization
      *
      * @return     void
      */
-    public function setSecureApiCall($status = false);
+    public function setSecureApiCall( $status = false );
+
 
 
     /**
@@ -142,6 +151,7 @@ interface IAuthorization
     public function isSecureApiCall();
 
 
+    
     /**
      * Returns the crypted hash signature for a api message.
      *
@@ -151,15 +161,16 @@ interface IAuthorization
      *
      * @access     private
      *
-     * @param      string $service service name or restful action
-     * @param      string $method method or uri
-     * @param      string $nonce nonce of request
+     * @param      string      $service        service name or restful action
+     * @param      string      $method         method or uri
+     * @param      string      $nonce          nonce of request
      *
      * @return     string                      encoded string
      */
-    public function getSignature($service, $method, $nonce);
+    public function getSignature( $service, $method, $nonce );
 
 
+    
     /**
      * Returns nonce.
      *
