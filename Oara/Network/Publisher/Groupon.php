@@ -83,7 +83,7 @@ class Groupon extends \Oara\Network
 
         try {
             $date = new \DateTime();
-            $url = "https://partner-int-api.groupon.com/reporting/v2/order.csv?clientId={$this->_credentials['apiPassword']}&group=order&date=[{$date->format('Y-m-d')}&date={$date->format('Y-m-d')}]";
+            $url = "https://partner-int-api.groupon.com/reporting/v2/order.csv?clientId={$this->_credentials['apipassword']}&group=order&date=[{$date->format('Y-m-d')}&date={$date->format('Y-m-d')}]";
             $valuesFormExport = array();
             $urls = array();
             $urls[] = new \Oara\Curl\Request($url, $valuesFormExport);
@@ -126,7 +126,7 @@ class Groupon extends \Oara\Network
         $amountDays = $dStartDate->diff($dEndDate)->days;
         for ($j = 0; $j < $amountDays; $j++) {
             $valuesFormExport = array();
-            $url = "https://partner-int-api.groupon.com/reporting/v2/order.csv?clientId={$this->_credentials['apiPassword']}&group=order&date={$auxDate->format("Y-m-d")}";
+            $url = "https://partner-int-api.groupon.com/reporting/v2/order.csv?clientId={$this->_credentials['apipassword']}&group=order&date={$auxDate->format("Y-m-d")}";
             $urls = array();
             $urls[] = new \Oara\Curl\Request($url, $valuesFormExport);
             $exportReport = $this->_client->get($urls);
