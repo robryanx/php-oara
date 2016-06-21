@@ -49,7 +49,7 @@ class Skimlinks extends \Oara\Network
     {
         $this->_client = new \Oara\Curl\Access($credentials);
         $this->_publicapikey = $credentials['user'];
-        $this->_privateapikey = $credentials['apiPassword'];
+        $this->_privateapikey = $credentials['apipassword'];
     }
 
     /**
@@ -102,7 +102,6 @@ class Skimlinks extends \Oara\Network
         $date = new \DateTime();
         $timestamp = $date->getTimestamp();
         $authtoken = \md5($timestamp . $privateapikey);
-        $date = \DateTime::now();
 
         $merchants = Array();
 
@@ -167,7 +166,7 @@ class Skimlinks extends \Oara\Network
         $publicapikey = $this->_publicapikey;
         $privateapikey = $this->_privateapikey;
 
-        $date = new DateTime();
+        $date = new \DateTime();
         $timestamp = $date->getTimestamp();
         $authtoken = md5($timestamp . $privateapikey);
 
