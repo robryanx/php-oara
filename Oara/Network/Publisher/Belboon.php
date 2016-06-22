@@ -40,7 +40,7 @@ class Belboon extends \Oara\Network
     public function login($credentials)
     {
         $user = $credentials['user'];
-        $password = $credentials['apiPassword'];
+        $password = $credentials['apipassword'];
 
         //Setting the client.
 
