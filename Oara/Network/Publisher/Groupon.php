@@ -83,7 +83,7 @@ class Groupon extends \Oara\Network
 
         try {
             $date = new \DateTime();
-            $url = "https://partner-int-api.groupon.com/reporting/v2/order.csv?clientId={$this->_credentials['apipassword']}&group=order&date=[{$date->format('Y-m-d')}&date={$date->format('Y-m-d')}]";
+            $url = "https://partner-int-api.groupon.com/reporting/v2/order.json?clientId={$this->_credentials['apipassword']}&group=order&date=[{$date->format('Y-m-d')}&date={$date->format('Y-m-d')}]";
             $valuesFormExport = array();
             $urls = array();
             $urls[] = new \Oara\Curl\Request($url, $valuesFormExport);
@@ -125,36 +125,48 @@ class Groupon extends \Oara\Network
         $auxDate = clone $dStartDate;
         $amountDays = $dStartDate->diff($dEndDate)->days;
         for ($j = 0; $j < $amountDays; $j++) {
+
+            // Getting the csv by curl can throw an exception if the csv size is 0 bytes. So, first of all, get the json. If total is 0, continue, else, get the csv.
             $valuesFormExport = array();
-            $url = "https://partner-int-api.groupon.com/reporting/v2/order.csv?clientId={$this->_credentials['apipassword']}&group=order&date={$auxDate->format("Y-m-d")}";
+            $url = "https://partner-int-api.groupon.com/reporting/v2/order.json?clientId={$this->_credentials['apipassword']}&group=order&date={$auxDate->format("Y-m-d")}";
             $urls = array();
             $urls[] = new \Oara\Curl\Request($url, $valuesFormExport);
             $exportReport = $this->_client->get($urls);
-            $exportData = \str_getcsv($exportReport[0], "\n");
-            $num = \count($exportData);
-            for ($i = 1; $i < $num; $i++) {
-                $transactionExportArray = \str_getcsv($exportData[$i], ",");
-                $transaction = Array();
-                $transaction['merchantId'] = "1";
-                $transaction['date'] = $auxDate->format("Y-m-d H:i:s");
-                $transaction['unique_id'] = $transactionExportArray[0];
-                $transaction['currency'] = $transactionExportArray[4];
+            $jsonExportReport = json_decode($exportReport[0], true);
 
-                if ($transactionExportArray[1] != null) {
-                    $transaction['custom_id'] = $transactionExportArray[1];
+            if ($jsonExportReport['total'] != 0) {
+
+                $valuesFormExport = array();
+                $url = "https://partner-int-api.groupon.com/reporting/v2/order.csv?clientId={$this->_credentials['apipassword']}&group=order&date={$auxDate->format("Y-m-d")}";
+                $urls = array();
+                $urls[] = new \Oara\Curl\Request($url, $valuesFormExport);
+                $exportReport = $this->_client->get($urls);
+                $exportData = \str_getcsv($exportReport[0], "\n");
+                $num = \count($exportData);
+                for ($i = 1; $i < $num; $i++) {
+                    $transactionExportArray = \str_getcsv($exportData[$i], ",");
+                    $transaction = Array();
+                    $transaction['merchantId'] = "1";
+                    $transaction['date'] = $auxDate->format("Y-m-d H:i:s");
+                    $transaction['unique_id'] = $transactionExportArray[0];
+                    $transaction['currency'] = $transactionExportArray[4];
+
+                    if ($transactionExportArray[1] != null) {
+                        $transaction['custom_id'] = $transactionExportArray[1];
+                    }
+
+                    if ($transactionExportArray[5] == 'VALID' || $transactionExportArray[5] == 'REFUNDED') {
+                        $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
+                    } else if ($transactionExportArray[5] == 'INVALID') {
+                        $transaction['status'] = \Oara\Utilities::STATUS_DECLINED;
+                    } else {
+                        throw new \Exception("Status {$transactionExportArray[5]} unknown");
+                    }
+
+                    $transaction['amount'] = \Oara\Utilities::parseDouble((double)$transactionExportArray[8]);
+                    $transaction['commission'] = \Oara\Utilities::parseDouble((double)$transactionExportArray[12]);
+                    $totalTransactions[] = $transaction;
                 }
-
-                if ($transactionExportArray[5] == 'VALID' || $transactionExportArray[5] == 'REFUNDED') {
-                    $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
-                } else if ($transactionExportArray[5] == 'INVALID') {
-                    $transaction['status'] = \Oara\Utilities::STATUS_DECLINED;
-                } else {
-                    throw new \Exception("Status {$transactionExportArray[5]} unknown");
-                }
-
-                $transaction['amount'] = \Oara\Utilities::parseDouble((double)$transactionExportArray[8]);
-                $transaction['commission'] = \Oara\Utilities::parseDouble((double)$transactionExportArray[12]);
-                $totalTransactions[] = $transaction;
             }
             $auxDate->add(new \DateInterval('P1D'));
         }
