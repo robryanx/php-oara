@@ -187,33 +187,35 @@ class Daisycon extends \Oara\Network
                 $response = \curl_exec($ch);
                 $transactionList = \json_decode($response, true);
 
-                foreach ($transactionList as $transaction) {
-                    $merchantId = $transaction['program_id'];
-                    if (isset($merchantIdList[$merchantId])) {
+                if ($transactionList) {
+                    foreach ($transactionList as $transaction) {
+                        $merchantId = $transaction['program_id'];
+                        if (isset($merchantIdList[$merchantId])) {
 
-                        $transactionArray = Array();
-                        $transactionArray['unique_id'] = $transaction['affiliatemarketing_id'];
-                        $transactionArray['merchantId'] = $merchantId;
-                        $transactionDate = new \DateTime($transaction['date']);
-                        $transactionArray['date'] = $transactionDate->format("Y-m-d H:i:s");
-                        $parts = \current($transaction['parts']);
-                        if ($parts['subid'] != null) {
-                            $transactionArray['custom_id'] = $parts['subid'];
-                        }
-                        if ($parts['status'] == 'approved') {
-                            $transactionArray['status'] = \Oara\Utilities::STATUS_CONFIRMED;
-                        } else
-                            if ($parts['status'] == 'pending' || $parts['status'] == 'potential' || $parts['status'] == 'open') {
-                                $transactionArray['status'] = \Oara\Utilities::STATUS_PENDING;
+                            $transactionArray = Array();
+                            $transactionArray['unique_id'] = $transaction['affiliatemarketing_id'];
+                            $transactionArray['merchantId'] = $merchantId;
+                            $transactionDate = new \DateTime($transaction['date']);
+                            $transactionArray['date'] = $transactionDate->format("Y-m-d H:i:s");
+                            $parts = \current($transaction['parts']);
+                            if ($parts['subid'] != null) {
+                                $transactionArray['custom_id'] = $parts['subid'];
+                            }
+                            if ($parts['status'] == 'approved') {
+                                $transactionArray['status'] = \Oara\Utilities::STATUS_CONFIRMED;
                             } else
-                                if ($parts['status'] == 'disapproved' || $parts['status'] == 'incasso') {
-                                    $transactionArray['status'] = \Oara\Utilities::STATUS_DECLINED;
-                                } else {
-                                    throw new \Exception("New status {$parts['status']}");
-                                }
-                        $transactionArray['amount'] = \Oara\Utilities::parseDouble($parts['revenue']);
-                        $transactionArray['commission'] = \Oara\Utilities::parseDouble($parts['commission']);
-                        $totalTransactions[] = $transactionArray;
+                                if ($parts['status'] == 'pending' || $parts['status'] == 'potential' || $parts['status'] == 'open') {
+                                    $transactionArray['status'] = \Oara\Utilities::STATUS_PENDING;
+                                } else
+                                    if ($parts['status'] == 'disapproved' || $parts['status'] == 'incasso') {
+                                        $transactionArray['status'] = \Oara\Utilities::STATUS_DECLINED;
+                                    } else {
+                                        throw new \Exception("New status {$parts['status']}");
+                                    }
+                            $transactionArray['amount'] = \Oara\Utilities::parseDouble($parts['revenue']);
+                            $transactionArray['commission'] = \Oara\Utilities::parseDouble($parts['commission']);
+                            $totalTransactions[] = $transactionArray;
+                        }
                     }
                 }
 

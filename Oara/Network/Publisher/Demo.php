@@ -99,10 +99,10 @@ class Demo extends \Oara\Network
             $transactionDate = self::randomDate($dStartDate->format("Y-m-d H:i:s"), $dEndDate->format("Y-m-d H:i:s"));
             $merchantIndex = \rand(0, \count($merchantList) - 1);
             $transaction = array();
-            $transaction['unique_id'] = \md5(\mt_rand() . $transactionDate->format("Y-m-d H:i:s"));
+            $transaction['unique_id'] = \md5(\mt_rand() . $transactionDate);
             $transaction['custom_id'] = "my_custom_id";
-            $transaction['merchantId'] = $merchantList[$merchantIndex];
-            $transaction['date'] = $transactionDate->format("Y-m-d H:i:s");
+            $transaction['merchantId'] = $merchantList[$merchantIndex]["cid"];
+            $transaction['date'] = $transactionDate;
             $transactionAmount = \rand(1, 1000);
             $transaction['amount'] = $transactionAmount;
             $transaction['commission'] = $transactionAmount / 10;
