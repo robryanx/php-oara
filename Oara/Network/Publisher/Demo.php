@@ -135,7 +135,7 @@ class Demo extends \Oara\Network
     public function getPaymentHistory()
     {
         $paymentHistory = array();
-        $startDate = new \DateTime('01-01-2015', 'dd-MM-yyyy');
+        $startDate = new \DateTime('2015-01-01');
         $endDate = new \DateTime();
         $diff = $startDate->diff($endDate);
         $monthsDifference = (int) $diff->format('%m');
