@@ -95,52 +95,7 @@ class Ladbrokers extends \Oara\Network
      */
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
-        $merchantIdList = \Oara\Utilities::getMerchantIdMapFromMerchantList($merchantList);
 
-        $valuesFormExport = array();
-        $valuesFormExport[] = new \Oara\Curl\Parameter('reportView.input[0].field', 'startDate');
-        $valuesFormExport[] = new \Oara\Curl\Parameter('reportView.input[0].label', 'Start Date');
-        $valuesFormExport[] = new \Oara\Curl\Parameter('reportView.input[0].type', 'date');
-        $valuesFormExport[] = new \Oara\Curl\Parameter('reportView.input[0].value', $dStartDate->format("Y-m-d"));
-        $valuesFormExport[] = new \Oara\Curl\Parameter('startDate', $dStartDate->format("Y-m-d"));
-        $valuesFormExport[] = new \Oara\Curl\Parameter('reportView.input[1].field', 'endDate');
-        $valuesFormExport[] = new \Oara\Curl\Parameter('reportView.input[1].label', 'End Date');
-        $valuesFormExport[] = new \Oara\Curl\Parameter('reportView.input[1].type', 'date');
-        $valuesFormExport[] = new \Oara\Curl\Parameter('reportView.input[1].value', $dEndDate->format("Y-m-d"));
-        $valuesFormExport[] = new \Oara\Curl\Parameter('endDate', $dEndDate->format("Y-m-d"));
-        $valuesFormExport[] = new \Oara\Curl\Parameter('reportView.input[2].field', 'profile');
-        $valuesFormExport[] = new \Oara\Curl\Parameter('reportView.input[2].label', 'Profile');
-        $valuesFormExport[] = new \Oara\Curl\Parameter('reportView.input[2].type', 'text');
-        $valuesFormExport[] = new \Oara\Curl\Parameter('reportView.input[2].value', '');
-        $valuesFormExport[] = new \Oara\Curl\Parameter('reportView.input[3].field', 'reportBy1');
-        $valuesFormExport[] = new \Oara\Curl\Parameter('reportView.input[3].label', 'Report By');
-        $valuesFormExport[] = new \Oara\Curl\Parameter('reportView.input[3].type', 'list');
-        $valuesFormExport[] = new \Oara\Curl\Parameter('reportView.input[3].value', 'stat_date');
-        $valuesFormExport[] = new \Oara\Curl\Parameter('reportView.input[4].field', 'reportBy2');
-        $valuesFormExport[] = new \Oara\Curl\Parameter('reportView.input[4].label', 'Report By');
-        $valuesFormExport[] = new \Oara\Curl\Parameter('reportView.input[4].type', 'list');
-        $valuesFormExport[] = new \Oara\Curl\Parameter('reportView.input[4].value', '');
-        $valuesFormExport[] = new \Oara\Curl\Parameter('reportView.input[5].field', 'reportBy3');
-        $valuesFormExport[] = new \Oara\Curl\Parameter('reportView.input[5].label', 'Report By');
-        $valuesFormExport[] = new \Oara\Curl\Parameter('reportView.input[5].type', 'list');
-        $valuesFormExport[] = new \Oara\Curl\Parameter('reportView.input[5].value', '');
-        $valuesFormExport[] = new \Oara\Curl\Parameter('reportView.input[6].field', 'reportBy4');
-        $valuesFormExport[] = new \Oara\Curl\Parameter('reportView.input[6].label', 'Report By');
-        $valuesFormExport[] = new \Oara\Curl\Parameter('reportView.input[6].type', 'list');
-        $valuesFormExport[] = new \Oara\Curl\Parameter('reportView.input[6].value', '');
-        $valuesFormExport[] = new \Oara\Curl\Parameter('export', "on");
-        
-        $urls = array();
-        $urls[] = new \Oara\Curl\Request('https://portal.ladbrokespartners.com/portal/stats.jhtm', $valuesFormExport);
-        $this->_client->post($urls);
-
-        $valuesFormExport = array();
-        $valuesFormExport[] = new \Oara\Curl\Parameter('intermediatoryDateFormat', "yy-mm-dd");
-        $valuesFormExport[] = new \Oara\Curl\Parameter('userDisplayName', "Ami Spencer");
-        $valuesFormExport[] = new \Oara\Curl\Parameter('currentLanguage', "en");
-        $urls = array();
-        $urls[] = new \Oara\Curl\Request('https://portal.ladbrokespartners.com/portal/exportToCSV.jhtm?', $valuesFormExport);
-        $csv = $this->_client->get($urls);
         
         return array();
     }

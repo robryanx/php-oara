@@ -189,7 +189,7 @@ class AffiliateWindow extends \Oara\Network
         $params['sRelationship'] = 'joined';
         $merchants = $this->_apiClient->getMerchantList($params)->getMerchantListReturn;
         foreach ($merchants as $merchant) {
-            if (count($this->_sitesAllowed) == 0  ||\in_array($merchant->oPrimaryRegion->sCountryCode, $this->_sitesAllowed)) {
+            if (count($this->_sitesAllowed) == 0 || \in_array($merchant->oPrimaryRegion->sCountryCode, $this->_sitesAllowed)) {
                 $merchantArray = array();
                 $merchantArray["cid"] = $merchant->iId;
                 $merchantArray["name"] = $merchant->sName;
@@ -219,7 +219,7 @@ class AffiliateWindow extends \Oara\Network
         $params['sDateType'] = 'transaction';
         if ($merchantList != null) {
             $merchantIdList = \Oara\Utilities::getMerchantIdMapFromMerchantList($merchantList);
-            $params['aMerchantIds'] =  \array_keys($merchantIdList);
+            $params['aMerchantIds'] = \array_keys($merchantIdList);
         }
         if ($dStartDate != null) {
             $params['dStartDate'] = $dStartDate->format("Y-m-d\TH:i:s");
@@ -310,21 +310,23 @@ class AffiliateWindow extends \Oara\Network
                 if ($linkList->length > 0) {
                     $obj = array();
                     $date = \DateTime::createFromFormat('j M Y', $linkList->item(0)->nodeValue);
-                    $date->setTime(0, 0);
-                    $obj['date'] = $date->format("Y-m-d H:i:s");
-                    $attrs = $linkList->item(0)->attributes;
-                    foreach ($attrs as $attrName => $attrNode) {
-                        if ($attrName = 'href') {
-                            $parseUrl = \trim($attrNode->nodeValue);
-                            if (\preg_match("/\/paymentId\/(.+)/", $parseUrl, $matches)) {
-                                $obj['pid'] = $matches[1];
+                    if ($date) {
+                        $date->setTime(0, 0);
+                        $obj['date'] = $date->format("Y-m-d H:i:s");
+                        $attrs = $linkList->item(0)->attributes;
+                        foreach ($attrs as $attrName => $attrNode) {
+                            if ($attrName = 'href') {
+                                $parseUrl = \trim($attrNode->nodeValue);
+                                if (\preg_match("/\/paymentId\/(.+)/", $parseUrl, $matches)) {
+                                    $obj['pid'] = $matches[1];
+                                }
                             }
                         }
-                    }
 
-                    $obj['value'] = \Oara\Utilities::parseDouble($linkList->item(3)->nodeValue);
-                    $obj['method'] = trim($linkList->item(2)->nodeValue);
-                    $paymentHistory[] = $obj;
+                        $obj['value'] = \Oara\Utilities::parseDouble($linkList->item(3)->nodeValue);
+                        $obj['method'] = trim($linkList->item(2)->nodeValue);
+                        $paymentHistory[] = $obj;
+                    }
                 }
             }
 

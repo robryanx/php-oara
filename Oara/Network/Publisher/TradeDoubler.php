@@ -429,7 +429,8 @@ class TradeDoubler extends \Oara\Network
 
                     $transaction = Array();
                     $transaction['merchantId'] = $transactionExportArray[2];
-                    $transactionDate = self::toDate(\substr($transactionExportArray[4], 0, -6));
+                    $formatedDate = \str_replace(array(" AM", " PM", " UTC"),array(""),$transactionExportArray[4]);
+                    $transactionDate = self::toDate($formatedDate);
                     $transaction['date'] = $transactionDate->format("Y-m-d H:i:s");
                     if ($transactionExportArray[8] != '') {
                         $transaction['unique_id'] = \substr($transactionExportArray[8], 0, 200);
