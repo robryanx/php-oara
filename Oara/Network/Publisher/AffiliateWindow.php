@@ -39,6 +39,7 @@ class AffiliateWindow extends \Oara\Network
     private $_currency = null;
     private $_userId = null;
     public $_sitesAllowed = array();
+    public $_includeBonus = true;
 
     /**
      * @param $credentials
@@ -240,27 +241,29 @@ class AffiliateWindow extends \Oara\Network
                 $transactionList = $this->_apiClient->getTransactionList($params);
 
                 foreach ($transactionList->getTransactionListReturn as $transactionObject) {
-                    $transaction = Array();
-                    $transaction['unique_id'] = $transactionObject->iId;
-                    $transaction['merchantId'] = $transactionObject->iMerchantId;
-                    $date = new \DateTime($transactionObject->dTransactionDate);
-                    $transaction['date'] = $date->format("Y-m-d H:i:s");
+                    if (($transactionObject->sType != 'bonus') || ($transactionObject->sType == 'bonus' && $this->_includeBonus)) {
+                        $transaction = Array();
+                        $transaction['unique_id'] = $transactionObject->iId;
+                        $transaction['merchantId'] = $transactionObject->iMerchantId;
+                        $date = new \DateTime($transactionObject->dTransactionDate);
+                        $transaction['date'] = $date->format("Y-m-d H:i:s");
 
-                    if (isset($transactionObject->sClickref) && $transactionObject->sClickref != null) {
-                        $transaction['custom_id'] = $transactionObject->sClickref;
-                    }
-                    $transaction['type'] = $transactionObject->sType;
-                    $transaction['status'] = $transactionObject->sStatus;
-                    $transaction['amount'] = $transactionObject->mSaleAmount->dAmount;
-                    $transaction['commission'] = $transactionObject->mCommissionAmount->dAmount;
-
-                    if (isset($transactionObject->aTransactionParts)) {
-                        $transactionPart = \current($transactionObject->aTransactionParts);
-                        if ($transactionPart->mCommissionAmount->sCurrency != $this->_currency) {
-                            $transaction['currency'] = $transactionPart->mCommissionAmount->sCurrency;
+                        if (isset($transactionObject->sClickref) && $transactionObject->sClickref != null) {
+                            $transaction['custom_id'] = $transactionObject->sClickref;
                         }
+                        $transaction['type'] = $transactionObject->sType;
+                        $transaction['status'] = $transactionObject->sStatus;
+                        $transaction['amount'] = $transactionObject->mSaleAmount->dAmount;
+                        $transaction['commission'] = $transactionObject->mCommissionAmount->dAmount;
+
+                        if (isset($transactionObject->aTransactionParts)) {
+                            $transactionPart = \current($transactionObject->aTransactionParts);
+                            if ($transactionPart->mCommissionAmount->sCurrency != $this->_currency) {
+                                $transaction['currency'] = $transactionPart->mCommissionAmount->sCurrency;
+                            }
+                        }
+                        $totalTransactions[] = $transaction;
                     }
-                    $totalTransactions[] = $transaction;
                 }
 
                 unset($transactionList);
