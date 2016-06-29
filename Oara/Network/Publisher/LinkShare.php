@@ -283,7 +283,7 @@ class LinkShare extends \Oara\Network
                 for ($j = 1; $j < $num; $j++) {
                     $transactionData = \str_getcsv($exportData [$j], ",");
 
-                    if (isset($merchantIdList[$transactionData [1]]) && count($transactionData) == 11) {
+                    if (isset($merchantIdList[$transactionData[3]]) && count($transactionData) == 11) {
                         $transaction = Array();
                         $transaction ['merchantId'] = ( int )$transactionData [3];
                         $transactionDate = \DateTime::createFromFormat("m/d/y H:i:s", $transactionData [1] . " " . $transactionData [2]);
@@ -295,22 +295,22 @@ class LinkShare extends \Oara\Network
                         }
                         $transaction ['unique_id'] = $transactionData [10];
 
-                        $sales = $filter->filter($transactionData [7]);
+                        $sales = \Oara\Utilities::parseDouble($transactionData [7]);
 
                         if ($sales != 0) {
-                            $transaction ['status'] = Oara_Utilities::STATUS_CONFIRMED;
+                            $transaction ['status'] = \Oara\Utilities::STATUS_CONFIRMED;
                         } else if ($sales == 0) {
-                            $transaction ['status'] = Oara_Utilities::STATUS_PENDING;
+                            $transaction ['status'] = \Oara\Utilities::STATUS_PENDING;
                         }
 
-                        $transaction ['amount'] = \Oara\Utilities::parseDouble($transactionData [7]);
+                        $transaction ['amount'] = $sales;
 
                         $transaction ['commission'] = \Oara\Utilities::parseDouble($transactionData [9]);
 
                         if ($transaction ['commission'] < 0) {
                             $transaction ['amount'] = 0;
                             $transaction ['commission'] = 0;
-                            $transaction ['status'] = Oara_Utilities::STATUS_DECLINED;
+                            $transaction ['status'] = \Oara\Utilities::STATUS_DECLINED;
                         }
 
                         $totalTransactions [] = $transaction;
