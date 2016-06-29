@@ -198,8 +198,8 @@ class NetAffiliation extends \Oara\Network
                 if (isset($merchantIdList[$transactionExportArray[0]])) {
                     $transaction = Array();
                     $transaction['merchantId'] = $transactionExportArray[0];
-                    $transactionDate = \DateTime::createFromFormat("d/m/Y H:i:s", $transactionExportArray[1]);
-                    $transaction['date'] = $transactionDate->format("Y-m-d H:i:s");
+                    \preg_match("/(\d{4})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})/",$transactionExportArray[1],$date);
+                    $transaction['date'] = $date[0];
 
                     if ($transactionExportArray[3] != null) {
                         $transaction['custom_id'] = $transactionExportArray[3];

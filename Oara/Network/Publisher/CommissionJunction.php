@@ -421,11 +421,14 @@ class CommissionJunction extends \Oara\Network
                 if (!$date) {
                     $date = \DateTime::createFromFormat("d-M-Y H:i \P\D\T", $paymentData[0]);
                 }
-                $obj['date'] = $date->format("Y-m-d H:i:s");
-                $obj['value'] = \Oara\Utilities::parseDouble($paymentData[1]);
-                $obj['method'] = $paymentData[2];
-                $obj['pid'] = $paymentData[6];
-                $paymentHistory[] = $obj;
+                if ($date){
+                    $obj['date'] = $date->format("Y-m-d H:i:s");
+                    $obj['value'] = \Oara\Utilities::parseDouble($paymentData[1]);
+                    $obj['method'] = $paymentData[2];
+                    $obj['pid'] = $paymentData[6];
+                    $paymentHistory[] = $obj;
+                }
+
             }
         }
         return $paymentHistory;
