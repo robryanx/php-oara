@@ -476,41 +476,49 @@ class TradeDoubler extends \Oara\Network
      */
     private function formatDate($date)
     {
-        if ($this->_dateFormat == 'dd/MM/yy') {
-            $dateString = $date->format('d/m/Y');
-        } else
-            if ($this->_dateFormat == 'M/d/yy') {
+
+        switch ($this->_dateFormat) {
+            case 'dd/MM/yy':
+                $dateString = $date->format('d/m/Y');
+                break;
+            case 'M/d/yy':
                 $dateString = $date->format('n/j/y');
-            } else
-                if ($this->_dateFormat == 'd/MM/yy') {
-                    $dateString = $date->format('j/m/y');
-                } else
-                    if ($this->_dateFormat == 'tt.MM.uu') {
-                        $dateString = $date->format('d.m.y');
-                    } else
-                        if ($this->_dateFormat == 'jj-MM-aa') {
-                            $dateString = $date->format('d-m-y');
-                        } else
-                            if ($this->_dateFormat == 'jj/MM/aa') {
-                                $dateString = $date->format('d/m/y');
-                            } else
-                                if ($this->_dateFormat == 'dd.MM.yy') {
-                                    $dateString = $date->format('d.m.y');
-                                } else
-                                    if ($this->_dateFormat == 'yy-MM-dd') {
-                                        $dateString = $date->format('y-m-d');
-                                    } else
-                                        if ($this->_dateFormat == 'd-M-yy') {
-                                            $dateString = $date->format('j-n-y');
-                                        } else
-                                            if ($this->_dateFormat == 'yyyy/MM/dd') {
-                                                $dateString = $date->format('Y/m/d');
-                                            } else
-                                                if ($this->_dateFormat == 'yyyy-MM-dd') {
-                                                    $dateString = $date->format('Y-m-d');
-                                                } else {
-                                                    throw new \Exception("\n Date Format not supported " . $this->_dateFormat . "\n");
-                                                }
+                break;
+            case 'd/MM/yy':
+                $dateString = $date->format('j/m/y');
+                break;
+            case 'tt.MM.uu':
+                $dateString = $date->format('d.m.y');
+                break;
+            case 'jj-MM-aa':
+                $dateString = $date->format('d-m-y');
+                break;
+            case 'jj/MM/aa':
+                $dateString = $date->format('d/m/y');
+                break;
+            case 'dd.MM.yy':
+                $dateString = $date->format('d.m.y');
+                break;
+            case 'yy-MM-dd':
+                $dateString = $date->format('y-m-d');
+                break;
+            case 'd-M-yy':
+                $dateString = $date->format('j-n-y');
+                break;
+            case 'yyyy/MM/dd':
+                $dateString = $date->format('Y/m/d');
+                break;
+            case 'yyyy-MM-dd':
+                $dateString = $date->format('Y-m-d');
+                break;
+            case 'j/MM/aa':
+                $dateString = $date->format('j/m/y');
+                break;
+            default:
+                throw new \Exception("\n Date Format not supported " . $this->_dateFormat . "\n");
+                break;
+        }
+
         return $dateString;
     }
 
@@ -558,6 +566,9 @@ class TradeDoubler extends \Oara\Network
                 break;
             case 'yyyy-MM-dd':
                 $format = "Y-m-d H:i:s";
+                break;
+            case 'j/MM/aa':
+                $format = "j/m/y H:i:s";
                 break;
             default:
                 throw new \Exception("\n Date Format not supported " . $this->_dateFormat . "\n");
