@@ -74,9 +74,9 @@ class AffiliateWindow extends \Oara\Network
             $exportReport = $this->_exportClient->get($urls);
             if (\preg_match_all('/href=\"\/awin\/affiliate\/.*\".*id=\"goDarwin(.*)\"/', $exportReport[0], $matches)) {
 
-                foreach ($matches[1] as $user) {
+                foreach ($matches[1] as $awinUserId) {
                     $urls = array();
-                    $urls[] = new \Oara\Curl\Request('https://darwin.affiliatewindow.com/awin/affiliate/' . $user, array());
+                    $urls[] = new \Oara\Curl\Request('https://darwin.affiliatewindow.com/awin/affiliate/' . $awinUserId, array());
                     $exportReport = $this->_exportClient->get($urls);
 
                     $doc = new \DOMDocument();
@@ -103,7 +103,7 @@ class AffiliateWindow extends \Oara\Network
                         foreach ($linkList as $link) {
                             $text = \trim($link->nodeValue);
                             if ($text == $password) {
-                                $this->_userId = $user;
+                                $this->_userId = $awinUserId;
                                 break;
                             }
                         }
