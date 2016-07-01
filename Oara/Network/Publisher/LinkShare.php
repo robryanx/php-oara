@@ -232,6 +232,7 @@ class LinkShare extends \Oara\Network
     {
         $totalTransactions = Array();
         $merchantIdList = \Oara\Utilities::getMerchantIdMapFromMerchantList($merchantList);
+        $uniqueIdMap = array();
 
         foreach ($this->_siteList as $site) {
             if (empty($this->_sitesAllowed) || in_array($site->id, $this->_sitesAllowed)) {
@@ -283,7 +284,7 @@ class LinkShare extends \Oara\Network
                 for ($j = 1; $j < $num; $j++) {
                     $transactionData = \str_getcsv($exportData [$j], ",");
 
-                    if (isset($merchantIdList[$transactionData[3]]) && count($transactionData) == 11) {
+                    if (isset($merchantIdList[$transactionData[3]]) && count($transactionData) == 10) {
                         $transaction = Array();
                         $transaction ['merchantId'] = ( int )$transactionData [3];
                         $transactionDate = \DateTime::createFromFormat("m/d/y H:i:s", $transactionData [1] . " " . $transactionData [2]);
@@ -293,7 +294,13 @@ class LinkShare extends \Oara\Network
                         if (isset($signatureMap[$transactionData [0]])) {
                             $transaction ['custom_id'] = $signatureMap[$transactionData [0]];
                         }
-                        $transaction ['unique_id'] = $transactionData [10];
+
+                        if (!isset($uniqueIdMap[$transactionData[0]])) {
+                            $uniqueIdMap[$transactionData[0]] = 1;
+                        } else {
+                            $uniqueIdMap[$transactionData[0]]++;
+                        }
+                        $transaction ['unique_id'] = $transactionData[0] . '_' . $uniqueIdMap[$transactionData[0]];
 
                         $sales = \Oara\Utilities::parseDouble($transactionData [7]);
 
