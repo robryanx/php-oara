@@ -38,7 +38,7 @@ class VigLink extends \Oara\Network
      */
     public function login($credentials)
     {
-        $this->_apiPassword = $credentials["apiPassword"];
+        $this->_apiPassword = $credentials["apipassword"];
     }
 
     /**

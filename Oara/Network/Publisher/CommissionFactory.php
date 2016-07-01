@@ -38,7 +38,7 @@ class CommissionFactory extends \Oara\Network
      */
     public function login($credentials)
     {
-        $this->_apiKey = $credentials ['apiPassword'];
+        $this->_apiKey = $credentials ['apipassword'];
     }
 
     /**

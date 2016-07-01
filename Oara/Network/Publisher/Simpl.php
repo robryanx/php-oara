@@ -97,7 +97,7 @@ class Simpl extends \Oara\Network
         $merchants = Array();
 
         $urls = array();
-        $urls[] = new \Oara\Curl\Request("https://export.net.simpl.ie/{$this->_credentials['apiPassword']}/mlist_12807.xml?", array());
+        $urls[] = new \Oara\Curl\Request("https://export.net.simpl.ie/{$this->_credentials['apipassword']}/mlist_12807.xml?", array());
         $exportReport = $this->_client->get($urls);
 
         $merchantArray = \json_decode(\json_encode((array)\simplexml_load_string($exportReport[0])), 1);
@@ -132,7 +132,7 @@ class Simpl extends \Oara\Network
         );
 
         $urls = array();
-        $urls[] = new \Oara\Curl\Request( "https://export.net.simpl.ie/{$this->_credentials['apiPassword']}/statstransaction_12807.xml?", $valuesFromExport);
+        $urls[] = new \Oara\Curl\Request( "https://export.net.simpl.ie/{$this->_credentials['apipassword']}/statstransaction_12807.xml?", $valuesFromExport);
         $exportReport = $this->_client->get($urls);
 
         $transactionArray = \json_decode(\json_encode((array)\simplexml_load_string($exportReport[0])), 1);

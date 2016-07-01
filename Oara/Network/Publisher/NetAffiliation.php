@@ -74,9 +74,9 @@ class NetAffiliation extends \Oara\Network
         $xpath = new \DOMXPath($doc);
         $results = $xpath->query('//*[contains(concat(" ", normalize-space(@class), " "), " margeHaut5 ")]');
         foreach ($results as $result) {
-            $this->_credentials["apiPassword"] = $result->nodeValue;
+            $this->_credentials["apipassword"] = $result->nodeValue;
         }
-        if (!isset($this->_credentials["apiPassword"])) {
+        if (!isset($this->_credentials["apipassword"])) {
             $valuesFormExport = array();
             $urls[] = new \Oara\Curl\Request('http://www' . $this->_serverNumber . '.netaffiliation.com/affiliate/webservice?d=1', $valuesFormExport);
             $this->_client->get($urls);
@@ -90,7 +90,7 @@ class NetAffiliation extends \Oara\Network
         $xpath = new \DOMXPath($doc);
         $results = $xpath->query('//*[contains(concat(" ", normalize-space(@class), " "), " margeHaut5 ")]');
         foreach ($results as $result) {
-            $this->_credentials["apiPassword"] = $result->nodeValue;
+            $this->_credentials["apipassword"] = $result->nodeValue;
         }
 
     }
@@ -128,7 +128,7 @@ class NetAffiliation extends \Oara\Network
         $urls = array();
         $urls[] = new \Oara\Curl\Request('http://www' . $this->_serverNumber . '.netaffiliation.com/index.php/', $valuesFormExport);
         $exportReport = $this->_client->get($urls);
-        if (!\preg_match("/logout/", $exportReport[0], $matches) || !isset($this->_credentials["apiPassword"])) {
+        if (!\preg_match("/logout/", $exportReport[0], $matches) || !isset($this->_credentials["apipassword"])) {
             $connection = false;
         }
         return $connection;
@@ -180,7 +180,7 @@ class NetAffiliation extends \Oara\Network
 
         $valuesFormExport = array();
         $valuesFormExport[] = new \Oara\Curl\Parameter('authl', $this->_credentials["user"]);
-        $valuesFormExport[] = new \Oara\Curl\Parameter('authv', $this->_credentials["apiPassword"]);
+        $valuesFormExport[] = new \Oara\Curl\Parameter('authv', $this->_credentials["apipassword"]);
         $valuesFormExport[] = new \Oara\Curl\Parameter('champs', 'idprogramme,date,etat,argann,montant,gains,monnaie,idsite');
         $valuesFormExport[] = new \Oara\Curl\Parameter('debut', $dStartDate->format("Y-m-d"));
         $valuesFormExport[] = new \Oara\Curl\Parameter('fin', $dEndDate->format("Y-m-d"));
