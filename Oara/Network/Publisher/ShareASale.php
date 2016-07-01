@@ -63,11 +63,11 @@ class ShareASale extends \Oara\Network
      */
     public function login($credentials)
     {
-        $this->_affiliateId = \preg_replace("/[^0-9]/", "", $credentials['affiliateId']);
-        $this->_apiToken = $credentials['apiToken'];
-        $this->_apiSecret = $credentials['apiSecret'];
-        $this->_apiVersion = 1.8;
-        $this->_apiServer = "http://shareasale.com/x.cfm?";
+        $this->_affiliateId = \preg_replace("/[^0-9]/", "", $credentials['affiliateid']);
+        $this->_apiToken = $credentials['apitoken'];
+        $this->_apiSecret = $credentials['apisecret'];
+        $this->_apiVersion = 2.1;
+        $this->_apiServer = "https://shareasale.com/x.cfm?";
     }
 
     /**
@@ -201,8 +201,10 @@ class ShareASale extends \Oara\Network
 
         $sigHash = \hash("sha256", $sig);
         $myHeaders = array("x-ShareASale-Date: $myTimeStamp", "x-ShareASale-Authentication: $sigHash");
+
         $ch = \curl_init();
-        \curl_setopt($ch, CURLOPT_URL, $this->_apiServer . "affiliateId=" . $this->_affiliateId . "&token=" . $this->_apiToken . "&version=" . $this->_apiVersion . "&action=" . $actionVerb . $params);
+        $url = $this->_apiServer . "affiliateId=" . $this->_affiliateId . "&token=" . $this->_apiToken . "&version=" . $this->_apiVersion . "&action=" . $actionVerb . $params;
+        \curl_setopt($ch, CURLOPT_URL, $url);
         \curl_setopt($ch, CURLOPT_HTTPHEADER, $myHeaders);
         \curl_setopt($ch, CURLOPT_RETURNTRANSFER, TRUE);
         \curl_setopt($ch, CURLOPT_HEADER, 0);
