@@ -139,18 +139,21 @@ class Amazon extends \Oara\Network
                 $num = \count($exportData);
                 for ($i = 2; $i < $num; $i++) {
                     $transactionExportArray = \explode("\t", $exportData[$i]);
+                    if (count($transactionExportArray) > 1) {
 
-                    $transaction = Array();
-                    $transaction['merchantId'] = 1;
-                    $transaction['date'] = $auxDate->format("Y-m-d H:i:s");
-                    if ($transactionExportArray[2] != null) {
-                        $transaction['custom_id'] = $transactionExportArray[2];
+
+                        $transaction = Array();
+                        $transaction['merchantId'] = 1;
+                        $transaction['date'] = $auxDate->format("Y-m-d H:i:s");
+                        if ($transactionExportArray[2] != null) {
+                            $transaction['custom_id'] = $transactionExportArray[2];
+                        }
+
+                        $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
+                        $transaction['amount'] = \Oara\Utilities::parseDouble($transactionExportArray[7]);
+                        $transaction['commission'] = \Oara\Utilities::parseDouble($transactionExportArray[8]);
+                        $totalTransactions[] = $transaction;
                     }
-
-                    $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
-                    $transaction['amount'] = \Oara\Utilities::parseDouble($transactionExportArray[7]);
-                    $transaction['commission'] = \Oara\Utilities::parseDouble($transactionExportArray[8]);
-                    $totalTransactions[] = $transaction;
 
                 }
                 \unlink($filename);
