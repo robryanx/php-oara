@@ -1,4 +1,54 @@
-php-oara
+<?php
+namespace Oara\Network\Publisher;
+include_once (dirname(__FILE__) . '/../settings.php');
+
+function get_defined_classes ($path, $parent = null) {
+    $classes = array();
+    $files = scandir($path);
+    foreach ($files as $file) {
+        $filePath = $path . '/' . $file;
+        if (!is_dir($filePath) && is_file($filePath) && substr($file, strlen($file) - 4, 4) == '.php') {
+            $phpCode = file_get_contents($filePath);
+            $tokens = token_get_all($phpCode);
+            $count = count($tokens);
+            for ($i = 2; $i < $count; $i++) {
+                if (   $tokens[$i - 2][0] == T_CLASS
+                    && $tokens[$i - 1][0] == T_WHITESPACE
+                    && $tokens[$i][0] == T_STRING
+                    && $tokens[1][0] == T_NAMESPACE
+                    && $tokens[2][0] == T_WHITESPACE
+                    && $tokens[3][0] == T_STRING && $tokens[3][1] == "Oara"
+                    && $tokens[4][0] == T_NS_SEPARATOR
+                    && $tokens[5][0] == T_STRING && $tokens[5][1] == "Network"
+                    && $tokens[6][0] == T_NS_SEPARATOR
+                    && $tokens[7][0] == T_STRING && $tokens[7][1] == "Publisher") {
+
+                    $className = ($parent) ? $parent . '\\' . $tokens[$i][1] : $tokens[$i][1];
+                    $classes[] = $className;
+                }
+            }
+        }
+    }
+    return $classes;
+}
+
+function get_subdirectory_classes ($path, $parent = null) {
+    $classes = get_defined_classes($path, $parent);
+    $directories = scandir($path);
+    foreach ($directories as $directory) {
+        $dirPath = $path . '/' . $directory;
+        if (is_dir($dirPath) && !is_file($dirPath) && $directory != '.' && $directory != '..') {
+            $classes = array_merge($classes, get_subdirectory_classes($dirPath, $directory));
+        }
+    }
+    return $classes;
+}
+
+$publisherPath = dirname(__FILE__) . '/../Oara/Network/Publisher';
+$classesImported = get_subdirectory_classes($publisherPath);
+
+$file = fopen(dirname(__FILE__) . '/../README.md', 'w');
+fwrite($file, 'php-oara
 =============
 
 The goal of the Open Affiliate Report Aggregator (OARA) is to develop
@@ -29,103 +79,12 @@ Networks Supported
 
 The list of supported networks for Publishers so far is:
 
-* AffiliNet
-* Affiliate4You
-* AffiliateFuture
-* AffiliateGateway
-* AffiliateGroove
-* AffiliateWindow
-* AffiliatesUnited
-* Afiliant
-* Afilio
-* Amazon
-* AutoEurope
-* AvantLink
-* BTGuard
-* Belboon
-* Bet365
-* Bol
-* CgtAffiliate
-* Chegg
-* ClickBank
-* ClixGalore
-* CommissionFactory
-* CommissionJunction
-* Daisycon
-* Demo
-* Dgm
-* Dianomi
-* DirectTrack
-* Ebay
-* Effiliation
-* Etrader
-* FashionTraffic
-* FoxTransfer
-* GetCake
-* Globelink
-* GoogleAndroidPublisher
-* Groupon
-* HasOffers
-* HavasMedia
-* HideMyAss
-* Invia
-* Itunes
-* Ladbrokers
-* LinkShare
-* Mall
-* MyPcBackUP
-* NetAffiliation
-* Omnicom
-* PaddyPower
-* PaidOnResults
-* ParkAndGo
-* PayMode
-* PepperJam
-* PerformanceHorizon
-* PostAffiliatePro
-* PrivateInternetAccess
-* Publicidees
-* PureVPN
-* RentalCars
-* SalesMedia
-* ShareASale
-* Shuttlefare
-* SilverTap
-* Simpl
-* Skimlinks
-* SkyParkSecure
-* SkyScanner
-* Smg
-* SportCoverDirect
-* Steak
-* Stream20
-* TerraVision
-* TradeDoubler
-* TradeTracker
-* Tyroo
-* Viagogo
-* VigLink
-* VpnAffiliates
-* WebGains
-* WebHostingHub
-* WebePartners
-* Wehkamp
-* WinnerAffiliates
-* WowTrk
-* Zanox
-* AffiliateGateway\AU
-* AffiliateGateway\UK
-* AvantLink\CA
-* LinkShare\AU
-* LinkShare\BR
-* LinkShare\CA
-* LinkShare\DE
-* LinkShare\EU
-* LinkShare\FR
-* LinkShare\LA
-* LinkShare\UK
-* LinkShare\US
+');
 
+foreach ($classesImported as $class) {
+    fwrite($file, '* ' . $class . PHP_EOL);
+}
+fwrite($file, '
 
 System Requirements
 -------------------
@@ -238,7 +197,7 @@ Gets the transactions for the network, from the "dStartDate" until "dEndDate" fo
 
 * @param \DateTime $dEndDate - end date (included)
 
-* @param array $merchantMap - array with the merchants indexed by name, only in case we can't get the merchant id in the transaction report, we may need to link it by name.
+* @param array $merchantMap - array with the merchants indexed by name, only in case we can\'t get the merchant id in the transaction report, we may need to link it by name.
 
 * return Array ( Array of Transactions )
 
@@ -264,21 +223,21 @@ Entities
 
 ### Merchant
 
-It's an array with the following keys:
+It\'s an array with the following keys:
 
-* name (not null) - Merchant's name
+* name (not null) - Merchant\'s name
 
-* cid (not null) - Merchant's unique id
+* cid (not null) - Merchant\'s unique id
 
-* description - Merchant's description
+* description - Merchant\'s description
 
-* url - Merchant's url
+* url - Merchant\'s url
 
 ### Transaction
 
-It's an array with the following keys:
+It\'s an array with the following keys:
 
-* merchantId (not null) - Merchant's unique id
+* merchantId (not null) - Merchant\'s unique id
 
 * date (not null) - Transaction date format, "2011-06-26 18:10:10"
 
@@ -298,9 +257,9 @@ It's an array with the following keys:
 
 ### Payment
 
-It's an array with the next keys:
+It\'s an array with the next keys:
 
-* pid (not null) - Payment's unique id
+* pid (not null) - Payment\'s unique id
 
 * date (not null) - Payment date format, "2011-06-26 18:10:10"
 
@@ -313,7 +272,10 @@ It's an array with the next keys:
 Contact
 ------------
 
-If you have any question, go to the project's [website](http://php-oara.affjet.com/) or
+If you have any question, go to the project\'s [website](http://php-oara.affjet.com/) or
 send an email to support@affjet.com
 
+
+');
+fclose($file);
 
