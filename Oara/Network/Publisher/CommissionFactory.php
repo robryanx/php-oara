@@ -140,7 +140,7 @@ class CommissionFactory extends \Oara\Network
 
         foreach ($paymentExportList as $payment) {
             $obj = array();
-            $date = \DateTime::createFromFormat("Y-m-d\TH:i:s", $payment ["DateCreated"]);
+            $date = \DateTime::createFromFormat("Y-m-d\TH:i:s", \substr($payment["DateCreated"], 0, 19));
             $obj ['date'] = $date->format("Y-m-d H:i:s");
             $obj ['pid'] = $payment["Id"];
             $obj ['value'] = $payment["Amount"];
