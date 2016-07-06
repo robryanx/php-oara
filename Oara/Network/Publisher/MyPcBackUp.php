@@ -138,7 +138,7 @@ class MyPcBackUP extends \Oara\Network
             $transactionExportArray = \str_getcsv($exportData[$i], ",");
             $transaction = Array();
             $transaction['merchantId'] = 1;
-            $transaction['uniqueId'] = $transactionExportArray[2];
+            $transaction['unique_id'] = $transactionExportArray[2];
             $transaction['date'] = $transactionExportArray[0] . " " . $transactionExportArray[1];
 
             $transaction['amount'] = \Oara\Utilities::parseDouble($transactionExportArray[5]);

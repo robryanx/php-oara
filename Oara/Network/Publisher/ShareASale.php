@@ -161,7 +161,8 @@ class ShareASale extends \Oara\Network
                 $transaction = Array();
                 $merchantId = (int)$transactionExportArray[2];
                 $transaction['merchantId'] = $merchantId;
-                $transactionDate = \DateTime::createFromFormat("M-d-Y H:i:s", $transactionExportArray[3]);
+                $dateString = str_replace(array(" AM"," PM"),"",$transactionExportArray[3]);
+                $transactionDate = \DateTime::createFromFormat("m/d/Y H:i:s", $dateString);
                 $transaction['date'] = $transactionDate->format("yyyy-MM-dd HH:mm:ss");
                 $transaction['unique_id'] = (int)$transactionExportArray[0];
 
