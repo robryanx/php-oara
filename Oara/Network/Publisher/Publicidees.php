@@ -127,73 +127,78 @@ class Publicidees extends \Oara\Network
     {
         $totalTransactions = array();
 
-        $valuesFromExport = array();
-        $valuesFromExport[] = new \Oara\Curl\Parameter('action', "myresume_tout_ajax");
-        $valuesFromExport[] = new \Oara\Curl\Parameter('monthDisplay', 0);
-        $valuesFromExport[] = new \Oara\Curl\Parameter('tout', 1);
-        $valuesFromExport[] = new \Oara\Curl\Parameter('dD', $dStartDate->format("d/m/Y"));
-        $valuesFromExport[] = new \Oara\Curl\Parameter('dF', $dEndDate->format("d/m/Y"));
-        $valuesFromExport[] = new \Oara\Curl\Parameter('periode', "0");
-        $valuesFromExport[] = new \Oara\Curl\Parameter('currency', "GBP");
-        $valuesFromExport[] = new \Oara\Curl\Parameter('expAct', "1");
-        $valuesFromExport[] = new \Oara\Curl\Parameter('tabid', "0");
-        $valuesFromExport[] = new \Oara\Curl\Parameter('partid', "40113");
-        $valuesFromExport[] = new \Oara\Curl\Parameter('Submit', "Voir");
+        while ($dStartDate <= $dEndDate) {
 
-        $urls = array();
-        $urls[] = new \Oara\Curl\Request('http://publisher.publicideas.com/index.php?', $valuesFromExport);
-        try {
-            $exportReport = $this->_client->get($urls);
-        } catch (\Exception $e) {
-            return $totalTransactions;
-        }
-
-        $exportData = \str_getcsv(\utf8_decode($exportReport[0]), "\n");
-        $num = \count($exportData);
-        $headerArray = \str_getcsv($exportData[0], ";");
-        $headerMap = array();
-        if (\count($headerArray) > 1) {
-
-            for ($j = 0; $j < \count($headerArray); $j++) {
-                if ($headerArray[$j] == "" && $headerArray[$j - 1] == "Ventes") {
-                    $headerMap["pendingVentes"] = $j;
-                } else if ($headerArray[$j] == "" && $headerArray[$j - 1] == "CA") {
-                    $headerMap["pendingCA"] = $j;
-                } else {
-                    $headerMap[$headerArray[$j]] = $j;
+            $valuesFromExport = array();
+            $valuesFromExport[] = new \Oara\Curl\Parameter('action', "myresume");
+            $valuesFromExport[] = new \Oara\Curl\Parameter('monthDisplay', 0);
+            $valuesFromExport[] = new \Oara\Curl\Parameter('tout', 1);
+            $valuesFromExport[] = new \Oara\Curl\Parameter('dD', $dStartDate->format("d/m/Y"));
+            $valuesFromExport[] = new \Oara\Curl\Parameter('dF', $dStartDate->format("d/m/Y"));
+            $valuesFromExport[] = new \Oara\Curl\Parameter('periode', "0");
+            $valuesFromExport[] = new \Oara\Curl\Parameter('currency', "GBP");
+            $valuesFromExport[] = new \Oara\Curl\Parameter('expAct', "1");
+            $valuesFromExport[] = new \Oara\Curl\Parameter('tabid', "0");
+            $valuesFromExport[] = new \Oara\Curl\Parameter('partid', "40113");
+            $valuesFromExport[] = new \Oara\Curl\Parameter('Submit', "Voir");
+    
+            $urls = array();
+            $urls[] = new \Oara\Curl\Request('http://publisher.publicideas.com/index.php?', $valuesFromExport);
+            try {
+                $exportReport = $this->_client->get($urls);
+            } catch (\Exception $e) {
+                return $totalTransactions;
+            }
+    
+            $exportData = \str_getcsv(\utf8_decode($exportReport[0]), "\n");
+            $num = \count($exportData);
+            $headerArray = \str_getcsv($exportData[0], ";");
+            $headerMap = array();
+            if (\count($headerArray) > 1) {
+    
+                for ($j = 0; $j < \count($headerArray); $j++) {
+                    if ($headerArray[$j] == "" && $headerArray[$j - 1] == "Ventes") {
+                        $headerMap["pendingVentes"] = $j;
+                    } else if ($headerArray[$j] == "" && $headerArray[$j - 1] == "CA") {
+                        $headerMap["pendingCA"] = $j;
+                    } else {
+                        $headerMap[$headerArray[$j]] = $j;
+                    }
                 }
             }
-        }
-        
-        for ($j = 1; $j < $num; $j++) {
-            $transactionExportArray = \str_getcsv($exportData[$j], ";");
-            $transactionDate = new \DateTime($transactionExportArray['0']);
-            if (isset($headerMap["Ventes"]) && isset($headerMap["pendingVentes"])) {
-                $confirmedTransactions = (int)$transactionExportArray[$headerMap["Ventes"]];
-                $pendingTransactions = (int)$transactionExportArray[$headerMap["pendingVentes"]];
-
-                for ($z = 0; $z < $confirmedTransactions; $z++) {
-                    $transaction = Array();
-                    $transaction['merchantId'] = 1;
-                    $transaction['date'] = $transactionDate->format("Y-m-d H:i:s");
-                    $transaction['amount'] = \Oara\Utilities::parseDouble(\substr($transactionExportArray[$headerMap["CA"]], 0, -2) / $confirmedTransactions);
-                    $transaction['commission'] = \Oara\Utilities::parseDouble(\substr($transactionExportArray[$headerMap["CA"]], 0, -2) / $confirmedTransactions);
-                    $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
-                    $totalTransactions[] = $transaction;
-                }
-
-                for ($z = 0; $z < $pendingTransactions; $z++) {
-                    $transaction = Array();
-                    $transaction['merchantId'] = 1;
-                    $transaction['date'] = $transactionDate->format("Y-m-d H:i:s");
-                    $transaction['amount'] = \Oara\Utilities::parseDouble($transactionExportArray[$headerMap["pendingCA"]] / $pendingTransactions);
-                    $transaction['commission'] = \Oara\Utilities::parseDouble($transactionExportArray[$headerMap["pendingCA"]] / $pendingTransactions);
-                    $transaction['status'] = \Oara\Utilities::STATUS_PENDING;
-                    $totalTransactions[] = $transaction;
+            
+            for ($j = 1; $j < $num; $j++) {
+                $transactionExportArray = \str_getcsv($exportData[$j], ";");
+                if (isset($headerMap["Ventes"]) && isset($headerMap["pendingVentes"])) {
+                    $confirmedTransactions = (int)$transactionExportArray[$headerMap["Ventes"]];
+                    $pendingTransactions = (int)$transactionExportArray[$headerMap["pendingVentes"]];
+    
+                    for ($z = 0; $z < $confirmedTransactions; $z++) {
+                        $transaction = Array();
+                        $transaction['merchantId'] = 1;
+                        $transaction['date'] = $dStartDate->format("Y-m-d H:i:s");
+                        $stringAmountValue = str_replace(',', '.', $transactionExportArray[$headerMap["CA"]]);
+                        $transaction['amount'] = \Oara\Utilities::parseDouble(floatval($stringAmountValue) / $confirmedTransactions);
+                        $transaction['commission'] = \Oara\Utilities::parseDouble(floatval($stringAmountValue) / $confirmedTransactions);
+                        $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
+                        $totalTransactions[] = $transaction;
+                    }
+    
+                    for ($z = 0; $z < $pendingTransactions; $z++) {
+                        $transaction = Array();
+                        $transaction['merchantId'] = 1;
+                        $transaction['date'] = $dStartDate->format("Y-m-d H:i:s");
+                        $stringAmountValue = str_replace(',', '.', $transactionExportArray[$headerMap["pendingCA"]]);
+                        $transaction['amount'] = \Oara\Utilities::parseDouble(floatval($stringAmountValue) / $pendingTransactions);
+                        $transaction['commission'] = \Oara\Utilities::parseDouble(floatval($stringAmountValue) / $pendingTransactions);
+                        $transaction['status'] = \Oara\Utilities::STATUS_PENDING;
+                        $totalTransactions[] = $transaction;
+                    }
                 }
             }
+            
+            $dStartDate->add(new \DateInterval('P1D'));
         }
-
         return $totalTransactions;
     }
 }
