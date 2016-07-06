@@ -140,9 +140,9 @@ class GetCake extends \Oara\Network
                         $transactionDate = new \DateTime($transactionApi["conversion_date"]);
                         $transaction['date'] = $transactionDate->format("Y-m-d H:i:s");
                         if (!isset($transactionApi["order_id"])) {
-                            $transaction ['uniqueId'] = $transactionApi["conversion_id"];
+                            $transaction ['unique_id'] = $transactionApi["conversion_id"];
                         } else {
-                            $transaction ['uniqueId'] = $transactionApi["order_id"];
+                            $transaction ['unique_id'] = $transactionApi["order_id"];
                         }
                         if (\count($transactionApi["subid_1"]) > 0) {
                             $transaction['custom_id'] = $transactionApi["subid_1"];

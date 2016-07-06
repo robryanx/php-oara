@@ -161,7 +161,7 @@ class PureVPN extends \Oara\Network
             $transactionExportArray = \str_getcsv($exportData[$i], ",");
             $transaction = Array();
             $transaction['merchantId'] = 1;
-            $transaction['uniqueId'] = $transactionExportArray[36];
+            $transaction['unique_id'] = $transactionExportArray[36];
             $transaction['date'] = $transactionExportArray[5];
             $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
             $transaction['amount'] = \Oara\Utilities::parseDouble($transactionExportArray[1]);

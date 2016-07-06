@@ -121,7 +121,7 @@ class PostAffiliatePro extends \Oara\Network
         foreach ($recordset as $rec) {
             $transaction = Array();
             $transaction ['merchantId'] = 1;
-            $transaction ['uniqueId'] = $rec->get('id');
+            $transaction ['unique_id'] = $rec->get('id');
             $transaction ['date'] = $rec->get('dateinserted');
             $transaction ['status'] = \Oara\Utilities::STATUS_CONFIRMED;
             $transaction ['amount'] = \Oara\Utilities::parseDouble($rec->get('totalcost'));
@@ -145,7 +145,7 @@ class PostAffiliatePro extends \Oara\Network
                 foreach ($recordset as $rec) {
                     $transaction = Array();
                     $transaction ['merchantId'] = 1;
-                    $transaction ['uniqueId'] = $rec->get('id');
+                    $transaction ['unique_id'] = $rec->get('id');
                     $transaction ['date'] = $rec->get('dateinserted');
                     if ($rec->get('rstatus') == 'D') {
                         $transaction ['status'] = \Oara\Utilities::STATUS_DECLINED;
