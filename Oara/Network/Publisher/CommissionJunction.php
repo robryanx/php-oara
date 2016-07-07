@@ -365,7 +365,7 @@ class CommissionJunction extends \Oara\Network
                 if (isset($invoices[$i + 1])) {
                     $startDate = $invoices[$i + 1]['date'];
                 } else {
-                    $startDate = \date("Y-m-d", \strtotime($invoices[i]['date']) - (90 * 60 * 60 * 24));
+                    $startDate = \date("Y-m-d", \strtotime($invoices[$i]['date']) - (90 * 60 * 60 * 24));
                 }
                 break;
             }
@@ -381,13 +381,15 @@ class CommissionJunction extends \Oara\Network
         }
         foreach ($advertiserPaymentIds as $id) {
             $exportReport = $this->_client->get(array(new \Oara\Curl\Request('https://members.cj.com/member/publisher/' . $this->_accountId . '/commissionReport/detailForTransactionId.json?allowAllDateRanges=true&txnId=' . $id . '&columnSort=publisherCommission%09DESC&startRow=1&endRow=1000', array())));
-            $transactions = \json_decode($exportReport[0])->{'records'}->{'record'};
-            if (!isset($transactions->{'advertiserId'})) {
-                foreach ($transactions as $transaction) {
-                    $transactionList[] = $transaction->{'commissionId'};
+            if (isset(\json_decode($exportReport[0])->{'records'}->{'record'})) {
+                $transactions = \json_decode($exportReport[0])->{'records'}->{'record'};
+                if (!isset($transactions->{'advertiserId'})) {
+                    foreach ($transactions as $transaction) {
+                        $transactionList[] = $transaction->{'commissionId'};
+                    }
+                } else {
+                    $transactionList[] = $transactions->{'commissionId'};
                 }
-            } else {
-                $transactionList[] = $transactions->{'commissionId'};
             }
         }
         return $transactionList;
