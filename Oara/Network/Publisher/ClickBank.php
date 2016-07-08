@@ -124,7 +124,8 @@ class ClickBank extends \Oara\Network
 
                     $transaction = Array();
                     $transaction['merchantId'] = 1;
-                    $transactionDate = \DateTime::createFromFormat("Y-m-d\TH:i:s", self::findAttribute($singleTransaction, 'date'));
+                    $dateArray = explode("-",self::findAttribute($singleTransaction, 'date'));
+                    $transactionDate = \DateTime::createFromFormat("Y-m-d\TH:i:s", $dateArray[0]."-".$dateArray[1]."-".$dateArray[2]);
                     $transaction['date'] = $transactionDate->format("Y-m-d H:i:s");
                     if (self::findAttribute($singleTransaction, 'affi') != null) {
                         $transaction['custom_id'] = self::findAttribute($singleTransaction, 'affi');
