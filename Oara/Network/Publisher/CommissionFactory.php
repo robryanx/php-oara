@@ -105,7 +105,7 @@ class CommissionFactory extends \Oara\Network
 
                 $obj = Array();
                 $obj ['merchantId'] = $transaction ["MerchantId"];
-                $transactionDate = \DateTime::createFromFormat("Y-m-d\TH:i:s", $transaction ["DateCreated"]);
+                $transactionDate = \DateTime::createFromFormat("Y-m-d\TH:i:s", \substr($transaction["DateCreated"], 0, 19));
                 $obj ['date'] = $transactionDate->format("Y-m-d H:i:s");
                 if ($transaction ["UniqueId"] != null) {
                     $obj ['custom_id'] = $transaction ["UniqueId"];
@@ -140,7 +140,7 @@ class CommissionFactory extends \Oara\Network
 
         foreach ($paymentExportList as $payment) {
             $obj = array();
-            $date = \DateTime::createFromFormat("Y-m-d\TH:i:s", $payment ["DateCreated"]);
+            $date = \DateTime::createFromFormat("Y-m-d\TH:i:s", \substr($payment["DateCreated"], 0, 19));
             $obj ['date'] = $date->format("Y-m-d H:i:s");
             $obj ['pid'] = $payment["Id"];
             $obj ['value'] = $payment["Amount"];
