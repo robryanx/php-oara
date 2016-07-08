@@ -50,34 +50,8 @@ class ClickBank extends \Oara\Network
     public function login($credentials)
     {
 
-        $user = $credentials["user"];
-        $password = $credentials["password"];
-        $this->_client = new \Oara\Curl\Access($credentials);
-
-        $loginUrl = "https://" . $user . ".accounts.clickbank.com/account/login?";
-        $valuesLogin = array(new \Oara\Curl\Parameter('destination', "/account/mainMenu.htm"),
-            new \Oara\Curl\Parameter('nick', $user),
-            new \Oara\Curl\Parameter('pass', $password),
-            new \Oara\Curl\Parameter('login', "Log In"),
-            new \Oara\Curl\Parameter('rememberMe', "true"),
-            new \Oara\Curl\Parameter('j_username', $user),
-            new \Oara\Curl\Parameter('j_password', $password)
-        );
-
-        $urls = array();
-        $urls[] = new \Oara\Curl\Request($loginUrl, $valuesLogin);
-        $this->_client->post($urls);
-
-        $urls = array();
-        $urls[] = new \Oara\Curl\Request("https://" . $user . ".accounts.clickbank.com/account/profile.htm", array());
-        $result = $this->_client->get($urls);
-
-        if (\preg_match_all("/(API-(.*)?)\s</", $result[0], $matches)) {
-            $this->_api = $matches[1][0];
-        }
-        if (\preg_match_all("/(DEV-(.*)?)</", $result[0], $matches)) {
-            $this->_dev = $matches[1][0];
-        }
+        $this->_api = $credentials["user"];
+        $this->_dev  = $credentials["password"];
 
     }
 
@@ -89,13 +63,13 @@ class ClickBank extends \Oara\Network
         $credentials = array();
 
         $parameter = array();
-        $parameter["description"] = "User Log in";
+        $parameter["description"] = "Clerk API Keys";
         $parameter["required"] = true;
         $parameter["name"] = "User";
         $credentials["user"] = $parameter;
 
         $parameter = array();
-        $parameter["description"] = "Password to Log in";
+        $parameter["description"] = "Developer API Keys";
         $parameter["required"] = true;
         $parameter["name"] = "Password";
         $credentials["password"] = $parameter;
