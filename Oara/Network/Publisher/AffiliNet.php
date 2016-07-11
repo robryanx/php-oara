@@ -130,7 +130,7 @@ class AffiliNet extends \Oara\Network
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
         $totalTransactions = array();
-
+        $dEndDate->add(new \DateInterval('P1D'));
         $merchantIdList = \Oara\Utilities::getMerchantIdMapFromMerchantList($merchantList);
 
         $publisherStatisticsServiceUrl = 'https://api.affili.net/V2.0/PublisherStatistics.svc?wsdl';
