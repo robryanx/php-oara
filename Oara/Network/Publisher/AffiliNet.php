@@ -130,7 +130,6 @@ class AffiliNet extends \Oara\Network
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
         $totalTransactions = array();
-        $dEndDate->add(new \DateInterval('P1D'));
         $merchantIdList = \Oara\Utilities::getMerchantIdMapFromMerchantList($merchantList);
 
         $publisherStatisticsServiceUrl = 'https://api.affili.net/V2.0/PublisherStatistics.svc?wsdl';
@@ -167,7 +166,8 @@ class AffiliNet extends \Oara\Network
                     $transaction["unique_id"] = $transactionObject->TransactionId;
                     $transaction["commission"] = $transactionObject->PublisherCommission;
                     $transaction["amount"] = $transactionObject->NetPrice;
-                    $transaction["date"] = $transactionObject->RegistrationDate;
+                    $transactionDate = \DateTime::createFromFormat("Y-m-d\TH:i:s", $transactionObject->RegistrationDate);
+                    $transaction["date"] = $transactionDate->format("Y-m-d H:i:s");
                     $transaction["merchantId"] = $transactionObject->ProgramId;
                     $transaction["custom_id"] = $transactionObject->SubId;
                     if ($transaction['status'] == 'Confirmed') {
