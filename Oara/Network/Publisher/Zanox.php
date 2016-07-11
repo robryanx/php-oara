@@ -143,10 +143,9 @@ class Zanox extends \Oara\Network
         $merchantIdList = \Oara\Utilities::getMerchantIdMapFromMerchantList($merchantList);
 
         $auxDate = clone $dStartDate;
-        for ($i = 0; $i < $diff; $i++) {
+        for ($i = 0; $i <= $diff; $i++) {
             $totalAuxTransactions = array();
             $transactionList = $this->getSales($auxDate->format("Y-m-d"), 0, $this->_pageSize);
-
             if ($transactionList->total > 0) {
                 $iteration = self::calculeIterationNumber($transactionList->total, $this->_pageSize);
                 $totalAuxTransactions = \array_merge($totalAuxTransactions, $transactionList->saleItems->saleItem);

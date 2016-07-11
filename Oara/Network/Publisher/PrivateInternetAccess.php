@@ -156,7 +156,7 @@ class PrivateInternetAccess extends \Oara\Network
         $totalTransactions = array();
         $amountDays = $dStartDate->diff($dEndDate)->days;
         $auxDate = clone $dStartDate;
-        for ($j = 0; $j < $amountDays; $j++) {
+        for ($j = 0; $j <= $amountDays; $j++) {
 
             $valuesFormExport = array();
             $valuesFormExport[] = new \Oara\Curl\Parameter('utf', '✓');

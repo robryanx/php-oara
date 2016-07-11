@@ -215,7 +215,7 @@ class PayMode extends \Oara\Network
         $amountMonths = $startDate->diff($endDate)->months;
         $auxDate = clone $startDate;
 
-        for ($j = 0; $j < $amountMonths; $j++) {
+        for ($j = 0; $j <= $amountMonths; $j++) {
             $monthStartDate = clone $auxDate;
             $monthEndDate = null;
 

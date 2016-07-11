@@ -124,7 +124,7 @@ class Groupon extends \Oara\Network
         $totalTransactions = array();
         $auxDate = clone $dStartDate;
         $amountDays = $dStartDate->diff($dEndDate)->days;
-        for ($j = 0; $j < $amountDays; $j++) {
+        for ($j = 0; $j <= $amountDays; $j++) {
 
             // Getting the csv by curl can throw an exception if the csv size is 0 bytes. So, first of all, get the json. If total is 0, continue, else, get the csv.
             $valuesFormExport = array();

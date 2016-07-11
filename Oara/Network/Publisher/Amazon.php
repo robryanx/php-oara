@@ -112,7 +112,7 @@ class Amazon extends \Oara\Network
         $totalTransactions = array();
         $amountDays = $dStartDate->diff($dEndDate)->days;
         $auxDate = clone $dStartDate;
-        for ($j = 0; $j < $amountDays; $j++) {
+        for ($j = 0; $j <= $amountDays; $j++) {
             $date = $auxDate->format("Ymd");
 
             $url = "https://assoc-datafeeds-eu.amazon.com/datafeed/getReport?filename={$this->_credentials["user"]}-earnings-report-$date.tsv.gz";
