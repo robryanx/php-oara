@@ -143,10 +143,9 @@ class Zanox extends \Oara\Network
         $merchantIdList = \Oara\Utilities::getMerchantIdMapFromMerchantList($merchantList);
 
         $auxDate = clone $dStartDate;
-        for ($i = 0; $i < $diff; $i++) {
+        for ($i = 0; $i <= $diff; $i++) {
             $totalAuxTransactions = array();
             $transactionList = $this->getSales($auxDate->format("Y-m-d"), 0, $this->_pageSize);
-
             if ($transactionList->total > 0) {
                 $iteration = self::calculeIterationNumber($transactionList->total, $this->_pageSize);
                 $totalAuxTransactions = \array_merge($totalAuxTransactions, $transactionList->saleItems->saleItem);
@@ -207,7 +206,11 @@ class Zanox extends \Oara\Network
 
                     $obj['unique_id'] = $transaction->id;
                     $obj['commission'] = $transaction->commission;
-                    $obj['date'] = $transaction->trackingDate;
+
+                    $dateString = \explode (".", $transaction->trackingDate);
+                    $dateString = \explode ("+", $dateString[0]);
+                    $transactionDate = \DateTime::createFromFormat("Y-m-d\TH:i:s", $dateString[0]);
+                    $obj["date"] = $transactionDate->format("Y-m-d H:i:s");
                     $obj['merchantId'] = $transaction->program->id;
                     $obj['approved'] = $transaction->reviewState == 'approved' ? true : false;
                     $totalTransactions[] = $obj;

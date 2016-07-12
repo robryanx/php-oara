@@ -217,7 +217,7 @@ class CommissionJunction extends \Oara\Network
             } catch (\Exception $e) {
                 $amountDays = $dStartDate->diff($dEndDate)->days;
                 $auxDate = clone $dStartDate;
-                for ($j = 0; $j < $amountDays; $j++) {
+                for ($j = 0; $j <= $amountDays; $j++) {
                     $transactionDateEnd = clone $auxDate;
                     $transactionDateEnd->add(new \DateInterval('P1D'));
                     $restUrl = 'https://commission-detail.api.cj.com/v3/commissions?cids=' . \implode(',', $merchantSlice) . '&date-type=posting&start-date=' . $auxDate->format("Y-m-d") . '&end-date=' . $transactionDateEnd->format("Y-m-d");

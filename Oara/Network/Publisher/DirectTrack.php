@@ -127,7 +127,7 @@ class DirectTrack extends \Oara\Network
         $amountDays = $dStartDate->diff($dEndDate)->days;
         $auxDate = clone $dStartDate;
 
-        for ($j = 0; $j < $amountDays; $j++) {
+        for ($j = 0; $j <= $amountDays; $j++) {
 
             $apiURL = "https://{$this->_domain}/apifleet/rest/{$this->_clientId}/{$this->_accessId}/statCampaign/quick/{$auxDate->format("Y-m-d")}";
             $response = self::call($apiURL);

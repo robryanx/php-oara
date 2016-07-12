@@ -126,7 +126,7 @@ class BTGuard extends \Oara\Network
         $amountDays = $dStartDate->diff($dEndDate)->days;
         $auxDate = clone $dStartDate;
 
-        for ($j = 0; $j < $amountDays; $j++) {
+        for ($j = 0; $j <= $amountDays; $j++) {
 
             $valuesFormExport = array();
             $valuesFormExport[] = new \Oara\Curl\Parameter('date1', $auxDate->format("Y-m-d"));

@@ -139,7 +139,7 @@ class Demo extends \Oara\Network
         $endDate = new \DateTime();
         $diff = $startDate->diff($endDate);
         $monthsDifference = (int) $diff->format('%m');
-        for ($i = 0; $i < $monthsDifference; $i++) {
+        for ($i = 0; $i <= $monthsDifference; $i++) {
             $obj = array();
             $obj['date'] = $startDate->format("Y-m-d H:i:s");
             $value = \rand(1, 1300);
