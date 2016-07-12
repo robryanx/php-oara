@@ -131,7 +131,7 @@ class AffiliNet extends \Oara\Network
     {
         $totalTransactions = array();
         $merchantIdList = \Oara\Utilities::getMerchantIdMapFromMerchantList($merchantList);
-
+        $dEndDate->add(new \DateInterval('P1D'));
         $publisherStatisticsServiceUrl = 'https://api.affili.net/V2.0/PublisherStatistics.svc?wsdl';
         $publisherStatisticsService = new \SoapClient($publisherStatisticsServiceUrl, array('compression' => SOAP_COMPRESSION_ACCEPT | SOAP_COMPRESSION_GZIP | SOAP_COMPRESSION_DEFLATE, 'soap_version' => SOAP_1_1));
         $iterationNumber = self::calculeIterationNumber(\count($merchantIdList), 100);
@@ -166,7 +166,8 @@ class AffiliNet extends \Oara\Network
                     $transaction["unique_id"] = $transactionObject->TransactionId;
                     $transaction["commission"] = $transactionObject->PublisherCommission;
                     $transaction["amount"] = $transactionObject->NetPrice;
-                    $transactionDate = \DateTime::createFromFormat("Y-m-d\TH:i:s", $transactionObject->RegistrationDate);
+                    $dateString = \explode (".", $transactionObject->RegistrationDate);
+                    $transactionDate = \DateTime::createFromFormat("Y-m-d\TH:i:s", $dateString[0]);
                     $transaction["date"] = $transactionDate->format("Y-m-d H:i:s");
                     $transaction["merchantId"] = $transactionObject->ProgramId;
                     $transaction["custom_id"] = $transactionObject->SubId;
