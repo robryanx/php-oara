@@ -204,7 +204,7 @@ class Publicidees extends \Oara\Network
 
             // Reconnect with the acutal site
             $valuesLogin = array(
-                new \Oara\Curl\Parameter('site', 43877),
+                new \Oara\Curl\Parameter('site', $siteId),
                 new \Oara\Curl\Parameter('page', '/index.php?'),
             );
             $urls = array();
