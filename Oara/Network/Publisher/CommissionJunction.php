@@ -35,7 +35,7 @@ class CommissionJunction extends \Oara\Network
     private $_accountId = null;
     private $_apiPassword = null;
     protected $_sitesAllowed = array ();
-
+    public $_includeBonus = true;
     /**
      * @param $credentials
      */
@@ -278,7 +278,10 @@ class CommissionJunction extends \Oara\Network
                 if (\count($this->_sitesAllowed) == 0 || \in_array ( ( int ) self::findAttribute ( $singleTransaction, 'website-id' ), $this->_sitesAllowed )) {
 
                     if (isset($merchantIdList[(int)self::findAttribute($singleTransaction, 'cid')])) {
-
+                        $type = self::findAttribute($singleTransaction, 'action-type');
+                        if ($this->_includeBonus == false && $type == "bonus"){
+                            continue;
+                        }
                         $transaction = Array();
                         $transaction ['unique_id'] = self::findAttribute($singleTransaction, 'original-action-id');
                         $transaction ['action'] = self::findAttribute($singleTransaction, 'action-type');
@@ -290,7 +293,6 @@ class CommissionJunction extends \Oara\Network
                             $transaction['custom_id'] = self::findAttribute($singleTransaction, 'sid');
                         }
 
-                        //$transaction['unique_id'] = self::findAttribute($singleTransaction, 'commission-id');
                         $transaction ['amount'] = \Oara\Utilities::parseDouble(self::findAttribute($singleTransaction, 'sale-amount'));
                         $transaction ['commission'] = \Oara\Utilities::parseDouble(self::findAttribute($singleTransaction, 'commission-amount'));
 
