@@ -161,7 +161,9 @@ class HideMyAss extends \Oara\Network
         $xpath = new \DOMXPath($doc);
         $hidden = $xpath->query('//input[@type="hidden"]');
         foreach ($hidden as $values) {
-            $valuesFromExport[] = new \Oara\Curl\Parameter($values->getAttribute("name"), $values->getAttribute("value"));
+            if ($values->getAttribute("name") == 'data[_Token][fields]' || $values->getAttribute("name") == 'data[_Token][key]') {
+                $valuesFromExport[] = new \Oara\Curl\Parameter($values->getAttribute("name"), $values->getAttribute("value"));
+            }
         }
 
         $valuesFromExport[] = new \Oara\Curl\Parameter('_method', 'POST');
@@ -179,6 +181,8 @@ class HideMyAss extends \Oara\Network
         $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][daterangeto][day]', $dEndDate->format("d"));
         $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][daterangeto][month]', $dEndDate->format("m"));
         $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][daterangeto][year]', $dEndDate->format("Y"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][channeltype]', '1');
+        $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][Channel][Channel]', '');
         $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][themetype]', '1');
         $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][Theme][Theme]', '');
         $valuesFromExport[] = new \Oara\Curl\Parameter('data[Conditions][Query][query]', '');

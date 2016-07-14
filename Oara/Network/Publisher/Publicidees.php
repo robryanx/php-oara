@@ -266,7 +266,7 @@ class Publicidees extends \Oara\Network
                                         throw new \Exception('Merchant not found');
                                     }
                                     $transaction['merchantId'] = 1;
-                                    $transaction['date'] = $dStartDate->format("Y-m-d H:i:s");
+                                    $transaction['date'] = $dStartDateAux->format("Y-m-d H:i:s");
                                     $stringAmountValue = str_replace(',', '.', $transactionExportArray[$headerMap["CA"]]);
                                     $transaction['amount'] = \Oara\Utilities::parseDouble(floatval($stringAmountValue) / $confirmedTransactions);
                                     $transaction['commission'] = \Oara\Utilities::parseDouble(floatval($stringAmountValue) / $confirmedTransactions);
@@ -287,7 +287,7 @@ class Publicidees extends \Oara\Network
                                     if (!$merchantFound) {
                                         throw new \Exception('Merchant not found');
                                     }
-                                    $transaction['date'] = $dStartDate->format("Y-m-d H:i:s");
+                                    $transaction['date'] = $dStartDateAux->format("Y-m-d H:i:s");
                                     $stringAmountValue = str_replace(',', '.', $transactionExportArray[$headerMap["pendingCA"]]);
                                     $transaction['amount'] = \Oara\Utilities::parseDouble(floatval($stringAmountValue) / $pendingTransactions);
                                     $transaction['commission'] = \Oara\Utilities::parseDouble(floatval($stringAmountValue) / $pendingTransactions);
