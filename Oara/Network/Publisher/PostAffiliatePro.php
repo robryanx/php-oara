@@ -50,6 +50,12 @@ class PostAffiliatePro extends \Oara\Network
         $credentials = array();
 
         $parameter = array();
+        $parameter["description"] = "Domain you connect to";
+        $parameter["required"] = true;
+        $parameter["name"] = "Domain";
+        $credentials["domain"] = $parameter;
+
+        $parameter = array();
         $parameter["description"] = "User Log in";
         $parameter["required"] = true;
         $parameter["name"] = "User";
