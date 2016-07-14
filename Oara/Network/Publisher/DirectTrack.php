@@ -81,7 +81,7 @@ class DirectTrack extends \Oara\Network
         $parameter = array();
         $parameter["description"] = "Password to Log in";
         $parameter["required"] = true;
-        $parameter["password"] = "Password";
+        $parameter["name"] = "Password";
         $credentials["password"] = $parameter;
 
         return $credentials;
