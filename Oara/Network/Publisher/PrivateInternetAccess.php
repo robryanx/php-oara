@@ -31,8 +31,8 @@ namespace Oara\Network\Publisher;
  */
 class PrivateInternetAccess extends \Oara\Network
 {
-
     private $_client = null;
+    private $_apikey = null;
 
     /**
      * @param $credentials
@@ -43,8 +43,6 @@ class PrivateInternetAccess extends \Oara\Network
         $user = $credentials['user'];
         $password = $credentials['password'];
         $this->_client = new \Oara\Curl\Access($credentials);
-
-
         $url = "https://www.privateinternetaccess.com/affiliates/sign_in";
         $valuesLogin = array(
             new \Oara\Curl\Parameter('affiliate[email]', $user),
@@ -53,7 +51,6 @@ class PrivateInternetAccess extends \Oara\Network
         $urls = array();
         $urls[] = new \Oara\Curl\Request($url, $valuesLogin);
         $exportReport = $this->_client->post($urls);
-
         $doc = new \DOMDocument();
         @$doc->loadHTML($exportReport[0]);
         $xpath = new \DOMXPath($doc);
@@ -68,7 +65,6 @@ class PrivateInternetAccess extends \Oara\Network
         if ($hiddenValue == null) {
             throw new \Exception("hidden value not found");
         }
-
         $valuesLogin = array(
             new \Oara\Curl\Parameter('authenticity_token', $hiddenValue),
             new \Oara\Curl\Parameter('affiliate[email]', $user),
@@ -77,7 +73,6 @@ class PrivateInternetAccess extends \Oara\Network
             new \Oara\Curl\Parameter('commit', 'Login'),
             new \Oara\Curl\Parameter('affiliate[remember_me]', '0'),
         );
-
         $urls = array();
         $urls[] = new \Oara\Curl\Request($url, $valuesLogin);
         $this->_client->post($urls);
@@ -90,42 +85,41 @@ class PrivateInternetAccess extends \Oara\Network
     public function getNeededCredentials()
     {
         $credentials = array();
-
         $parameter = array();
         $parameter["description"] = "User Log in";
         $parameter["required"] = true;
         $parameter["name"] = "User";
         $credentials["user"] = $parameter;
-
         $parameter = array();
         $parameter["description"] = "Password to Log in";
         $parameter["required"] = true;
         $parameter["name"] = "Password";
         $credentials["password"] = $parameter;
-
         return $credentials;
     }
-
     /**
      * @return bool
      */
     public function checkConnection()
     {
-
         $connection = true;
         $valuesFormExport = array();
         $urls = array();
         $urls[] = new \Oara\Curl\Request('https://www.privateinternetaccess.com/affiliates/affiliate_dashboard', $valuesFormExport);
         $exportReport = $this->_client->get($urls);
-
         $doc = new \DOMDocument();
         @$doc->loadHTML($exportReport[0]);
         $xpath = new \DOMXPath($doc);
         $results = $xpath->query('//*[contains(concat(" ", normalize-space(@class), " "), " login ")]');
-
         if ($results->length > 0) {
             $connection = false;
         }
+
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request('https://www.privateinternetaccess.com/affiliates/affiliate_help', $valuesFormExport);
+        $exportReport = $this->_client->get($urls);
+        \preg_match_all("/access_token.=(.+).&date/", $exportReport[0], $matches);
+        $this->_apikey = $matches[1][1];
         return $connection;
     }
 
@@ -157,31 +151,18 @@ class PrivateInternetAccess extends \Oara\Network
         $amountDays = $dStartDate->diff($dEndDate)->days;
         $auxDate = clone $dStartDate;
         for ($j = 0; $j <= $amountDays; $j++) {
-
-            $valuesFormExport = array();
-            $valuesFormExport[] = new \Oara\Curl\Parameter('utf', '✓');
-            $valuesFormExport[] = new \Oara\Curl\Parameter('start_date', $auxDate->format("d M Y"));
-            $valuesFormExport[] = new \Oara\Curl\Parameter('end_date', $auxDate->format("d M Y"));
-
             $urls = array();
-            $urls[] = new \Oara\Curl\Request('https://www.privateinternetaccess.com/affiliates/affiliate_dashboard?', $valuesFormExport);
+            $urls[] = new \Oara\Curl\Request("https://www.privateinternetaccess.com/api/affiliates/stats?access_token={$this->_apikey}&date=".$auxDate->format("Y-m-d")."&period=day", array());
             $exportReport = $this->_client->get($urls);
-
-            $doc = new \DOMDocument();
-            @$doc->loadHTML($exportReport[0]);
-            $xpath = new \DOMXPath($doc);
-            $results = $xpath->query('//h4[contains(., " Grand total")]/following-sibling::table/tbody/tr/td');
-            if ($results->length > 0) {
-
-                $exportData = $results->item(1);
-                $commission = \Oara\Utilities::parseDouble(substr($exportData->nodeValue, 1));
+            $data = \json_decode($exportReport[0], TRUE);
+            if ($data && $data["total"] != 0) {
 
                 $transaction = Array();
                 $transaction['merchantId'] = "1";
                 $transaction['date'] = $auxDate->format("Y-m-d H:i:s");
                 $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
-                $transaction['amount'] = $commission;
-                $transaction['commission'] = $commission;
+                $transaction['amount'] = $data["total"];
+                $transaction['commission'] = $data["total"];
                 $totalTransactions[] = $transaction;
             }
             $auxDate->add(new \DateInterval('P1D'));

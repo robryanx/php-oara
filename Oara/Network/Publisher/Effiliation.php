@@ -128,9 +128,12 @@ class Effiliation extends \Oara\Network
                     if ($transactionExportArray[9] == 'Attente') {
                         $transaction['status'] = \Oara\Utilities::STATUS_PENDING;
                     } else
-                        if ($transactionExportArray[9] == 'Refusé') {
+                        if ($transactionExportArray[9] == 'Refusé' || $transactionExportArray[9] == 'Refuse') {
                             $transaction['status'] = \Oara\Utilities::STATUS_DECLINED;
+                        } else {
+                            throw new \Exception("New status {$transactionExportArray[9]}");
                         }
+
                 $transaction['amount'] = \Oara\Utilities::parseDouble($transactionExportArray[7]);
                 $transaction['commission'] = \Oara\Utilities::parseDouble($transactionExportArray[8]);
                 $totalTransactions[] = $transaction;

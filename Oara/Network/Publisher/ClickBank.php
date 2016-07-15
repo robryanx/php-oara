@@ -50,9 +50,8 @@ class ClickBank extends \Oara\Network
     public function login($credentials)
     {
 
-        $this->_api = $credentials["user"];
+        $this->_api = $credentials["user"]."asd";
         $this->_dev  = $credentials["password"];
-
     }
 
     /**
@@ -84,7 +83,14 @@ class ClickBank extends \Oara\Network
     {
         $connection = false;
         if ($this->_api != null && $this->_dev != null) {
-            $connection = true;
+
+            $today = new \DateTime();
+            try{
+                $number = self::returnApiData("https://api.clickbank.com/rest/1.3/orders/count?startDate=" . $today->format("Y-m-d") . "&endDate=" . $today->format("Y-m-d"));
+                $connection = true;
+            } catch (\Exception $e){
+
+            }
         }
         return $connection;
     }
