@@ -145,7 +145,8 @@ class Publicidees extends \Oara\Network
                 $urls[] = new \Oara\Curl\Request('http://publisher.publicideas.com/index.php?action=myprograms', $valuesPost);
                 $exportReport = $this->_client->post($urls);
                 if (preg_match_all('/onclick="document.location.href=\'index.php\?action=moreallstats&progid=(.+)\';"/', $exportReport[0], $match)
-                    && preg_match_all('/<td width="100%" class="progTitreF">(.+) &laquo;<\/td>/', $exportReport[0], $match2)) {
+                    && preg_match_all('/<td width="100%" class="progTitreF">(.+) &laquo;<\/td>/', $exportReport[0], $match2)
+                ) {
                     for ($i = 0; $i < count($match[1]); $i++) {
                         $cid = $match[1][$i];
                         $name = $match2[1][$i];
@@ -169,7 +170,8 @@ class Publicidees extends \Oara\Network
                         $urls[] = new \Oara\Curl\Request($urlString, array());
                         $exportReport = $this->_client->get($urls);
                         if (preg_match_all('/onclick="document.location.href=\'index.php\?action=moreallstats&progid=(.+)\';"/', $exportReport[0], $match)
-                            && preg_match_all('/<td width="100%" class="progTitreF">(.+) &laquo;<\/td>/', $exportReport[0], $match2)) {
+                            && preg_match_all('/<td width="100%" class="progTitreF">(.+) &laquo;<\/td>/', $exportReport[0], $match2)
+                        ) {
                             for ($j = 0; $j < count($match[1]); $j++) {
                                 $cid = $match[1][$j];
                                 $name = $match2[1][$j];
@@ -202,7 +204,7 @@ class Publicidees extends \Oara\Network
 
         foreach ($this->_sites as $siteId => $siteName) {
 
-            // Reconnect with the acutal site
+            // Reconnect with the actual site
             $valuesLogin = array(
                 new \Oara\Curl\Parameter('site', $siteId),
                 new \Oara\Curl\Parameter('page', '/index.php?'),
@@ -212,6 +214,7 @@ class Publicidees extends \Oara\Network
             $this->_client->post($urls);
 
             $dStartDateAux = clone $dStartDate;
+            $urls = array();
             while ($dStartDateAux <= $dEndDate) {
 
                 $valuesFromExport = array();
@@ -223,13 +226,15 @@ class Publicidees extends \Oara\Network
                 $valuesFromExport[] = new \Oara\Curl\Parameter('tabid', "0");
                 $valuesFromExport[] = new \Oara\Curl\Parameter('partid', $siteId);
                 $valuesFromExport[] = new \Oara\Curl\Parameter('Submit', "Voir");
-
-                $urls = array();
                 $urls[] = new \Oara\Curl\Request('http://publisher.publicideas.com/index.php?', $valuesFromExport);
-                try {
+                $dStartDateAux->add(new \DateInterval('P1D'));
+            }
 
-                    $exportReport = $this->_client->get($urls);
-                    $exportData = \str_getcsv(\utf8_decode($exportReport[0]), "\n");
+            try {
+
+                $exportReportList = $this->_client->get($urls, 0 , true);
+                foreach ($exportReportList as $exportReport) {
+                    $exportData = \str_getcsv(\utf8_decode($exportReport), "\n");
                     $num = \count($exportData);
                     $headerArray = \str_getcsv($exportData[0], ";");
                     $headerMap = array();
@@ -248,7 +253,8 @@ class Publicidees extends \Oara\Network
                         for ($j = 1; $j < $num; $j++) {
                             $transactionExportArray = \str_getcsv($exportData[$j], ";");
                             if (isset($headerMap["Ventes"]) && isset($headerMap["pendingVentes"])
-                                && isset($headerMap["Programme"]) && isset($headerMap["CA"]) && isset($headerMap["pendingCA"])) {
+                                && isset($headerMap["Programme"]) && isset($headerMap["CA"]) && isset($headerMap["pendingCA"])
+                            ) {
                                 $confirmedTransactions = (int)$transactionExportArray[$headerMap["Ventes"]];
                                 $pendingTransactions = (int)$transactionExportArray[$headerMap["pendingVentes"]];
 
@@ -297,15 +303,14 @@ class Publicidees extends \Oara\Network
                             }
                         }
                     }
-
-                    $dStartDateAux->add(new \DateInterval('P1D'));
-
-                } catch (\Exception $e) {
-                    $dStartDateAux->add(new \DateInterval('P1D'));
                 }
+            } catch (\Exception $e) {
+
             }
+
+
         }
-        
+
         return $totalTransactions;
     }
 }
