@@ -145,8 +145,8 @@ class Amazon extends \Oara\Network
                         $transaction = Array();
                         $transaction['merchantId'] = 1;
                         $transaction['date'] = $auxDate->format("Y-m-d H:i:s");
-                        if ($transactionExportArray[2] != null) {
-                            $transaction['custom_id'] = $transactionExportArray[2];
+                        if ($transactionExportArray[9] != null) {
+                            $transaction['custom_id'] = $transactionExportArray[9];
                         }
 
                         $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
