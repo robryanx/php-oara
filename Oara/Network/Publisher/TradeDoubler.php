@@ -535,6 +535,7 @@ class TradeDoubler extends \Oara\Network
         $dateString = $dateParts[0] . ' ' . $dateParts[1];
         switch ($this->_dateFormat) {
             case 'dd/MM/yy':
+                $dateString = \str_replace(".", ":", $dateString);
                 $format = "d/m/y H:i:s";
                 break;
             case 'M/d/yy':
