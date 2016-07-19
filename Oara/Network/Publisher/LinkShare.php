@@ -245,12 +245,10 @@ class LinkShare extends \Oara\Network
                 curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
                 curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
                 curl_setopt($ch, CURLOPT_TIMEOUT, 50);
-                curl_exec($ch);
+                $result = curl_exec($ch);
                 $info = curl_getinfo($ch);
                 if ($info['http_code'] != 200) {
                     return $totalTransactions;
-                } else {
-                    $result = file_get_contents($url);
                 }
                 curl_close($ch);
                 
@@ -261,12 +259,10 @@ class LinkShare extends \Oara\Network
                 curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
                 curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
                 curl_setopt($ch, CURLOPT_TIMEOUT, 50);
-                curl_exec($ch);
+                $resultSignature = curl_exec($ch);
                 $info = curl_getinfo($ch);
                 if ($info['http_code'] != 200) {
                     return $totalTransactions;
-                } else {
-                    $resultSignature = file_get_contents($url);
                 }
                 curl_close($ch);
 
