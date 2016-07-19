@@ -72,7 +72,7 @@ class Utilities
      */
     public static function parseDouble($data)
     {
-        $data = \preg_replace('/[^0-9\.,]/', "", $data);
+        $data = \preg_replace('/[^0-9\.,\-]/', "", $data);
         $data = \str_replace(" ", "", \trim($data));
         $double = 0;
         if ($data != null) {
@@ -84,6 +84,9 @@ class Utilities
                 $convertnum = \str_replace(",", "", \trim($data));
             }
             $double = \number_format((float)$convertnum, 2, '.', '');
+        }
+        if ($double < 0){
+            echo "asdf";
         }
         return $double;
     }

@@ -251,7 +251,7 @@ class LinkShare extends \Oara\Network
                     return $totalTransactions;
                 }
                 curl_close($ch);
-                
+
                 $url = "https://ran-reporting.rakutenmarketing.com/en/reports/signature-orders-report/filters?start_date=" . $dStartDate->format("Y-m-d") . "&end_date=" . $dEndDate->format("Y-m-d") . "&include_summary=N" . "&network=" . $this->_nid . "&tz=GMT&date_type=transaction&token=" . urlencode($site->token);
                 $ch = curl_init();
                 curl_setopt($ch, CURLOPT_URL, $url);
@@ -311,8 +311,6 @@ class LinkShare extends \Oara\Network
                         $transaction ['commission'] = \Oara\Utilities::parseDouble($transactionData [9]);
 
                         if ($transaction ['commission'] < 0) {
-                            $transaction ['amount'] = 0;
-                            $transaction ['commission'] = 0;
                             $transaction ['status'] = \Oara\Utilities::STATUS_DECLINED;
                         }
 
