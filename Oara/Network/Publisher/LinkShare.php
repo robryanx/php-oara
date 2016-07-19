@@ -307,13 +307,7 @@ class LinkShare extends \Oara\Network
                         }
 
                         $transaction ['amount'] = $sales;
-
                         $transaction ['commission'] = \Oara\Utilities::parseDouble($transactionData [9]);
-
-                        if ($transaction ['commission'] < 0) {
-                            $transaction ['status'] = \Oara\Utilities::STATUS_DECLINED;
-                        }
-
                         $totalTransactions [] = $transaction;
                     }
                 }
