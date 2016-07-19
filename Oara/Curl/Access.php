@@ -72,7 +72,7 @@ class Access
             CURLOPT_SSL_VERIFYPEER => false,
             CURLOPT_SSL_VERIFYHOST => false,
             CURLOPT_HEADER => false,
-            CURLOPT_VERBOSE => true,
+            CURLOPT_VERBOSE => false,
             CURLOPT_FOLLOWLOCATION => true,
         );
     }
