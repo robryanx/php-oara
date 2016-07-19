@@ -85,9 +85,6 @@ class Utilities
             }
             $double = \number_format((float)$convertnum, 2, '.', '');
         }
-        if ($double < 0){
-            echo "asdf";
-        }
         return $double;
     }
 
