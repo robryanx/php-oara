@@ -166,6 +166,7 @@ class HideMyAss extends \Oara\Network
             $transactionExportArray = \str_getcsv($exportData[$i], ";");
             $transaction = Array();
             $transaction['merchantId'] = 1;
+            $transaction['unique_id'] = $transactionExportArray[5].'-'.$transactionExportArray[1];
             $transaction['date'] = $transactionExportArray[1];
             $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
             $transaction['amount'] = \Oara\Utilities::parseDouble($transactionExportArray[8]);
