@@ -150,7 +150,7 @@ class AffiliateGateway extends \Oara\Network
         $totalTransactions = array();
 
         $valuesFromExport = array();
-        $valuesFromExport[] = new \Oara\Curl\Parameter('period', '8');
+        $valuesFromExport[] = new \Oara\Curl\Parameter('period', '-1');
         $valuesFromExport[] = new \Oara\Curl\Parameter('websiteId', '-1');
         $valuesFromExport[] = new \Oara\Curl\Parameter('merchantId', '-1');
         $valuesFromExport[] = new \Oara\Curl\Parameter('subId', '');
@@ -166,7 +166,6 @@ class AffiliateGateway extends \Oara\Network
         $valuesFromExport[] = new \Oara\Curl\Parameter('submittedSubId', '');
         $valuesFromExport[] = new \Oara\Curl\Parameter('exportType', 'csv');
         $valuesFromExport[] = new \Oara\Curl\Parameter('reportTitle', 'report');
-
         $valuesFromExport[] = new \Oara\Curl\Parameter('startDate', $dStartDate->format("d/m/Y"));
         $valuesFromExport[] = new \Oara\Curl\Parameter('endDate', $dEndDate->format("d/m/Y"));
 
@@ -177,10 +176,10 @@ class AffiliateGateway extends \Oara\Network
         $exportReport = $this->_client->get($urls);
         $exportData = \str_getcsv($exportReport[0], "\n");
         $num = \count($exportData);
-        for ($i = 1; $i < $num; $i++) {
+        for ($i = 2; $i < $num; $i++) {
             $transactionExportArray = str_getcsv($exportData[$i], ",");
-            if (isset($merchantNameMap[$transactionExportArray[1]])) {
-                $merchantId = $merchantNameMap[$transactionExportArray[1]];
+            if (isset($merchantNameMap[$transactionExportArray[2]])) {
+                $merchantId = $merchantNameMap[$transactionExportArray[2]];
 
                 $transaction = Array();
                 $transaction['merchantId'] = $merchantId;
