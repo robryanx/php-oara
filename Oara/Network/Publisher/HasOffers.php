@@ -54,13 +54,13 @@ class HasOffers extends \Oara\Network
         $credentials = array();
 
         $parameter = array();
-        $parameter["description"] = "Domain Ex:www.mydomain.com";
+        $parameter["description"] = "Your Network ID ";
         $parameter["required"] = true;
         $parameter["name"] = "Domain";
         $credentials["domain"] = $parameter;
 
         $parameter = array();
-        $parameter["description"] = "API Password";
+        $parameter["description"] = "API Key";
         $parameter["required"] = true;
         $parameter["name"] = "API";
         $credentials["apipassword"] = $parameter;
