@@ -36,7 +36,7 @@ class AffiliateWindow extends \Oara\Network
     private $_apiClient = null;
     private $_exportClient = null;
     private $_pageSize = 100;
-    private $_currency = null;
+    protected $_currency = null;
     private $_userId = null;
     public $_sitesAllowed = array();
     public $_includeBonus = true;
@@ -49,79 +49,14 @@ class AffiliateWindow extends \Oara\Network
     public function login($credentials)
     {
         ini_set('default_socket_timeout', '120');
-        $user = $credentials['user'];
+        $accountid = $credentials['accountid'];
         $password = $credentials['apipassword'];
-        $passwordExport = $credentials['password'];
-        $this->_currency = $credentials['currency'];
-
-        //Login to the website
-        if (filter_var($user, \FILTER_VALIDATE_EMAIL)) {
-
-            $this->_exportClient = new \Oara\Curl\Access($credentials);
-            //Log in
-            $valuesLogin = array(
-                new \Oara\Curl\Parameter('email', $user),
-                new \Oara\Curl\Parameter('password', $passwordExport),
-                new \Oara\Curl\Parameter('Login', '')
-            );
-            $urls = array();
-            $urls[] = new \Oara\Curl\Request('https://darwin.affiliatewindow.com/login?', $valuesLogin);
-            $this->_exportClient->post($urls);
-
-
-            $urls = array();
-            $urls[] = new \Oara\Curl\Request('https://darwin.affiliatewindow.com/user/', array());
-            $exportReport = $this->_exportClient->get($urls);
-            if (\preg_match_all('/href=\"\/awin\/affiliate\/.*\".*id=\"goDarwin(.*)\"/', $exportReport[0], $matches)) {
-
-                foreach ($matches[1] as $awinUserId) {
-                    $urls = array();
-                    $urls[] = new \Oara\Curl\Request('https://darwin.affiliatewindow.com/awin/affiliate/' . $awinUserId, array());
-                    $exportReport = $this->_exportClient->get($urls);
-
-                    $doc = new \DOMDocument();
-                    @$doc->loadHTML($exportReport[0]);
-                    $xpath = new \DOMXPath($doc);
-                    $linkList = $xpath->query('//a');
-                    $href = null;
-                    foreach ($linkList as $link) {
-                        $text = \trim($link->nodeValue);
-                        if ($text == "Manage API Credentials") {
-                            $href = $link->attributes->getNamedItem("href")->nodeValue;
-                            break;
-                        }
-                    }
-                    if ($href != null) {
-                        $urls = array();
-                        $urls[] = new \Oara\Curl\Request('https://darwin.affiliatewindow.com' . $href, array());
-                        $exportReport = $this->_exportClient->get($urls);
-
-                        $doc = new \DOMDocument();
-                        @$doc->loadHTML($exportReport[0]);
-                        $xpath = new \DOMXPath($doc);
-                        $linkList = $xpath->query("//span[@id='aw_api_password_hash']");
-                        foreach ($linkList as $link) {
-                            $text = \trim($link->nodeValue);
-                            if ($text == $password) {
-                                $this->_userId = $awinUserId;
-                                break;
-                            }
-                        }
-
-                    } else {
-                        throw new \Exception("It couldn't connect to darwin");
-                    }
-                }
-            }
-        } else {
-            throw new \Exception("It's not an email");
-        }
 
         $nameSpace = 'http://api.affiliatewindow.com/';
         $wsdlUrl = 'http://api.affiliatewindow.com/v4/AffiliateService?wsdl';
         //Setting the client.
-        $this->_apiClient = new \SoapClient($wsdlUrl, array('login' => $this->_userId, 'encoding' => 'UTF-8', 'password' => $password, 'compression' => SOAP_COMPRESSION_ACCEPT | SOAP_COMPRESSION_GZIP | SOAP_COMPRESSION_DEFLATE, 'soap_version' => SOAP_1_1));
-        $soapHeader1 = new \SoapHeader($nameSpace, 'UserAuthentication', array('iId' => $this->_userId, 'sPassword' => $password, 'sType' => 'affiliate'), true, $nameSpace);
+        $this->_apiClient = new \SoapClient($wsdlUrl, array('login' => $accountid, 'encoding' => 'UTF-8', 'password' => $password, 'compression' => SOAP_COMPRESSION_ACCEPT | SOAP_COMPRESSION_GZIP | SOAP_COMPRESSION_DEFLATE, 'soap_version' => SOAP_1_1));
+        $soapHeader1 = new \SoapHeader($nameSpace, 'UserAuthentication', array('iId' => $accountid, 'sPassword' => $password, 'sType' => 'affiliate'), true, $nameSpace);
         $soapHeader2 = new \SoapHeader($nameSpace, 'getQuota', true, true, $nameSpace);
         $this->_apiClient->__setSoapHeaders(array($soapHeader1, $soapHeader2));
 
@@ -135,28 +70,16 @@ class AffiliateWindow extends \Oara\Network
         $credentials = array();
 
         $parameter = array();
-        $parameter["description"] = "User Log in";
+        $parameter["description"] = "Account Id (number)";
         $parameter["required"] = true;
-        $parameter["name"] = "User";
-        $credentials["user"] = $parameter;
-
-        $parameter = array();
-        $parameter["description"] = "User Password";
-        $parameter["required"] = true;
-        $parameter["name"] = "Password";
-        $credentials["password"] = $parameter;
+        $parameter["name"] = "Account ID";
+        $credentials["accountid"] = $parameter;
 
         $parameter = array();
         $parameter["description"] = "PublisherService API password";
         $parameter["required"] = true;
         $parameter["name"] = "API password";
         $credentials["apipassword"] = $parameter;
-
-        $parameter = array();
-        $parameter["description"] = "Currency code for reporting";
-        $parameter["required"] = false;
-        $parameter["name"] = "Currency";
-        $credentials["currency"] = $parameter;
 
         return $credentials;
     }
@@ -258,9 +181,7 @@ class AffiliateWindow extends \Oara\Network
 
                         if (isset($transactionObject->aTransactionParts)) {
                             $transactionPart = \current($transactionObject->aTransactionParts);
-                            if ($transactionPart->mCommissionAmount->sCurrency != $this->_currency) {
-                                $transaction['currency'] = $transactionPart->mCommissionAmount->sCurrency;
-                            }
+                            $transaction['currency'] = $transactionPart->mCommissionAmount->sCurrency;
                         }
                         $totalTransactions[] = $transaction;
                     }
@@ -289,94 +210,4 @@ class AffiliateWindow extends \Oara\Network
         return $iterationInt;
     }
 
-    /**
-     * @return array
-     */
-    public function getPaymentHistory()
-    {
-        $paymentHistory = array();
-
-        $urls = array();
-        $urls[] = new \Oara\Curl\Request("https://darwin.affiliatewindow.com/awin/affiliate/" . $this->_userId . "/payments/history?", array());
-        $exportReport = $this->_exportClient->get($urls);
-
-
-        $doc = new \DOMDocument();
-        @$doc->loadHTML($exportReport[0]);
-        $xpath = new \DOMXPath($doc);
-        $results = $xpath->query('//table/tbody/tr');
-
-        $finished = false;
-        while (!$finished) {
-            foreach ($results as $result) {
-                $linkList = $result->getElementsByTagName('a');
-                if ($linkList->length > 0) {
-                    $obj = array();
-                    $date = \DateTime::createFromFormat('j M Y', $linkList->item(0)->nodeValue);
-                    if ($date) {
-                        $date->setTime(0, 0);
-                        $obj['date'] = $date->format("Y-m-d H:i:s");
-                        $attrs = $linkList->item(0)->attributes;
-                        foreach ($attrs as $attrName => $attrNode) {
-                            if ($attrName = 'href') {
-                                $parseUrl = \trim($attrNode->nodeValue);
-                                if (\preg_match("/\/paymentId\/(.+)/", $parseUrl, $matches)) {
-                                    $obj['pid'] = $matches[1];
-                                }
-                            }
-                        }
-
-                        $obj['value'] = \Oara\Utilities::parseDouble($linkList->item(3)->nodeValue);
-                        $obj['method'] = trim($linkList->item(2)->nodeValue);
-                        $paymentHistory[] = $obj;
-                    }
-                }
-            }
-
-            $results = $xpath->query("//span[@id='nextPage']");
-            if ($results->length > 0) {
-                foreach ($results as $nextPageLink) {
-                    $linkList = $nextPageLink->getElementsByTagName('a');
-                    $attrs = $linkList->item(0)->attributes;
-                    $nextPageUrl = null;
-                    foreach ($attrs as $attrName => $attrNode) {
-                        if ($attrName = 'href') {
-                            $nextPageUrl = trim($attrNode->nodeValue);
-                        }
-                    }
-                    $urls = array();
-                    $urls[] = new \Oara\Curl\Request("https://darwin.affiliatewindow.com" . $nextPageUrl, array());
-                    $exportReport = $this->_exportClient->get($urls);
-                    $doc = new \DOMDocument();
-                    @$doc->loadHTML($exportReport[0]);
-                    $xpath = new \DOMXPath($doc);
-                    $results = $xpath->query('//table/tbody/tr');
-                }
-            } else {
-                $finished = true;
-            }
-        }
-        return $paymentHistory;
-    }
-
-    /**
-     * @param $paymentId
-     * @return array
-     */
-    public function paymentTransactions($paymentId)
-    {
-        $transactionList = array();
-        $urls = array();
-        $urls[] = new \Oara\Curl\Request("https://darwin.affiliatewindow.com/awin/affiliate/" . $this->_userId . "/payments/download/paymentId/" . $paymentId, array());
-        $exportReport = $this->_exportClient->get($urls);
-        $exportData = \str_getcsv($exportReport[0], "\n");
-        $num = \count($exportData);
-        $header = \str_getcsv($exportData[0], ",");
-        $index = \array_search("Transaction ID", $header);
-        for ($j = 1; $j < $num; $j++) {
-            $transactionArray = \str_getcsv($exportData[$j], ",");
-            $transactionList[] = $transactionArray[$index];
-        }
-        return $transactionList;
-    }
 }
