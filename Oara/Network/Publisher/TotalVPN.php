@@ -135,40 +135,36 @@ class TotalVPN extends \Oara\Network
 
         $totalTransactions = array();
 
-        $dStartDateAux = clone $dStartDate;
-        while ($dStartDateAux <= $dEndDate) {
 
-            $valuesFromExport = array();
-            $valuesFromExport[] = new \Oara\Curl\Parameter('dateStart', $dStartDateAux->format("Y-m-d"));
-            $valuesFromExport[] = new \Oara\Curl\Parameter('dateEnd', $dStartDateAux->format("Y-m-d"));
-            $valuesFromExport[] = new \Oara\Curl\Parameter('csv', '1');
+        $valuesFromExport = array();
+        $valuesFromExport[] = new \Oara\Curl\Parameter('dateStart', $dStartDate->format("Y-m-d"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('dateEnd', $dEndDate->format("Y-m-d"));
+        $valuesFromExport[] = new \Oara\Curl\Parameter('csv', '1');
+        $urls = array();
+        $urls[] = new \Oara\Curl\Request('http://affiliates.totalvpn.com/reporting/view/date?', $valuesFromExport);
 
-            $urls = array();
-            $urls[] = new \Oara\Curl\Request('http://affiliates.totalvpn.com/reporting/view/companyFid?', $valuesFromExport);
-
-            $exportReport = $this->_client->get($urls);
-            $exportData = \str_getcsv(\utf8_decode($exportReport[0]), "\n");
-            $num = \count($exportData);
-            $headerArray = \str_getcsv($exportData[0], ",");
-            $headerMap = array();
-            for ($j = 0; $j < \count($headerArray); $j++) {
-                $headerMap[$headerArray[$j]] = $j;
-            }
-
-            for ($j = 1; $j < $num; $j++) {
-                $transactionExportArray = \str_getcsv($exportData[$j], ",");
-
-                $transaction = Array();
-                $transaction['merchantId'] = 1;
-                $transaction['date'] = $dStartDateAux->format("Y-m-d H:i:s");
-                $transaction['amount'] = \Oara\Utilities::parseDouble($transactionExportArray[$headerMap["Commission.Commission"]]);
-                $transaction['commission'] = \Oara\Utilities::parseDouble($transactionExportArray[$headerMap["Commission.Commission"]]);
-                $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
-                $totalTransactions[] = $transaction;
-            }
-
-            $dStartDateAux->add(new \DateInterval('P1D'));
+        $exportReport = $this->_client->get($urls);
+        $exportData = \str_getcsv(\utf8_decode($exportReport[0]), "\n");
+        $num = \count($exportData);
+        $headerArray = \str_getcsv($exportData[0], ",");
+        $headerMap = array();
+        for ($j = 0; $j < \count($headerArray); $j++) {
+            $headerMap[$headerArray[$j]] = $j;
         }
+
+        for ($j = 1; $j < $num; $j++) {
+            $transactionExportArray = \str_getcsv($exportData[$j], ",");
+
+            $transaction = Array();
+            $transaction['merchantId'] = 1;
+            $transaction['date'] = $transactionExportArray[$headerMap["Date.Date"]]." 00:00:00";
+            $total = \Oara\Utilities::parseDouble($transactionExportArray[$headerMap["Commission.Commission"]]) - \Oara\Utilities::parseDouble($transactionExportArray[$headerMap["Commission.Reversed"]]);
+            $transaction['amount'] = $total;
+            $transaction['commission'] = $total;
+            $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
+            $totalTransactions[] = $transaction;
+        }
+
 
         return $totalTransactions;
     }
