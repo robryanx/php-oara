@@ -279,7 +279,7 @@ class CommissionJunction extends \Oara\Network
 
                     if (isset($merchantIdList[(int)self::findAttribute($singleTransaction, 'cid')])) {
                         $type = self::findAttribute($singleTransaction, 'action-type');
-                        if ($this->_includeBonus == false && $type == "bonus"){
+                        if (!$this->_includeBonus && $type == "bonus"){
                             continue;
                         }
                         $transaction = Array();
