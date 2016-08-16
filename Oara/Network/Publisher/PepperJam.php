@@ -40,7 +40,6 @@ class PepperJam extends \Oara\Network
     {
 
         $this->_password = $credentials['apipassword'];
-        $this->_password = "736f0f5d42f1b98598adc7ef8bef8feb24f918e6f8cd14bb01b1cd3f45701148";
         $this->_client = new \Oara\Curl\Access($credentials);
 
 
