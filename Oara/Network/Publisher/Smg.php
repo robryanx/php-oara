@@ -32,8 +32,7 @@ namespace Oara\Network\Publisher;
 class Smg extends \Oara\Network
 {
     private $_credentials = null;
-    private $_accountSid = null;
-    private $_authToken = null;
+    private $_accounts = null;
 
     /**
      * @param $credentials
@@ -59,40 +58,58 @@ class Smg extends \Oara\Network
         $urls[] = new \Oara\Curl\Request($loginUrl, $valuesLogin);
         $this->_client->post($urls);
 
-
+        // Get accounts and API credentials for each account
         $urls = array();
-        $urls[] = new \Oara\Curl\Request('https://member.impactradius.co.uk/secure/mediapartner/accountSettings/mp-wsapi-flow.ihtml?', array());
+        $urls[] = new \Oara\Curl\Request('https://member.impactradius.co.uk/secure/mediapartner/home/pview.ihtml', array());
         $exportReport = $this->_client->get($urls);
-        $dom = new \Zend_Dom_Query($exportReport[0]);
-        $results = $dom->query('div .uitkFields');
-        $count = \count($results);
-        if ($count == 0) {
+        if (preg_match_all('/\/secure\/member\/set\-current\-usership\-flow\.ihtml\?newUsershipId=(.+)\'/', $exportReport[0], $match)) {
+            $this->_accounts = array();
+            for ($i = 0; $i < count($match[1]); $i++) {
+                $accountId = $match[1][$i];
+                $urls = array();
+                $urls[] = new \Oara\Curl\Request('https://member.impactradius.co.uk/secure/member/set-current-usership-flow.ihtml?newUsershipId=' . $accountId, array());
+                $this->_client->get($urls);
 
-            $activeAPI = array(new \Oara\Curl\Parameter('_eventId', "activate"));
-            $urls = array();
-            $urls[] = new \Oara\Curl\Request('https://member.impactradius.co.uk/secure/mediapartner/accountSettings/mp-wsapi-flow.ihtml?', $activeAPI);
-            $this->_client->post($urls);
+                // Get API credentials for this account
+                $urls = array();
+                $urls[] = new \Oara\Curl\Request('https://member.impactradius.co.uk/secure/mediapartner/accountSettings/mp-wsapi-flow.ihtml?', array());
+                $exportReport = $this->_client->get($urls);
+                $dom = new \Zend_Dom_Query($exportReport[0]);
+                $results = $dom->query('div .uitkFields');
+                $count = \count($results);
+                if ($count == 0) {
 
-            $urls = array();
-            $urls[] = new \Oara\Curl\Request('https://member.impactradius.co.uk/secure/mediapartner/accountSettings/mp-wsapi-flow.ihtml?', array());
-            $exportReport = $this->_client->get($urls);
-            $dom = new \Zend_Dom_Query($exportReport[0]);
-            $results = $dom->query('div .uitkFields');
-            $count = \count($results); // get number of matches: 4
-            if ($count == 0) {
-                throw new \Exception ("No API credentials");
+                    $activeAPI = array(new \Oara\Curl\Parameter('_eventId', "activate"));
+                    $urls = array();
+                    $urls[] = new \Oara\Curl\Request('https://member.impactradius.co.uk/secure/mediapartner/accountSettings/mp-wsapi-flow.ihtml?', $activeAPI);
+                    $this->_client->post($urls);
+
+                    $urls = array();
+                    $urls[] = new \Oara\Curl\Request('https://member.impactradius.co.uk/secure/mediapartner/accountSettings/mp-wsapi-flow.ihtml?', array());
+                    $exportReport = $this->_client->get($urls);
+                    $dom = new \Zend_Dom_Query($exportReport[0]);
+                    $results = $dom->query('div .uitkFields');
+                    $count = \count($results); // get number of matches: 4
+                    if ($count == 0) {
+                        throw new \Exception ("No API credentials");
+                    }
+                }
+
+                $j = 0;
+                $account = array();
+                foreach ($results as $result) {
+                    if ($j == 0) {
+                        $account['accountSid'] = \str_replace(array("\n", "\t", " "), "", $result->nodeValue);
+                    } else if ($j == 1) {
+                        $account['authToken'] = \str_replace(array("\n", "\t", " "), "", $result->nodeValue);
+                    } else {
+                        $this->_accounts[] = $account;
+                        break;
+                    }
+                    $j++;
+                }
             }
         }
-        $i = 0;
-        foreach ($results as $result) {
-            if ($i == 0) {
-                $this->_accountSid = \str_replace(array("\n", "\t", " "), "", $result->nodeValue);
-            } else if ($i == 1) {
-                $this->_authToken = \str_replace(array("\n", "\t", " "), "", $result->nodeValue);
-            }
-            $i++;
-        }
-
     }
 
     /**
@@ -133,15 +150,15 @@ class Smg extends \Oara\Network
             $newCheck = true;
         }
 
-        $newApi = false;
-        if ($newCheck && $this->_authToken != null && $this->_accountSid != null) {
+        $newApi = true;
+        foreach ($this->_accounts as $account) {
             //Checking API connection from Impact Radius
-            $uri = "https://" . $this->_accountSid . ":" . $this->_authToken . "@api.impactradius.com/2010-09-01/Mediapartners/" . $this->_accountSid . "/Campaigns.xml";
+            $uri = "https://" . $account['accountSid'] . ":" . $account['authToken'] . "@api.impactradius.com/2010-09-01/Mediapartners/" . $account['accountSid'] . "/Campaigns.xml";
             $res = \simplexml_load_file($uri);
-            if (isset($res->Campaigns)) {
-                $newApi = true;
+            if (!isset($res->Campaigns)) {
+                $newApi = false;
+                break;
             }
-
         }
 
         if ($newCheck && $newApi) {
@@ -174,22 +191,24 @@ class Smg extends \Oara\Network
      */
     private function getMerchantReportList()
     {
-        $uri = "https://" . $this->_accountSid . ":" . $this->_authToken . "@api.impactradius.com/2010-09-01/Mediapartners/" . $this->_accountSid . "/Campaigns.xml";
-        $res = \simplexml_load_file($uri);
-        $currentPage = (int)$res->Campaigns->attributes()->page;
-        $pageNumber = (int)$res->Campaigns->attributes()->numpages;
-        while ($currentPage <= $pageNumber) {
+        foreach ($this->_accounts as $account) {
+            $uri = "https://" . $account['accountSid'] . ":" . $account['authToken'] . "@api.impactradius.com/2010-09-01/Mediapartners/" . $account['accountSid'] . "/Campaigns.xml";
+            $res = \simplexml_load_file($uri);
+            $currentPage = (int)$res->Campaigns->attributes()->page;
+            $pageNumber = (int)$res->Campaigns->attributes()->numpages;
+            while ($currentPage <= $pageNumber) {
 
-            foreach ($res->Campaigns->Campaign as $campaign) {
-                $campaignId = (int)$campaign->CampaignId;
-                $campaignName = (string)$campaign->CampaignName;
-                $merchantReportList[$campaignId] = $campaignName;
-            }
+                foreach ($res->Campaigns->Campaign as $campaign) {
+                    $campaignId = (int)$campaign->CampaignId;
+                    $campaignName = (string)$campaign->CampaignName;
+                    $merchantReportList[$campaignId] = $campaignName;
+                }
 
-            $currentPage++;
-            $nextPageUri = (string)$res->Campaigns->attributes()->nextpageuri;
-            if ($nextPageUri != null) {
-                $res = \simplexml_load_file("https://" . $this->_accountSid . ":" . $this->_authToken . "@api.impactradius.com" . $nextPageUri);
+                $currentPage++;
+                $nextPageUri = (string)$res->Campaigns->attributes()->nextpageuri;
+                if ($nextPageUri != null) {
+                    $res = \simplexml_load_file("https://" . $account['accountSid'] . ":" . $account['authToken'] . "@api.impactradius.com" . $nextPageUri);
+                }
             }
         }
         return $merchantReportList;
@@ -205,53 +224,57 @@ class Smg extends \Oara\Network
     {
         $totalTransactions = Array();
 
-        //New Interface
-        $uri = "https://" . $this->_accountSid . ":" . $this->_authToken . "@api.impactradius.com/2010-09-01/Mediapartners/" . $this->_accountSid . "/Actions?ActionDateStart=" . $dStartDate->format('Y-m-d\TH:i:s') . "-00:00&ActionDateEnd=" . $dEndDate->format('Y-m-d\TH:i:s') . "-00:00";
-        $res = \simplexml_load_file($uri);
-        if ($res) {
+        foreach ($this->_accounts as $account) {
 
-            $currentPage = (int)$res->Actions->attributes()->page;
-            $pageNumber = (int)$res->Actions->attributes()->numpages;
-            while ($currentPage <= $pageNumber) {
+            //New Interface
+            $uri = "https://" . $account['accountSid'] . ":" . $account['authToken'] . "@api.impactradius.com/2010-09-01/Mediapartners/" . $account['accountSid'] . "/Actions?ActionDateStart=" . $dStartDate->format('Y-m-d\TH:i:s') . "-00:00&ActionDateEnd=" . $dEndDate->format('Y-m-d\TH:i:s') . "-00:00";
+            $res = \simplexml_load_file($uri);
+            if ($res) {
 
-                foreach ($res->Actions->Action as $action) {
-                    $transaction = Array();
-                    $transaction['merchantId'] = (int)$action->CampaignId;
+                $currentPage = (int)$res->Actions->attributes()->page;
+                $pageNumber = (int)$res->Actions->attributes()->numpages;
+                while ($currentPage <= $pageNumber) {
 
-                    $transactionDate = \DateTime::createFromFormat("Y-m-d\TH:i:s", \substr((string)$action->EventDate,0,19));
-                    $transaction['date'] = $transactionDate->format("Y-m-d H:i:s");
+                    foreach ($res->Actions->Action as $action) {
+                        $transaction = Array();
+                        $transaction['merchantId'] = (int)$action->CampaignId;
 
-                    $transaction['unique_id'] = (string)$action->Id;
-                    if ((string)$action->SharedId != '') {
-                        $transaction['custom_id'] = (string)$action->SharedId;
-                    }
-                    if ((string)$action->SubId1 != '') {
-                        $transaction['custom_id'] = (string)$action->SubId1;
-                    }
+                        $transactionDate = \DateTime::createFromFormat("Y-m-d\TH:i:s", \substr((string)$action->EventDate,0,19));
+                        $transaction['date'] = $transactionDate->format("Y-m-d H:i:s");
 
-                    $status = (string)$action->Status;
-                    $statusArray[$status] = "";
-                    if ($status == 'APPROVED' || $status == 'DEFAULT') {
-                        $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
-                    } else
-                        if ($status == 'REJECTED') {
-                            $transaction['status'] = \Oara\Utilities::STATUS_DECLINED;
-                        } else {
-                            $transaction['status'] = \Oara\Utilities::STATUS_PENDING;
+                        $transaction['unique_id'] = (string)$action->Id;
+                        if ((string)$action->SharedId != '') {
+                            $transaction['custom_id'] = (string)$action->SharedId;
+                        }
+                        if ((string)$action->SubId1 != '') {
+                            $transaction['custom_id'] = (string)$action->SubId1;
                         }
 
-                    $transaction['amount'] = (double)$action->Amount;
-                    $transaction['commission'] = (double)$action->Payout;
-                    $totalTransactions[] = $transaction;
-                }
+                        $status = (string)$action->Status;
+                        $statusArray[$status] = "";
+                        if ($status == 'APPROVED' || $status == 'DEFAULT') {
+                            $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
+                        } else
+                            if ($status == 'REJECTED') {
+                                $transaction['status'] = \Oara\Utilities::STATUS_DECLINED;
+                            } else {
+                                $transaction['status'] = \Oara\Utilities::STATUS_PENDING;
+                            }
 
-                $currentPage++;
-                $nextPageUri = (string)$res->Actions->attributes()->nextpageuri;
-                if ($nextPageUri != null) {
-                    $res = \simplexml_load_file("https://" . $this->_accountSid . ":" . $this->_authToken . "@api.impactradius.com" . $nextPageUri);
+                        $transaction['amount'] = (double)$action->Amount;
+                        $transaction['commission'] = (double)$action->Payout;
+                        $totalTransactions[] = $transaction;
+                    }
+
+                    $currentPage++;
+                    $nextPageUri = (string)$res->Actions->attributes()->nextpageuri;
+                    if ($nextPageUri != null) {
+                        $res = \simplexml_load_file("https://" . $account['accountSid'] . ":" . $account['authToken'] . "@api.impactradius.com" . $nextPageUri);
+                    }
                 }
             }
         }
+
         return $totalTransactions;
 
     }
