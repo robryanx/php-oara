@@ -180,6 +180,9 @@ class AvantLink extends \Oara\Network
                 $merchantId = (int)$transactionExportArray[17];
                 $transaction['merchantId'] = $merchantId;
                 $transactionDate = \DateTime::createFromFormat("m-d-Y H:i:s", $transactionExportArray[11]);
+                if (!$transactionDate){
+                    $transactionDate = \DateTime::createFromFormat("Y-m-d H:i:s", $transactionExportArray[11]);
+                }
                 $transaction['date'] = $transactionDate->format("Y-m-d H:i:s");
                 $transaction['unique_id'] = (int)$transactionExportArray[5];
 
