@@ -170,14 +170,25 @@ class Afilio extends \Oara\Network
         $exportData = \Oara\Utilities::htmlToCsv(\Oara\Utilities::DOMinnerHTML($tableList->item(1)));
         $num = \count($exportData);
         for ($i = 0; $i < $num; $i++) {
-            $transactionExportArray = \explode(";,", $exportData [$i]);
+            $transactionExportArray = \explode(";", $exportData [$i]);
+
+            // Sometimes, a field of the csv comes with a value like that ";XXX", so that ";" generates another field
+            if (count($transactionExportArray) > 9) {
+                for ($j = 0; $j < count($transactionExportArray); $j++) {
+                    if ($transactionExportArray[$j] == '') {
+                        unset($transactionExportArray[$j]);
+                        $transactionExportArray = array_values($transactionExportArray);
+                        break;
+                    }
+                }
+            }
 
             if (isset ($merchantMap[$transactionExportArray [0]])) {
 
                 $transaction = Array();
                 $transaction ['merchantId'] = $merchantMap[$transactionExportArray [0]];
                 $transaction ['unique_id'] = $transactionExportArray [4];
-                $transactionDate = \DateTime::createFromFormat('d/m/yy H:i:s', $transactionExportArray [1]);
+                $transactionDate = \DateTime::createFromFormat('d/m/y H:i:s', $transactionExportArray [1]);
                 $transaction ['date'] = $transactionDate->format("Y-m-d H:i:s");
                 $transaction ['customId'] = $transactionExportArray [5];
 
