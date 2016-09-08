@@ -102,7 +102,6 @@ class AffiliateGateway extends \Oara\Network
     public function getMerchantList()
     {
         $merchants = array();
-
         $valuesFromExport = array();
         $valuesFromExport[] = new \Oara\Curl\Parameter('p', "");
         $valuesFromExport[] = new \Oara\Curl\Parameter('time', "1");
@@ -113,7 +112,7 @@ class AffiliateGateway extends \Oara\Network
         $valuesFromExport[] = new \Oara\Curl\Parameter('records', "-1");
         $urls = array();
         $urls[] = new \Oara\Curl\Request("{$this->_extension}/affiliate_program_active.html?", $valuesFromExport);
-        $exportReport = $this->_client->get($urls);
+        $exportReport = $this->_client->post($urls);
 
 
         $doc = new \DOMDocument();
@@ -149,23 +148,32 @@ class AffiliateGateway extends \Oara\Network
         $merchantNameMap = \Oara\Utilities::getMerchantNameMapFromMerchantList($merchantList);
         $totalTransactions = array();
 
+
+
         $valuesFromExport = array();
         $valuesFromExport[] = new \Oara\Curl\Parameter('period', '-1');
+        $valuesFromExport[] = new \Oara\Curl\Parameter('subPeriod', '0');
         $valuesFromExport[] = new \Oara\Curl\Parameter('websiteId', '-1');
+        $valuesFromExport[] = new \Oara\Curl\Parameter('hdnMerchantProgram', '');
+        $valuesFromExport[] = new \Oara\Curl\Parameter('searchType', '1');
         $valuesFromExport[] = new \Oara\Curl\Parameter('merchantId', '-1');
         $valuesFromExport[] = new \Oara\Curl\Parameter('subId', '');
         $valuesFromExport[] = new \Oara\Curl\Parameter('approvalStatus', '-1');
         $valuesFromExport[] = new \Oara\Curl\Parameter('records', '20');
-        $valuesFromExport[] = new \Oara\Curl\Parameter('sortField', 'purchDate');
+        $valuesFromExport[] = new \Oara\Curl\Parameter('sortField', 'transactionDateTime');
         $valuesFromExport[] = new \Oara\Curl\Parameter('time', '1');
         $valuesFromExport[] = new \Oara\Curl\Parameter('p', '1');
         $valuesFromExport[] = new \Oara\Curl\Parameter('changePage', '1');
-        $valuesFromExport[] = new \Oara\Curl\Parameter('oldColumn', 'purchDate');
+        $valuesFromExport[] = new \Oara\Curl\Parameter('oldColumn', 'transactionDateTime');
         $valuesFromExport[] = new \Oara\Curl\Parameter('order', 'down');
         $valuesFromExport[] = new \Oara\Curl\Parameter('mId', '-1');
+        $valuesFromExport[] = new \Oara\Curl\Parameter('submittedPeriod', -1);
         $valuesFromExport[] = new \Oara\Curl\Parameter('submittedSubId', '');
         $valuesFromExport[] = new \Oara\Curl\Parameter('exportType', 'csv');
         $valuesFromExport[] = new \Oara\Curl\Parameter('reportTitle', 'report');
+        $valuesFromExport[] = new \Oara\Curl\Parameter('reportId', '');
+
+
         $valuesFromExport[] = new \Oara\Curl\Parameter('startDate', $dStartDate->format("d/m/Y"));
         $valuesFromExport[] = new \Oara\Curl\Parameter('endDate', $dEndDate->format("d/m/Y"));
 
@@ -173,7 +181,7 @@ class AffiliateGateway extends \Oara\Network
         $urls[] = new \Oara\Curl\Request("{$this->_extension}/affiliate_statistic_transaction.html?", $valuesFromExport);
 
 
-        $exportReport = $this->_client->get($urls);
+        $exportReport = $this->_client->post($urls);
         $exportData = \str_getcsv($exportReport[0], "\n");
         $num = \count($exportData);
         for ($i = 2; $i < $num; $i++) {
@@ -187,20 +195,20 @@ class AffiliateGateway extends \Oara\Network
                 $transaction['date'] = $transactionDate->format("Y-m-d H:i:s");
                 $transaction['unique_id'] = $transactionExportArray[0];
 
-                if ($transactionExportArray[11] != null) {
-                    $transaction['custom_id'] = $transactionExportArray[11];
+                if ($transactionExportArray[12] != null && \trim($transactionExportArray[12]) != null) {
+                    $transaction['custom_id'] = $transactionExportArray[12];
                 }
 
-                if ($transactionExportArray[12] == "Approved" || $transactionExportArray[12] == "Approve") {
+                if ($transactionExportArray[15] == "Approved" || $transactionExportArray[15] == "Approve") {
                     $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
                 } else
-                    if ($transactionExportArray[12] == "Pending") {
+                    if ($transactionExportArray[15] == "Pending") {
                         $transaction['status'] = \Oara\Utilities::STATUS_PENDING;
                     } else
-                        if ($transactionExportArray[12] == "Declined" || $transactionExportArray[12] == "Rejected") {
+                        if ($transactionExportArray[15] == "Declined" || $transactionExportArray[15] == "Rejected") {
                             $transaction['status'] = \Oara\Utilities::STATUS_DECLINED;
                         } else {
-                            throw new \Exception ("No Status found " . $transactionExportArray[12]);
+                            throw new \Exception ("No Status found " . $transactionExportArray[15]);
                         }
                 $transaction['amount'] = \Oara\Utilities::parseDouble($transactionExportArray[7]);
                 $transaction['commission'] = \Oara\Utilities::parseDouble($transactionExportArray[9]);
