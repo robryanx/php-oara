@@ -53,7 +53,7 @@ class AffiliateWindow extends \Oara\Network
         $password = $credentials['apipassword'];
 
         $nameSpace = 'http://api.affiliatewindow.com/';
-        $wsdlUrl = 'http://api.affiliatewindow.com/v4/AffiliateService?wsdl';
+        $wsdlUrl = 'http://api.affiliatewindow.com/v6/AffiliateService?wsdl';
         //Setting the client.
         $this->_apiClient = new \SoapClient($wsdlUrl, array('login' => $accountid, 'encoding' => 'UTF-8', 'password' => $password, 'compression' => SOAP_COMPRESSION_ACCEPT | SOAP_COMPRESSION_GZIP | SOAP_COMPRESSION_DEFLATE, 'soap_version' => SOAP_1_1));
         $soapHeader1 = new \SoapHeader($nameSpace, 'UserAuthentication', array('iId' => $accountid, 'sPassword' => $password, 'sType' => 'affiliate'), true, $nameSpace);
