@@ -206,7 +206,7 @@ class CommissionJunction extends \Oara\Network
 
         $iteration = self::calculeIterationNumber(\count($merchantIdArray), '20');
         for ($it = 0; $it < $iteration; $it++) {
-            echo "iteration $it of $iteration \n\n";
+            //echo "iteration $it of $iteration \n\n";
             $merchantSlice = \array_slice($merchantIdArray, $it * 20, 20);
             try {
 
@@ -232,7 +232,7 @@ class CommissionJunction extends \Oara\Network
                                 $done = true;
                             } catch (\Exception $e) {
                                 $try++;
-                                echo "try again $try\n\n";
+                                //echo "try again $try\n\n";
                             }
                         }
                         if ($try == 5) {
