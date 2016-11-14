@@ -65,10 +65,10 @@ class AffiliNet extends \Oara\Network
         $credentials["user"] = $parameter;
 
         $parameter = array();
-        $parameter["description"] = "Password to Log in";
+        $parameter["description"] = "API Password";
         $parameter["required"] = true;
-        $parameter["name"] = "Password";
-        $credentials["password"] = $parameter;
+        $parameter["name"] = "API Password";
+        $credentials["apipassword"] = $parameter;
 
         return $credentials;
     }

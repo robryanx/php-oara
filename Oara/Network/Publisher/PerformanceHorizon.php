@@ -52,16 +52,10 @@ class PerformanceHorizon extends \Oara\Network
         $credentials = array();
 
         $parameter = array();
-        $parameter["description"] = "User Log in";
+        $parameter["description"] = "API Password";
         $parameter["required"] = true;
-        $parameter["name"] = "User";
-        $credentials["user"] = $parameter;
-
-        $parameter = array();
-        $parameter["description"] = "Password to Log in";
-        $parameter["required"] = true;
-        $parameter["name"] = "Password";
-        $credentials["password"] = $parameter;
+        $parameter["name"] = "API Password";
+        $credentials["apipassword"] = $parameter;
 
         return $credentials;
     }
