@@ -43,11 +43,11 @@ class Publicidees extends \Oara\Network
         $user = $credentials['user'];
         $password = $credentials['password'];
         $this->_client = new \Oara\Curl\Access($credentials);
-
-        $loginUrl = 'http://es.publicideas.com/logmein.php';
+        $loginUrl = 'http://performance.timeonegroup.com/logmein.php';
         $valuesLogin = array(new \Oara\Curl\Parameter('loginAff', $user),
             new \Oara\Curl\Parameter('passAff', $password),
-            new \Oara\Curl\Parameter('userType', 'aff')
+            new \Oara\Curl\Parameter('userType', 'aff'),
+            new \Oara\Curl\Parameter('site', 'pi')
         );
 
         $urls = array();
