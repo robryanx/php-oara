@@ -137,71 +137,71 @@ class Affiliate4You extends \Oara\Network
      * @param \DateTime|null $dEndDate
      * @return array
      */
-    public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
-    {
-        $transactions = array();
-        $page = 1;
-        $import = true;
+	public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
+	{
+		$transactions = array();
+		$page = 1;
+		$import = true;
 
-        $merchantIdMap = \Oara\Utilities::getMerchantIdMapFromMerchantList($merchantList);
+		$merchantIdMap = \Oara\Utilities::getMerchantIdMapFromMerchantList($merchantList);
 
-        while ($import) {
+		while ($import) {
 
-            $totalRows = ($page * 300);
+			$pagesize = 300;
 
-            $urls = array();
-            $valuesFromExport = array();
-            $valuesFromExport[] = new \Oara\Curl\Parameter('email', $this->_user);
-            $valuesFromExport[] = new \Oara\Curl\Parameter('apikey', $this->_pass);
-            $valuesFromExport[] = new \Oara\Curl\Parameter('from', $dStartDate->format("Y-m-d"));
-            $valuesFromExport[] = new \Oara\Curl\Parameter('to', $dEndDate->format("Y-m-d"));
-            $valuesFromExport[] = new \Oara\Curl\Parameter('limit', 300);
-            $valuesFromExport[] = new \Oara\Curl\Parameter('page', $page);
-            $urls[] = new \Oara\Curl\Request("http://api.affiliate4you.nl/1.0/orders.csv?", $valuesFromExport);
-            try {
-                $result = $this->_client->get($urls);
-            } catch (\Exception $e) {
-                return $transactions;
-            }
+			$urls = array();
+			$valuesFromExport = array();
+			$valuesFromExport[] = new \Oara\Curl\Parameter('email', $this->_user);
+			$valuesFromExport[] = new \Oara\Curl\Parameter('apikey', $this->_pass);
+			$valuesFromExport[] = new \Oara\Curl\Parameter('from', $dStartDate->format("Y-m-d"));
+			$valuesFromExport[] = new \Oara\Curl\Parameter('to', $dEndDate->format("Y-m-d"));
+			$valuesFromExport[] = new \Oara\Curl\Parameter('limit', $pagesize);
+			$valuesFromExport[] = new \Oara\Curl\Parameter('page', $page);
+			$urls[] = new \Oara\Curl\Request("http://api.affiliate4you.nl/1.0/orders.csv?", $valuesFromExport);
+			try {
+				$result = $this->_client->get($urls);
+			} catch (\Exception $e) {
+				return $transactions;
+			}
 
-            $exportData = \str_getcsv($result[0], "\n");
+			$exportData = \str_getcsv($result[0], "\n");
 
-            for ($i = 1; $i < \count($exportData); $i++) {
+			for ($i = 1; $i < \count($exportData); $i++) {
 
-                $transactionExportArray = \str_getcsv($exportData[$i], ";");
-                if (isset($merchantIdMap[$transactionExportArray[12]])) {
-                    $transaction = Array();
-                    $transaction['unique_id'] = $transactionExportArray[3];
-                    $transaction['merchantId'] = $transactionExportArray[12];
-                    $transaction['date'] = $transactionExportArray[0];
+				$transactionExportArray = \str_getcsv($exportData[$i], ";");
+				if (isset($merchantIdMap[$transactionExportArray[12]])) {
+					$transaction = Array();
+					$transaction['unique_id'] = $transactionExportArray[3];
+					$transaction['merchantId'] = $transactionExportArray[12];
+					$transaction['date'] = $transactionExportArray[0];
 
-                    if ($transactionExportArray[8] != null) {
-                        $transaction['custom_id'] = $transactionExportArray[8];
-                    }
+					if ($transactionExportArray[8] != null) {
+						$transaction['custom_id'] = $transactionExportArray[8];
+					}
 
-                    if ($transactionExportArray[5] == 'approved') {
-                        $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
-                    } else
-                        if ($transactionExportArray[5] == 'new' || $transactionExportArray[5] == 'onhold') {
-                            $transaction['status'] = \Oara\Utilities::STATUS_PENDING;
-                        } else
-                            if ($transactionExportArray[5] == 'declined') {
-                                $transaction['status'] = \Oara\Utilities::STATUS_DECLINED;
-                            }
+					if ($transactionExportArray[5] == 'approved') {
+						$transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
+					} else
+						if ($transactionExportArray[5] == 'new' || $transactionExportArray[5] == 'onhold') {
+							$transaction['status'] = \Oara\Utilities::STATUS_PENDING;
+						} else
+							if ($transactionExportArray[5] == 'declined') {
+								$transaction['status'] = \Oara\Utilities::STATUS_DECLINED;
+							}
 
-                    $transaction['amount'] = $transactionExportArray[4];
-                    $transaction['commission'] = $transactionExportArray[1];
-                    $transactions[] = $transaction;
-                }
-            }
+					$transaction['amount'] = $transactionExportArray[4];
+					$transaction['commission'] = $transactionExportArray[1];
+					$transactions[] = $transaction;
+				}
+			}
 
 
-            if (\count($exportData) != ($totalRows + 1)) {
-                $import = false;
-            }
-            $page++;
-        }
-        return $transactions;
-    }
+			if (\count($exportData) != ($pagesize+1)) {
+				$import = false;
+			}
+			$page++;
+		}
+		return $transactions;
+	}
 
 }
