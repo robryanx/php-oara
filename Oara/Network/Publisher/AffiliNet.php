@@ -131,7 +131,7 @@ class AffiliNet extends \Oara\Network
     {
         $totalTransactions = array();
         $merchantIdList = \Oara\Utilities::getMerchantIdMapFromMerchantList($merchantList);
-        $dEndDate->add(new \DateInterval('P1D'));
+
         $publisherStatisticsServiceUrl = 'https://api.affili.net/V2.0/PublisherStatistics.svc?wsdl';
         $publisherStatisticsService = new \SoapClient($publisherStatisticsServiceUrl, array('compression' => SOAP_COMPRESSION_ACCEPT | SOAP_COMPRESSION_GZIP | SOAP_COMPRESSION_DEFLATE, 'soap_version' => SOAP_1_1));
         $iterationNumber = self::calculeIterationNumber(\count($merchantIdList), 100);
