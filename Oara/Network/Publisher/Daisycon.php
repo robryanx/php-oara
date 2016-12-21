@@ -68,9 +68,11 @@ class Daisycon extends \Oara\Network
             // execute curl
             $response = \curl_exec($ch);
             $publisherList = \json_decode($response, true);
-            foreach ($publisherList as $publisher) {
-                $this->_publisherId[] = $publisher["id"];
-            }
+            if (!empty($publisherList)) {
+				foreach ($publisherList as $publisher) {
+					$this->_publisherId[] = $publisher["id"];
+				}
+			}
             if (\count($this->_publisherId) == 0) {
                 throw new \Exception("No publisher found");
             }
