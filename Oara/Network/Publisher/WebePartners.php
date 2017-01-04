@@ -192,8 +192,8 @@ class WebePartners extends \Oara\Network
                 if (isset($transactionObject["auctionId"]) && $transactionObject["auctionId"] != '') {
                     $transaction['unique_id'] = $transactionObject["auctionId"];
                 }
-                if (isset($transactionObject["subID"]) && $transactionObject["subID"] != '') {
-                    $transaction['custom_id'] = $transactionObject["subID"];
+                if (isset($transactionObject["subId"]) && $transactionObject["subId"] != '') {
+                    $transaction['custom_id'] = $transactionObject["subId"];
                 }
 
                 if ($transactionObject["auctionStatusId"] == 3 || $transactionObject["auctionStatusId"] == 4 || $transactionObject["auctionStatusId"] == 5) {
