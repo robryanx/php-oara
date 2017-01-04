@@ -42,6 +42,8 @@ class WebePartners extends \Oara\Network
     {
         $user = $credentials['user'];
         $password = $credentials['password'];
+        $this->_user = $user;
+        $this->_pass = $password;
 
         $this->_client = new \Oara\Curl\Access($credentials);
 
