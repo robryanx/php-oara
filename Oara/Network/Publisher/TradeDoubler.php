@@ -425,7 +425,7 @@ class TradeDoubler extends \Oara\Network
             if (\count($this->_sitesAllowed) == 0 || \in_array($transactionExportArray[13], $this->_sitesAllowed)) {
 
 
-                if ($transactionExportArray[0] !== '' && isset($merchantIdList[(int)$transactionExportArray[2]])) {
+                if ($transactionExportArray[0] && (is_null($merchantList) || isset($merchantIdList[(int)$transactionExportArray[2]]))) {
 
                     $transaction = Array();
                     $transaction['merchantId'] = $transactionExportArray[2];
