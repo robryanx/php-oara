@@ -42,6 +42,8 @@ class WebePartners extends \Oara\Network
     {
         $user = $credentials['user'];
         $password = $credentials['password'];
+        $this->_user = $user;
+        $this->_pass = $password;
 
         $this->_client = new \Oara\Curl\Access($credentials);
 
@@ -183,32 +185,32 @@ class WebePartners extends \Oara\Network
         $dataArray = \json_decode($data, true);
         foreach ($dataArray as $transactionObject) {
 
-            if (isset($merchantIdList[$transactionObject["ProgramId"]])) {
+            if (isset($merchantIdList[$transactionObject["programId"]])) {
                 $transaction = Array();
-                $transaction['merchantId'] = $transactionObject["ProgramId"];
-                $transaction['date'] = $transactionObject["AuctionDate"];
-                if (isset($transactionObject["AuctionId"]) && $transactionObject["AuctionId"] != '') {
-                    $transaction['unique_id'] = $transactionObject["AuctionId"];
+                $transaction['merchantId'] = $transactionObject["programId"];
+                $transaction['date'] = $transactionObject["auctionDate"];
+                if (isset($transactionObject["auctionId"]) && $transactionObject["auctionId"] != '') {
+                    $transaction['unique_id'] = $transactionObject["auctionId"];
                 }
-                if (isset($transactionObject["subID"]) && $transactionObject["subID"] != '') {
-                    $transaction['custom_id'] = $transactionObject["subID"];
+                if (isset($transactionObject["subId"]) && $transactionObject["subId"] != '') {
+                    $transaction['custom_id'] = $transactionObject["subId"];
                 }
 
-                if ($transactionObject["AuctionStatusId"] == 3 || $transactionObject["AuctionStatusId"] == 4 || $transactionObject["AuctionStatusId"] == 5) {
+                if ($transactionObject["auctionStatusId"] == 3 || $transactionObject["auctionStatusId"] == 4 || $transactionObject["auctionStatusId"] == 5) {
                     $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
                 } else
-                    if ($transactionObject["AuctionStatusId"] == 1) {
+                    if ($transactionObject["auctionStatusId"] == 1) {
                         $transaction['status'] = \Oara\Utilities::STATUS_PENDING;
                     } else
-                        if ($transactionObject["AuctionStatusId"] == 2) {
+                        if ($transactionObject["auctionStatusId"] == 2) {
                             $transaction['status'] = \Oara\Utilities::STATUS_DECLINED;
                         } else
-                            if ($transactionObject["AuctionStatusId"] == 6) {
+                            if ($transactionObject["auctionStatusId"] == 6) {
                                 $transaction['status'] = \Oara\Utilities::STATUS_PAID;
                             }
 
-                $transaction['amount'] = \Oara\Utilities::parseDouble($transactionObject["OrderCost"]);
-                $transaction['commission'] = \Oara\Utilities::parseDouble($transactionObject["Commission"]);
+                $transaction['amount'] = \Oara\Utilities::parseDouble($transactionObject["orderCost"]);
+                $transaction['commission'] = \Oara\Utilities::parseDouble($transactionObject["commission"]);
                 $totalTransactions[] = $transaction;
             }
         }
