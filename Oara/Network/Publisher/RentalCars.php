@@ -45,8 +45,7 @@ class RentalCars extends \Oara\Network
             new \Oara\Curl\Parameter ('login_username', $this->_credentials ['user']),
             new \Oara\Curl\Parameter ('login_password', $this->_credentials ['password'])
         );
-
-        $loginUrl = 'https://secure.rentalcars.com/affiliates/access?commit=true';
+        $loginUrl = 'https://secure.rentalcars.com/affiliateportal/access?commit=true';
         $urls = array();
         $urls[] = new \Oara\Curl\Request($loginUrl, $valuesLogin);
         $this->_client->post($urls);
@@ -83,7 +82,7 @@ class RentalCars extends \Oara\Network
         // If not login properly the construct launch an exception
         $connection = false;
         $urls = array();
-        $urls [] = new \Oara\Curl\Request ('https://secure.rentalcars.com/affiliates/?master=1', array());
+        $urls [] = new \Oara\Curl\Request ('https://secure.rentalcars.com/affiliateportal?master=1', array());
         $exportReport = $this->_client->get($urls);
 
         $doc = new \DOMDocument();
@@ -106,7 +105,7 @@ class RentalCars extends \Oara\Network
         $obj = array();
         $obj ['cid'] = "1";
         $obj ['name'] = "RentalCars";
-        $obj ['url'] = "https://secure.rentalcars.com";
+        $obj ['url'] = "https://secure.rentalcars.com/affiliateportal/access";
         $merchants [] = $obj;
 
         return $merchants;
@@ -128,7 +127,7 @@ class RentalCars extends \Oara\Network
         $valuesFormExport [] = new \Oara\Curl\Parameter ('cancelled', 'cancelled');
 
         $urls = array();
-        $urls [] = new \Oara\Curl\Request ('https://secure.rentalcars.com/affiliates/booked_excel?date_start=' . $dStartDate->format("Y-m-d") . '&date_end=' . $dEndDate->format("Y-m-d"), $valuesFormExport);
+        $urls [] = new \Oara\Curl\Request ('https://secure.rentalcars.com/affiliateportal/booked_excel?date_start=' . $dStartDate->format("Y-m-d") . '&date_end=' . $dEndDate->format("Y-m-d"), $valuesFormExport);
         $exportReport = $this->_client->post($urls);
 
         $xml = \simplexml_load_string($exportReport [0]);
@@ -152,7 +151,7 @@ class RentalCars extends \Oara\Network
         $valuesFormExport [] = new \Oara\Curl\Parameter ('booking', 'booking');
 
         $urls = array();
-        $urls [] = new \Oara\Curl\Request ('https://secure.rentalcars.com/affiliates/booked_excel?date_start=' . $dStartDate->format("Y-m-d") . '&date_end=' . $dEndDate->format("Y-m-d"), $valuesFormExport);
+        $urls [] = new \Oara\Curl\Request ('https://secure.rentalcars.com/affiliateportal/booked_excel?date_start=' . $dStartDate->format("Y-m-d") . '&date_end=' . $dEndDate->format("Y-m-d"), $valuesFormExport);
         $exportReport = $this->_client->post($urls);
 
         $xml = \simplexml_load_string($exportReport [0]);

@@ -91,7 +91,7 @@ class AutoEurope extends \Oara\Network
      */
     public function checkConnection()
     {
-        $connection = false;
+        $connection = true;
         $urls = array();
         $urls [] = new \Oara\Curl\Request ('https://www.autoeurope.co.uk/afftools/index.cfm', array());
         $exportReport = $this->_client->get($urls);

@@ -311,6 +311,7 @@ class Publicidees extends \Oara\Network
 
         }
 
-        return $totalTransactions;
+    
+            return $totalTransactions;
     }
 }
