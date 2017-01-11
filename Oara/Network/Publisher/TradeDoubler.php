@@ -420,6 +420,7 @@ class TradeDoubler extends \Oara\Network
             $transactionExportArray = \str_getcsv($exportData[$i], ",");
 
             if (!isset($transactionExportArray[2]) || !$transactionExportArray[2]) {
+                print_r($exportReport,true);
                 throw new \Exception('Problem getting transaction\n\n');
             }
             if (\count($this->_sitesAllowed) == 0 || \in_array($transactionExportArray[13], $this->_sitesAllowed)) {
