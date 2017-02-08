@@ -201,7 +201,8 @@ class Publicidees extends \Oara\Network
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
         $totalTransactions = array();
-
+        $dStartDate = new \DateTime("2017-02-01");
+        $dEndDate = new \DateTime("2017-02-07");
         foreach ($this->_sites as $siteId => $siteName) {
 
             // Reconnect with the actual site
@@ -224,8 +225,12 @@ class Publicidees extends \Oara\Network
                 $valuesFromExport[] = new \Oara\Curl\Parameter('currency', "GBP");
                 $valuesFromExport[] = new \Oara\Curl\Parameter('expAct', "1");
                 $valuesFromExport[] = new \Oara\Curl\Parameter('tabid', "0");
-                $valuesFromExport[] = new \Oara\Curl\Parameter('partid', $siteId);
+                //$valuesFromExport[] = new \Oara\Curl\Parameter('partid', $siteId);
                 $valuesFromExport[] = new \Oara\Curl\Parameter('Submit', "Voir");
+                $valuesFromExport[] = new \Oara\Curl\Parameter('periode', 0);
+                $valuesFromExport[] = new \Oara\Curl\Parameter('monthDisplay', 0);
+                $valuesFromExport[] = new \Oara\Curl\Parameter('tout', 1);
+
                 $urls[] = new \Oara\Curl\Request('http://publisher.publicideas.com/index.php?', $valuesFromExport);
                 $dStartDateAux->add(new \DateInterval('P1D'));
             }
@@ -252,8 +257,7 @@ class Publicidees extends \Oara\Network
 
                         for ($j = 1; $j < $num; $j++) {
                             $transactionExportArray = \str_getcsv($exportData[$j], ";");
-                            if (isset($headerMap["Ventes"]) && isset($headerMap["pendingVentes"])
-                                && isset($headerMap["Programme"]) && isset($headerMap["CA"]) && isset($headerMap["pendingCA"])
+                            if (isset($headerMap["Ventes"]) && isset($headerMap["pendingVentes"]) && isset($headerMap["CA"]) && isset($headerMap["pendingCA"])
                             ) {
                                 $confirmedTransactions = (int)$transactionExportArray[$headerMap["Ventes"]];
                                 $pendingTransactions = (int)$transactionExportArray[$headerMap["pendingVentes"]];
@@ -282,17 +286,7 @@ class Publicidees extends \Oara\Network
 
                                 for ($z = 0; $z < $pendingTransactions; $z++) {
                                     $transaction = Array();
-                                    $merchantFound = false;
-                                    foreach ($merchantList as $merchant) {
-                                        if ($merchant['name'] == $transactionExportArray[$headerMap["Programme"]]) {
-                                            $transaction['merchantId'] = $merchant['id'];
-                                            $merchantFound = true;
-                                            break;
-                                        }
-                                    }
-                                    if (!$merchantFound) {
-                                        throw new \Exception('Merchant not found');
-                                    }
+                                    $transaction['merchantId'] = 1;
                                     $transaction['date'] = $dStartDateAux->format("Y-m-d H:i:s");
                                     $stringAmountValue = str_replace(',', '.', $transactionExportArray[$headerMap["pendingCA"]]);
                                     $transaction['amount'] = \Oara\Utilities::parseDouble(floatval($stringAmountValue) / $pendingTransactions);
