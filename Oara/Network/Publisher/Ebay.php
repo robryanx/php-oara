@@ -88,7 +88,7 @@ class Ebay extends \Oara\Network
 
         $urls = array();
         $urls[] = new \Oara\Curl\Request("https://publisher.ebaypartnernetwork.com/PublisherReportsTx?pt=2&start_date={$yesterday->format("n/j/Y")}&end_date={$yesterday->format("n/j/Y")}&user_name={$this->_credentials['user']}&user_password={$this->_credentials['password']}&advIdProgIdCombo=&tx_fmt=2&submit_tx=Download", array());
-        $exportReport = $this->_client->get($urls);
+        $exportReport = $this->_client->post($urls);
 
         if (\preg_match("/DOCTYPE html PUBLIC/", $exportReport[0])) {
             $connection = false;
@@ -123,13 +123,8 @@ class Ebay extends \Oara\Network
         $totalTransactions = array();
         $urls = array();
         $urls[] = new \Oara\Curl\Request("https://publisher.ebaypartnernetwork.com/PublisherReportsTx?pt=2&start_date={$dStartDate->format("n/j/Y")}&end_date={$dEndDate->format("n/j/Y")}&user_name={$this->_credentials['user']}&user_password={$this->_credentials['password']}&advIdProgIdCombo=&tx_fmt=3&submit_tx=Download", array());
-        $exportData = array();
-        try {
-            $exportReport = $this->_client->get($urls, 'content', 5);
-            $exportData = \str_getcsv($exportReport[0], "\n");
-        } catch (\Exception $e) {
-
-        }
+        $exportReport = $this->_client->post($urls, 'content', 5);
+        $exportData = \str_getcsv($exportReport[0], "\n");
         $num = \count($exportData);
         for ($i = 1; $i < $num; $i++) {
             $transactionExportArray = \str_getcsv($exportData[$i], "\t");
