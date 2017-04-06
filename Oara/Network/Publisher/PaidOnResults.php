@@ -58,9 +58,9 @@ class PaidOnResults extends \Oara\Network
         $this->_client->post($urls);
 
         $urls = array();
-        $urls[] = new \Oara\Curl\Request('http://affiliate.paidonresults.com/cgi-bin/home.pl', array());
+        $urls[] = new \Oara\Curl\Request('https://affiliate.paidonresults.com/cgi-bin/home.pl', array());
         $exportReport = $this->_client->post($urls);
-        if (!\preg_match('/http\:\/\/affiliate\.paidonresults\.com\/cgi\-bin\/logout\.pl/', $exportReport[0], $matches)) {
+        if (!\preg_match('/\/cgi-bin\/logout\.pl/', $exportReport[0], $matches)) {
             throw new \Exception("Error on login");
         }
 
@@ -121,7 +121,7 @@ class PaidOnResults extends \Oara\Network
         );
 
         $urls = array();
-        $urls[] = new \Oara\Curl\Request('http://affiliate.paidonresults.com/api/merchant-directory?', $valuesFormExport);
+        $urls[] = new \Oara\Curl\Request('https://affiliate.paidonresults.com/api/merchant-directory?', $valuesFormExport);
         $exportReport = $this->_client->get($urls);
         $exportData = \str_getcsv($exportReport[0], "\r\n");
         $exportData = \preg_replace("/\n/", "", $exportData);
@@ -163,7 +163,7 @@ class PaidOnResults extends \Oara\Network
         );
         $valuesFormExport[] = new \Oara\Curl\Parameter('DateFrom', $dStartDate->format("Y-m-d"));
         $valuesFormExport[] = new \Oara\Curl\Parameter('DateTo', $dEndDate->format("Y-m-d"));
-        $urls[] = new \Oara\Curl\Request('http://affiliate.paidonresults.com/api/transactions?', $valuesFormExport);
+        $urls[] = new \Oara\Curl\Request('https://affiliate.paidonresults.com/api/transactions?', $valuesFormExport);
         $exportReport = $this->_client->get($urls);
 
         $exportData = \str_getcsv($exportReport[0], "\r\n");
