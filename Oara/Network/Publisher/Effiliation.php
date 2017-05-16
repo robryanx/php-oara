@@ -86,7 +86,7 @@ class Effiliation extends \Oara\Network
             $obj = array();
             $obj['cid'] = (string)$merchant->id_programme;
             $obj['name'] = (string)$merchant->nom;
-            $obj['url'] = "";
+            $obj['url'] = (string)$merchant->url;
             $merchants[] = $obj;
         }
         return $merchants;
