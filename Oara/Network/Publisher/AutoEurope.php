@@ -169,8 +169,8 @@ class AutoEurope extends \Oara\Network
     public function readTransactions($htmlReport)
     {
         $pdfContent = '';
-        $dom = new \Zend_Dom_Query ($htmlReport);
-        $links = $dom->query('.text a');
+        $dom = new \Zend\Dom\Query ($htmlReport);
+        $links = $dom->execute('.text a');
         $pdfUrl = null;
         foreach ($links as $link) {
             $pdfUrl = $link->getAttribute('href');
