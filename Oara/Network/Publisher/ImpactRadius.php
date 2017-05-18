@@ -29,7 +29,7 @@ namespace Oara\Network\Publisher;
  * @version    Release: 01.00
  *
  */
-class Smg extends \Oara\Network
+class ImpactRadius extends \Oara\Network
 {
     private $_credentials = null;
     private $_accounts = null;
