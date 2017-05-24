@@ -155,7 +155,9 @@ class SkyParkSecure extends \Oara\Network
             new \Oara\Curl\Parameter('data[query][date2]', $dEndDate->format("Y-m-d")),
             new \Oara\Curl\Parameter('data[query][api_key]', $this->_apiKey)
         );
-        $urls[] = new \Oara\Curl\Request('http://www.skyparksecure.com/api/v4/jsonp/getSales?', $exportParams);
+
+
+        $urls[] = new \Oara\Curl\Request('http://legacy.skyparksecure.com/api/v4/jsonp/getSales?', $exportParams);
         $exportReport = $this->_client->get($urls);
 
         $report = \substr($exportReport[0], 1, \strlen($exportReport[0]) - 3);
