@@ -157,6 +157,7 @@ class NetAffiliation extends \Oara\Network
                     $obj = array();
                     $obj['cid'] =  $merchant["@attributes"]["id"];
                     $obj['name'] = $merchant["title"];
+                    $obj['url'] = $merchant["link"];
                     $merchants[] = $obj;
                 }
 
