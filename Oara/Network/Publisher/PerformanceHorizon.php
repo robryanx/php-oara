@@ -191,7 +191,7 @@ class PerformanceHorizon extends \Oara\Network
             foreach ($paymentList["selfbills"] as $selfbill) {
                 $selfbill = $selfbill["selfbill"];
                 $obj = array();
-                $obj['date'] = $selfbill["payment_date"];
+                $obj['date'] = $selfbill["timestamp"];
                 $obj['pid'] = \intval($selfbill["publisher_self_bill_id"]);
                 $obj['value'] = $selfbill["total_value"];
                 $obj['method'] = "BACS";
