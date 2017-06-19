@@ -148,6 +148,10 @@ class Belboon extends \Oara\Network
                     }
                 }
 
+                if  (strlen($transaction['custom_id']) > 150){
+                    $transaction['custom_id'] = substr($transaction['custom_id'],0,150);
+                }
+
                 if ($event["eventstatus"] == 'APPROVED') {
                     $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
                 } else
