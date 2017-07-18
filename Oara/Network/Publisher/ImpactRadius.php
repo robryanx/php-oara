@@ -222,9 +222,6 @@ class ImpactRadius extends \Oara\Network
      */
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
-
-        $dStartDate->setDate(2017,05,01);
-        $dEndDate->setDate(2017,05,31);
         $totalTransactions = Array();
 
         foreach ($this->_accounts as $account) {
