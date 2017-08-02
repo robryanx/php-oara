@@ -237,34 +237,51 @@ class LinkShare extends \Oara\Network
         foreach ($this->_siteList as $site) {
             if (empty($this->_sitesAllowed) || in_array($site->id, $this->_sitesAllowed)) {
                 echo "getting Transactions for site " . $site->id . "\n\n";
-
-                $url = "https://ran-reporting.rakutenmarketing.com/en/reports/individual-item-report/filters?start_date=" . $dStartDate->format("Y-m-d") . "&end_date=" . $dEndDate->format("Y-m-d") . "&include_summary=N" . "&network=" . $this->_nid . "&tz=GMT&date_type=transaction&token=" . urlencode($site->token);
-                $ch = curl_init();
-                curl_setopt($ch, CURLOPT_URL, $url);
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-                curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-                curl_setopt($ch, CURLOPT_TIMEOUT, 50);
-                $result = curl_exec($ch);
-                $info = curl_getinfo($ch);
-                if ($info['http_code'] != 200) {
-                    return $totalTransactions;
+                $try = 0;
+                $code = 0;
+                while ($try < 5 && $code != 200){
+                    $url = "https://ran-reporting.rakutenmarketing.com/en/reports/individual-item-report/filters?start_date=" . $dStartDate->format("Y-m-d") . "&end_date=" . $dEndDate->format("Y-m-d") . "&include_summary=N" . "&network=" . $this->_nid . "&tz=GMT&date_type=transaction&token=" . urlencode($site->token);
+                    $ch = curl_init();
+                    curl_setopt($ch, CURLOPT_URL, $url);
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+                    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+                    curl_setopt($ch, CURLOPT_TIMEOUT, 100);
+                    $result = curl_exec($ch);
+                    $info = curl_getinfo($ch);
+                    $code = $info['http_code'];
+                    if ($info['http_code'] != 200) {
+                        echo "{$info['http_code']} code for $url\n";
+                        $try++;
+                    }
+                    curl_close($ch);
                 }
-                curl_close($ch);
-
-                $url = "https://ran-reporting.rakutenmarketing.com/en/reports/signature-orders-report/filters?start_date=" . $dStartDate->format("Y-m-d") . "&end_date=" . $dEndDate->format("Y-m-d") . "&include_summary=N" . "&network=" . $this->_nid . "&tz=GMT&date_type=transaction&token=" . urlencode($site->token);
-                $ch = curl_init();
-                curl_setopt($ch, CURLOPT_URL, $url);
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-                curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
-                curl_setopt($ch, CURLOPT_TIMEOUT, 50);
-                $resultSignature = curl_exec($ch);
-                $info = curl_getinfo($ch);
-                if ($info['http_code'] != 200) {
-                    return $totalTransactions;
+                if ($code!= 200){
+                    throw new \Exception("Error getting the transactions");
                 }
-                curl_close($ch);
+
+                $try = 0;
+                $code = 0;
+                while ($try < 5 && $code != 200){
+                    $url = "https://ran-reporting.rakutenmarketing.com/en/reports/signature-orders-report/filters?start_date=" . $dStartDate->format("Y-m-d") . "&end_date=" . $dEndDate->format("Y-m-d") . "&include_summary=N" . "&network=" . $this->_nid . "&tz=GMT&date_type=transaction&token=" . urlencode($site->token);
+                    $ch = curl_init();
+                    curl_setopt($ch, CURLOPT_URL, $url);
+                    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+                    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
+                    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+                    curl_setopt($ch, CURLOPT_TIMEOUT, 100);
+                    $resultSignature = curl_exec($ch);
+                    $info = curl_getinfo($ch);
+                    $code = $info['http_code'];
+                    if ($info['http_code'] != 200) {
+                        echo "{$info['http_code']} code for $url\n";
+                        $try++;
+                    }
+                    curl_close($ch);
+                }
+                if ($code!= 200){
+                    throw new \Exception("Error getting the transactions");
+                }
 
                 $signatureMap = array();
                 $exportData = str_getcsv($resultSignature, "\n");
