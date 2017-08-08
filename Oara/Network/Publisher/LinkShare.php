@@ -250,7 +250,12 @@ class LinkShare extends \Oara\Network
                     $result = curl_exec($ch);
                     $info = curl_getinfo($ch);
                     $code = $info['http_code'];
+
                     if ($info['http_code'] != 200) {
+                        if ($info['http_code'] == 400){
+                           return $totalTransactions;
+                        }
+
                         echo "{$info['http_code']} code for $url\n";
                         $try++;
                     }
@@ -274,6 +279,10 @@ class LinkShare extends \Oara\Network
                     $info = curl_getinfo($ch);
                     $code = $info['http_code'];
                     if ($info['http_code'] != 200) {
+
+                        if ($info['http_code'] == 400){
+                            return $totalTransactions;
+                        }
                         echo "{$info['http_code']} code for $url\n";
                         $try++;
                     }
