@@ -131,7 +131,16 @@ class Amazon extends \Oara\Network
                 $filename = \realpath(\dirname(COOKIES_BASE_DIR)) . "/pdf/{$this->_credentials["user"]}-earnings-report-$date.tsv.gz";
                 \file_put_contents($filename, $output);
                 $zd = \gzopen($filename, "r");
-                $contents = \gzread($zd, 10000);
+
+                //To Get the size of the uncompressed file
+                $fileOpen = fopen($filename, "rb");
+                fseek($fileOpen, -4, SEEK_END);
+                $buf = fread($fileOpen, 4);
+                $buffUnpack = unpack("V", $buf);
+                $GZFileSize = end($buffUnpack);
+                fclose($fileOpen);
+
+                $contents = \gzread($zd, $GZFileSize);
                 \gzclose($zd);
 
                 $exportData = \explode("\n", $contents);
@@ -145,13 +154,13 @@ class Amazon extends \Oara\Network
                         $transaction = Array();
                         $transaction['merchantId'] = 1;
                         $transaction['date'] = $auxDate->format("Y-m-d H:i:s");
-                        if ($transactionExportArray[9] != null) {
-                            $transaction['custom_id'] = $transactionExportArray[9];
+                        if ($transactionExportArray[4] != null) {
+                            $transaction['custom_id'] = $transactionExportArray[4];
                         }
 
                         $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
-                        $transaction['amount'] = \Oara\Utilities::parseDouble($transactionExportArray[7]);
-                        $transaction['commission'] = \Oara\Utilities::parseDouble($transactionExportArray[8]);
+                        $transaction['amount'] = \Oara\Utilities::parseDouble($transactionExportArray[9]);
+                        $transaction['commission'] = \Oara\Utilities::parseDouble($transactionExportArray[10]);
                         $totalTransactions[] = $transaction;
                     }
 

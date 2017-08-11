@@ -40,7 +40,7 @@ class Ladbrokers extends \Oara\Network
 
         $user = $credentials['user'];
         $password = $credentials['password'];
-        $loginUrl = 'https://portal.ladbrokespartners.com/portal/j_spring_security_check?lang=en';
+        $loginUrl = 'https://portal.ladbrokespartners.com/rest/login';
 
         $valuesLogin = array(
             new \Oara\Curl\Parameter('j_username', $user),
