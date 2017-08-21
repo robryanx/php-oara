@@ -30,6 +30,15 @@ namespace Oara;
  */
 class Network
 {
+
+    public function __construct()
+    {
+        if (!defined('COOKIES_BASE_DIR')) {
+            define('COOKIES_BASE_DIR', realpath ( dirname ( __FILE__ ) ) .DIRECTORY_SEPARATOR."data".DIRECTORY_SEPARATOR."curl");
+        }
+    }
+
+
     /**
      * @return array
      */
