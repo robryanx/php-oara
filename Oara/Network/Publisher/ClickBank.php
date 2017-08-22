@@ -50,7 +50,7 @@ class ClickBank extends \Oara\Network
     public function login($credentials)
     {
 
-        $this->_api = $credentials["user"]."asd";
+        $this->_api = $credentials["user"];
         $this->_dev  = $credentials["password"];
     }
 
