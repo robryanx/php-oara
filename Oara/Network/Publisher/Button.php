@@ -76,7 +76,9 @@ class Button extends \Oara\Network
             $result = self::returnApiData("https://api.usebutton.com/v1/affiliation/accounts");
             if (isset($result->objects)) {
                 foreach ($result->objects as $account) {
-                    $this->_accountsMap [$account->id] = $account;
+                    if (empty($this->_sitesAllowed) || in_array($account->id,$this->_sitesAllowed)){
+                        $this->_accountsMap [$account->id] = $account;
+                    }
                 }
             }
             $connection = true;
@@ -158,8 +160,8 @@ class Button extends \Oara\Network
                             $date = new \DateTime($transactionObject->created_date);
                             $transaction['date'] = $date->format("Y-m-d H:i:s");
 
-                            if (isset($transactionObject->pub_ref) && $transactionObject->pub_ref != null) {
-                                $transaction['custom_id'] = $transactionObject->pub_ref;
+                            if (isset($transactionObject->btn_ref) && $transactionObject->btn_ref != null) {
+                                $transaction['custom_id'] = $transactionObject->btn_ref;
                             }
                             $transaction['status'] = $transactionObject->status;
                             if ($transaction['status'] == "pending") {
