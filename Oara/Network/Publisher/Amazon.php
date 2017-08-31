@@ -144,23 +144,27 @@ class Amazon extends \Oara\Network
                 \gzclose($zd);
 
                 $exportData = \explode("\n", $contents);
-
+                $headerList  = \explode("\t", $exportData[1]);
+                $headerMap = array();
+                foreach ($headerList as $index =>$header){
+                    $headerMap[(string)$header] = $index;
+                }
                 $num = \count($exportData);
                 for ($i = 2; $i < $num; $i++) {
                     $transactionExportArray = \explode("\t", $exportData[$i]);
                     if (count($transactionExportArray) > 1) {
 
-
+                        //Product line	Item	ASIN	Seller	Tracking ID	Date shipped	Price	Referral fee rate	Quantity	Revenue	Earnings
                         $transaction = Array();
                         $transaction['merchantId'] = 1;
                         $transaction['date'] = $auxDate->format("Y-m-d H:i:s");
-                        if ($transactionExportArray[4] != null) {
-                            $transaction['custom_id'] = $transactionExportArray[4];
+                        if ($transactionExportArray[$headerMap["Tracking ID"]] != null) {
+                            $transaction['custom_id'] = $transactionExportArray[$headerMap["Tracking ID"]];
                         }
 
                         $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
-                        $transaction['amount'] = \Oara\Utilities::parseDouble($transactionExportArray[9]);
-                        $transaction['commission'] = \Oara\Utilities::parseDouble($transactionExportArray[10]);
+                        $transaction['amount'] = \Oara\Utilities::parseDouble($headerMap["Revenue"]);
+                        $transaction['commission'] = \Oara\Utilities::parseDouble($headerMap["Earnings"]);
                         $totalTransactions[] = $transaction;
                     }
 
