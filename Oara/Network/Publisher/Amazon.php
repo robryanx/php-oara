@@ -163,8 +163,8 @@ class Amazon extends \Oara\Network
                         }
 
                         $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
-                        $transaction['amount'] = \Oara\Utilities::parseDouble($headerMap["Revenue"]);
-                        $transaction['commission'] = \Oara\Utilities::parseDouble($headerMap["Earnings"]);
+                        $transaction['amount'] = (double)\Oara\Utilities::parseDouble($transactionExportArray[$headerMap["Revenue"]]);
+                        $transaction['commission'] = (double)\Oara\Utilities::parseDouble($transactionExportArray[$headerMap["Earnings"]]);
                         $totalTransactions[] = $transaction;
                     }
 
