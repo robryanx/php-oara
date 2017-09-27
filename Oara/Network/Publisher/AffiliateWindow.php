@@ -32,6 +32,7 @@ namespace Oara\Network\Publisher;
 class AffiliateWindow extends \Oara\Network
 {
     public $_sitesAllowed = array();
+    public $_timeZone = null;
     public $_includeBonus = true;
     protected $_currency = null;
     protected $_password = null;
@@ -251,7 +252,12 @@ class AffiliateWindow extends \Oara\Network
             $valuesFromExport = array();
             $valuesFromExport[] = new \Oara\Curl\Parameter('startDate', $dStartDate->format("Y-m-d\TH:i:s"));
             $valuesFromExport[] = new \Oara\Curl\Parameter('endDate', $dEndDate->format("Y-m-d\TH:i:s"));
-            $valuesFromExport[] = new \Oara\Curl\Parameter('timezone', "UTC");
+            if ($this->_timeZone){
+                $valuesFromExport[] = new \Oara\Curl\Parameter('timezone', $this->_timeZone);
+            } else {
+                $valuesFromExport[] = new \Oara\Curl\Parameter('timezone', "UTC");
+            }
+
             $valuesFromExport[] = new \Oara\Curl\Parameter('accessToken', $this->_password);
             $urls[] = new \Oara\Curl\Request("https://api.awin.com/publishers/{$this->_accountId}/transactions/?", $valuesFromExport);
             $transactionJson = $this->_client->get($urls);
