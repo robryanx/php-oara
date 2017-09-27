@@ -270,7 +270,7 @@ class AffiliateWindow extends \Oara\Network
                     $transaction['unique_id'] = $transactionObject["id"];
                     $transaction['merchantId'] = $transactionObject["advertiserId"];
                     if (isset($merchantIdMap[(int)$transaction['merchantId']])) {
-                        if (($transactionObject["type"] != 'bonus') || ($transactionObject["type"] == 'bonus' && $this->_includeBonus)) {
+                        if ((strtolower($transactionObject["type"]) != 'bonus') || (strtolower($transactionObject["type"]) == 'bonus' && $this->_includeBonus)) {
 
                             $date = new \DateTime($transactionObject["transactionDate"]);
                             $transaction['date'] = $date->format("Y-m-d H:i:s");
