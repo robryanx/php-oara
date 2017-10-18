@@ -310,31 +310,7 @@ class AffiliateFuture extends \Oara\Network
     public function getPaymentHistory()
     {
         $paymentHistory = array();
-        $urls = array();
-        $urls[] = new \Oara\Curl\Request('http://affiliates.affiliatefuture.com/myaccount/invoices.aspx', array());
-        $exportReport = $this->_client->get($urls);
 
-        $doc = new \DOMDocument();
-        @$doc->loadHTML($exportReport[0]);
-        $xpath = new \DOMXPath($doc);
-        $tableList = $xpath->query('//table');
-        $registerTable = $tableList->item(12);
-        if ($registerTable == null) {
-            throw new \Exception('Fail getting the payment History');
-        }
-        $registerLines = $registerTable->childNodes;
-        for ($i = 1; $i < $registerLines->length; $i++) {
-            $registerLine = $registerLines->item($i)->childNodes;
-            $obj = array();
-            $date = \DateTime::createFromFormat("d/m/Y", trim($registerLine->item(1)->nodeValue));
-            $date->setTime(0, 0);
-            $obj['date'] = $date->format("Y-m-d H:i:s");
-            $obj['pid'] = trim($registerLine->item(0)->nodeValue);
-            $value = trim(substr(trim($registerLine->item(4)->nodeValue), 4));
-            $obj['value'] = \Oara\Utilities::parseDouble($value);
-            $obj['method'] = 'BACS';
-            $paymentHistory[] = $obj;
-        }
 
         return $paymentHistory;
     }
