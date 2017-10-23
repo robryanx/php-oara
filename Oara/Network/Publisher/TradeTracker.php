@@ -35,7 +35,7 @@ class TradeTracker extends \Oara\Network
     public function login($credentials)
     {
         $user = $credentials['user'];
-        $password = $credentials['apipassword'];
+        $password = $credentials['password'];
 
         $wsdlUrl = 'http://ws.tradetracker.com/soap/affiliate?wsdl';
         //Setting the client.
