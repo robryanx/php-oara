@@ -160,6 +160,9 @@ class Amazon extends \Oara\Network
                         $transaction['date'] = $auxDate->format("Y-m-d H:i:s");
                         if ($transactionExportArray[$headerMap["Tracking ID"]] != null) {
                             $transaction['custom_id'] = $transactionExportArray[$headerMap["Tracking ID"]];
+                            if (isset($headerMap["Sub Tag"])){
+                                $transaction['custom_id'] = $transactionExportArray[$headerMap["Sub Tag"]];
+                            }
                         }
 
                         $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
