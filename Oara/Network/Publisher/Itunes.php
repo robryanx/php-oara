@@ -157,7 +157,6 @@ class Itunes extends \Oara\Network
 
                         $transaction['amount'] = $conversion["conversion_value"]["value"];
                         $transaction['currency'] = $conversion["currency"];
-
                         $transaction['commission'] = $conversion["conversion_value"]["publisher_commission"];
                         $transactions[] = $transaction;
                     }

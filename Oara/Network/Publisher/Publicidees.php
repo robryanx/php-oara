@@ -205,8 +205,6 @@ class Publicidees extends \Oara\Network
     public function getTransactionList($merchantList = null, \DateTime $dStartDate = null, \DateTime $dEndDate = null)
     {
         $totalTransactions = array();
-        $dStartDate = new \DateTime("2017-02-01");
-        $dEndDate = new \DateTime("2017-02-07");
         foreach ($this->_sites as $siteId => $siteName) {
 
             // Reconnect with the actual site
@@ -268,17 +266,6 @@ class Publicidees extends \Oara\Network
 
                                 for ($z = 0; $z < $confirmedTransactions; $z++) {
                                     $transaction = Array();
-                                    $merchantFound = false;
-                                    foreach ($merchantList as $merchant) {
-                                        if ($merchant['name'] == $transactionExportArray[$headerMap["Programme"]]) {
-                                            $transaction['merchantId'] = $merchant['id'];
-                                            $merchantFound = true;
-                                            break;
-                                        }
-                                    }
-                                    if (!$merchantFound) {
-                                        throw new \Exception('Merchant not found');
-                                    }
                                     $transaction['merchantId'] = 1;
                                     $transaction['date'] = $dStartDateAux->format("Y-m-d H:i:s");
                                     $stringAmountValue = str_replace(',', '.', $transactionExportArray[$headerMap["CA"]]);
