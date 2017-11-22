@@ -180,7 +180,7 @@ class Skimlinks extends \Oara\Network
                 new \Oara\Curl\Parameter('endDate', $dEndDate->format("Y-m-d")),
                 new \Oara\Curl\Parameter('format', 'json')
             );
-            $totalTransactions = $this->processTransactions($valuesFromExport);
+            $totalTransactions = \array_merge($totalTransactions, $this->processTransactions($valuesFromExport));
         } else {
             foreach ($this->_sitesAllowed as $site) {
 
@@ -194,7 +194,7 @@ class Skimlinks extends \Oara\Network
                     new \Oara\Curl\Parameter('format', 'json'),
                     new \Oara\Curl\Parameter('domainID', $site)
                 );
-                $totalTransactions = $this->processTransactions($valuesFromExport);
+                $totalTransactions = \array_merge($totalTransactions, $this->processTransactions($valuesFromExport));
             }
         }
 
