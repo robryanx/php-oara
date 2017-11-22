@@ -195,9 +195,6 @@ class Skimlinks extends \Oara\Network
                     new \Oara\Curl\Parameter('domainID', $site)
                 );
                 $totalTransactions = $this->processTransactions($valuesFromExport);
-                if (count($totalTransactions) > 1){
-                    echo "asdf";
-                }
             }
         }
 
