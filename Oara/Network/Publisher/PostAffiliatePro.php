@@ -77,9 +77,14 @@ class PostAffiliatePro extends \Oara\Network
     {
         // If not login properly the construct launch an exception
         $connection = true;
-        $session = new \Gpf_Api_Session("http://" . $this->_credentials["domain"] . "/scripts/server.php");
+        $session = new \Gpf_Api_Session("https://" . $this->_credentials["domain"] . "/scripts/server.php");
         if (!@$session->login($this->_credentials ["user"], $this->_credentials ["password"], \Gpf_Api_Session::AFFILIATE)) {
             $connection = false;
+        } else{
+            $session = new \Gpf_Api_Session("http://" . $this->_credentials["domain"] . "/scripts/server.php");
+            if (!@$session->login($this->_credentials ["user"], $this->_credentials ["password"], \Gpf_Api_Session::AFFILIATE)) {
+                $connection = false;
+            }
         }
         $this->_session = $session;
 
