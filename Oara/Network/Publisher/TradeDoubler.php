@@ -436,6 +436,11 @@ class TradeDoubler extends \Oara\Network
                         $transaction['unique_id'] = \substr($transactionExportArray[9], 0, 200);
                     }
 
+                    // If we still don't have a unique id, don't just error out
+                    if (empty($transaction['unique_id'])) {
+                        continue;
+                    }
+
                     if ($transactionExportArray[9] != '') {
                         $transaction['custom_id'] = $transactionExportArray[9];
                     }
