@@ -51,7 +51,7 @@ class SkyParkSecure extends \Oara\Network
             new \Oara\Curl\Parameter('remember_me', "0"),
             new \Oara\Curl\Parameter('submit', "")
         );
-        $loginUrl = 'http://agents.skyparksecure.com/auth/login';
+        $loginUrl = 'https://agents.skyparksecure.com/auth/login';
 
         $urls = array();
         $urls[] = new \Oara\Curl\Request($loginUrl, $valuesLogin);
@@ -89,7 +89,7 @@ class SkyParkSecure extends \Oara\Network
         //If not login properly the construct launch an exception
         $connection = true;
         $urls = array();
-        $urls[] = new \Oara\Curl\Request('http://agents.skyparksecure.com/bookings', array());
+        $urls[] = new \Oara\Curl\Request('https://agents.skyparksecure.com/bookings', array());
         $exportReport = $this->_client->get($urls);
         if (!\preg_match("/Logout/", $exportReport[0], $match)) {
             $connection = false;
@@ -157,7 +157,7 @@ class SkyParkSecure extends \Oara\Network
         );
 
 
-        $urls[] = new \Oara\Curl\Request('http://legacy.skyparksecure.com/api/v4/jsonp/getSales?', $exportParams);
+        $urls[] = new \Oara\Curl\Request('https://legacy.skyparksecure.com/api/v4/jsonp/getSales?', $exportParams);
         $exportReport = $this->_client->get($urls);
 
         $report = \substr($exportReport[0], 1, \strlen($exportReport[0]) - 3);
