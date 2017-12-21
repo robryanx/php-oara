@@ -1,24 +1,25 @@
 <?php
+
 namespace Oara\Network\Publisher;
-    /**
-     * The goal of the Open Affiliate Report Aggregator (OARA) is to develop a set
-     * of PHP classes that can download affiliate reports from a number of affiliate networks, and store the data in a common format.
-     *
-     * Copyright (C) 2016  Fubra Limited
-     * This program is free software: you can redistribute it and/or modify
-     * it under the terms of the GNU Affero General Public License as published by
-     * the Free Software Foundation, either version 3 of the License, or any later version.
-     * This program is distributed in the hope that it will be useful,
-     * but WITHOUT ANY WARRANTY; without even the implied warranty of
-     * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-     * GNU Affero General Public License for more details.
-     * You should have received a copy of the GNU Affero General Public License
-     * along with this program.  If not, see <http://www.gnu.org/licenses/>.
-     *
-     * Contact
-     * ------------
-     * Fubra Limited <support@fubra.com> , +44 (0)1252 367 200
-     **/
+/**
+ * The goal of the Open Affiliate Report Aggregator (OARA) is to develop a set
+ * of PHP classes that can download affiliate reports from a number of affiliate networks, and store the data in a common format.
+ *
+ * Copyright (C) 2016  Fubra Limited
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or any later version.
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * Contact
+ * ------------
+ * Fubra Limited <support@fubra.com> , +44 (0)1252 367 200
+ **/
 /**
  * Export Class
  *
@@ -93,8 +94,16 @@ class OptimiseMedia extends \Oara\Network
      */
     public function checkConnection()
     {
-        $connection = true;
+        $connection = false;
         $result = $this->apiCall("GetAccounts/ValidateLogin");
+        if (isset($result["ValidateRequestV4Result"])) {
+            foreach ($result["ValidateRequestV4Result"] as $company) {
+                if (isset($company["CompanyName"])) {
+                    $connection = true;
+                }
+            }
+        }
+
         return $connection;
     }
 
@@ -106,16 +115,15 @@ class OptimiseMedia extends \Oara\Network
     {
         $merchants = Array();
 
-        $params = array("ProgramStatus" => "live","AID"=>$this->_affiliateID);
-        $result = $this->apiCall("GetProgrammes",$params);
-
-        for ($i = 1; $i < $num; $i++) {
-            $merchantExportArray = \str_getcsv($exportData[$i], ",");
-            $obj = Array();
-            $obj['cid'] = $merchantExportArray[0];
-            $obj['name'] = $merchantExportArray[1];
-            $obj['url'] = $merchantExportArray[2];
-            $merchants[] = $obj;
+        $params = array("ProgramStatus" => "live", "AID" => $this->_affiliateID);
+        $result = $this->apiCall("GetProgrammes", $params);
+        if (isset($result["GetPublisherProgrammesV4Result"])) {
+            foreach ($result["GetPublisherProgrammesV4Result"] as $programme) {
+                $obj = Array();
+                $obj['cid'] = $programme["PID"];
+                $obj['name'] = $programme["Product Name"];
+                $merchants[] = $obj;
+            }
         }
         return $merchants;
     }
@@ -132,25 +140,13 @@ class OptimiseMedia extends \Oara\Network
         $merchantIdList = \Oara\Utilities::getMerchantIdMapFromMerchantList($merchantList);
 
 
-        $urls = array();
-        $valuesFormExport = array(new \Oara\Curl\Parameter('apikey', $this->_apiPassword),
-            new \Oara\Curl\Parameter('Format', 'CSV'),
-            new \Oara\Curl\Parameter('FieldSeparator', 'comma'),
-            new \Oara\Curl\Parameter('Fields', 'MerchantID,OrderDate,NetworkOrderID,CustomTrackingID,OrderValue,AffiliateCommission,TransactionType,PaidtoAffiliate,DatePaidToAffiliate'),
-            new \Oara\Curl\Parameter('AffiliateID', $this->_user),
-            new \Oara\Curl\Parameter('DateFormat', 'DD/MM/YYYY+HH:MN:SS'),
-            new \Oara\Curl\Parameter('PendingSales', 'YES'),
-            new \Oara\Curl\Parameter('ValidatedSales', 'YES'),
-            new \Oara\Curl\Parameter('VoidSales', 'YES'),
-            new \Oara\Curl\Parameter('GetNewSales', 'YES')
-        );
-        $valuesFormExport[] = new \Oara\Curl\Parameter('DateFrom', $dStartDate->format("Y-m-d"));
-        $valuesFormExport[] = new \Oara\Curl\Parameter('DateTo', $dEndDate->format("Y-m-d"));
-        $urls[] = new \Oara\Curl\Request('https://affiliate.paidonresults.com/api/transactions?', $valuesFormExport);
-        $exportReport = $this->_client->get($urls);
+        $params = array("StartDate" => $dStartDate->format("d/m/Y"), "EndDate" => $dEndDate->format("d/m/Y"), "AID" => $this->_affiliateID, "Status" => -1);
+        $result = $this->apiCall("Reports/Affiliate/TransactionsOverview", $params);
 
-        $exportData = \str_getcsv($exportReport[0], "\r\n");
-        $num = \count($exportData);
+        if ($result){
+
+        }
+        /*
         for ($i = 1; $i < $num; $i++) {
 
             $exportData[$i] = preg_replace("/\n/", "", $exportData[$i]);
@@ -180,26 +176,28 @@ class OptimiseMedia extends \Oara\Network
                 $totalTransactions[] = $transaction;
             }
         }
+        */
 
         return $totalTransactions;
 
     }
 
-    private function apiCall($function,$params = array()){
+    private function apiCall($function, $params = array())
+    {
 
         date_default_timezone_set("UTC");
         $t = microtime(true);
-        $micro = sprintf("%03d",($t - floor($t)) * 1000);
-        $utc = gmdate('Y-m-d H:i:s.', $t).$micro;
+        $micro = sprintf("%03d", ($t - floor($t)) * 1000);
+        $utc = gmdate('Y-m-d H:i:s.', $t) . $micro;
 
         $sig_data = $utc;
         $api_key = $this->_apiKey;
         $private_key = $this->_privateKey;
-        $concateData = $private_key.$sig_data;
+        $concateData = $private_key . $sig_data;
         $sig = md5($concateData);
 
-        $basicParams = array('Key' => $api_key, 'Sig' => $sig, 'SigData' => $sig_data,'output' => 'json');
-        $callParams = \array_merge($basicParams,$params);
+        $basicParams = array('AgencyID' => $this->_agencyId, 'Key' => $api_key, 'Sig' => $sig, 'SigData' => $sig_data, 'output' => 'json');
+        $callParams = \array_merge($basicParams, $params);
         $url = "https://api.omgpm.com/network/OMGNetworkApi.svc/{$this->_versionNumber}/$function?" . http_build_query($callParams);
         $headers = array("Content-Type: application/json",
             "Accept: application/json",
