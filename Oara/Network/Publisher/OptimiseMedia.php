@@ -70,7 +70,7 @@ class OptimiseMedia extends \Oara\Network
         $parameter = array();
         $parameter["description"] = "Affiliate ID -> Take a look at any of your Optimise Tracking links - there will be a parameter called &AID= - this is your AffiliateID";
         $parameter["required"] = true;
-        $parameter["name"] = "Api key";
+        $parameter["name"] = "Affiliate ID";
         $credentials["user"] = $parameter;
 
         $parameter = array();
