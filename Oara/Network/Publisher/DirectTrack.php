@@ -95,7 +95,7 @@ class DirectTrack extends \Oara\Network
         $connection = false;
         $apiURL = "https://{$this->_domain}/apifleet/rest/{$this->_clientId}/{$this->_accessId}/campaign/active/";
         $response = self::call($apiURL);
-        if (isset($response["@attributes"])) {
+        if (isset($response["code"]) && isset($response["code"]) != 500 && isset($response["@attributes"])) {
             $connection = true;
         }
         return $connection;

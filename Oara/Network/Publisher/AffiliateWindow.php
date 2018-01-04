@@ -154,7 +154,7 @@ class AffiliateWindow extends \Oara\Network
             $merchantJson = $this->_client->get($urls);
             $merchants = \json_decode($merchantJson[0], true);
             foreach ($merchants as $merchant) {
-                if (count($this->_sitesAllowed) == 0 || \in_array($merchant["PrimaryRegion"]["CountryCode"], $this->_sitesAllowed)) {
+                if (count($this->_sitesAllowed) == 0 || \in_array($merchant["primaryRegion"]["countryCode"], $this->_sitesAllowed)) {
                     $merchantArray = array();
                     $merchantArray["cid"] = $merchant["id"];
                     $merchantArray["name"] = $merchant["name"];
@@ -243,65 +243,74 @@ class AffiliateWindow extends \Oara\Network
             $totalTransactions = array();
             $merchantIdMap = \Oara\Utilities::getMerchantIdMapFromMerchantList($merchantList);
 
-            $dStartDate = clone $dStartDate;
-            $dStartDate->setTime(0, 0, 0);
-            $dEndDate = clone $dEndDate;
-            $dEndDate->setTime(23, 59, 59);
 
-            $urls = array();
-            $valuesFromExport = array();
-            $valuesFromExport[] = new \Oara\Curl\Parameter('startDate', $dStartDate->format("Y-m-d\TH:i:s"));
-            $valuesFromExport[] = new \Oara\Curl\Parameter('endDate', $dEndDate->format("Y-m-d\TH:i:s"));
-            if ($this->_timeZone){
-                $valuesFromExport[] = new \Oara\Curl\Parameter('timezone', $this->_timeZone);
-            } else {
-                $valuesFromExport[] = new \Oara\Curl\Parameter('timezone', "UTC");
-            }
+            $amountDays = $dStartDate->diff($dEndDate)->days;
+            $auxDate = clone $dStartDate;
+            for ($j = 0; $j <= $amountDays; $j++) {
 
-            $valuesFromExport[] = new \Oara\Curl\Parameter('accessToken', $this->_password);
-            $urls[] = new \Oara\Curl\Request("https://api.awin.com/publishers/{$this->_accountId}/transactions/?", $valuesFromExport);
-            $transactionJson = $this->_client->get($urls);
-            $transactionList = \json_decode($transactionJson[0], true);
-            if (\count($transactionList) > 0) {
+                $dStartDate = clone $auxDate;
+                $dStartDate->setTime(0, 0, 0);
+                $dEndDate = clone $auxDate;
+                $dEndDate->setTime(23, 59, 59);
 
+                $urls = array();
+                $valuesFromExport = array();
+                $valuesFromExport[] = new \Oara\Curl\Parameter('startDate', $dStartDate->format("Y-m-d\TH:i:s"));
+                $valuesFromExport[] = new \Oara\Curl\Parameter('endDate', $dEndDate->format("Y-m-d\TH:i:s"));
+                if ($this->_timeZone) {
+                    $valuesFromExport[] = new \Oara\Curl\Parameter('timezone', $this->_timeZone);
+                } else {
+                    $valuesFromExport[] = new \Oara\Curl\Parameter('timezone', "UTC");
+                }
 
-                foreach ($transactionList as $transactionObject) {
-                    $transaction = Array();
-                    $transaction['unique_id'] = $transactionObject["id"];
-                    $transaction['merchantId'] = $transactionObject["advertiserId"];
-                    if (isset($merchantIdMap[(int)$transaction['merchantId']])) {
-                        if ((strtolower($transactionObject["type"]) != 'bonus') || (strtolower($transactionObject["type"]) == 'bonus' && $this->_includeBonus)) {
+                $valuesFromExport[] = new \Oara\Curl\Parameter('accessToken', $this->_password);
+                $urls[] = new \Oara\Curl\Request("https://api.awin.com/publishers/{$this->_accountId}/transactions/?", $valuesFromExport);
+                $transactionJson = $this->_client->get($urls);
+                $transactionList = \json_decode($transactionJson[0], true);
+                if (\count($transactionList) > 0) {
 
-                            $date = new \DateTime($transactionObject["transactionDate"]);
-                            $transaction['date'] = $date->format("Y-m-d H:i:s");
+                    foreach ($transactionList as $transactionObject) {
+                        $transaction = Array();
+                        $transaction['unique_id'] = $transactionObject["id"];
+                        $transaction['merchantId'] = $transactionObject["advertiserId"];
+                        if (isset($merchantIdMap[(int)$transaction['merchantId']])) {
+                            if ((strtolower($transactionObject["type"]) != 'bonus') || (strtolower($transactionObject["type"]) == 'bonus' && $this->_includeBonus)) {
 
-                            if (isset($transactionObject["clickRefs"]) && isset($transactionObject["clickRefs"]["clickRef"])) {
-                                $transaction['custom_id'] = $transactionObject["clickRefs"]["clickRef"];
+                                $date = new \DateTime($transactionObject["transactionDate"]);
+                                $transaction['date'] = $date->format("Y-m-d H:i:s");
+
+                                if (isset($transactionObject["clickRefs"]) && isset($transactionObject["clickRefs"]["clickRef"])) {
+                                    $transaction['custom_id'] = $transactionObject["clickRefs"]["clickRef"];
+                                }
+                                $transaction['type'] = $transactionObject["type"];
+                                $transaction['status'] = $transactionObject["commissionStatus"];
+                                if ($transaction['status'] == 'approved') {
+                                    $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
+                                } else if ($transaction['status'] == 'bonus') {
+                                    $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
+                                } else if ($transaction['status'] == 'pending') {
+                                    $transaction['status'] = \Oara\Utilities::STATUS_PENDING;
+                                } else if ($transaction['status'] == 'deleted' || $transaction['status'] == 'declined') {
+                                    $transaction['status'] = \Oara\Utilities::STATUS_DECLINED;
+                                } else {
+                                    throw new \Exception("New status {$transaction['status']}\n");
+                                }
+
+                                $transaction['amount'] = $transactionObject["saleAmount"]["amount"];
+                                $transaction['commission'] = $transactionObject["commissionAmount"]["amount"];
+                                $transaction['currency'] = $transactionObject["commissionAmount"]["currency"];
+                                $totalTransactions[] = $transaction;
                             }
-                            $transaction['type'] = $transactionObject["type"];
-                            $transaction['status'] = $transactionObject["commissionStatus"];
-                            if ($transaction['status'] == 'approved') {
-                                $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
-                            } else if ($transaction['status'] == 'bonus') {
-                                $transaction['status'] = \Oara\Utilities::STATUS_CONFIRMED;
-                            } else if ($transaction['status'] == 'pending') {
-                                $transaction['status'] = \Oara\Utilities::STATUS_PENDING;
-                            } else if ($transaction['status'] == 'deleted' || $transaction['status'] == 'declined') {
-                                $transaction['status'] = \Oara\Utilities::STATUS_DECLINED;
-                            } else {
-                                throw new \Exception("New status {$transaction['status']}\n");
-                            }
-
-                            $transaction['amount'] = $transactionObject["saleAmount"]["amount"];
-                            $transaction['commission'] = $transactionObject["commissionAmount"]["amount"];
-                            $transaction['currency'] = $transactionObject["commissionAmount"]["currency"];
-                            $totalTransactions[] = $transaction;
                         }
                     }
+                    unset($transactionJson, $transactionList);
+                    \gc_collect_cycles();
                 }
-                unset($transactionList);
-                \gc_collect_cycles();
+
+                $auxDate->add(new \DateInterval('P1D'));
             }
+
+
             return $totalTransactions;
         }
 
