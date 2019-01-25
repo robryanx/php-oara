@@ -47,7 +47,7 @@ class WebGains extends \Oara\Network
 
         $wsdlUrl = 'http://ws.webgains.com/aws.php';
         //Setting the client.
-        $this->_soapClient = new \SoapClient($wsdlUrl, array('login' => $this->_user,
+        $this->_soapClient = new \Oara\SoapClientBadXml($wsdlUrl, array('login' => $this->_user,
             'encoding' => 'UTF-8',
             'password' => $this->_password,
             'compression' => SOAP_COMPRESSION_ACCEPT | SOAP_COMPRESSION_GZIP | SOAP_COMPRESSION_DEFLATE,
